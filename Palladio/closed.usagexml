@@ -1,0 +1,74 @@
+<Usage_Profile>
+	<workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="0">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="1">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="2">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="3">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="4">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="5">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="6">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="7">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="8">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="9">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="10">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="11">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="12">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="13">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="14">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="15">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="16">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="17">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="18">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="19">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="20">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="21">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="22">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="1" hour="23">
+      <thinkTime_ClosedWorkload specification="10.0"/>
+    </workload_UsageScenario>
+</Usage_Profile>

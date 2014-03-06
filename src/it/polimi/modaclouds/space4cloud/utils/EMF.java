@@ -1,0 +1,78 @@
+/*
+ * 
+ */
+package it.polimi.modaclouds.space4cloud.utils;
+
+import it.polimi.modaclouds.cloudmetamodel.cloud.CloudFactory;
+import it.polimi.modaclouds.cloudmetamodel.cloud.impl.CloudPackageImpl;
+
+import java.util.Collections;
+import java.util.Map;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+
+// TODO: Auto-generated Javadoc
+/**
+ * Provides utility methods to work with Cloud Meta-Model EMF instances.
+ * 
+ * @author Davide Franceschelli
+ */
+public class EMF {
+
+	/** The cloud factory. */
+	private final CloudFactory cloudFactory;
+
+	/**
+	 * Initialize the class.
+	 */
+	public EMF() {
+		CloudPackageImpl.init();
+		cloudFactory = CloudFactory.eINSTANCE;
+	}
+
+	/**
+	 * Serialize the EMF object in a File created within the specified path,
+	 * with the specified name.
+	 * 
+	 * @param emfObject
+	 *            is the EMF Object to serialize.
+	 * @param pathName
+	 *            is the String representing the absolute path of the file.
+	 * @param fileName
+	 *            is the name of the file.
+	 * @return true if the operation succeeds, false otherwise.
+	 */
+	public boolean serialize(EObject emfObject, String pathName, String fileName) {
+		try {
+			String ext = fileName.substring(fileName.lastIndexOf(".") + 1);
+			Resource.Factory.Registry reg = Resource.Factory.Registry.INSTANCE;
+			Map<String, Object> m = reg.getExtensionToFactoryMap();
+			m.put(ext, new XMIResourceFactoryImpl());
+			ResourceSet resSet = new ResourceSetImpl();
+			Resource resource = resSet.createResource(URI
+					.createFileURI(pathName + fileName));
+			resource.getContents().add(emfObject);
+			resource.save(Collections.EMPTY_MAP);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * Returns the Cloud Factory needed to instantiate new EMF objects belonging
+	 * to the Cloud Meta-Model.
+	 * 
+	 * @return a CloudFactory instance.
+	 * @see CloudFactory
+	 */
+	public CloudFactory getCloudFactory() {
+		return cloudFactory;
+	}
+}

@@ -1,0 +1,222 @@
+package it.polimi.modaclouds.space4cloud.utils;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+public class ExtensionParser {
+
+	private File extension;
+	private HashMap<String, String> serviceType = new HashMap<>();
+	private HashMap<String, String> providers = new HashMap<>();
+	private HashMap<String, String> serviceNames = new HashMap<>();
+	private HashMap<String, String> instanceSizes = new HashMap<>();
+	private HashMap<String, int[]> instanceReplicas = new HashMap<>();
+	private HashMap<String, String> serviceLocations = new HashMap<>();	
+	private int populations[] =  new int[HOURS];
+	private double thinktimes[] =  new double[HOURS];
+
+
+	DocumentBuilderFactory dbFactory;
+	DocumentBuilder dBuilder;
+	Document doc;
+	private static final int HOURS = 24;
+
+	public ExtensionParser(File extensionFile) {	
+
+
+		this.extension = extensionFile;
+
+		try{
+			dbFactory = DocumentBuilderFactory.newInstance();
+			dBuilder = dbFactory.newDocumentBuilder();
+			doc = dBuilder.parse(extension);
+			doc.getDocumentElement().normalize();
+
+			//parse resource containers
+			NodeList list = doc.getElementsByTagName("ResourceContainer");
+			for(int i=0;i<list.getLength();i++){
+				Node n=list.item(i);
+				Element n_elem = (Element) n;			
+
+				//get the resource ID
+				String resourceId = n_elem.getAttribute("id");		
+
+				//get the provider
+				String provider = n_elem.getAttribute("Provider");
+
+				//get the service type
+				String type = null;
+				String serviceName = null;
+				if(n_elem.getElementsByTagName("cloudResource").getLength() > 0){
+					Node cloudResourceElement = n_elem.getElementsByTagName("cloudResource").item(0);
+					type = cloudResourceElement.getAttributes().getNamedItem("serviceType").getNodeValue();
+					serviceName = cloudResourceElement.getAttributes().getNamedItem("serviceName").getNodeValue();
+
+					//get the location if provided
+					if(cloudResourceElement.hasChildNodes()){
+						NodeList resourceElementChilds = cloudResourceElement.getChildNodes();
+						for(int j=0;j<resourceElementChilds.getLength();j++)
+							if(resourceElementChilds.item(j).getNodeName().equals("location"))
+								serviceLocations.put(resourceId,resourceElementChilds.item(j).getAttributes().getNamedItem("region").getNodeValue());
+					}
+
+				}
+				else
+				{
+					Node cloudPlatformElement = n_elem.getElementsByTagName("cloudPlatform").item(0);
+					type = cloudPlatformElement.getAttributes().getNamedItem("serviceType").getNodeValue();
+					serviceName = cloudPlatformElement.getAttributes().getNamedItem("serviceName").getNodeValue();
+				}
+
+				//get the instance size
+				String size = null;
+				if(n_elem.getElementsByTagName("ResourceSizeID").getLength()>0)
+					size = n_elem.getElementsByTagName("ResourceSizeID").item(0).getTextContent();
+
+
+				//get the number of replicas if specified	
+				int[] replicas = new int[HOURS];
+				for(int j=0;j<HOURS;j++) replicas[j]=1;
+
+				if(n_elem.getElementsByTagName("Replicas").getLength()==HOURS) {				
+					NodeList replicaNodes = ((Element) n_elem.getElementsByTagName("Replicas").item(0)).getElementsByTagName("replica");
+					for(int j=0;j<replicaNodes.getLength();j++){
+						int hour = Integer.parseInt(replicaNodes.item(j).getAttributes().getNamedItem("hour").getTextContent());
+						int value = Integer.parseInt(replicaNodes.item(j).getAttributes().getNamedItem("value").getTextContent());
+						replicas[hour-1] = value;
+					}											
+				}		
+				instanceReplicas.put(resourceId, replicas);						
+				providers.put(resourceId, provider);				
+				serviceType.put(resourceId, type);
+				serviceNames.put(resourceId, serviceName);
+				instanceSizes.put(resourceId, size);				
+			}
+
+			//Parse usage model extension			
+			Element usageModelElement = (Element) doc.getElementsByTagName("usageModelExtensions").item(0);
+			list = usageModelElement.getElementsByTagName("Hour"); 
+			for(int i=0;i<list.getLength();i++){
+				Node n=list.item(i);
+				thinktimes[i] = Double.parseDouble(n.getAttributes().getNamedItem("thinkTime").getNodeValue());
+				populations[i] = Integer.parseInt(n.getAttributes().getNamedItem("population").getNodeValue());
+			}
+
+
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public Map<String, String> getServiceType() {
+		return serviceType;
+	}
+
+	public Map<String, String> getProviders() {
+		return providers;
+	}
+
+	public Map<String, String> getInstanceSize() {
+		return instanceSizes;
+	}
+
+	public void addResourceContainer(String id, String ServiceType, boolean IaaS, String InstanceType, String provider){
+
+		NodeList list = doc.getElementsByTagName("ResourceContainerExtensions");
+
+		//create the resource container
+		Element resourceContainer = doc.createElement("ResourceContainer");
+		list.item(0).appendChild(resourceContainer);
+
+		//fill the attributes
+		resourceContainer.setAttribute("id", id);
+		resourceContainer.setAttribute("Provider", provider);
+
+
+		//add the servicetype
+		if(IaaS){
+			Element service = doc.createElement("Infrastructure");
+			service.appendChild(doc.createTextNode(ServiceType));
+			resourceContainer.appendChild(service);
+		}else{
+			Element service = doc.createElement("Platform");
+			service.appendChild(doc.createTextNode(ServiceType));
+			resourceContainer.appendChild(service);
+		}
+
+
+		//add the instanceType
+		Element instance = doc.createElement("ResourceSizeID");
+		instance.appendChild(doc.createTextNode(InstanceType));
+		resourceContainer.appendChild(instance);
+
+		//TODO: what if the container is already there?
+
+		// write the content into xml file
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		try {
+			Transformer transformer = transformerFactory.newTransformer();
+
+			DOMSource source = new DOMSource(doc);
+			StreamResult result = new StreamResult(extension);
+
+			// Output to console for testing
+			// StreamResult result = new StreamResult(System.out);
+
+			transformer.transform(source, result);
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public Map<String, String> getServiceName() {
+		return serviceNames;
+	}
+
+	public int[] getPopulations() {
+		return populations;
+	}
+
+	public double[] getThinktimes() {
+		return thinktimes;
+	}
+
+	public Map<String, int[]> getInstanceReplicas() {
+		return instanceReplicas;
+	}
+
+	public String getRegion() {	
+		if(serviceLocations.isEmpty())
+			return null;
+
+		String location = serviceLocations.values().iterator().next();
+		for(Iterator<String> locationsIter = serviceLocations.values().iterator(); locationsIter.hasNext();)
+			if(!location.equals(locationsIter.next())){
+				System.err.println("Multiple regions specified in the resource container extension!");		      
+				return null;
+			}			
+		return location;
+	}
+
+
+}

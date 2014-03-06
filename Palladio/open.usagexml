@@ -1,0 +1,75 @@
+<Usage_Profile>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="0">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="1">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="2">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="3">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="4">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="5">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="6">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="7">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="8">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="9">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="10">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="11">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="12">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="13">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="14">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="15">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="16">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="17">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="18">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="19">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="20">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="21">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="22">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+<workload_UsageScenario xsi:type="usagemodel:OpenWorkload" hour="23">
+      <interArrivalTime_OpenWorkload specification="0.1"/>
+</workload_UsageScenario>
+
+</Usage_Profile>
