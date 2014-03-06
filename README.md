@@ -1,4 +1,4 @@
-MODAClouds QoS Models
+MODAClouds SPACE4CLOUD
 ==========================
 
 #Description
