@@ -27,7 +27,7 @@ To run the code make a new Eclipse Application run configuration as shown [here]
 The Palladio patch integrates the LINE solver into Palladio and it allows its selection while making a new run configuration. Please refer to the [Palladio documentation](https://sdqweb.ipd.kit.edu/wiki/Palladio_Component_Model/Documentation,_Tutorials,_and_Screencasts) for further information. 
 
 To run the SPACE4CLOUD plugin launch the Eclipse Application run configuration then click on the cloud shaped icon.
-In order to retreive information about cloud resources SPACE4CLOUD interacts with a database that hosts the resource model. In this preliminary version the database is hosted on [Flexiscale](http://www.flexiscale.com/) and can be used only for testing purposes. The accuracy and update frequency of the information stored in the database is not guaranteed. 
+In order to retrieve information about cloud resources SPACE4CLOUD interacts with a database that hosts the resource model. In this preliminary version the database is hosted on [Flexiscale](http://www.flexiscale.com/) and can be used only for testing purposes. The accuracy and update frequency of the information stored in the database is not guaranteed. 
 
 #Examples
 Example projects can be found in the SpecWeb.rar archive under the Palladio folder. The example cam be imported in the new instance of Eclipse, evaluated using LINE or LQNS or used for the optimization performed by SPACE4CLOUD. 
