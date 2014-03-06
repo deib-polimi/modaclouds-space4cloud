@@ -10,7 +10,7 @@ The tool takes as input a Palladio Component Model (PCM) that describes the appl
 
 To compile sources for SPACE4CLOUD an installation of Palladio 3.5 is needed. You can obtain it [here](http://www.palladio-simulator.com/tools/download/).
 
-SPACE4CLOUD uses version 4.5.7.2 of LQNS solver that can be obtained [here](http://www.sce.carleton.ca/rads/lqns/lqn-documentation/) and version 0.5e of LINE that can be obtained [here](). 
+SPACE4CLOUD uses version 4.5.7.2 of LQNS solver that can be obtained [here](http://www.sce.carleton.ca/rads/lqns/lqn-documentation/) and version 0.5e of LINE that can be obtained [here](http://code.google.com/p/line/). 
 
 To interact with these solvers Palladio needs to be patched. To do so checkout the project called de.uka.ipd.sdq.pcmsolver under Core/trunk from [palladio official repository](https://svnserver.informatik.kit.edu/i43/svn/code/Palladio/Core/trunk/Solver/de.uka.ipd.sdq.pcmsolver/), credentials to access the repository can be found [here](https://sdqweb.ipd.kit.edu/wiki/Palladio_Component_Model).
 Then apply the patch de.uka.ipd.sdq.pcmsolver.patch that can be found under Palladio\patch. 
