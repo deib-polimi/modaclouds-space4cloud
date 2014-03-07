@@ -18,18 +18,18 @@
  */
 package it.polimi.modaclouds.space4cloud.iterfaces;
 
-import it.polimi.modaclouds.cloudmetamodel.cloud.Backend;
-import it.polimi.modaclouds.cloudmetamodel.cloud.BlobStorage;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudPlatform;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudResource;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudStorage;
-import it.polimi.modaclouds.cloudmetamodel.cloud.Compute;
-import it.polimi.modaclouds.cloudmetamodel.cloud.Database;
-import it.polimi.modaclouds.cloudmetamodel.cloud.FilesystemStorage;
-import it.polimi.modaclouds.cloudmetamodel.cloud.Frontend;
-import it.polimi.modaclouds.cloudmetamodel.cloud.IaaS_Service;
-import it.polimi.modaclouds.cloudmetamodel.cloud.Middleware;
-import it.polimi.modaclouds.cloudmetamodel.cloud.PaaS_Service;
+import it.polimi.modaclouds.resourcemodel.cloud.Backend;
+import it.polimi.modaclouds.resourcemodel.cloud.BlobStorage;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudStorage;
+import it.polimi.modaclouds.resourcemodel.cloud.Compute;
+import it.polimi.modaclouds.resourcemodel.cloud.Database;
+import it.polimi.modaclouds.resourcemodel.cloud.FilesystemStorage;
+import it.polimi.modaclouds.resourcemodel.cloud.Frontend;
+import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
+import it.polimi.modaclouds.resourcemodel.cloud.Middleware;
+import it.polimi.modaclouds.resourcemodel.cloud.PaaS_Service;
 
 import java.util.HashMap;
 import java.util.List;

@@ -17,7 +17,6 @@
 	<classpathentry kind="lib" path="xalan.jar"/>
 	<classpathentry kind="lib" path="xerces.jar"/>
 	<classpathentry kind="lib" path="xml-apis.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/it.polimi.modaclouds.cloudmetamodel"/>
 	<classpathentry exported="true" kind="lib" path="matlabcontrol-4.1.0.jar"/>
 	<classpathentry kind="lib" path="jna.jar"/>
 	<classpathentry kind="lib" path="miglayout15-swing.jar" sourcepath="miglayout-src.zip"/>

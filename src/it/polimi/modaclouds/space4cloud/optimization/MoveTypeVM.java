@@ -18,7 +18,7 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudResource;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;

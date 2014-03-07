@@ -18,10 +18,10 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.cloudmetamodel.cloud.Cost;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CostProfile;
-import it.polimi.modaclouds.cloudmetamodel.cloud.V_Storage;
-import it.polimi.modaclouds.cloudmetamodel.cloud.VirtualHWResource;
+import it.polimi.modaclouds.resourcemodel.cloud.Cost;
+import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
+import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
+import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
@@ -51,7 +51,7 @@ public class CostEvaluator {
 			CloudService service = t.getCloudService();			
 			if(service instanceof IaaS){
 				IaaS iaasResource = (IaaS) service;
-				it.polimi.modaclouds.cloudmetamodel.cloud.CloudResource cloudResource = dataHandler.getCloudResource(iaasResource.getProvider(), iaasResource.getServiceName(), iaasResource.getResourceName());
+				it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler.getCloudResource(iaasResource.getProvider(), iaasResource.getServiceName(), iaasResource.getResourceName());
 				List<Cost> lc = cloudResource.getHasCost();
 				List<Cost> onDemandLc = new ArrayList<Cost>();
 				

@@ -18,16 +18,16 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudElement;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudPlatform;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudResource;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudStorage;
-import it.polimi.modaclouds.cloudmetamodel.cloud.Cost;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CostProfile;
-import it.polimi.modaclouds.cloudmetamodel.cloud.Database;
-import it.polimi.modaclouds.cloudmetamodel.cloud.V_Storage;
-import it.polimi.modaclouds.cloudmetamodel.cloud.VirtualHWResource;
-import it.polimi.modaclouds.cloudmetamodel.cloud.VirtualHWResourceType;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudStorage;
+import it.polimi.modaclouds.resourcemodel.cloud.Cost;
+import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
+import it.polimi.modaclouds.resourcemodel.cloud.Database;
+import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
+import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
+import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
 
 import java.util.List;
 

@@ -220,7 +220,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		else{
 			confHandler.removeOldLQNFiles();
 			SimpleEvaluator evaluator = new SimpleEvaluator();			
-			evaluator.loadSolution(extensionFile);
+			//evaluator.loadSolution(extensionFile);
 			evaluator.eval();
 			evaluator.parseResults();
 			assesmentWindow = new AssesmentWindow();

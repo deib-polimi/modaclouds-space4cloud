@@ -18,8 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudFactory;
-import it.polimi.modaclouds.cloudmetamodel.cloud.impl.CloudPackageImpl;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
+import it.polimi.modaclouds.resourcemodel.cloud.impl.CloudPackageImpl;
 
 import java.util.Collections;
 import java.util.Map;

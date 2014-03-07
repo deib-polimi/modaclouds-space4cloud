@@ -18,11 +18,11 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudPlatform;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudResource;
-import it.polimi.modaclouds.cloudmetamodel.cloud.V_CPU;
-import it.polimi.modaclouds.cloudmetamodel.cloud.V_Storage;
-import it.polimi.modaclouds.cloudmetamodel.cloud.VirtualHWResource;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
+import it.polimi.modaclouds.resourcemodel.cloud.V_CPU;
+import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
+import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.space4cloud.types.ProcessingResourceT;
 import it.polimi.modaclouds.space4cloud.types.SchedulingT;
 import it.polimi.modaclouds.space4cloud.types.palladio.ProcessingResource;

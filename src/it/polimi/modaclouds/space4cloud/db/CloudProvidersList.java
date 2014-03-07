@@ -18,8 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudFactory;
-import it.polimi.modaclouds.cloudmetamodel.cloud.CloudProvider;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
 import it.polimi.modaclouds.space4cloud.utils.EMF;
 
 import java.sql.Connection;
