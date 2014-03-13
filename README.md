@@ -12,10 +12,10 @@ To compile sources for SPACE4CLOUD an installation of Palladio 3.5 is needed. Yo
 
 SPACE4CLOUD uses version 4.5.7.2 of LQNS solver that can be obtained [here](http://www.sce.carleton.ca/rads/lqns/lqn-documentation/) and version 0.5e of LINE that can be obtained [here](http://code.google.com/p/line/). 
 
-To interact with these solvers Palladio needs to be patched. To do so checkout the project called de.uka.ipd.sdq.pcmsolver under Core/trunk from [palladio official repository](https://svnserver.informatik.kit.edu/i43/svn/code/Palladio/Core/trunk/Solver/de.uka.ipd.sdq.pcmsolver/), credentials to access the repository can be found [here](https://sdqweb.ipd.kit.edu/wiki/Palladio_Component_Model).
+To interact with these solvers Palladio needs to be patched. To do so checkout the project called de.uka.ipd.sdq.pcmsolver under Core/trun k from [palladio official repository](https://svnserver.informatik.kit.edu/i43/svn/code/Palladio/Core/trunk/Solver/de.uka.ipd.sdq.pcmsolver/), credentials to access the repository can be found [here](https://sdqweb.ipd.kit.edu/wiki/Palladio_Component_Model).
 Then apply the patch de.uka.ipd.sdq.pcmsolver.patch that can be found under Palladio\patch. 
 
-The interaction with the resource model DB is performed by a connector whose code is hosted in the [modaclouds-space4cloud-mysqldriver](https://github.com/deib-polimi/modaclouds-space4cloud-mysqldriver) repository and needs the resource model meta model hosted in the [modaclouds-space4cloud-metamodel](https://github.com/deib-polimi/modaclouds-space4cloud-metamodel) repository. 
+The interaction with the resource model DB is performed by [MySQL Connector/J]{http://dev.mysql.com/downloads/connector/j/} and needs the resource model meta model hosted in the [modaclouds-resourcemodel](https://github.com/deib-polimi/modaclouds-resourcemodel) repository. 
 
 To run the code make a new Eclipse Application run configuration as shown [here](http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.pde.doc.user%2Fguide%2Ftools%2Flaunchers%2Feclipse_application_launcher.htm) and specify the following VM arguments:
 ```java
