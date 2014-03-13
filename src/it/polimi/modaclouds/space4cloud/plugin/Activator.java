@@ -16,7 +16,7 @@
 /*
  * 
  */
-package it.polimi.modaclouds.space4cloud; //questa parte descrive l'appartenza della classe
+package it.polimi.modaclouds.space4cloud.plugin; //questa parte descrive l'appartenza della classe
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;

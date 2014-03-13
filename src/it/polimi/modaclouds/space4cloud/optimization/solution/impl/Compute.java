@@ -25,6 +25,11 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
  */
 public class Compute extends IaaS {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4304176863215083824L;
+
 	/** The Constant StandardSpeed. */
 	public static final double StandardSpeed = 1000;
 

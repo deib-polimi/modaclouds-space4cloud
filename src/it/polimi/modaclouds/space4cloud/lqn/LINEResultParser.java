@@ -15,8 +15,12 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.lqn;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -37,32 +41,44 @@ import LqnCore.ActivityDefType;
 import LqnCore.OutputResultType;
 import LqnCore.TaskType;
 
-public class LINEResultParser implements LqnResultParser {
+public class LINEResultParser implements LqnResultParser, Serializable {
 
-	String  filePath;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1456536857995387200L;
+	private transient Path  filePath;
+	private String filePathSerialization;
 	private DocumentBuilderFactory dbFactory;
 	private DocumentBuilder dBuilder;
-	private Document resultDOM;	
-	private File resultFile;
+	private transient Document resultDOM;	
+
 
 
 	private HashMap<String, Double> utilizations = new HashMap<>();
 	private HashMap<String, Double> responseTimes = new HashMap<>();
 
+	//since Path s not serializable we put it into a string 
+	private void writeObject(ObjectOutputStream out) throws IOException
+	{
+		filePathSerialization = filePath.toString();
+		out.defaultWriteObject(); 
+	}
+	//reconstruct the Path from the string
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException, SAXException
+	{		
+		in.defaultReadObject();
+		filePath = Paths.get(filePathSerialization);
+		initDom();
+	}
 
-	public LINEResultParser(String filePath) {
-
+	private void initDom(){
+		dbFactory = DocumentBuilderFactory.newInstance();
 		try {
-
-			this.filePath=filePath;
-			resultFile = new File(filePath);
-			dbFactory = DocumentBuilderFactory.newInstance();
 			dBuilder = dbFactory.newDocumentBuilder();
-			resultDOM = dBuilder.parse(resultFile);
+			resultDOM = dBuilder.parse(filePath.toFile());
 			resultDOM.getDocumentElement().normalize();
-		}
-
-		catch (ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SAXException e) {
@@ -72,7 +88,16 @@ public class LINEResultParser implements LqnResultParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
+	}
+
+
+	public LINEResultParser(Path path) {
+
+
+		this.filePath=path; 
+		initDom();
+
 		//parse the document
 		parse();
 	}

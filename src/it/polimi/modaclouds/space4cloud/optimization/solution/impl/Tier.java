@@ -19,6 +19,7 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,13 +27,18 @@ import java.util.Map;
 
 
 
-public class Tier implements Cloneable, IResponseTimeConstrainable{
+public class Tier implements Cloneable, IResponseTimeConstrainable, Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2057134756249273580L;
 
 	/** The cloud resource. */
 	private CloudService cloudService;	
 
 	/** The list of components deployed on the cloud resource. */
-	private ArrayList<Component> components= new ArrayList<>();
+	private ArrayList<Component> components= new ArrayList<Component>();
 
 	/** The id cloud resource. */
 	private String idCloudResource;

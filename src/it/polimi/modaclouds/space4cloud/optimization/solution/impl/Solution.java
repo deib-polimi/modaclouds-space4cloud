@@ -23,11 +23,11 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,16 +44,20 @@ import org.w3c.dom.Element;
 /**
  * The Class Solution.
  */
-public class Solution implements Cloneable  {
+public class Solution implements Cloneable, Serializable {
 
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6116921591578286173L;
 
 	/** The hour application. */
-	ArrayList<Instance> hourApplication = new ArrayList<>();
+	ArrayList<Instance> hourApplication = new ArrayList<Instance>();
 
 	/**
 	 * if the solution has been evaluated or not.
 	 */
-	@XmlAttribute
 	private boolean evaluated = false;
 
 	/** if the solution is feasible or not. */
@@ -74,7 +78,7 @@ public class Solution implements Cloneable  {
 	 * Instantiates a new solution.
 	 */
 	public Solution() {
-		this.hourApplication = new ArrayList<>();
+		this.hourApplication = new ArrayList<Instance>();
 
 	}
 
@@ -410,13 +414,13 @@ public class Solution implements Cloneable  {
 			/*TODO: here we have to consider as better the solution with the minimum number of violated constraints or something like this, we 
 			 * could also consider the constraints according to their importance*/
 
-			ArrayList<Constraint> notVerifiedbyThis = new ArrayList<>();
+			ArrayList<Constraint> notVerifiedbyThis = new ArrayList<Constraint>();
 			for(Map<Constraint, Double> m:evaluation)
 				for(Constraint c:m.keySet())
 					if(m.get(c) >0)
 						notVerifiedbyThis.add(c);
 
-			ArrayList<Constraint> notVerifiedbySol = new ArrayList<>();
+			ArrayList<Constraint> notVerifiedbySol = new ArrayList<Constraint>();
 			for(Map<Constraint, Double> m:sol.getEvaluation())
 				for(Constraint c:m.keySet())
 					if(m.get(c) >0)

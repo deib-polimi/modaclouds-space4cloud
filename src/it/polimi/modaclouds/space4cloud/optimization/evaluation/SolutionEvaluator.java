@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
@@ -65,7 +66,7 @@ public class SolutionEvaluator implements Runnable {
 		this.solver = solver;
 		this.instance = instance;
 		this.lqnHandler = instance.getLqnHandler();
-		filePath = lqnHandler.getLqnFile().getAbsolutePath();
+		filePath = lqnHandler.getLqnFilePath().toAbsolutePath().toString();
 		this.solution = sol;		
 	}
 
@@ -128,11 +129,11 @@ public class SolutionEvaluator implements Runnable {
 	public void parseResults(){		
 		if(solver.equals(MessageStrings.LQNS_SOLVER)){
 			resultfilePath = filePath.substring(0,filePath.lastIndexOf('.'))+".lqxo";
-			resultParser = new LQNSResultParser(resultfilePath);
+			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
 		}
 		else{
 			resultfilePath = filePath.substring(0,filePath.lastIndexOf('.'))+"_res.xml";
-			resultParser = new LINEResultParser(resultfilePath);
+			resultParser = new LINEResultParser(Paths.get(resultfilePath));
 		}
 
 		instance.updateResults(resultParser);

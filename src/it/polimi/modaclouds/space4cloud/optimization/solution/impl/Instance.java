@@ -20,6 +20,7 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.utils.ReflectionUtility;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,8 +32,13 @@ import java.util.TreeMap;
  * @author Michele Ciavotta
  *
  */
-public class Instance implements Cloneable {
+public class Instance implements Cloneable , Serializable{
 
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8622188724510939131L;
 
 	/** The lqn document in DOM format associated to a certain hour of our solution. 
 	 * there must be a 1 to 1 relation between the lqn document and the tiers*/
@@ -54,7 +60,7 @@ public class Instance implements Cloneable {
 	
 	private int workload;
 
-	private ArrayList<Tier> tiers = new ArrayList<>();
+	private ArrayList<Tier> tiers = new ArrayList<Tier>();
 	
 	private String region;
 	
@@ -293,7 +299,7 @@ public class Instance implements Cloneable {
 	}
 
 	public String showStatus(String prefix) {
-		String result = prefix+"lqnFile: "+lqnHandler.getLqnFile().getPath();
+		String result = prefix+"lqnFile: "+lqnHandler.getLqnFilePath();
 		result += "\tEvaluated: "+evaluated;
 		result += "\tFeasible: "+feasible;
 		for(Tier t:tiersByResourceName.values()){

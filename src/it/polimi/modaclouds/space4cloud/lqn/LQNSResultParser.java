@@ -15,8 +15,12 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.lqn;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -37,32 +41,42 @@ import LqnCore.ActivityDefType;
 import LqnCore.OutputResultType;
 import LqnCore.TaskType;
 
-public class LQNSResultParser implements LqnResultParser {
+public class LQNSResultParser implements LqnResultParser, Serializable {
 
-	String  filePath;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1523765717223255130L;
+	private transient Path filePath;
+	private String filePathSerialization;
 	private DocumentBuilderFactory dbFactory;
 	private DocumentBuilder dBuilder;
-	private Document resultDOM;	
-	private File resultFile;
-
-
+	private transient Document resultDOM;	
 	private HashMap<String, Double> utilizations = new HashMap<>();
 	private HashMap<String, Double> responseTimes = new HashMap<>();
 
+	//since Path s not serializable we put it into a string 
+	private void writeObject(ObjectOutputStream out) throws IOException
+	{
+		filePathSerialization = filePath.toString();
+		out.defaultWriteObject(); 
+	}
+	//reconstruct the Path from the string
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException, SAXException
+	{		
+		in.defaultReadObject();
+		filePath = Paths.get(filePathSerialization);	
+		initDom();
+	}
 
-	public LQNSResultParser(String filePath) {
 
+	private void initDom(){
+		dbFactory = DocumentBuilderFactory.newInstance();
 		try {
-
-			this.filePath=filePath;
-			resultFile = new File(filePath);
-			dbFactory = DocumentBuilderFactory.newInstance();
 			dBuilder = dbFactory.newDocumentBuilder();
-			resultDOM = dBuilder.parse(resultFile);
+			resultDOM = dBuilder.parse(filePath.toFile());
 			resultDOM.getDocumentElement().normalize();
-		}
-
-		catch (ParserConfigurationException e) {
+		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SAXException e) {
@@ -72,6 +86,14 @@ public class LQNSResultParser implements LqnResultParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+	}
+
+	public LQNSResultParser(Path path) {
+
+		this.filePath=path;
+		initDom();
+
 		parse();
 	}
 
@@ -87,7 +109,7 @@ public class LQNSResultParser implements LqnResultParser {
 			if(!processor.getAttribute("multiplicity").isEmpty())
 				cores = Integer.parseInt(processor.getAttribute("multiplicity"));
 
-		
+
 			//there should be exactly one
 			Element resultProcessor = (Element)processors.item(i).getFirstChild().getNextSibling();
 			double utilization = Double.parseDouble(resultProcessor.getAttribute("utilization"))/cores;
@@ -109,7 +131,6 @@ public class LQNSResultParser implements LqnResultParser {
 
 		//TODO: parse other stuff
 		dbFactory=null;
-		resultFile = null;
 		dBuilder = null;
 		resultDOM = null;
 
@@ -177,11 +198,11 @@ public class LQNSResultParser implements LqnResultParser {
 		// TODO Auto-generated method stub
 		return responseTimes;
 	}
-	
+
 	@Override
 	protected void finalize() throws Throwable {
-		if(resultFile.exists())
-			resultFile.delete();
+		if(filePath.toFile().exists())
+			filePath.toFile().delete();
 		super.finalize();
 	}
 

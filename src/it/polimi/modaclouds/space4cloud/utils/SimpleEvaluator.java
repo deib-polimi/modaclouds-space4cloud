@@ -283,9 +283,9 @@ public class SimpleEvaluator {
 
 				System.out.println("Parsing hour: "+hour+" file: "+resultFiles[0].getAbsolutePath());
 				if(c.SOLVER.equals(MessageStrings.LQNS_SOLVER))
-					parser = new LQNSResultParser(resultFiles[0].getAbsolutePath());			
+					parser = new LQNSResultParser(resultFiles[0].toPath());			
 				else
-					parser = new LINEResultParser(resultFiles[0].getAbsolutePath());		
+					parser = new LINEResultParser(resultFiles[0].toPath());		
 				utilizations.put(hour,parser.getUtilizations());				
 				responseTimes.put(hour,parser.getResponseTimes());
 			}	

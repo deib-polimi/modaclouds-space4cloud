@@ -25,6 +25,11 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 public class NOSQL extends Database {
 
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1597143518905843001L;
+
 	/* (non-Javadoc)
 	 * @see it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService#clone()
 	 */

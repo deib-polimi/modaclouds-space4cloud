@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: it.polimi.franceschelli.space4cloud; singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: it.polimi.modaclouds.space4cloud.Activator
+Bundle-Activator: it.polimi.modaclouds.space4cloud.plugin.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.debug.core;bundle-version="3.6.1",
@@ -50,7 +50,7 @@ Bundle-ClassPath: .,
  commons-io-2.4.jar,
  mysql-connector-java-5.0.8-bin.jar
 Export-Package: icons,
- it.polimi.modaclouds.space4cloud,
+ it.polimi.modaclouds.space4cloud.plugin,
  it.polimi.modaclouds.space4cloud.db,
  it.polimi.modaclouds.space4cloud.gui,
  it.polimi.modaclouds.space4cloud.handlers,

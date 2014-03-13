@@ -17,6 +17,11 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 public class BlobStorage extends Storage {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7729657910542016581L;
+
 	public BlobStorage(String name, String id, String provider,
 			String serviceType, String serviceName, String resourceName,
 			int size) {

@@ -19,6 +19,7 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +28,13 @@ import java.util.Map;
  * @author MODAClouds
  * The class that defines a Component
  */
-public class Component implements Cloneable, IResponseTimeConstrainable{
+public class Component implements Cloneable, IResponseTimeConstrainable, Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3466902523628946119L;
 	private String id;
-	private ArrayList<Functionality> functionalities = new ArrayList<>();
+	private ArrayList<Functionality> functionalities = new ArrayList<Functionality>();
 	private Tier container;
 
 	public Component(String id) {

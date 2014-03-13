@@ -18,6 +18,10 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 public class Storage extends IaaS {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6172296990102061040L;
 	private int size;
 	
 	

@@ -18,17 +18,22 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class Functionality implements Cloneable, IResponseTimeConstrainable {
+public class Functionality implements Cloneable, IResponseTimeConstrainable, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5621349760322110134L;
 	private String name;
 	private String id;
 	private String entryLevelCallID=null;
 	private double responseTime;
 	private Component container;
-	private HashMap<String,Functionality> externalCalls = new HashMap<>();
+	private HashMap<String,Functionality> externalCalls = new HashMap<String,Functionality>();
 
 	private void setExternalCalls(HashMap<String, Functionality> externalCalls) {
 		this.externalCalls = externalCalls;

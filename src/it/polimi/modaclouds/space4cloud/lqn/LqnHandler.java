@@ -20,8 +20,10 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,8 +38,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -50,10 +50,29 @@ import org.xml.sax.SAXException;
  * in order to make transparent the searching and replacing processes
  */
 
-public class LqnHandler implements Cloneable{
+public class LqnHandler implements Cloneable, Serializable{
 
-	private Document lqnDOM=null;	
-	private File lqnFile=null;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3298316101458681404L;
+	private transient Document lqnDOM=null;	
+	private transient Path lqnFilePath=null;
+	private String lqnFilePathSerialization;
+
+	//since Path s not serializable we put it into a string 
+	private void writeObject(ObjectOutputStream out) throws IOException
+	{
+		lqnFilePathSerialization = lqnFilePath.toString();
+		out.defaultWriteObject(); 
+	}
+	//reconstruct the Path from the string
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+	{		
+		in.defaultReadObject();
+		lqnFilePath = Paths.get(lqnFilePathSerialization);		
+		initDom();
+	}
 
 
 	/**
@@ -72,29 +91,15 @@ public class LqnHandler implements Cloneable{
 	 * @param lqnFile the lqn file
 	 */
 	public LqnHandler(File lqnFile) {
-		initLQN(lqnFile);
+		initLQN(lqnFile.toPath());
 	}
 	public LqnHandler(Path lqnFilePath) {
-		try {
 
-			lqnFile = lqnFilePath.toFile();
+		this.lqnFilePath = lqnFilePath;
 
 
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			lqnDOM = dBuilder.parse(lqnFile);
-			lqnDOM.getDocumentElement().normalize();
+		initDom();
 
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	private void changeElementbyName(String elementType, String name,  String elementAttribute, double multiplicity){
@@ -122,7 +127,7 @@ public class LqnHandler implements Cloneable{
 		try {
 			lqnH = (LqnHandler) super.clone();
 			lqnH.setLqnDOM(null);
-			lqnH.setLqnFile(lqnClone);			
+			lqnH.setLqnFilePath(lqnClone.toPath());			
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -140,9 +145,8 @@ public class LqnHandler implements Cloneable{
 	 * 
 	 */
 	private File cloneLqnFile() {
-		Path pathFrom =lqnFile.toPath();
-		String from = pathFrom.toString();
-		String fromName = lqnFile.getName();
+		String from = lqnFilePath.toString();
+		String fromName = lqnFilePath.getFileName().toString();
 		String toName = UUID.randomUUID().toString()+".xml";
 		String to = from.replace(fromName, toName);
 		Path pathTo = null;
@@ -151,7 +155,7 @@ public class LqnHandler implements Cloneable{
 			pathTo = Files.createFile(Paths.get(to));
 
 			// copy the content
-			Files.copy(pathFrom, pathTo, 
+			Files.copy(lqnFilePath, pathTo, 
 					REPLACE_EXISTING);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -162,8 +166,8 @@ public class LqnHandler implements Cloneable{
 
 	@Override
 	protected void finalize() throws Throwable {
-		if(lqnFile.exists())
-			lqnFile.delete();
+		if(lqnFilePath.toFile().exists())
+			lqnFilePath.toFile().delete();
 		super.finalize();
 	}
 
@@ -176,8 +180,8 @@ public class LqnHandler implements Cloneable{
 	//		return lqnDOM;
 	//	}
 	//	
-	public File getLqnFile() {
-		return lqnFile;
+	public Path getLqnFilePath() {
+		return lqnFilePath;
 	}
 
 	private void initDom(){
@@ -185,7 +189,7 @@ public class LqnHandler implements Cloneable{
 
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			lqnDOM = dBuilder.parse(lqnFile);
+			lqnDOM = dBuilder.parse(lqnFilePath.toFile());
 			lqnDOM.getDocumentElement().normalize();
 
 		} catch (IOException | SAXException | ParserConfigurationException e) {
@@ -194,8 +198,8 @@ public class LqnHandler implements Cloneable{
 		}
 	}
 
-	private void initLQN(File lqnFile){
-		this.lqnFile = lqnFile;
+	private void initLQN(Path lqnFilePath){
+		this.lqnFilePath = lqnFilePath;
 	}
 
 	public void saveToFile(){
@@ -206,7 +210,7 @@ public class LqnHandler implements Cloneable{
 			Transformer transformer;
 			transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(lqnDOM);
-			StreamResult result = new StreamResult(lqnFile);
+			StreamResult result = new StreamResult(lqnFilePath.toFile());
 			transformer.transform(source, result);
 		} catch (TransformerException e) {
 			// TODO Auto-generated catch block
@@ -221,8 +225,8 @@ public class LqnHandler implements Cloneable{
 		this.lqnDOM = lqnDOM;
 	}
 
-	private void setLqnFile(File lqnFile) {
-		this.lqnFile = lqnFile;
+	private void setLqnFilePath(Path lqnFilePath) {
+		this.lqnFilePath = lqnFilePath;
 	}
 
 	public void setPopulation(int pop){

@@ -200,6 +200,10 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			//load the initial solution from the PCM specified in the configuration and the extension
 			System.out.println("Parsing The Solution");
 			engine.loadInitialSolution(extensionFile);
+			
+			engine.SerializeInitialSolution(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,"Solution.ser").toFile());
+			
+			engine.loadInitialSolutionObject(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,"Solution.ser").toFile());
 
 			//create the progress window
 			progressWindow = new OptimizationProgressWindow();

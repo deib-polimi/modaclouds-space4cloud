@@ -41,10 +41,14 @@ import it.polimi.modaclouds.space4clouds.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4clouds.chart.SeriesHandle;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -165,7 +169,7 @@ public class OptEngine extends SwingWorker<Void, Void>{
 		this.evalProxy.setMachineLog(logVm);
 		this.evalProxy.setConstraintLog(logConstraints);
 		this.evalProxy.setTimer(timer);
-		
+
 
 	}
 
@@ -624,132 +628,132 @@ public class OptEngine extends SwingWorker<Void, Void>{
 			application.getLqnHandler().saveToFile();
 			application.setWorkload(parser.getPopulations()[i]);
 
-			
+
 			// create a tier for each resource container
 			EList<ResourceContainer> resourceContainers = pcm
 					.getResourceEnvironment()
 					.getResourceContainer_ResourceEnvironment();
 
-					// STEP 1: load the resource environment
-					for (ResourceContainer c : resourceContainers) {
-			
-						CloudService service = null;
-						// switch over the type of cloud service
-						String cloudProvider = parser.getProviders().get(c.getId()); // provider
-						// associated
-						// to
-						// the
-						// resource
-						String serviceType = parser.getServiceType().get(c.getId()); // Service
-						String resourceSize = parser.getInstanceSize().get(c.getId());
-						String serviceName = parser.getServiceName().get(c.getId());				
-						int replicas = parser.getInstanceReplicas().get(c.getId())[i];
-			
-						//if the resource size has not been decided pick one
-						if(resourceSize==null)
-							resourceSize = dataHandler.getCloudResourceSizes(cloudProvider, serviceName).iterator().next();
-			
-						double speed = dataHandler.getProcessingRate(cloudProvider,
-								serviceName, resourceSize);
-			
-						int ram = dataHandler.getAmountMemory(cloudProvider,
-								serviceName, resourceSize);
-			
-						int numberOfCores = dataHandler.getNumberOfReplicas(
-								cloudProvider, serviceName, resourceSize);
-			
-						/*
-						 * each tier has a certain kind of cloud resource and a number
-						 * of replicas of that resource
-						 */
-						Tier t = new Tier();
-			
-						/* creation of a Compute type resource */
-						service = new Compute(c.getEntityName() + "_CPU_Processor",
-								c.getId(), cloudProvider, serviceType, serviceName,
-								resourceSize, replicas, numberOfCores, speed, ram);				
-			
-						t.setService(service);
-			
-						application.addTier(t);
-			
-					}
-			
-					// STEP 2: parse the usage model to get the reference between calls
-					// and seffs in components
-					HashMap<String, String> systemCalls2Signatures = new HashMap<>();
-					ScenarioBehaviour scenarioBehaviour = pcm.getUsageModel()
-							.getUsageScenario_UsageModel().get(0)
-							.getScenarioBehaviour_UsageScenario();
-					findSeffsInScenarioBehavior(scenarioBehaviour,
-							systemCalls2Signatures);
-			
-					// STEP 3: load components from the allocation
-					EList<AllocationContext> allocations = pcm.getAllocation()
-							.getAllocationContexts_Allocation();
-					HashMap<String, Functionality> functionalities = new HashMap<>();
-					for (AllocationContext context : allocations) {
-						String containerId = context
-								.getResourceContainer_AllocationContext().getId();
-						RepositoryComponent repositoryComp = context
-								.getAssemblyContext_AllocationContext()
-								.getEncapsulatedComponent__AssemblyContext();
-			
-						// create the component
-						Component comp = new Component(repositoryComp.getId());
-			
-						// add the functionalities (from SEFFs)
-						EList<ServiceEffectSpecification> seffs = ((BasicComponent) repositoryComp)
-								.getServiceEffectSpecifications__BasicComponent();
-						for (ServiceEffectSpecification s : seffs) {
-							String signatureID = s.getDescribedService__SEFF().getId();
-							Functionality function = new Functionality(s.getDescribedService__SEFF().getEntityName(),((ResourceDemandingSEFF) s).getId(),systemCalls2Signatures.get(signatureID));
-							EList<AbstractAction> actions = ((ResourceDemandingSEFF) s).getSteps_Behaviour();
-							for (AbstractAction a : actions) {
-								if (a instanceof ExternalCallAction) {
-									// add the id of the called functionality to the
-									// list of external calls
-									OperationSignature sig = ((ExternalCallAction) a).getCalledService_ExternalService();
-									function.addExternalCall(sig.getInterface__OperationSignature().getEntityName()
-											+ "_" + sig.getEntityName(), null);
-								}
-							}
-							functionalities.put(((Entity) s.getDescribedService__SEFF()
-									.eContainer()).getEntityName()
-									+ "_"
-									+ s.getDescribedService__SEFF().getEntityName(),
-									function);
-							comp.addFunctionality(function);
-						}
-					
-						// add the component to the cloud resource
-						for (Tier t : application.getTiersByResourceName().values()) {
-							if (t.getCloudService().getId().equals(containerId))
-								t.addComponent(comp);
-						}
-					}
-			
-					//concurrent modification, use a temporary list
-					// link the functionalities toghether using their ids
-			
-					for (Functionality f : functionalities.values()){
-						HashMap<String,Functionality> tempCalls = new HashMap<>();			
-						//fill the temporary hashmap
-						for (String s : f.getExternalCalls().keySet()) 
-							tempCalls.put(functionalities.get(s).getId(), functionalities.get(s));
-						//clear the ids in the hashmap of the functionality
-						f.getExternalCalls().clear();
-			
-						//add the mappings of the temporary hashmap
-						f.getExternalCalls().putAll(tempCalls);
-					}
-			
-					// initialize the constrinable hashmap
-					application.initConstrainableResources();
+			// STEP 1: load the resource environment
+			for (ResourceContainer c : resourceContainers) {
 
-					//use the initial evaluation to initialize parser and structures
-					evalProxy.evaluateInstance(application,c.SOLVER);
-					// initialSolution.showStatus();
+				CloudService service = null;
+				// switch over the type of cloud service
+				String cloudProvider = parser.getProviders().get(c.getId()); // provider
+				// associated
+				// to
+				// the
+				// resource
+				String serviceType = parser.getServiceType().get(c.getId()); // Service
+				String resourceSize = parser.getInstanceSize().get(c.getId());
+				String serviceName = parser.getServiceName().get(c.getId());				
+				int replicas = parser.getInstanceReplicas().get(c.getId())[i];
+
+				//if the resource size has not been decided pick one
+				if(resourceSize==null)
+					resourceSize = dataHandler.getCloudResourceSizes(cloudProvider, serviceName).iterator().next();
+
+				double speed = dataHandler.getProcessingRate(cloudProvider,
+						serviceName, resourceSize);
+
+				int ram = dataHandler.getAmountMemory(cloudProvider,
+						serviceName, resourceSize);
+
+				int numberOfCores = dataHandler.getNumberOfReplicas(
+						cloudProvider, serviceName, resourceSize);
+
+				/*
+				 * each tier has a certain kind of cloud resource and a number
+				 * of replicas of that resource
+				 */
+				Tier t = new Tier();
+
+				/* creation of a Compute type resource */
+				service = new Compute(c.getEntityName() + "_CPU_Processor",
+						c.getId(), cloudProvider, serviceType, serviceName,
+						resourceSize, replicas, numberOfCores, speed, ram);				
+
+				t.setService(service);
+
+				application.addTier(t);
+
+			}
+
+			// STEP 2: parse the usage model to get the reference between calls
+			// and seffs in components
+			HashMap<String, String> systemCalls2Signatures = new HashMap<>();
+			ScenarioBehaviour scenarioBehaviour = pcm.getUsageModel()
+					.getUsageScenario_UsageModel().get(0)
+					.getScenarioBehaviour_UsageScenario();
+			findSeffsInScenarioBehavior(scenarioBehaviour,
+					systemCalls2Signatures);
+
+			// STEP 3: load components from the allocation
+			EList<AllocationContext> allocations = pcm.getAllocation()
+					.getAllocationContexts_Allocation();
+			HashMap<String, Functionality> functionalities = new HashMap<>();
+			for (AllocationContext context : allocations) {
+				String containerId = context
+						.getResourceContainer_AllocationContext().getId();
+				RepositoryComponent repositoryComp = context
+						.getAssemblyContext_AllocationContext()
+						.getEncapsulatedComponent__AssemblyContext();
+
+				// create the component
+				Component comp = new Component(repositoryComp.getId());
+
+				// add the functionalities (from SEFFs)
+				EList<ServiceEffectSpecification> seffs = ((BasicComponent) repositoryComp)
+						.getServiceEffectSpecifications__BasicComponent();
+				for (ServiceEffectSpecification s : seffs) {
+					String signatureID = s.getDescribedService__SEFF().getId();
+					Functionality function = new Functionality(s.getDescribedService__SEFF().getEntityName(),((ResourceDemandingSEFF) s).getId(),systemCalls2Signatures.get(signatureID));
+					EList<AbstractAction> actions = ((ResourceDemandingSEFF) s).getSteps_Behaviour();
+					for (AbstractAction a : actions) {
+						if (a instanceof ExternalCallAction) {
+							// add the id of the called functionality to the
+							// list of external calls
+							OperationSignature sig = ((ExternalCallAction) a).getCalledService_ExternalService();
+							function.addExternalCall(sig.getInterface__OperationSignature().getEntityName()
+									+ "_" + sig.getEntityName(), null);
+						}
+					}
+					functionalities.put(((Entity) s.getDescribedService__SEFF()
+							.eContainer()).getEntityName()
+							+ "_"
+							+ s.getDescribedService__SEFF().getEntityName(),
+							function);
+					comp.addFunctionality(function);
+				}
+
+				// add the component to the cloud resource
+				for (Tier t : application.getTiersByResourceName().values()) {
+					if (t.getCloudService().getId().equals(containerId))
+						t.addComponent(comp);
+				}
+			}
+
+			//concurrent modification, use a temporary list
+			// link the functionalities toghether using their ids
+
+			for (Functionality f : functionalities.values()){
+				HashMap<String,Functionality> tempCalls = new HashMap<>();			
+				//fill the temporary hashmap
+				for (String s : f.getExternalCalls().keySet()) 
+					tempCalls.put(functionalities.get(s).getId(), functionalities.get(s));
+				//clear the ids in the hashmap of the functionality
+				f.getExternalCalls().clear();
+
+				//add the mappings of the temporary hashmap
+				f.getExternalCalls().putAll(tempCalls);
+			}
+
+			// initialize the constrinable hashmap
+			application.initConstrainableResources();
+
+			//use the initial evaluation to initialize parser and structures
+			evalProxy.evaluateInstance(application,c.SOLVER);
+			// initialSolution.showStatus();
 		}
 	}
 
@@ -1000,6 +1004,39 @@ public class OptEngine extends SwingWorker<Void, Void>{
 		}
 
 	}
+
+	public void SerializeInitialSolution(File file) {
+		System.out.println("Serializing: "+initialSolution);
+		FileOutputStream fos = null;
+		ObjectOutputStream out = null;
+		try {
+			fos = new FileOutputStream(file);
+			out = new ObjectOutputStream(fos);
+			out.writeObject(initialSolution);
+			out.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		initialSolution=null;
+
+	}
+
+	public void loadInitialSolutionObject(File file) {
+		FileInputStream fis = null;
+		ObjectInputStream in = null;
+		try {
+			fis = new FileInputStream(file);
+			in = new ObjectInputStream(fis);
+			initialSolution = (Solution) in.readObject();
+			in.close();
+			fis.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		System.out.println("Deserialized: "+initialSolution);
+	}
+
 
 
 }

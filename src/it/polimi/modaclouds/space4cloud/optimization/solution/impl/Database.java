@@ -19,6 +19,11 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 public abstract class Database extends PaaS {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2762220847804198922L;
+
 	public Database(String name, String id, String provider,
 			String serviceType, String serviceName, String resourceName) {
 		super(name, id, provider, serviceType, serviceName, resourceName);

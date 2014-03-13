@@ -17,6 +17,11 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 public class FilesystemStorage extends Storage{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6676157722070163731L;
+
 	public FilesystemStorage(String name, String id, String provider,
 			String serviceType, String serviceName, String resourceName,
 			int size) {

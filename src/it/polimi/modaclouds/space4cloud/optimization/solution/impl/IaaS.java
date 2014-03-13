@@ -20,6 +20,10 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstr
 
 public abstract class IaaS extends CloudService implements IUtilizationConstrainable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 849403988955004940L;
 	/** The number of replicas of the cloud resource. */
 	int replicas; 	
 

@@ -17,12 +17,18 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 
+import java.io.Serializable;
+
 
 /**
  * @author MODAClouds
  * The abstract class CloudService define the general Cloud Resource type.
  */
-public abstract class CloudService implements Cloneable, IConstrainable {
+public abstract class CloudService implements Cloneable, IConstrainable, Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 9126279019777559621L;
 	private String id;
 	private String resourceName; /*TODO: check this out asap*/
 	private String name;//should go in tier?
