@@ -154,6 +154,7 @@ public class OptEngine extends SwingWorker<Void, Void>{
 	 *            : the constraint handler
 	 */
 	public OptEngine(ConstraintHandler handler) {
+		
 
 		initByProperties("OptEngine.properties");
 		Memory = new Cache<>(MAXMEMORYSIZE);

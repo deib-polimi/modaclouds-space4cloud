@@ -57,6 +57,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -80,13 +81,13 @@ public class ProviderDBConnector implements GenericDBConnector {
 	private List<IaaS_Service> iaasList;
 
 	/** The iaas dictionary**/
-	private HashMap<String, IaaS_Service> iaasMap;
+	private Map<String, IaaS_Service> iaasMap;
 
 	/** The paas list. */
 	private List<PaaS_Service> paasList;
 
 	/** The paas dictionary**/
-	private HashMap<String, PaaS_Service> paasMap;
+	private Map<String, PaaS_Service> paasMap;
 
 
 	/**
@@ -149,9 +150,10 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 * @see it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector#getIaaSServicesHashMap()
 	 */
 	@Override
-	public HashMap<String, IaaS_Service> getIaaSServicesHashMap(){
-		if (iaasMap != null)
+	public Map<String, IaaS_Service> getIaaSServicesHashMap(){
+		if (iaasMap != null){
 			return iaasMap;
+		}
 		try {
 			createIaasSets();
 			return iaasMap;
@@ -173,7 +175,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 						+ provider.getId() + " order by name");
 		CloudFactory cf = emf.getCloudFactory();
 		List<IaaS_Service> list = new ArrayList<IaaS_Service>();
-		HashMap<String, IaaS_Service> dict = new HashMap<>();
+		Map<String, IaaS_Service> dict = new HashMap<>();
 		IaaS_Service i;
 		while (rs.next()) {
 			i = cf.createIaaS_Service();
@@ -239,7 +241,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 * @see it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector#getPaaSServicesHashMap()
 	 */
 	@Override
-	public HashMap<String, PaaS_Service> getPaaSServicesHashMap(){
+	public Map<String, PaaS_Service> getPaaSServicesHashMap(){
 		if (paasMap != null)
 			return paasMap;
 		try {
@@ -291,10 +293,12 @@ public class ProviderDBConnector implements GenericDBConnector {
 						i = r;
 						break;
 					default:
+						rs.close();
 						throw new Exception("Undefined Database Type.");
 					}
 					break;
 				default:
+					rs.close();
 					throw new Exception("Undefined Cloud Platform Type.");
 				}
 				i.setType(CloudElementType.PLATFORM);
@@ -335,10 +339,14 @@ public class ProviderDBConnector implements GenericDBConnector {
 							cr = fs;
 							break;
 						default:
+							rs1.close();
+							rs.close();
 							throw new Exception("Undefined Cloud Storage Type.");
 						}
 						break;
 					default:
+						rs1.close();
+						rs.close();
 						throw new Exception("Undefined Cloud Resource Type.");
 					}
 					cr.setType(CloudElementType.RESOURCE);
@@ -541,6 +549,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 					v = s;
 					break;
 				default:
+					rs.close();
 					throw new Exception(
 							"Undefined Virtual Hardware Resource Type.");
 				}
@@ -592,6 +601,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 					v = s;
 					break;
 				default:
+					rs.close();
 					throw new Exception(
 							"Undefined Virtual Hardware Resource Type.");
 				}

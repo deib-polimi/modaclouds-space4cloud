@@ -33,6 +33,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.PaaS_Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -55,7 +56,7 @@ public interface GenericDBConnector {
 	 *
 	 * @return the hash map
 	 */
-	public HashMap<String, IaaS_Service> getIaaSServicesHashMap();
+	public Map<String, IaaS_Service> getIaaSServicesHashMap();
 
 	/**
 	 * Retrieves the list of Cloud Resources provided by the specified IaaS
@@ -130,7 +131,7 @@ public interface GenericDBConnector {
 	 *
 	 * @return the paas services hash map
 	 */
-	public HashMap<String, PaaS_Service> getPaaSServicesHashMap();
+	public Map<String, PaaS_Service> getPaaSServicesHashMap();
 
 	/**
 	 * Retrieves the list of Cloud Platforms provided by the specified PaaS

@@ -19,6 +19,7 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
 import java.io.File;
+import java.net.URL;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 
@@ -89,6 +90,8 @@ public class Constants {
 	public  String EXTENSION_FILE = "extension.xml";
 
 	public	String LINE_PROPERTIES_FILE = "LINE.properties";
+	
+	public static String LOG4J_PROP_FILE;
 
 	/**
 	 * Instantiates a new constants.
@@ -113,6 +116,8 @@ public class Constants {
 				+ WORKING_DIRECTORY + File.separator;
 		REL_WORKING_DIRECTORY = PROJECT_NAME + File.separator
 				+ WORKING_DIRECTORY;
+		
+		LOG4J_PROP_FILE = this.getClass().getResource("/log/log4j.properties").toString();
 		System.out.println("Project Name: " + PROJECT_NAME);
 		System.out.println("Project Path: " + PROJECT_PATH);
 		System.out.println("Working Directory: " + WORKING_DIRECTORY);
