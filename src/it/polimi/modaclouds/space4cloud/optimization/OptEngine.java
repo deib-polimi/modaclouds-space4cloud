@@ -412,7 +412,7 @@ public class OptEngine extends SwingWorker<Void, Void>{
 	 * Initialization of the OptEngine by means of a properties File
 	 * @param propertiesFileName
 	 */
-	protected void initByProperties(String propertiesFileName) throws NumberFormatException {
+	private void initByProperties(String propertiesFileName) {
 		try {
 			InputStream fileInput = this.getClass().getResourceAsStream(propertiesFileName);
 			Properties properties = new Properties();

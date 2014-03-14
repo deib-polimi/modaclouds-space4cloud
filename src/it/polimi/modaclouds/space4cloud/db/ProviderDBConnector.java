@@ -69,26 +69,26 @@ public class ProviderDBConnector implements GenericDBConnector {
 
 	/** The db connection. */
 	private final Connection dbConnection;
-	
+
 	/** The provider. */
 	private final CloudProvider provider;
-	
+
 	/** The emf. */
 	private final EMF emf;
-	
+
 	/** The iaas list. */
 	private List<IaaS_Service> iaasList;
-	
+
 	/** The iaas dictionary**/
 	private HashMap<String, IaaS_Service> iaasMap;
-	
+
 	/** The paas list. */
 	private List<PaaS_Service> paasList;
 
 	/** The paas dictionary**/
 	private HashMap<String, PaaS_Service> paasMap;
-	
-	
+
+
 	/**
 	 * Creates a new Database Connector for a Generic Cloud Provider.
 	 *
@@ -144,7 +144,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			return null;
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector#getIaaSServicesHashMap()
 	 */
@@ -159,7 +159,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 	}
 
 	/**
@@ -193,8 +193,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 	/* (non-Javadoc)
 	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getPaaSServices()
 	 */
-	
-	
+
+
 	@Override
 	public List<PaaS_Service> getPaaSServices() {
 		if (paasList != null)
@@ -234,7 +234,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 		paasMap = dict;
 		rs.close();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector#getPaaSServicesHashMap()
 	 */
@@ -322,7 +322,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 						break;
 					case CLOUDSTORAGE:
 						CloudStorageType storageType = CloudStorageType
-								.getByName(rs1.getString(6));
+						.getByName(rs1.getString(6));
 						switch (storageType) {
 						case BLOBSTORAGE:
 							BlobStorage bs = cf.createBlobStorage();
@@ -358,7 +358,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 				rs1.close();
 			}
 			rs.close();
-			
+
 			return list;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -432,7 +432,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			}
 			rs.close();
 			return cp;
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -465,7 +465,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			List<Cost> list = new ArrayList<Cost>();
 			ResultSet rs = dbConnection.createStatement().executeQuery(
 					"select * from cost C, " + s + "_cost X where X." + s1
-							+ "_id=" + ce.getId() + " and X.Cost_id=C.id");
+					+ "_id=" + ce.getId() + " and X.Cost_id=C.id");
 			CloudFactory cf = emf.getCloudFactory();
 			while (rs.next()) {
 				Cost cost = cf.createCost();
@@ -600,6 +600,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 				v.setProcessingRate(rs.getDouble(3));
 				v.setNumberOfReplicas(rs.getInt(4));
 			}
+			rs.close();
 			return v;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -675,13 +676,13 @@ public class ProviderDBConnector implements GenericDBConnector {
 	@Override
 	public List<CloudResource> getCloudResources(IaaS_Service iaas) {
 		try {
-			
+
 			/*TODO: Non capisco questo codice, perchè accedere di nuovo al db? abbiamo già caricato le 
 			 * risorse cloud quando abbiamo caricato i servizi anche se effettivamente non ne abbiamo definito il tipo*/
 			ResultSet rs = dbConnection.createStatement().executeQuery(
 					"select * from iaas_service_composedof I, cloudresource CR where I.IaaS_id="
 							+ iaas.getId() + " and I.CloudResource_id=CR.id order by name");
-			
+
 			CloudFactory cf = emf.getCloudFactory();
 			List<CloudResource> list = new ArrayList<CloudResource>();
 			CloudResource i;
@@ -696,7 +697,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 					break;
 				case CLOUDSTORAGE:
 					CloudStorageType storageType = CloudStorageType
-							.getByName(rs.getString(6));
+					.getByName(rs.getString(6));
 					switch (storageType) {
 					case BLOBSTORAGE:
 						BlobStorage bs = cf.createBlobStorage();
@@ -709,11 +710,13 @@ public class ProviderDBConnector implements GenericDBConnector {
 						i = fs;
 						break;
 					default:
+						rs.close();
 						throw new Exception("Undefined Cloud Storage Type.");
 					}
 					break;
 				default:
-					throw new Exception("Undefined Cloud Resource Type.");
+					rs.close();
+					throw new Exception("Undefined Cloud Resource Type.");				
 				}
 				i.setType(CloudElementType.RESOURCE);
 				i.setResourceType(type);
@@ -723,13 +726,14 @@ public class ProviderDBConnector implements GenericDBConnector {
 				if (lvhr != null)
 					for (VirtualHWResource v : lvhr)
 						i.getComposedOf().add(v);
-				
+
 				if (rs.getObject(8) != null)
 					i.setHasCostProfile(getCostProfile(i, rs.getInt(8)));
-				
+
 				defineCosts(i);
 				list.add(i);
 			}
+			rs.close();
 			return list;
 		} catch (Exception e) {
 			e.printStackTrace();
