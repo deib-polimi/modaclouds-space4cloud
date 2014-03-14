@@ -187,6 +187,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 		}
 		iaasList = list;
 		iaasMap = dict;
+		rs.close();
 	}
 
 	/* (non-Javadoc)
@@ -231,7 +232,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 		}
 		paasList = list;
 		paasMap = dict;
-
+		rs.close();
 	}
 	
 	/* (non-Javadoc)
@@ -354,7 +355,10 @@ public class ProviderDBConnector implements GenericDBConnector {
 					i.getRunsOnCloudResource().add(cr);
 				}
 				list.add(i);
+				rs1.close();
 			}
+			rs.close();
+			
 			return list;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -424,8 +428,11 @@ public class ProviderDBConnector implements GenericDBConnector {
 						cost.setUpperBound(-1);
 					cp.getComposedOf().add(cost);
 				}
+				rs1.close();
 			}
+			rs.close();
 			return cp;
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -484,8 +491,9 @@ public class ProviderDBConnector implements GenericDBConnector {
 				else
 					cost.setUpperBound(-1);				
 				cost.setRegion(rs.getString(9));					
-				list.add(cost);
+				list.add(cost);				
 			}
+			rs.close();
 			return list;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -542,6 +550,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 				v.setNumberOfReplicas(rs.getInt(6));
 				lvhr.add(v);
 			}
+			rs.close();
 			return lvhr;
 		} catch (Exception e) {
 			e.printStackTrace();

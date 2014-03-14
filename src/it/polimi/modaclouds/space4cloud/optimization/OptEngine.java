@@ -426,8 +426,6 @@ public class OptEngine extends SwingWorker<Void, Void>{
 
 			SELECTION_POLICY = properties.getProperty("SELECTION_POLICY");
 
-		}catch (NullPointerException e){ 
-			e.printStackTrace();
 		}
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
