@@ -37,18 +37,20 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
 import it.polimi.modaclouds.space4cloud.utils.ExtensionParser;
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 import it.polimi.modaclouds.space4clouds.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4clouds.chart.SeriesHandle;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -71,7 +73,6 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.emf.common.util.EList;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.uka.ipd.sdq.pcm.allocation.AllocationContext;
 import de.uka.ipd.sdq.pcm.core.entity.Entity;
@@ -140,7 +141,7 @@ public class OptEngine extends SwingWorker<Void, Void>{
 
 	protected EvaluationProxy evalProxy;
 
-	protected Logger logger = LoggerFactory.getLogger(EvaluationServer.class);
+	protected Logger logger = LoggerHelper.getLogger(EvaluationServer.class);
 	//protected Logger loggerCurrent = LoggerFactory.getLogger("xdasLogger");
 
 	protected Logger2JFreeChartImage log2png = new Logger2JFreeChartImage();
@@ -428,10 +429,11 @@ public class OptEngine extends SwingWorker<Void, Void>{
 			SELECTION_POLICY = properties.getProperty("SELECTION_POLICY");
 
 		}
-		catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		catch (IOException e) {
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));				
+			logger.error(sw.toString());
+			
 		}
 
 	}
@@ -1013,8 +1015,10 @@ public class OptEngine extends SwingWorker<Void, Void>{
 			out = new ObjectOutputStream(fos);
 			out.writeObject(initialSolution);
 			out.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));				
+			logger.error(sw.toString());
 		}
 
 		initialSolution=null;
@@ -1030,8 +1034,10 @@ public class OptEngine extends SwingWorker<Void, Void>{
 			initialSolution = (Solution) in.readObject();
 			in.close();
 			fis.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));				
+			logger.error(sw.toString());
 		}
 		System.out.println("Deserialized: "+initialSolution);
 	}

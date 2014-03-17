@@ -19,6 +19,7 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,6 +38,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -54,6 +56,8 @@ public class Solution implements Cloneable, Serializable {
 
 	/** The hour application. */
 	ArrayList<Instance> hourApplication = new ArrayList<Instance>();
+
+	private static Logger logger = LoggerHelper.getLogger(Solution.class);
 
 	/**
 	 * if the solution has been evaluated or not.
