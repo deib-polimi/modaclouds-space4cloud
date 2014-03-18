@@ -182,13 +182,48 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 		//refresh the workspace
 		refreshProject();
+		
+		/* 
+         * Here I (Riccardo B. Desantis) am implementing the generation of the first
+         * solution using cplex and the tool made by Alexander Lavrentev.
+         */
+        
+        /*Ask if you want to produce the "intelligent" first solution */
+        Object[] options = {"Yes", "No"};
+        int n = JOptionPane.showOptionDialog(null,
+            "Do you want to generate a first optimal solution? (It might take some time)",
+            "First solution",
+            JOptionPane.YES_NO_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            options,
+            options[1]);
+        
+        File extensionFile;
+        
+        System.out.println("DEBUG: " + n);
+        
+        if (n == 1) {
+            /*Load the Extension file*/
+            XMLFileSelection extensionSelector = new XMLFileSelection("Load Extension");        
+            extensionFile = extensionSelector.getFile();
+            if(extensionFile == null) return null;
+            c.EXTENSION_FILE = extensionFile.getAbsolutePath();
+            
+        }
+        else {
+            extensionFile = informationparser.MainTest.generateSolution(
+                    c.ABSOLUTE_WORKING_DIRECTORY, c.RESOURCE_MODEL, c.USAGE_MODEL, c.ALLOCATION_MODEL, c.REPOSITORY_MODEL);
+            c.EXTENSION_FILE = extensionFile.getAbsolutePath();
+        }
 
 
-		/*Load the Extension file*/
+		
+		/*Load the Extension file
 		XMLFileSelection extensionSelector = new XMLFileSelection("Load Extension");		
 		File extensionFile = extensionSelector.getFile();
 		if(extensionFile == null) return null;
-		c.EXTENSION_FILE = extensionFile.getAbsolutePath();
+		c.EXTENSION_FILE = extensionFile.getAbsolutePath();*/
 
 		if(!assesmentChoiche.isTrue()){
 

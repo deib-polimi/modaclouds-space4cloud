@@ -48,14 +48,15 @@ Bundle-ClassPath: .,
  mysql-connector-java-5.0.8-bin.jar,
  log4j-1.2.17.jar,
  slf4j-api-1.7.5.jar,
- slf4j-log4j12-1.7.5.jar
+ slf4j-log4j12-1.7.5.jar,
+ informationparser.jar
 Export-Package: icons,
- it.polimi.modaclouds.space4cloud.plugin,
  it.polimi.modaclouds.space4cloud.db,
  it.polimi.modaclouds.space4cloud.gui,
  it.polimi.modaclouds.space4cloud.handlers,
  it.polimi.modaclouds.space4cloud.impl,
  it.polimi.modaclouds.space4cloud.iterfaces,
+ it.polimi.modaclouds.space4cloud.plugin,
  it.polimi.modaclouds.space4cloud.types,
  it.polimi.modaclouds.space4cloud.types.palladio,
  it.polimi.modaclouds.space4cloud.utils
