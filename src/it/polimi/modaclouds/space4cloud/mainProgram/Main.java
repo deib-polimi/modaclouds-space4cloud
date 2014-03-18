@@ -68,6 +68,7 @@ public class Main {
 		
 		Space4Cloud instance = new Space4Cloud();
 		instance.execute();
+		System.out.println("fine!");
 	}
 
 }

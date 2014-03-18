@@ -46,7 +46,6 @@ public class EMF {
 	 * Initialize the class.
 	 */
 	public EMF() {
-		CloudPackageImpl.init();
 		cloudFactory = CloudFactory.eINSTANCE;
 	}
 

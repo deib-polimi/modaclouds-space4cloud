@@ -37,7 +37,9 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutionException;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 
 import org.eclipse.core.resources.IResource;
@@ -182,13 +184,6 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		refreshProject();
 
 
-
-
-		/*TODO: continue from here
-		We should have the generated lqn model in the result folder. now we need to:
-		3)load the initial solution (leave modification and first real evaluation there) 		
-		 */
-
 		/*Load the Extension file*/
 		XMLFileSelection extensionSelector = new XMLFileSelection("Load Extension");		
 		File extensionFile = extensionSelector.getFile();
@@ -267,6 +262,20 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			logger.error(sw.toString());
 		}
 	}
+	
+	 protected void done() {
+	        try {
+	            System.out.println("Done");
+	            get();
+	        } catch (ExecutionException e) {
+	            e.getCause().printStackTrace();
+	            String msg = String.format("Unexpected problem: %s", 
+	                           e.getCause().toString());
+	            logger.error(msg);
+	        } catch (InterruptedException e) {
+	            // Process e here
+	        }
+	    }
 
 }
 
