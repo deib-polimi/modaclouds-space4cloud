@@ -15,6 +15,9 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 
@@ -61,17 +64,17 @@ public class Compute extends IaaS {
 			// TODO Auto-generated catch block
 			e.printStackTrace();	
 			compute = new Compute(new String(this.getName()),
-				new String(this.getId()),
-				new String(this.getProvider()),
-				new String(this.getServiceType()),
-				new String(this.getServiceName()),
-				new String(this.getResourceName()),
-				this.getReplicas(),
-				this.getNumberOfCores(),
-				this.getSpeed(),
-				this.getRam());
+					new String(this.getId()),
+					new String(this.getProvider()),
+					new String(this.getServiceType()),
+					new String(this.getServiceName()),
+					new String(this.getResourceName()),
+					this.getReplicas(),
+					this.getNumberOfCores(),
+					this.getSpeed(),
+					this.getRam());
 		}
-	return compute;
+		return compute;
 	}
 
 	/**
@@ -99,22 +102,33 @@ public class Compute extends IaaS {
 	}	
 
 
-	@Override
+	
 	public boolean equals(Object obj) {
-		if(obj instanceof Compute){
-			Compute comp = (Compute) obj;
-			if(comp.getName().equals(this.getName()) &&
-					comp.getNumberOfCores() == this.getNumberOfCores() &&
-					comp.getProvider().equals(this.getProvider()) &&
-					comp.getRam() == this.getRam() &&
-					comp.getReplicas() == this.getReplicas() &&
-					comp.getResourceName().equals(this.getResourceName()) &&
-					comp.getServiceName().equals(this.getServiceName()) &&
-					comp.getServiceType().equals(this.getServiceType()) &&
-					comp.getSpeed() == this.getSpeed())
-				return true;
-		}
-		return false;
+		if(obj == null)
+			return false;
+		if(obj == this)
+			return true;
+		if(!(obj instanceof Compute))
+			return false;
+				
+		Compute comp = (Compute) obj;
+		
+		return new EqualsBuilder().append(replicas,comp.replicas).
+				append(speed,comp.speed).
+				append(ram,comp.ram).
+				append(numberOfCores, comp.numberOfCores).isEquals();
+	}
+
+	
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
+				// if deriving: appendSuper(super.hashCode()).
+				append(replicas).
+				append(speed).
+				append(ram).
+				append(numberOfCores).
+				toHashCode();
+
 	}
 
 	/**

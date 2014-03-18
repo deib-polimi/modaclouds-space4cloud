@@ -53,11 +53,10 @@ import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
 public class Space4Cloud extends SwingWorker<Object, Object> {
 
 
-	//	private static Logger logger = LoggerFactory.getLogger(Main.class);
 	private static OptimizationProgressWindow progressWindow;
 	private static AssesmentWindow assesmentWindow;
 	private Constants	c;
-	protected Logger logger;
+	private static Logger logger;
 
 	@Override
 	protected Object doInBackground() {
