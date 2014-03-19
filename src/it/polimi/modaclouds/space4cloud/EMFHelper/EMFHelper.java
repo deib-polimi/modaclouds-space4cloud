@@ -59,7 +59,7 @@ import de.uka.ipd.sdq.pcm.usagemodel.UsagemodelPackage;
  *
  */
 public class EMFHelper {
-	
+
 	/**
 	 * Checks for two PCM model elements whether they are the same, i.e. whether
 	 * they have the same ID. The model elements have to be derived from
@@ -77,16 +77,13 @@ public class EMFHelper {
 		if (i1 == null || i2 == null)
 			return false;
 		if (i1 instanceof Identifier && i2 instanceof Identifier){
-			if (((Identifier) i1).getId().equals(((Identifier) i2).getId())) {
-				// logger.debug("Two model elements match with Id: "+i1.getId());
-				return true;
-			} else {
-				return false;
-			}} else {
-				return EcoreUtil.equals(i1, i2);
-			}
+			return ((Identifier) i1).getId().equals(((Identifier) i2).getId());
+		}
+		else {
+			return EcoreUtil.equals(i1, i2);
+		}
 	}
-	
+
 	/**
 	 * Implements an identifier-based contains. Calls {@link #checkIdentity(Identifier, Identifier)}
 	 * to compare the {@link Identifier} i with the contents of the collection. 
@@ -103,7 +100,7 @@ public class EMFHelper {
 		}
 		return false;
 	}
-	
+
 	public static boolean retainAll(Collection<? extends Identifier> collection, Collection<? extends EObject> itemsToRetain){
 		boolean removedAny = false;
 		for (Iterator<? extends Identifier> iterator = collection.iterator(); iterator.hasNext();) {
@@ -121,7 +118,7 @@ public class EMFHelper {
 		}
 		return removedAny;
 	}
-	
+
 	/**
 	 * Save the given EObject to the file given by filename.
 	 * 
@@ -129,21 +126,22 @@ public class EMFHelper {
 	 *            The EObject to save
 	 * @param fileName
 	 *            The filename where to save.
+	 * @throws IOException 
 	 */
-	public static void saveToXMIFile(final EObject modelToSave, final String fileName) {
-		
-			// Create a resource set.
+	public static void saveToXMIFile(final EObject modelToSave, final String fileName) throws IOException {
+
+		// Create a resource set.
 		ResourceSet resourceSet = new ResourceSetImpl();
 
 		// Register the default resource factory -- only needed for stand-alone!
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-				.put(Resource.Factory.Registry.DEFAULT_EXTENSION,
-						new XMIResourceFactoryImpl());
-	
+		.put(Resource.Factory.Registry.DEFAULT_EXTENSION,
+				new XMIResourceFactoryImpl());
+
 		URI fileURI = URI.createFileURI(new File(fileName).getAbsolutePath());
 		Resource resource = resourceSet.createResource(fileURI);
 		resource.getContents().add(modelToSave);
-		
+
 
 
 		try {
@@ -151,14 +149,12 @@ public class EMFHelper {
 		} catch (FileNotFoundException e){
 			if (fileName.length() > 250){
 				//try again with a shorter filename
-				saveToXMIFile(modelToSave, fileName.substring(0, fileName.indexOf("-"))+"-shortened-"+fileName.hashCode());
+				saveToXMIFile(modelToSave, fileName.substring(0, fileName.indexOf('-'))+"-shortened-"+fileName.hashCode());
 			}
-		} catch (IOException e) {
-
-		}
+		} 
 		// logger.debug("Saved " + fileURI);
 	}
-	
+
 	/**
 	 * Copied From de.uka.ipd.sdq.pcmsolver.models.PCMInstance.
 	 * 
@@ -173,12 +169,12 @@ public class EMFHelper {
 		// Register the appropriate resource factory to handle all file
 		// extensions.
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-				.put(Resource.Factory.Registry.DEFAULT_EXTENSION,
-						new XMIResourceFactoryImpl());
+		.put(Resource.Factory.Registry.DEFAULT_EXTENSION,
+				new XMIResourceFactoryImpl());
 
 		// Register the package to ensure it is available during loading.
 		registerPackages(resourceSet);
-		
+
 		return loadFromXMIFile(fileName, resourceSet);
 	}
 
@@ -192,33 +188,14 @@ public class EMFHelper {
 
 		Resource resource = null;
 		// Demand load resource for this file.
-		try {
-			resource = resourceSet.getResource(uri, true);
-		} catch (Exception e) {
-				return null;
-		}
+		resource = resourceSet.getResource(uri, true);
+	
 
-		// logger.debug("Loaded " + uri);
-
-		// if (!fileName.endsWith(".assembly") &&
-		// !fileName.endsWith("repository")) {
-		// // Validate the contents of the loaded resource.
-		// for (Iterator j = resource.getContents().iterator(); j.hasNext();) {
-		// EObject eObject = (EObject) j.next();
-		// Diagnostic diagnostic = Diagnostician.INSTANCE
-		// .validate(eObject);
-		// if (diagnostic.getSeverity() != Diagnostic.OK) {
-		// System.out.println();
-		// System.out.println(diagnostic.getMessage());
-		// // printDiagnostic(diagnostic, "");
-		//					
-		// }
-		// }
-		// }
+	
 		EObject eObject = (EObject) resource.getContents().iterator().next();
 		return EcoreUtil.getRootContainer(eObject);
 	}
-	
+
 	/**
 	 * Copied From de.uka.ipd.sdq.pcmsolver.models.PCMInstance.
 	 * 
@@ -245,9 +222,9 @@ public class EMFHelper {
 				SystemPackage.eINSTANCE);
 		resourceSet.getPackageRegistry().put(UsagemodelPackage.eNS_URI,
 				UsagemodelPackage.eINSTANCE);
-		
+
 	}
-	
+
 	public static Entity retrieveEntityByID(List<? extends EObject> entities, EObject object){
 		if (object instanceof Entity){
 			List<Entity> castedEntities = new ArrayList<Entity>();
@@ -260,24 +237,24 @@ public class EMFHelper {
 		}
 		return null;
 	}
-	
+
 	public static Entity retrieveEntityByID(List<? extends Entity> entities, String id) {
 		for (Entity entity : entities) {
-			
+
 			if (entity.getId().equals(id)){
 				return entity;
 			}
 		}
 		return null;
 	}
-	
+
 	public static int indexOfByID(List<? extends Entity> entities, String id) {
 		Entity entity = retrieveEntityByID(entities, id);
 		return entities.indexOf(entity);
 	}
 
 
-	
+
 	public static List<PassiveResource> getPassiveResources(List<Repository> repositoryList){
 
 
@@ -295,21 +272,21 @@ public class EMFHelper {
 
 						passiveResourceList.add(passiveResource);
 					}
-					
+
 				}
 			}
 		}
 		return passiveResourceList;
 	}
-	
+
 	/** Recursively get all contained AssemblyContexts in one flat list. 
 	 * */
 	public static List<AssemblyContext> getAllUsedAssemblyContexts(ComposedProvidingRequiringEntity composite){
 		List<AssemblyContext> resultList = new LinkedList<AssemblyContext>();
-		
+
 		List<AssemblyContext> currentAssemblyContexts = composite.getAssemblyContexts__ComposedStructure();
 		resultList.addAll(currentAssemblyContexts);
-		
+
 		for (AssemblyContext assemblyContext : currentAssemblyContexts) {
 			RepositoryComponent innerComponent = assemblyContext.getEncapsulatedComponent__AssemblyContext();
 			if (innerComponent instanceof ComposedProvidingRequiringEntity){
@@ -317,12 +294,12 @@ public class EMFHelper {
 			}
 		}
 		return resultList;
-		
+
 	}
 
 	public static List<AllocationContext> getAllUsedAllocationContexts(
 			Allocation allocation) {
 		return allocation.getAllocationContexts_Allocation();
 	}
-	
+
 }

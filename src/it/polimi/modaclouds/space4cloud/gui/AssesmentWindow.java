@@ -15,7 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4clouds.chart.Logger2JFreeChartImage;
+import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -27,6 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
+
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 

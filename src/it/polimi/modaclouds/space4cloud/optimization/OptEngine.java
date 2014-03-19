@@ -18,6 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
+import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
@@ -38,8 +40,7 @@ import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
 import it.polimi.modaclouds.space4cloud.utils.ExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
-import it.polimi.modaclouds.space4clouds.chart.Logger2JFreeChartImage;
-import it.polimi.modaclouds.space4clouds.chart.SeriesHandle;
+import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -63,6 +64,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingWorker;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.eclipse.core.resources.IFile;
@@ -73,6 +75,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.emf.common.util.EList;
 import org.slf4j.Logger;
+import org.xml.sax.SAXException;
 
 import de.uka.ipd.sdq.pcm.allocation.AllocationContext;
 import de.uka.ipd.sdq.pcm.core.entity.Entity;
@@ -583,16 +586,19 @@ public class OptEngine extends SwingWorker<Void, Void>{
 	 * Load initial solution. The aim of this method is to load the initial
 	 * solution from file.
 	 * 
-	 * @param extensionFile
+	 * @param resourceEnvExtension
 	 *            the extension file
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ParserConfigurationException 
 	 */
-	public void loadInitialSolution(File extensionFile) {
+	public void loadInitialSolution(File resourceEnvExtension, File usageModelExtension) throws ParserConfigurationException, SAXException, IOException {
 		initialSolution = new Solution();
 		// parse the extension file
-		ExtensionParser parser = new ExtensionParser(extensionFile);
-
+		ExtensionParser resourceEnvParser = new ExtensionParser(resourceEnvExtension);
+		UsageModelExtensionParser usageModelParser= new UsageModelExtensionParser(usageModelExtension);
 		//set the region
-		initialSolution.setRegion(parser.getRegion());
+		initialSolution.setRegion(resourceEnvParser.getRegion());
 
 		//get the PCM from the launch configuration
 		IWorkspace workspace= ResourcesPlugin.getWorkspace();   
@@ -622,12 +628,17 @@ public class OptEngine extends SwingWorker<Void, Void>{
 			application.initLqnHandler(lqnModelPath);
 
 
-			// add population and think time from extension
-			application.getLqnHandler().setPopulation(
-					parser.getPopulations()[i]);
-			application.getLqnHandler().setThinktime(parser.getThinktimes()[i]);
+			// add population and think time from usage model extension
+			int population = -1;
+			double thinktime = -1;
+			if(usageModelParser.getPopulations().size()==1)
+				population = usageModelParser.getPopulations().values().iterator().next()[i];
+			if(usageModelParser.getThinkTimes().size()==1)
+				thinktime= usageModelParser.getThinkTimes().values().iterator().next()[i];
+			application.getLqnHandler().setPopulation(population);
+			application.getLqnHandler().setThinktime(thinktime);
 			application.getLqnHandler().saveToFile();
-			application.setWorkload(parser.getPopulations()[i]);
+			application.setWorkload(population);
 
 
 			// create a tier for each resource container
@@ -640,16 +651,23 @@ public class OptEngine extends SwingWorker<Void, Void>{
 
 				CloudService service = null;
 				// switch over the type of cloud service
-				String cloudProvider = parser.getProviders().get(c.getId()); // provider
+				String cloudProvider = resourceEnvParser.getProviders().get(c.getId()); // provider
 				// associated
 				// to
 				// the
 				// resource
-				String serviceType = parser.getServiceType().get(c.getId()); // Service
-				String resourceSize = parser.getInstanceSize().get(c.getId());
-				String serviceName = parser.getServiceName().get(c.getId());				
-				int replicas = parser.getInstanceReplicas().get(c.getId())[i];
+				String serviceType = resourceEnvParser.getServiceType().get(c.getId()); // Service
+				String resourceSize = resourceEnvParser.getInstanceSize().get(c.getId());
+				String serviceName = resourceEnvParser.getServiceName().get(c.getId());				
+				int replicas = resourceEnvParser.getInstanceReplicas().get(c.getId())[i];
 
+				//pick a cloud provider if not specified by the extension
+				if(cloudProvider==null)
+					cloudProvider = dataHandler.getCloudProviders().iterator().next();
+				
+				//pick a service if not specified by the extension
+				if(serviceName==null)
+					serviceName = dataHandler.getServices(cloudProvider, serviceType).get(0); 
 				//if the resource size has not been decided pick one
 				if(resourceSize==null)
 					resourceSize = dataHandler.getCloudResourceSizes(cloudProvider, serviceName).iterator().next();

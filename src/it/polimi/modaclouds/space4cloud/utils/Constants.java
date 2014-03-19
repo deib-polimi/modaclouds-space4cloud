@@ -87,7 +87,7 @@ public class Constants {
 	public final String CONFIG_FILE_NAME = "config.properties";
 	
 	/** The palladio extension file. */	
-	public  String EXTENSION_FILE = "extension.xml";
+	public  String RESOURCE_ENV_EXT_FILE = "extension.xml";
 
 	public	String LINE_PROPERTIES_FILE = "LINE.properties";
 	

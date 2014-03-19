@@ -18,8 +18,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.emf.ecore;bundle-version="2.9.2"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: LqnCore,
- de.uka.ipd.sdq.identifier,
+Import-Package: de.uka.ipd.sdq.identifier,
  de.uka.ipd.sdq.pcm.allocation,
  de.uka.ipd.sdq.pcm.core.composition,
  de.uka.ipd.sdq.pcm.core.entity,
@@ -35,7 +34,6 @@ Import-Package: LqnCore,
  de.uka.ipd.sdq.pcm.usagemodel,
  it.polimi.modaclouds.resourcemodel.cloud,
  it.polimi.modaclouds.resourcemodel.cloud.impl,
- it.polimi.modaclouds.space4cloud.utils,
  org.apache.log4j,
  org.eclipse.core.resources,
  org.eclipse.debug.core,

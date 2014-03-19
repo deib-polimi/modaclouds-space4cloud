@@ -24,6 +24,7 @@ import it.polimi.modaclouds.space4cloud.utils.EMF;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,34 +40,32 @@ import java.util.List;
 public class CloudProvidersList {
 
 	/** The provider db connectors. */
-	public final List<ProviderDBConnector> providerDBConnectors;
+	private final List<ProviderDBConnector> providerDBConnectors;
 
 	/**
 	 * Initialize the instance retrieving the available Cloud Providers from the
 	 * database. For each Cloud Provider, a Provider DB Connector is created and
 	 * added to the list of available Provider DB Connectors.
+	 * @throws SQLException 
 	 * 
 	 * @see ProviderDBConnector
 	 * @see CloudProvider
 	 */
-	public CloudProvidersList() {
+	public CloudProvidersList() throws SQLException {
 		List<ProviderDBConnector> list = new ArrayList<ProviderDBConnector>();
-		try {
-			Connection db = new DatabaseConnector().getConnection();
-			ResultSet rs = db.createStatement().executeQuery(
-					"select * from cloudprovider");
-			CloudFactory cf = new EMF().getCloudFactory();
-			CloudProvider cp;
-			while (rs.next()) {
-				cp = cf.createCloudProvider();
-				cp.setId(rs.getInt(1));
-				cp.setName(rs.getString(2));
-				list.add(new ProviderDBConnector(cp));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			list = null;
+
+		Connection db = new DatabaseConnector().getConnection();
+		ResultSet rs = db.createStatement().executeQuery(
+				"select * from cloudprovider");
+		CloudFactory cf = new EMF().getCloudFactory();
+		CloudProvider cp;
+		while (rs.next()) {
+			cp = cf.createCloudProvider();
+			cp.setId(rs.getInt(1));
+			cp.setName(rs.getString(2));
+			list.add(new ProviderDBConnector(cp));
 		}
+
 		providerDBConnectors = list;
 	}
 
@@ -80,14 +79,4 @@ public class CloudProvidersList {
 		return providerDBConnectors;
 	}
 
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 */
-	public static void main(String[] args) {
-		CloudProvidersList cpl = new CloudProvidersList();
-		for (ProviderDBConnector pdb : cpl.getProviderDBConnectors())
-			System.out.println(pdb.getProvider());
-	}
 }

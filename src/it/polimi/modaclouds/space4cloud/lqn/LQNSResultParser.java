@@ -31,15 +31,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.eclipse.emf.common.util.EList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import LqnCore.ActivityDefType;
-import LqnCore.OutputResultType;
-import LqnCore.TaskType;
 
 public class LQNSResultParser implements LqnResultParser, Serializable {
 
@@ -157,24 +152,6 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	}
 
 
-	public static double getResponseTimeOfSubActivities(TaskType task) throws ParseException {
-		// We add all result service times of the usage scenario to compute
-		// the response time
-		// TODO: check whether this works correctly if the usage scenario
-		// contains branches
-		double time = 0;
-		EList<ActivityDefType> activities = task.getTaskActivities()
-				.getActivity();
-		for (ActivityDefType activity : activities) {
-			EList<OutputResultType> results = activity.getResultActivity();
-			for (OutputResultType outputResultType : results) {
-
-				time += convertStringToDouble(outputResultType.getServiceTime().toString());
-			}
-
-		}
-		return time;
-	}
 	public static double convertStringToDouble(String toConvert) throws ParseException {
 		double ret;
 

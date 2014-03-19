@@ -131,8 +131,9 @@ public class Instance implements Cloneable , Serializable{
 		cloneInst.updateCallChain();
 			
 		
-		cloneInst.initConstrainableResources();		
-		cloneInst.setRegion(new String(this.getRegion()));
+		cloneInst.initConstrainableResources();
+		if(getRegion()!=null)
+			cloneInst.setRegion(new String(this.getRegion()));
 		cloneInst.setFather(null);
 		return cloneInst;
 		

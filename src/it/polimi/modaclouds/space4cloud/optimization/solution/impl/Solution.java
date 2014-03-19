@@ -145,8 +145,6 @@ public class Solution implements Cloneable, Serializable {
 		try {
 			cloneSolution = (Solution) super.clone();
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 			cloneSolution = new Solution();
 		}
 
@@ -165,7 +163,8 @@ public class Solution implements Cloneable, Serializable {
 		}
 		cloneSolution.setEvaluation(clonedEval);
 
-		cloneSolution.setRegion(new String(this.getRegion()));
+		if(getRegion() != null)
+			cloneSolution.setRegion(new String(this.getRegion()));
 
 		return cloneSolution;
 

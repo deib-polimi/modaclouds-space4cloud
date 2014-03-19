@@ -15,6 +15,8 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.utils;
 
+import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
+import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
@@ -26,8 +28,6 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-import it.polimi.modaclouds.space4clouds.chart.Logger2JFreeChartImage;
-import it.polimi.modaclouds.space4clouds.chart.SeriesHandle;
 
 import java.io.File;
 import java.io.FilenameFilter;

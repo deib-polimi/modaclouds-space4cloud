@@ -30,7 +30,6 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) {
 		super(handler);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -49,7 +48,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 		resetNoImprovementCounter();
 		Solution restartSol = sol.clone();
 		IaaS res;
-		while (this.numIterNoImprov < MAX_NUMBER_OF_ITERATIONS) {
+ 		while (this.numIterNoImprov < MAX_NUMBER_OF_ITERATIONS) {
 			done = false;
 			List<Integer> hoursList = new ArrayList<Integer>();
 			for(int p=0;p<24;p++) hoursList.add(p);

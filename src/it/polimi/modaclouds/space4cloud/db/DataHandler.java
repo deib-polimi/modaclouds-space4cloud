@@ -18,17 +18,23 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
+import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.Cost;
+import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Memory;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
+import it.polimi.modaclouds.space4cloud.EMFHelper.EMFHelper;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.utils.EMF;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
 
@@ -44,9 +50,9 @@ public class DataHandler {
 	 * Instantiates a new data handler.
 	 * it also charges data from the database
 	 * @param provider the provider
+	 * @throws SQLException 
 	 */
-	public DataHandler(){
-
+	public DataHandler() throws SQLException{
 		/*This initialization loads all the info about the providers from the database*/
 		cloudProviders = new CloudProvidersDictionary();
 	}
@@ -69,34 +75,25 @@ public class DataHandler {
 	 */
 	public double getProcessingRate(String provider, String serviceName,  String resourceName){
 
-		try {
-			List<CloudResource> cr_list = cloudProviders
-					.providerDBConnectors
-					.get(provider)  // provider
-					.getIaaSServicesHashMap()
-					.get(serviceName) //service
-					.getComposedOf();
+		List<CloudResource> cr_list = cloudProviders
+				.getProviderDBConnectors()
+				.get(provider)  // provider
+				.getIaaSServicesHashMap()
+				.get(serviceName) //service
+				.getComposedOf();
 
-			CloudResource cr = null;
-			//here we lose the OS type distinction
-			for(CloudResource tmp:cr_list)
-				if(tmp.getName().equals(resourceName))
-					cr=tmp;			
+		CloudResource cr = null;
+		//here we lose the OS type distinction
+		for(CloudResource tmp:cr_list)
+			if(tmp.getName().equals(resourceName))
+				cr=tmp;			
 
-			for (VirtualHWResource i : cr.getComposedOf()) {
-
-				if (i.getType() == VirtualHWResourceType.CPU) {
-
-					return i.getProcessingRate();
-				}
+		for (VirtualHWResource i : cr.getComposedOf()) {
+			if (i.getType() == VirtualHWResourceType.CPU) {
+				return i.getProcessingRate();
 			}
-
-			return -1; /*In case of errors*/
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			return -1;
 		}
+		return -1;
 
 	}
 
@@ -109,15 +106,16 @@ public class DataHandler {
 	public List<IaaS> getSameServiceResource(CloudService service, String region){
 		ArrayList<IaaS> resources = new ArrayList<>();
 		for(CloudResource cr:cloudProviders
-				.providerDBConnectors
+				.getProviderDBConnectors()
 				.get(service.getProvider())  // provider
 				.getIaaSServicesHashMap()
 				.get(service.getServiceName()) //service
 				.getComposedOf()){
 
-			IaaS iaas = IaaSfromCloudResource(service, cr);
+			IaaS iaas = IaaSfromCloudResource(service, cr);		
 			for(Cost cost:cr.getHasCost()){
-				if(cost.getRegion().equals(region) && !resources.contains(iaas))
+				//if the iaas has not been already inserted AND (the region has not been specified OR it has the same region) 
+				if(!resources.contains(iaas) && (region==null || cost.getRegion().equals(region)))
 					resources.add(iaas);
 			}
 		}
@@ -168,23 +166,16 @@ public class DataHandler {
 	 * @return the number of replicas
 	 */
 	public Integer getNumberOfReplicas(String provider, String serviceName, String resourceName){
-		try {
-			CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 
-			for (VirtualHWResource i : cr.getComposedOf()) {
-
-				if (i.getType() == VirtualHWResourceType.CPU) {
-
-					return i.getNumberOfReplicas();
-				}
+		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
+		for (VirtualHWResource i : cr.getComposedOf()) {
+			if (i.getType() == VirtualHWResourceType.CPU) {
+				return i.getNumberOfReplicas();
 			}
-
-			return -1; /*In case of errors*/
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			return -1;
 		}
+		/*In case of errors*/
+		return -1; 
+
 	}
 	/**
 	 * Gets the amount of memory of the the cloud resource.
@@ -195,24 +186,18 @@ public class DataHandler {
 	 * @return the amount of ram 
 	 */
 	public Integer getAmountMemory(String provider, String serviceName, String resourceName){
-		try {
 
-			CloudResource cr = getCloudResource(provider, serviceName, resourceName);
+		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 
-			for (VirtualHWResource i : cr.getComposedOf()) {
-
-				if (i.getType() == VirtualHWResourceType.MEMORY) {
-
-					return ((V_Memory) i).getSize() ; /*a cast to V_Memory interface is needed*/ 
-				}
+		for (VirtualHWResource i : cr.getComposedOf()) {
+			if (i.getType() == VirtualHWResourceType.MEMORY) {
+				/*a cast to V_Memory interface is needed*/ 
+				return ((V_Memory) i).getSize() ; 
 			}
-
-			return -1; /*In case of errors*/
-		} catch (Exception e) {
-
-			e.printStackTrace();
-			return -1;
 		}
+		/*In case of errors*/
+		return -1; 
+
 	}
 
 
@@ -235,7 +220,7 @@ public class DataHandler {
 			String resourceName) {
 
 		List<CloudResource> cr_list = cloudProviders
-				.providerDBConnectors
+				.getProviderDBConnectors()
 				.get(provider)  // provider
 				.getIaaSServicesHashMap()
 				.get(serviceName) //service
@@ -251,7 +236,7 @@ public class DataHandler {
 
 	public List<String> getCloudResourceSizes(String provider, String serviceName) {
 		List<CloudResource> cr_list = cloudProviders
-				.providerDBConnectors
+				.getProviderDBConnectors()
 				.get(provider)  // provider
 				.getIaaSServicesHashMap()
 				.get(serviceName) //service
@@ -263,7 +248,34 @@ public class DataHandler {
 		return names;
 	}
 
+	public Set<String> getCloudProviders(){
+		return cloudProviders.getProviderDBConnectors().keySet();
+	}
 
+
+	public List<String> getServices(String provider, String serviceType) {
+
+		CloudResource expectedResource=null;
+		switch (serviceType) {
+		case "Compute":
+			expectedResource = CloudFactory.eINSTANCE.createCompute();
+			break;
+		}
+		List<IaaS_Service> iaasServices = 	cloudProviders.
+				getProviderDBConnectors().				
+				get(provider).	
+				getIaaSServices();
+		List<String> filteredServices = new ArrayList<String>();
+		for(IaaS_Service service: iaasServices){
+			List<CloudResource> resources = service.getComposedOf();		
+			//if there is any resource and it is of a subtype of the expected one add the service to the list of filtered services 
+			//(we assume here that each service provide resources of the same type
+			if(!resources.isEmpty() && resources.get(0).getClass().isAssignableFrom(expectedResource.getClass())){
+				filteredServices.add(service.getName());
+			}
+		}
+		return filteredServices;
+	}
 
 
 }

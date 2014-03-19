@@ -24,7 +24,9 @@ import it.polimi.modaclouds.space4cloud.utils.EMF;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Michele Ciavotta
@@ -33,38 +35,37 @@ import java.util.HashMap;
  * @see CloudProvidersList
  */
 public class CloudProvidersDictionary {
-	
+
 	/** The provider db connectors. */
-	public final HashMap<String, ProviderDBConnector> providerDBConnectors;
-	
+	private final Map<String, ProviderDBConnector> providerDBConnectors;
+
 	/**
 	 * Initialize the instance retrieving the available Cloud Providers from the
 	 * database. For each Cloud Provider, a Provider DB Connector is created and
 	 * added to the HashMap of available Provider DB Connectors.
+	 * @throws SQLException 
 	 * 
 	 * @see ProviderDBConnector
 	 * @see CloudProvider
 	 */
-	public CloudProvidersDictionary() {
+	public CloudProvidersDictionary() throws SQLException {
 		/*dictionary creation*/
-		HashMap<String, ProviderDBConnector> dict = new HashMap<>();
-		
-		try {
-			Connection db = new DatabaseConnector().getConnection();
-			ResultSet rs = db.createStatement().executeQuery(
-					"select * from cloudprovider");
-			CloudFactory cf = new EMF().getCloudFactory();
-			CloudProvider cp;
-			while (rs.next()) {
-				cp = cf.createCloudProvider();
-				cp.setId(rs.getInt(1));
-				cp.setName(rs.getString(2));
-				dict.put(cp.getName(), new ProviderDBConnector(cp)); /*watch out: two providers cannot have the same name*/
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			dict = null;
+		Map<String, ProviderDBConnector> dict = new HashMap<>();
+
+
+		Connection db = new DatabaseConnector().getConnection();
+		ResultSet rs = db.createStatement().executeQuery(
+				"select * from cloudprovider");
+		CloudFactory cf = new EMF().getCloudFactory();
+		CloudProvider cp;
+		while (rs.next()) {
+			cp = cf.createCloudProvider();
+			cp.setId(rs.getInt(1));
+			cp.setName(rs.getString(2));
+			/*watch out: two providers cannot have the same name*/
+			dict.put(cp.getName(), new ProviderDBConnector(cp));
 		}
+
 		providerDBConnectors = dict;
 	}
 
@@ -74,7 +75,7 @@ public class CloudProvidersDictionary {
 	 * @return a HashMap of ProviderDBConnector elements.
 	 * @see ProviderDBConnector
 	 */
-	public HashMap<String, ProviderDBConnector> getProviderDBConnectors() {
+	public Map<String, ProviderDBConnector> getProviderDBConnectors() {
 		return providerDBConnectors;
 	}
 

@@ -18,12 +18,12 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
+import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
+import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
-import it.polimi.modaclouds.space4clouds.chart.Logger2JFreeChartImage;
-import it.polimi.modaclouds.space4clouds.chart.SeriesHandle;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -68,7 +68,7 @@ public class EvaluationServer implements ActionListener{
 
 	protected SeriesHandle seriesHandleExecution;
 	protected SeriesHandle seriesHandleTier1;
-	protected SeriesHandle seriesHandleTier2;
+	//protected SeriesHandle seriesHandleTier2;
 	protected SeriesHandle seriesHandleConstraint;
 	protected StopWatch timer  = new StopWatch();
 	protected long costEvaluationTime = 0;	
@@ -114,7 +114,7 @@ public class EvaluationServer implements ActionListener{
 	public void setMachineLog(Logger2JFreeChartImage logVM){
 		this.logVm = logVM;
 		seriesHandleTier1 = logVm.newSeries("Tier1VMs");
-		seriesHandleTier2 = logVm.newSeries("Tier2VMs");
+		//seriesHandleTier2 = logVm.newSeries("Tier2VMs");
 	}
 
 	public void setConstraintLog(Logger2JFreeChartImage logConstraint){
@@ -199,17 +199,19 @@ public class EvaluationServer implements ActionListener{
 		if(constraintHandler!= null)
 			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
 		sol.updateEvaluation();
-		logger.info(""+sol.getCost()/100+", "+TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())+", "+sol.isFeasible());
+		
 
 		//evaluate costs
 		deriveCosts(sol);
+		
+		logger.info(""+sol.getCost()/100+", "+TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())+", "+sol.isFeasible());
 
 		long middleTime = System.nanoTime();
 		if (log2png != null && logVm!=null && logConstraint != null &&  timer != null) {
 			timer.split();
 			log2png.addPoint2Series(seriesHandleExecution, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getCost()/100 );
 			logVm.addPoint2Series(seriesHandleTier1, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getVmNumberPerTier(0) );
-			logVm.addPoint2Series(seriesHandleTier2, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getVmNumberPerTier(1) );
+		//	logVm.addPoint2Series(seriesHandleTier2, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getVmNumberPerTier(1) );
 			logConstraint.addPoint2Series(seriesHandleConstraint, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getNumberOfViolatedConstraints());
 		}
 		long endTime = System.nanoTime();
@@ -232,11 +234,6 @@ public class EvaluationServer implements ActionListener{
 		}		
 		sol.setCost(totalCost);
 		long stopTime = System.nanoTime();
-		//removed for performance
-		//		if(log2png != null){
-		//			timer.split();
-		//			log2png.addPoint2Series(seriesHandleExecution, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getCost() );
-		//		}
 
 		costEvaluationTime += (stopTime-startTime);
 		costEvaluations++;
