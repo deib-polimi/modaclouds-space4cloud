@@ -18,11 +18,18 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+
+
+
 
 /**
  * @author MODAClouds
@@ -34,8 +41,9 @@ public class Component implements Cloneable, IResponseTimeConstrainable, Seriali
 	 */
 	private static final long serialVersionUID = 3466902523628946119L;
 	private String id;
-	private ArrayList<Functionality> functionalities = new ArrayList<Functionality>();
+	private List<Functionality> functionalities = new ArrayList<Functionality>();
 	private Tier container;
+	private static final Logger logger = LoggerHelper.getLogger(Component.class);
 
 	public Component(String id) {
 		this.id = id;
@@ -52,7 +60,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable, Seriali
 		try {
 			c = (Component) super.clone();
 		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
+			logger.error("Component cloned not supported, building a new component",e);
 			c = new Component(this.getId());
 		}
 		
@@ -68,7 +76,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable, Seriali
 	}
 	
 	public Map<String, ? extends IConstrainable> getConstrainableResources() {
-		HashMap<String, IConstrainable> resources = new HashMap<>();		
+		Map<String, IConstrainable> resources = new HashMap<>();		
 		for(Functionality f:functionalities){
 			if(f instanceof IConstrainable)
 				resources.put(f.getId(), f);
@@ -81,7 +89,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable, Seriali
 		return container;
 	}	
 	
-	public ArrayList<Functionality> getFunctionalities(){
+	public List<Functionality> getFunctionalities(){
 		return functionalities;
 	}
 
@@ -92,8 +100,9 @@ public class Component implements Cloneable, IResponseTimeConstrainable, Seriali
 	@Override
 	public double getResponseTime(){
 		double avg = 0;
-		for(Functionality f:functionalities)
+		for(Functionality f:functionalities){
 			avg +=f.getResponseTime();
+		}
 		return avg/functionalities.size();
 	}
 	
@@ -101,7 +110,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable, Seriali
 		container = tier;		
 	}
 
-	private void setFunctionalities(ArrayList<Functionality> functionalities) {
+	private void setFunctionalities(List<Functionality> functionalities) {
 		this.functionalities = functionalities;
 	}
 

@@ -15,10 +15,12 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import org.slf4j.Logger;
 
 
 /**
@@ -50,6 +52,8 @@ public class Compute extends IaaS {
 
 	/** The utilization. */
 	private double utilization;
+	
+	private static final Logger logger = LoggerHelper.getLogger(Compute.class);
 
 
 	/* (non-Javadoc)
@@ -61,8 +65,8 @@ public class Compute extends IaaS {
 		try {
 			compute = (Compute) super.clone();
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();	
+			
+			logger.error("Compute clone not supprted, building a new Compute",e);
 			compute = new Compute(new String(this.getName()),
 					new String(this.getId()),
 					new String(this.getProvider()),

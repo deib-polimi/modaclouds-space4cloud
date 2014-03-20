@@ -31,16 +31,16 @@ public class AllocationSpecification {
 
 	/** The allocation specification element. */
 	private Element allocationSpecificationElement;
-	
+
 	/** The hour. */
 	private int hour = 0;
-	
+
 	/** The size. */
 	private int size = 1;
-	
+
 	/** The doc. */
 	private Document doc;
-	
+
 	/** The Constant MIN_SIZE. */
 	private final static int MIN_SIZE = 0;
 
@@ -65,10 +65,12 @@ public class AllocationSpecification {
 	public AllocationSpecification(int hour, int size) {
 		doc = DOM.getDocument();
 		Element x = doc.createElement("Allocation_Specification");
-		if (!isValidHour(hour))
+		if (!isValidHour(hour)){
 			hour = 0;
-		if (!isValidSize(size))
+		}
+		if (!isValidSize(size)){
 			size = 1;
+		}
 		x.setAttribute("hour", "" + hour);
 		x.setAttribute("size", "" + size);
 		doc.appendChild(x);
@@ -82,12 +84,8 @@ public class AllocationSpecification {
 	 */
 	private void initialize(Element x) {
 		allocationSpecificationElement = x;
-		try {
-			hour = Integer.parseInt(x.getAttribute("hour"));
-			size = Integer.parseInt(x.getAttribute("size"));
-		} catch (Exception exc) {
-			exc.printStackTrace();
-		}
+		hour = Integer.parseInt(x.getAttribute("hour"));
+		size = Integer.parseInt(x.getAttribute("size"));
 	}
 
 	/**

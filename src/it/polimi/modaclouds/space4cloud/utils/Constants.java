@@ -38,59 +38,59 @@ public class Constants {
 
 	/** The wdir. */
 	private static String WORKING_DIR;
-	
-	
+
+
 	/** The instance. */
 	private static Constants instance;
-	
+
 	/** The full working directory. */
 	public String ABSOLUTE_WORKING_DIRECTORY;
-	
+
 	/** The rel working directory. */
 	public String REL_WORKING_DIRECTORY;
-	
+
 	/** The project path. */
 	public String PROJECT_PATH;
-	
+
 	/** The project name. */
 	public String PROJECT_NAME;
-	
+
 	/** The working directory. */
 	public String WORKING_DIRECTORY;
-	
+
 	/** The solver name. */	
 	public String SOLVER = MessageStrings.LQNS_SOLVER;
-	
+
 	/** The allocation models folder. */
 	public String ALLOCATION_MODEL = null;
-	
+
 	/** The resource models folder. */
 	public String RESOURCE_MODEL= null;
-	
+
 	/** The repository models */
 	public String REPOSITORY_MODEL= null;
-	
+
 	/** The usage models folder. */
 	public String USAGE_MODEL = null;
-	
+
 	/** The performance results folder. */
 	public String PERFORMANCE_RESULTS_FOLDER = "performance_results"
 			+ File.separator;
-	
+
 	/** The launch config name. */
 	public String LAUNCH_CONFIG= "launchConfig.launch";
-	
+
 	/** The property resourceenvriroment. */
 	public final String PROP_RESOURCE = "resource_environment";
 
 	/** The property configuration file. */	
 	public final String CONFIG_FILE_NAME = "config.properties";
-	
+
 	/** The palladio extension file. */	
 	public  String RESOURCE_ENV_EXT_FILE = "extension.xml";
 
 	public	String LINE_PROPERTIES_FILE = "LINE.properties";
-	
+
 	public static String LOG4J_PROP_FILE;
 
 	/**
@@ -100,12 +100,11 @@ public class Constants {
 
 		if (WORKING_DIR == null) {
 			String s = "";
-			try {
-				s = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0]
-						.getLocation().toOSString();
-			} catch (Exception e) {
-				s = System.getProperty("user.dir");
-			}
+
+			s = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0]
+					.getLocation().toOSString();
+
+
 			PROJECT_PATH = s;
 		} else
 			PROJECT_PATH = WORKING_DIR;
@@ -116,7 +115,7 @@ public class Constants {
 				+ WORKING_DIRECTORY + File.separator;
 		REL_WORKING_DIRECTORY = PROJECT_NAME + File.separator
 				+ WORKING_DIRECTORY;
-		
+
 		LOG4J_PROP_FILE = this.getClass().getResource("/log/log4j.properties").toString();
 		System.out.println("Project Name: " + PROJECT_NAME);
 		System.out.println("Project Path: " + PROJECT_PATH);
@@ -150,6 +149,6 @@ public class Constants {
 		instance = null;
 	}
 
-	
+
 
 }

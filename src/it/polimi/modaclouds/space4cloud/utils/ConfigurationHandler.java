@@ -17,6 +17,7 @@ package it.polimi.modaclouds.space4cloud.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,7 +40,7 @@ public class ConfigurationHandler {
 		c = Constants.getInstance();
 	}
 
-	public void saveConfiguration(){
+	public void saveConfiguration() throws IOException{
 
 		conf.setProperty("ALLOCATION_MODEL", c.ALLOCATION_MODEL);
 		conf.setProperty("ABSOLUTE_WORKING_DIRECTORY", c.ABSOLUTE_WORKING_DIRECTORY);
@@ -56,26 +57,22 @@ public class ConfigurationHandler {
 		conf.setProperty("USAGE_MODEL", c.USAGE_MODEL);
 
 		File confFile = confFilePath.toFile();
-		try{
-			Path workingDir = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY);
-			if(!Files.exists(workingDir))
-				Files.createDirectories(workingDir);
-			confFile.createNewFile();
-
-			conf.store(new FileOutputStream(confFilePath.toString()), null);
-		} catch (IOException e) {
-			e.printStackTrace();
+		Path workingDir = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY);
+		if(!Files.exists(workingDir)){
+			Files.createDirectories(workingDir);
 		}
+		confFile.createNewFile();
+
+		conf.store(new FileOutputStream(confFilePath.toString()), null);
+
 
 	}
 
-	public void loadConfiguration(){
+	public void loadConfiguration() throws FileNotFoundException, IOException{
 
-		try {
-			conf.load(new FileInputStream(confFilePath.toString()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		conf.load(new FileInputStream(confFilePath.toString()));
+
 		c.ALLOCATION_MODEL= conf.getProperty("ALLOCATION_MODEL");
 		c.ABSOLUTE_WORKING_DIRECTORY= conf.getProperty("ABSOLUTE_WORKING_DIRECTORY");
 		c.LAUNCH_CONFIG= conf.getProperty("LAUNCH_CONFIG");
@@ -89,7 +86,7 @@ public class ConfigurationHandler {
 		c.SOLVER= conf.getProperty("SOLVER");
 		c.LINE_PROPERTIES_FILE= conf.getProperty("LINE_PROPERTIES");
 		c.REPOSITORY_MODEL = conf.getProperty("REPOSITORY_MODEL");
-		
+
 
 	}
 

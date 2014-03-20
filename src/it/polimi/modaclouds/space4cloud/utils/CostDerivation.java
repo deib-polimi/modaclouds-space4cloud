@@ -37,6 +37,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -98,6 +100,7 @@ public class CostDerivation {
 	 *            is the Map object containing key-value elements, where the key
 	 *            is an ExtendedResourceContainer object, while the value is a
 	 *            CloudElement object.
+	 * @throws TransformerException 
 	 * @see CloudElement
 	 * @see ExtendedResourceContainer
 	 * @see #deriveCostsForCloudPlatform(ExtendedResourceContainer,
@@ -105,7 +108,7 @@ public class CostDerivation {
 	 * @see #deriveCostsForCloudResource(ExtendedResourceContainer,
 	 *      CloudResource)
 	 */
-	public void derive(Map<ExtendedResourceContainer, CloudElement> map) {
+	public void derive(Map<ExtendedResourceContainer, CloudElement> map) throws TransformerException {
 		for (Map.Entry<ExtendedResourceContainer, CloudElement> e : map
 				.entrySet())
 			if (e.getValue() instanceof CloudResource)
@@ -128,9 +131,9 @@ public class CostDerivation {
 
 	/**
 	 * Serializes the cost model.
+	 * @throws TransformerException 
 	 */
-	private void serialize() {
-		try {
+	private void serialize() throws TransformerException {
 			TransformerFactory transformerFactory = TransformerFactory
 					.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
@@ -139,10 +142,7 @@ public class CostDerivation {
 					"{http://xml.apache.org/xslt}indent-amount", "4");
 			DOMSource source = new DOMSource(doc);
 			StreamResult result = new StreamResult(output);
-			transformer.transform(source, result);
-		} catch (Exception exc) {
-			exc.printStackTrace();
-		}
+			transformer.transform(source, result);		
 	}
 
 	/**
