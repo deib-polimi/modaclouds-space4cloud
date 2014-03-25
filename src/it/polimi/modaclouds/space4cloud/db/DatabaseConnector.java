@@ -18,8 +18,13 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import org.slf4j.Logger;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -30,32 +35,39 @@ import java.sql.DriverManager;
  */
 public class DatabaseConnector {
 
-	/** The conn. */
+
+	/** The connection */
 	private Connection conn;
+
+	protected static final Logger logger = LoggerHelper.getLogger(DatabaseConnector.class);
 
 	/**
 	 * Creates a new Database Connector instance.
+	 * @throws SQLException 
+	 * @throws ClassNotFoundException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	public DatabaseConnector() {
-//		String url = "jdbc:mysql://localhost:3306/";
-//		String dbName = "cloud";
-//		String driver = "com.mysql.jdbc.Driver";
-//		String userName = "moda";
-//		String password = "modaclouds";
+	public DatabaseConnector() throws SQLException{
+		// String url = "jdbc:mysql://localhost:3306/";
+		// String dbName = "cloud";
+		// String driver = "com.mysql.jdbc.Driver";
+		// String userName = "moda";
+		// String password = "modaclouds";
 		String url = "jdbc:mysql://109.231.122.191:3306/";
 		String dbName = "cloud";
 		String driver = "com.mysql.jdbc.Driver";
 		String userName = "moda";
 		String password = "modaclouds";
 
-		try {			
+		try {
 			Class.forName(driver).newInstance();
-			conn = DriverManager
-					.getConnection(url + dbName, userName, password);
-		} catch (Exception e) {
-			e.printStackTrace();
-			conn = null;
+		} catch (InstantiationException | IllegalAccessException
+				| ClassNotFoundException e) {
+			logger.error("Unable to find the JDBC driver",e);
 		}
+		conn = DriverManager
+				.getConnection(url + dbName, userName, password);
 	}
 
 	/**
@@ -65,20 +77,5 @@ public class DatabaseConnector {
 	 */
 	public Connection getConnection() {
 		return conn;
-	}
-
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 */
-	public static void main(String[] args) {
-		DatabaseConnector dbc = new DatabaseConnector();
-		try {
-			System.out.println(dbc.getConnection().getCatalog());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }

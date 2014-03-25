@@ -50,6 +50,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
 import it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector;
 import it.polimi.modaclouds.space4cloud.utils.EMF;
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -58,6 +59,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -88,14 +91,17 @@ public class ProviderDBConnector implements GenericDBConnector {
 
 	/** The paas dictionary**/
 	private Map<String, PaaS_Service> paasMap;
+	
+	private static final Logger logger = LoggerHelper.getLogger(ProviderDBConnector.class);
 
 
 	/**
 	 * Creates a new Database Connector for a Generic Cloud Provider.
 	 *
 	 * @param cp the cp
+	 * @throws SQLException 
 	 */
-	public ProviderDBConnector(CloudProvider cp) {
+	public ProviderDBConnector(CloudProvider cp) throws SQLException {
 		dbConnection = new DatabaseConnector().getConnection();
 		provider = cp;
 		emf = new EMF();
@@ -141,7 +147,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			createIaasSets();
 			return iaasList;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Unable to get IaaS Services",e);
 			return null;
 		}
 	}

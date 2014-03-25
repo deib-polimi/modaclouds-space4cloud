@@ -25,11 +25,9 @@ import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Memory;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
-import it.polimi.modaclouds.space4cloud.EMFHelper.EMFHelper;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.utils.EMF;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -39,54 +37,189 @@ import java.util.Set;
 import org.eclipse.emf.common.util.EList;
 
 /**
- * @author Michele Ciavotta
- * the aim of this class is to provide an object able to retrieve the data related to a certain provider and service
+ * @author Michele Ciavotta the aim of this class is to provide an object able
+ *         to retrieve the data related to a certain provider and service
  */
 public class DataHandler {
 
 	private final CloudProvidersDictionary cloudProviders;
 
 	/**
-	 * Instantiates a new data handler.
-	 * it also charges data from the database
-	 * @param provider the provider
-	 * @throws SQLException 
+	 * Instantiates a new data handler. it also charges data from the database
+	 * 
+	 * @param provider
+	 *            the provider
+	 * @throws SQLException
 	 */
-	public DataHandler() throws SQLException{
-		/*This initialization loads all the info about the providers from the database*/
+	public DataHandler() throws SQLException {
+		/**
+		 * This initialization loads all the info about the providers from the
+		 * database
+		 */
 		cloudProviders = new CloudProvidersDictionary();
 	}
 
+	/**
+	 * Gets the amount of memory of the the cloud resource.
+	 * 
+	 * @param provider
+	 *            the provider
+	 * @param serviceName
+	 *            the iass service name
+	 * @param resourceName
+	 *            the resource name
+	 * @return the amount of ram
+	 */
+	public Integer getAmountMemory(String provider, String serviceName,
+			String resourceName) {
 
-	/* questi commenti andranno cancellati:
-	 * Compito del DataHandler è quello di gestire i dati che sono stati caricati dalla base di dati
-	 * utilizza un accesso Lazy. I provider vengono tutti caricati ma i loro servizi e le relative risorse vengono 
-	 * caricati soltanto quando si esegue un accesso a quel provider. 
-	 * */
+		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 
+		for (VirtualHWResource i : cr.getComposedOf()) {
+			if (i.getType() == VirtualHWResourceType.MEMORY) {
+				/* a cast to V_Memory interface is needed */
+				return ((V_Memory) i).getSize();
+			}
+		}
+		/* In case of errors */
+		return -1;
+
+	}
+
+	public Set<String> getCloudProviders() {
+		return cloudProviders.getProviderDBConnectors().keySet();
+	}
+
+	public CloudResource getCloudResource(String provider, String serviceName,
+			String resourceName) {
+
+		List<CloudResource> cloudResourceList = cloudProviders
+				.getProviderDBConnectors().get(provider) // provider
+				.getIaaSServicesHashMap().get(serviceName) // service
+				.getComposedOf();
+
+		for (CloudResource cr : cloudResourceList) {
+			if (cr.getName().equals(resourceName)) {
+				return cr;
+			}
+		}
+
+		return null;
+	}
+
+	public List<String> getCloudResourceSizes(String provider,
+			String serviceName) {
+		List<CloudResource> cloudResourceList = cloudProviders
+				.getProviderDBConnectors().get(provider) // provider
+				.getIaaSServicesHashMap().get(serviceName) // service
+				.getComposedOf();
+
+		List<String> names = new ArrayList<String>(cloudResourceList.size());
+		for (CloudResource tmp : cloudResourceList) {
+			names.add(tmp.getName());
+		}
+		return names;
+	}
+
+	/**
+	 * Gets the cost specification of the resource.
+	 * 
+	 * @param provider
+	 *            the provider
+	 * @param serviceName
+	 *            the iass service name
+	 * @param resourceName
+	 *            the resource name
+	 * @return the cost
+	 */
+	public EList<Cost> getCost(String provider, String serviceName,
+			String resourceName) {
+		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
+		return cr.getHasCost();
+
+	}
+
+	/**
+	 * Build a IaaS resource from a cloud resource, currently supports only
+	 * Compute instances
+	 * 
+	 * @param service
+	 * @param cr
+	 * @return IaaS representation of the cloud resource object
+	 */
+	private IaaS getIaaSfromCloudResource(CloudService service, CloudResource cr) {
+
+		double speed = 0;
+		int numberOfCores = 0;
+		int ram = 0;
+
+		EList<VirtualHWResource> hw = cr.getComposedOf();
+		for (VirtualHWResource vhw : hw) {
+			if (vhw.getType() == VirtualHWResourceType.CPU) {
+				speed = vhw.getProcessingRate(); // speed
+				numberOfCores = vhw.getNumberOfReplicas();// number
+			} else if (vhw.getType() == VirtualHWResourceType.MEMORY) {
+				ram = ((V_Memory) vhw).getSize();
+			}
+
+		}
+		return new Compute(service.getName(), service.getId(),
+				service.getProvider(), service.getServiceType(),
+				service.getServiceName(), cr.getName(),
+				((IaaS) service).getReplicas(), numberOfCores, speed, ram);
+	}
+
+	/**
+	 * Gets the number of replicas.
+	 * 
+	 * @param provider
+	 *            the provider
+	 * @param iassServiceName
+	 *            the iass service name
+	 * @param resourceName
+	 *            the resource name
+	 * @return the number of replicas
+	 */
+	public Integer getNumberOfReplicas(String provider, String serviceName,
+			String resourceName) {
+
+		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
+		for (VirtualHWResource i : cr.getComposedOf()) {
+			if (i.getType() == VirtualHWResourceType.CPU) {
+				return i.getNumberOfReplicas();
+			}
+		}
+		/* In case of errors */
+		return -1;
+
+	}
 
 	/**
 	 * Gets the processing rate of the cpus.
-	 *
-	 * @param provider the id provider
-	 * @param serviceName the id iass service
-	 * @param resourceName the id resource
+	 * 
+	 * @param provider
+	 *            the id provider
+	 * @param serviceName
+	 *            the id iass service
+	 * @param resourceName
+	 *            the id resource
 	 * @return the speed
 	 */
-	public double getProcessingRate(String provider, String serviceName,  String resourceName){
+	public double getProcessingRate(String provider, String serviceName,
+			String resourceName) {
 
-		List<CloudResource> cr_list = cloudProviders
-				.getProviderDBConnectors()
-				.get(provider)  // provider
-				.getIaaSServicesHashMap()
-				.get(serviceName) //service
+		List<CloudResource> cloudResourceList = cloudProviders
+				.getProviderDBConnectors().get(provider) // provider
+				.getIaaSServicesHashMap().get(serviceName) // service
 				.getComposedOf();
 
 		CloudResource cr = null;
-		//here we lose the OS type distinction
-		for(CloudResource tmp:cr_list)
-			if(tmp.getName().equals(resourceName))
-				cr=tmp;			
+		// here we lose the OS type distinction
+		for (CloudResource tmp : cloudResourceList) {
+			if (tmp.getName().equals(resourceName)) {
+				cr = tmp;
+			}
+		}
 
 		for (VirtualHWResource i : cr.getComposedOf()) {
 			if (i.getType() == VirtualHWResourceType.CPU) {
@@ -98,184 +231,60 @@ public class DataHandler {
 	}
 
 	/**
-	 * returns a list of IaaS services with the provider and sarvice name equals to those of provided CloudService 
-	 * @param service - the original cloud service
-	 * @param region - the region
+	 * returns a list of IaaS services with the provider and sarvice name equals
+	 * to those of provided CloudService
+	 * 
+	 * @param service
+	 *            - the original cloud service
+	 * @param region
+	 *            - the region
 	 * @return a list of IaaS services
 	 */
-	public List<IaaS> getSameServiceResource(CloudService service, String region){
-		ArrayList<IaaS> resources = new ArrayList<>();
-		for(CloudResource cr:cloudProviders
-				.getProviderDBConnectors()
-				.get(service.getProvider())  // provider
-				.getIaaSServicesHashMap()
-				.get(service.getServiceName()) //service
-				.getComposedOf()){
+	public List<IaaS> getSameServiceResource(CloudService service, String region) {
+		List<IaaS> resources = new ArrayList<>();
+		for (CloudResource cr : cloudProviders.getProviderDBConnectors()
+				.get(service.getProvider()) // provider
+				.getIaaSServicesHashMap().get(service.getServiceName()) // service
+				.getComposedOf()) {
 
-			IaaS iaas = IaaSfromCloudResource(service, cr);		
-			for(Cost cost:cr.getHasCost()){
-				//if the iaas has not been already inserted AND (the region has not been specified OR it has the same region) 
-				if(!resources.contains(iaas) && (region==null || cost.getRegion().equals(region)))
+			IaaS iaas = getIaaSfromCloudResource(service, cr);
+			for (Cost cost : cr.getHasCost()) {
+				// if the iaas has not been already inserted AND (the region has
+				// not been specified OR it has the same region)
+				if (!resources.contains(iaas)
+						&& (region == null || cost.getRegion().equals(region))) {
 					resources.add(iaas);
+				}
 			}
 		}
 		return resources;
 	}
 
-
-	/**
-	 * Build a IaaS resource from a cloud resource, currently supports only Compute instances
-	 * @param service 
-	 * @param cr
-	 * @return IaaS representation of the cloud resource object
-	 */
-	private IaaS IaaSfromCloudResource(CloudService service, CloudResource cr) {
-
-		double speed= 0;
-		int numberOfCores = 0;
-		int ram = 0; 
-
-		EList<VirtualHWResource> hw = cr.getComposedOf();
-		for (VirtualHWResource vhw : hw) {
-			if (vhw.getType() == VirtualHWResourceType.CPU ) {
-				speed = vhw.getProcessingRate(); //speed
-				numberOfCores = vhw.getNumberOfReplicas();// number
-			} else if(vhw.getType() == VirtualHWResourceType.MEMORY)
-				ram = ((V_Memory) vhw).getSize();
-
-		}
-		return new Compute(service.getName(), 
-				service.getId(), 
-				service.getProvider(), 
-				service.getServiceType(),
-				service.getServiceName(), 
-				cr.getName(), 
-				((IaaS)service).getReplicas(), 
-				numberOfCores, 
-				speed, 
-				ram);
-	}
-
-
-	/**
-	 * Gets the number of replicas.
-	 *
-	 * @param provider the provider
-	 * @param iassServiceName the iass service name
-	 * @param resourceName the resource name
-	 * @return the number of replicas
-	 */
-	public Integer getNumberOfReplicas(String provider, String serviceName, String resourceName){
-
-		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
-		for (VirtualHWResource i : cr.getComposedOf()) {
-			if (i.getType() == VirtualHWResourceType.CPU) {
-				return i.getNumberOfReplicas();
-			}
-		}
-		/*In case of errors*/
-		return -1; 
-
-	}
-	/**
-	 * Gets the amount of memory of the the cloud resource.
-	 *
-	 * @param provider the provider
-	 * @param serviceName the iass service name
-	 * @param resourceName the resource name
-	 * @return the amount of ram 
-	 */
-	public Integer getAmountMemory(String provider, String serviceName, String resourceName){
-
-		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
-
-		for (VirtualHWResource i : cr.getComposedOf()) {
-			if (i.getType() == VirtualHWResourceType.MEMORY) {
-				/*a cast to V_Memory interface is needed*/ 
-				return ((V_Memory) i).getSize() ; 
-			}
-		}
-		/*In case of errors*/
-		return -1; 
-
-	}
-
-
-	/**
-	 * Gets the cost specification of the resource.
-	 *
-	 * @param provider the provider
-	 * @param serviceName the iass service name
-	 * @param resourceName the resource name
-	 * @return the cost
-	 */
-	public EList<Cost> getCost(String provider, String serviceName, String resourceName){
-		CloudResource cr = getCloudResource(provider, serviceName, resourceName);			
-		return cr.getHasCost();
-
-	}
-
-
-	public CloudResource getCloudResource(String provider, String serviceName,
-			String resourceName) {
-
-		List<CloudResource> cr_list = cloudProviders
-				.getProviderDBConnectors()
-				.get(provider)  // provider
-				.getIaaSServicesHashMap()
-				.get(serviceName) //service
-				.getComposedOf();
-
-		for(CloudResource cr:cr_list)
-			if(cr.getName().equals(resourceName))
-				return cr;
-
-		return null;
-	}
-
-
-	public List<String> getCloudResourceSizes(String provider, String serviceName) {
-		List<CloudResource> cr_list = cloudProviders
-				.getProviderDBConnectors()
-				.get(provider)  // provider
-				.getIaaSServicesHashMap()
-				.get(serviceName) //service
-				.getComposedOf();
-
-		List<String> names = new ArrayList<String>(cr_list.size()); 
-		for(CloudResource tmp:cr_list)			
-			names.add(tmp.getName());
-		return names;
-	}
-
-	public Set<String> getCloudProviders(){
-		return cloudProviders.getProviderDBConnectors().keySet();
-	}
-
-
 	public List<String> getServices(String provider, String serviceType) {
 
-		CloudResource expectedResource=null;
+		CloudResource expectedResource = null;
 		switch (serviceType) {
 		case "Compute":
 			expectedResource = CloudFactory.eINSTANCE.createCompute();
 			break;
+		default:
+			break;
 		}
-		List<IaaS_Service> iaasServices = 	cloudProviders.
-				getProviderDBConnectors().				
-				get(provider).	
-				getIaaSServices();
+		List<IaaS_Service> iaasServices = cloudProviders
+				.getProviderDBConnectors().get(provider).getIaaSServices();
 		List<String> filteredServices = new ArrayList<String>();
-		for(IaaS_Service service: iaasServices){
-			List<CloudResource> resources = service.getComposedOf();		
-			//if there is any resource and it is of a subtype of the expected one add the service to the list of filtered services 
-			//(we assume here that each service provide resources of the same type
-			if(!resources.isEmpty() && resources.get(0).getClass().isAssignableFrom(expectedResource.getClass())){
+		for (IaaS_Service service : iaasServices) {
+			List<CloudResource> resources = service.getComposedOf();
+			// if there is any resource and it is of a subtype of the expected
+			// one add the service to the list of filtered services
+			// (we assume here that each service provide resources of the same
+			// type
+			if (!resources.isEmpty()
+					&& resources.get(0).getClass()
+							.isAssignableFrom(expectedResource.getClass())) {
 				filteredServices.add(service.getName());
 			}
 		}
 		return filteredServices;
 	}
-
-
 }

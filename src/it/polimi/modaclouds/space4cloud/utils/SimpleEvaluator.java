@@ -31,8 +31,11 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.slf4j.Logger;
 
 import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
 
@@ -47,6 +50,8 @@ public class SimpleEvaluator {
 	private Logger2JFreeChartImage vmLogger;
 	private Logger2JFreeChartImage rtLogger;
 	private Logger2JFreeChartImage utilLogger;
+	
+	protected static final Logger logger = LoggerHelper.getLogger(SimpleEvaluator.class);
 
 	public SimpleEvaluator() {
 
@@ -291,7 +296,11 @@ public class SimpleEvaluator {
 			}	
 
 		//init vm Logger
-		vmLogger = new Logger2JFreeChartImage("vmCount.properties");
+		try {
+			vmLogger = new Logger2JFreeChartImage("vmCount.properties");
+		} catch (NumberFormatException | IOException e) {
+			logger.error("Unable to create vmLogger",e);
+		}
 		HashMap<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
 		for(Tier t:initialSolution.getApplication(0).getTiersByResourceName().values())
 			if(t.getId().contains("CPU"))
@@ -305,7 +314,11 @@ public class SimpleEvaluator {
 
 
 		//init response time logger
-		rtLogger = new Logger2JFreeChartImage("responseTime.properties");
+		try {
+			rtLogger = new Logger2JFreeChartImage("responseTime.properties");
+		} catch (NumberFormatException | IOException e) {
+			logger.error("Unable to create rtLogger",e);
+		}
 		HashMap<String, SeriesHandle> rtSeriesHandlers = new HashMap<>();
 		
 		ArrayList<String> functionalities = new ArrayList<>();
@@ -327,7 +340,11 @@ public class SimpleEvaluator {
 
 
 		//init utilization logger
-		utilLogger = new Logger2JFreeChartImage("utilization.properties");
+		try {
+			utilLogger = new Logger2JFreeChartImage("utilization.properties");
+		} catch (NumberFormatException | IOException e) {
+			logger.error("Unable to create utilLogger",e);
+		}
 		HashMap<String, SeriesHandle> utilSeriesHandlers = new HashMap<>();
 
 		for(String s:utilizations.get(0).keySet())

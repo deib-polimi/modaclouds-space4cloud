@@ -29,8 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Michele Ciavotta
- * This class loads the providers from the database and puts them into an HashMap dictionary.
+ * @author Michele Ciavotta This class loads the providers from the database and
+ *         puts them into an HashMap dictionary.
  * 
  * @see CloudProvidersList
  */
@@ -43,15 +43,15 @@ public class CloudProvidersDictionary {
 	 * Initialize the instance retrieving the available Cloud Providers from the
 	 * database. For each Cloud Provider, a Provider DB Connector is created and
 	 * added to the HashMap of available Provider DB Connectors.
-	 * @throws SQLException 
+	 * 
+	 * @throws SQLException
 	 * 
 	 * @see ProviderDBConnector
 	 * @see CloudProvider
 	 */
 	public CloudProvidersDictionary() throws SQLException {
-		/*dictionary creation*/
+		/* dictionary creation */
 		Map<String, ProviderDBConnector> dict = new HashMap<>();
-
 
 		Connection db = new DatabaseConnector().getConnection();
 		ResultSet rs = db.createStatement().executeQuery(
@@ -62,7 +62,7 @@ public class CloudProvidersDictionary {
 			cp = cf.createCloudProvider();
 			cp.setId(rs.getInt(1));
 			cp.setName(rs.getString(2));
-			/*watch out: two providers cannot have the same name*/
+			/* watch out: two providers cannot have the same name */
 			dict.put(cp.getName(), new ProviderDBConnector(cp));
 		}
 
@@ -78,6 +78,5 @@ public class CloudProvidersDictionary {
 	public Map<String, ProviderDBConnector> getProviderDBConnectors() {
 		return providerDBConnectors;
 	}
-
 
 }

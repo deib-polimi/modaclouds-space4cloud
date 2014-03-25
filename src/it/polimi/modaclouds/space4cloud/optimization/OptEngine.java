@@ -147,9 +147,9 @@ public class OptEngine extends SwingWorker<Void, Void>{
 	protected Logger logger = LoggerHelper.getLogger(EvaluationServer.class);
 	//protected Logger loggerCurrent = LoggerFactory.getLogger("xdasLogger");
 
-	protected Logger2JFreeChartImage log2png = new Logger2JFreeChartImage();
-	protected Logger2JFreeChartImage logVm = new Logger2JFreeChartImage("vmCount.properties");
-	protected Logger2JFreeChartImage logConstraints = new Logger2JFreeChartImage("constraints.properties");
+	protected Logger2JFreeChartImage log2png;
+	protected Logger2JFreeChartImage logVm;
+	protected Logger2JFreeChartImage logConstraints;
 
 	/**
 	 * Instantiates a new opt engine.
@@ -158,6 +158,16 @@ public class OptEngine extends SwingWorker<Void, Void>{
 	 *            : the constraint handler
 	 */
 	public OptEngine(ConstraintHandler handler) {
+		
+		try {
+			log2png = new Logger2JFreeChartImage();
+			logVm = new Logger2JFreeChartImage("vmCount.properties");
+		logConstraints = new Logger2JFreeChartImage("constraints.properties");
+		} catch (NumberFormatException | IOException e) {
+			logger.error("Unable to create chart loggers",e);
+			
+		}
+		
 		
 
 		initByProperties("OptEngine.properties");
@@ -879,10 +889,14 @@ public class OptEngine extends SwingWorker<Void, Void>{
 		}
 
 
-		log2png.save2png();
-		logVm.save2png();
-		logConstraints.save2png();
-
+		try {
+			log2png.save2png();
+			logVm.save2png();
+			logConstraints.save2png();
+		} catch (IOException e) {
+			logger.error("Unable to create charts",e);
+		}
+	
 		logger.warn(bestSolution.showStatus());
 		System.out.println(bestSolution.showStatus());
 		bestSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY+"solution.xml");

@@ -46,7 +46,8 @@ public class CloudProvidersList {
 	 * Initialize the instance retrieving the available Cloud Providers from the
 	 * database. For each Cloud Provider, a Provider DB Connector is created and
 	 * added to the list of available Provider DB Connectors.
-	 * @throws SQLException 
+	 * 
+	 * @throws SQLException
 	 * 
 	 * @see ProviderDBConnector
 	 * @see CloudProvider

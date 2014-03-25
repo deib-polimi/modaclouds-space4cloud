@@ -23,22 +23,25 @@ import org.slf4j.Logger;
 
 public class DataHandlerFactory {
 
-	//hides the public constructor
-	private DataHandlerFactory(){};
+	private static DataHandler instance = null;;
 
+	private static final Logger logger = LoggerHelper
+			.getLogger(DataHandlerFactory.class);
 
-	private static DataHandler instance = null;
-	private static final Logger logger = LoggerHelper.getLogger(DataHandlerFactory.class);
-
-	public static DataHandler getHandler(){
-		if(instance == null){
+	public static DataHandler getHandler() {
+		if (instance == null) {
 			try {
 				instance = new DataHandler();
-			} catch (SQLException e) {							
-				logger.error("Error building the data handler"+e);
+			} catch (SQLException e) {
+				logger.error("Error building the data handler", e);
 			}
 		}
 		return instance;
+	}
+
+	// hides the public constructor
+	private DataHandlerFactory() {
+
 	}
 
 }
