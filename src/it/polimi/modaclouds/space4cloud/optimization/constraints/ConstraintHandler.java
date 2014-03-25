@@ -63,7 +63,7 @@ public class ConstraintHandler {
 		Document doc = dBuilder.parse(constraintFile);
 		doc.getDocumentElement().normalize();
 
-		NodeList list = doc.getElementsByTagName("Constraint");
+		NodeList list = doc.getElementsByTagName("constraint");
 
 		for(int i=0;i<list.getLength();i++){
 			Node n=list.item(i);
