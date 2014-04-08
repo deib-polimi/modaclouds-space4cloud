@@ -26,6 +26,7 @@ import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,8 +48,8 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	private DocumentBuilderFactory dbFactory;
 	private DocumentBuilder dBuilder;
 	private transient Document resultDOM;	
-	private HashMap<String, Double> utilizations = new HashMap<>();
-	private HashMap<String, Double> responseTimes = new HashMap<>();
+	private Map<String, Double> utilizations = new HashMap<>();
+	private Map<String, Double> responseTimes = new HashMap<>();
 
 	//since Path s not serializable we put it into a string 
 	private void writeObject(ObjectOutputStream out) throws IOException
@@ -165,13 +166,13 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	}
 
 	@Override
-	public HashMap<String, Double> getUtilizations() {
+	public Map<String, Double> getUtilizations() {
 		// TODO Auto-generated method stub
 		return utilizations;
 	}
 
 	@Override
-	public HashMap<String, Double> getResponseTimes() {
+	public Map<String, Double> getResponseTimes() {
 		// TODO Auto-generated method stub
 		return responseTimes;
 	}

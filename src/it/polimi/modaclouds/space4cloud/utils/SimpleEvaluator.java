@@ -22,7 +22,6 @@ import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LQNSResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
@@ -34,6 +33,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 
@@ -257,8 +257,8 @@ public class SimpleEvaluator {
 
 		//code for the demo
 
-		HashMap<Integer,HashMap<String, Double>> utilizations = new HashMap<>();
-		HashMap<Integer,HashMap<String, Double>> responseTimes= new HashMap<>();
+		Map<Integer,Map<String, Double>> utilizations = new HashMap<>();
+		Map<Integer,Map<String, Double>> responseTimes= new HashMap<>();
 		File resultFolder = new File(c.ABSOLUTE_WORKING_DIRECTORY+System.getProperty("file.separator")+c.PERFORMANCE_RESULTS_FOLDER);
 		File[] subFolder = resultFolder.listFiles();
 		final String resultFileIdentifier;
@@ -291,7 +291,7 @@ public class SimpleEvaluator {
 					parser = new LQNSResultParser(resultFiles[0].toPath());			
 				else
 					parser = new LINEResultParser(resultFiles[0].toPath());		
-				utilizations.put(hour,parser.getUtilizations());				
+				utilizations.put(hour,parser.getUtilizations());	
 				responseTimes.put(hour,parser.getResponseTimes());
 			}	
 

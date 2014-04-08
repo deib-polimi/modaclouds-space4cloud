@@ -42,31 +42,37 @@ public class XMLFileSelection {
 
 
 	File file = null;
-
+	boolean canceled = true;
+	Constants c; 
+	JFileChooser fileChooser;
 	/**
 	 * Creates the window and asks to search for the file.
 	 * @param string 
 	 */
 	public  XMLFileSelection(String title) 
 	{		
-		Constants c = Constants.getInstance();
-
-		JFileChooser fileChooser = new JFileChooser(c.ABSOLUTE_WORKING_DIRECTORY);
+		c = Constants.getInstance();
+		 fileChooser = new JFileChooser(c.ABSOLUTE_WORKING_DIRECTORY);
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("XML files", "xml");
 		fileChooser.setFileFilter(filter);
-		fileChooser.setDialogTitle(title);
-		int returnVal = fileChooser.showOpenDialog(null);
-
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			file = fileChooser.getSelectedFile();			
-		} else {
-			System.out.println("Open command cancelled by user.");
-		}
-
+		fileChooser.setDialogTitle(title);		
 	}
 
 	public File getFile() {
 		return file;
+	}
+
+	public boolean isCanceled() {
+		return canceled;
+	}
+
+	public void askFile() {
+		int returnVal = fileChooser.showOpenDialog(null);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			file = fileChooser.getSelectedFile();
+			canceled = false;
+		}
+
 	}
 }
 
