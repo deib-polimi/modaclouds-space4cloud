@@ -49,7 +49,7 @@ import org.xml.sax.SAXException;
  */
 public class ConstraintHandler {
 
-	ArrayList<Constraint> constraints = new ArrayList<>();
+	List<Constraint> constraints = new ArrayList<>();
 
 	public void addConstraint(Constraint constraint){
 		this.constraints.add(constraint);
@@ -67,39 +67,38 @@ public class ConstraintHandler {
 
 		for(int i=0;i<list.getLength();i++){
 			Node n=list.item(i);
-			//System.out.println("Node: "+n.getNodeName()+" Type: "+n.getNodeType());
-			Element n_elem = (Element) n;			
+			Element nElem = (Element) n;			
 
 			//get the resource ID
-			String resourceId = n_elem.getElementsByTagName("targetResourceIDRef").item(0).getTextContent();		
+			String resourceId = nElem.getElementsByTagName("targetResourceIDRef").item(0).getTextContent();		
 
 			//get the metric of the constraint
 			Metric metric = Metric.getMetricFromTag(
-					n_elem.getElementsByTagName("metric").item(0).getTextContent());				
+					nElem.getElementsByTagName("metric").item(0).getTextContent());				
 			//get the unit
 			Unit unit = Unit.getUnitFromTag(
-					n_elem.getElementsByTagName("unit").item(0).getTextContent());
+					nElem.getElementsByTagName("unit").item(0).getTextContent());
 
 			//get the strictness level
 			int priority = 0;
-			if(n_elem.getElementsByTagName("priority").getLength() > 0)
-				priority = Integer.parseInt(n_elem.getElementsByTagName("priority").item(0).getTextContent());
+			if(nElem.getElementsByTagName("priority").getLength() > 0)
+				priority = Integer.parseInt(nElem.getElementsByTagName("priority").item(0).getTextContent());
 
 			double max = Double.POSITIVE_INFINITY;
-			if(n_elem.getElementsByTagName("hasMaxValue").getLength() > 0)
-				max = Double.parseDouble(n_elem.getElementsByTagName("hasMaxValue").item(0).getTextContent());
+			if(nElem.getElementsByTagName("hasMaxValue").getLength() > 0)
+				max = Double.parseDouble(nElem.getElementsByTagName("hasMaxValue").item(0).getTextContent());
 
 			double min = Double.NEGATIVE_INFINITY;
-			if(n_elem.getElementsByTagName("hasMinValue").getLength() > 0)
-				min = Double.parseDouble(n_elem.getElementsByTagName("hasMinValue").item(0).getTextContent());
+			if(nElem.getElementsByTagName("hasMinValue").getLength() > 0)
+				min = Double.parseDouble(nElem.getElementsByTagName("hasMinValue").item(0).getTextContent());
 
 			Set<String> inSet;
-			if(n_elem.getElementsByTagName("inSet").getLength() > 0)
-				inSet = parseSet(n_elem.getElementsByTagName("inSet").item(0).getTextContent());
+			if(nElem.getElementsByTagName("inSet").getLength() > 0)
+				inSet = parseSet(nElem.getElementsByTagName("inSet").item(0).getTextContent());
 
 			Set<String> outSet;
-			if(n_elem.getElementsByTagName("outSet").getLength() > 0)
-				outSet = parseSet(n_elem.getElementsByTagName("outSet").item(0).getTextContent());
+			if(nElem.getElementsByTagName("outSet").getLength() > 0)
+				outSet = parseSet(nElem.getElementsByTagName("outSet").item(0).getTextContent());
 
 			//Create the constraint													
 			Constraint constraint = null;				
