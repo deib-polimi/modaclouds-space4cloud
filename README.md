@@ -17,6 +17,8 @@ Then apply the patch de.uka.ipd.sdq.pcmsolver.patch that can be found under Pall
 
 The interaction with the resource model DB is performed by [MySQL Connector/J]{http://dev.mysql.com/downloads/connector/j/} and needs the resource model meta model hosted in the [modaclouds-resourcemodel](https://github.com/deib-polimi/modaclouds-resourcemodel) repository. 
 
+Dependencies to non plugin artifacts are managed by maven, in order to link needed jars in the maven repository to the workspace (under target/dependencies folder) run mvn dependency:copy-dependencies then compile the project. 
+
 To run the code make a new Eclipse Application run configuration as shown [here](http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.pde.doc.user%2Fguide%2Ftools%2Flaunchers%2Feclipse_application_launcher.htm) and specify the following VM arguments:
 ```java
 -Dosgi.requiredJavaVersion=1.5 -Dhelp.lucene.tokenizer=standard -Xms64m -Xmx512m -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=128M
