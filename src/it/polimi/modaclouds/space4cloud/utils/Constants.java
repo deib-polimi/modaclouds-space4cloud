@@ -19,7 +19,6 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
 import java.io.File;
-import java.net.URL;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 
@@ -97,7 +96,36 @@ public class Constants {
 	 * Instantiates a new constants.
 	 */
 	private Constants() {
+		changeWorkingDirectory("space4cloud");
 
+//		if (WORKING_DIR == null) {
+//			String s = "";
+//
+//			s = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0]
+//					.getLocation().toOSString();
+//
+//
+//			PROJECT_PATH = s;
+//		} else
+//			PROJECT_PATH = WORKING_DIR;
+//		PROJECT_NAME = PROJECT_PATH.substring(PROJECT_PATH
+//				.lastIndexOf(File.separator) + 1);				
+//		WORKING_DIRECTORY = "space4cloud";							
+//		ABSOLUTE_WORKING_DIRECTORY = PROJECT_PATH + File.separator
+//				+ WORKING_DIRECTORY + File.separator;
+//		REL_WORKING_DIRECTORY = PROJECT_NAME + File.separator
+//				+ WORKING_DIRECTORY;
+//
+//		LOG4J_PROP_FILE = this.getClass().getResource("/log/log4j.properties").toString();
+//		System.out.println("Project Name: " + PROJECT_NAME);
+//		System.out.println("Project Path: " + PROJECT_PATH);
+//		System.out.println("Working Directory: " + WORKING_DIRECTORY);
+//		System.out.println("Full Working Directory: " + ABSOLUTE_WORKING_DIRECTORY);
+//		System.out.println("Relative Working Directory: "
+//				+ REL_WORKING_DIRECTORY);
+	}
+	
+	public void changeWorkingDirectory(String workingDirectory) {
 		if (WORKING_DIR == null) {
 			String s = "";
 
@@ -110,7 +138,7 @@ public class Constants {
 			PROJECT_PATH = WORKING_DIR;
 		PROJECT_NAME = PROJECT_PATH.substring(PROJECT_PATH
 				.lastIndexOf(File.separator) + 1);				
-		WORKING_DIRECTORY = "space4cloud";							
+		WORKING_DIRECTORY = workingDirectory;							
 		ABSOLUTE_WORKING_DIRECTORY = PROJECT_PATH + File.separator
 				+ WORKING_DIRECTORY + File.separator;
 		REL_WORKING_DIRECTORY = PROJECT_NAME + File.separator
@@ -135,7 +163,7 @@ public class Constants {
 			instance = new Constants();
 		return instance;
 	}
-
+	
 	/**
 	 * Inits the.
 	 *
@@ -148,7 +176,5 @@ public class Constants {
 	public static void clear() {
 		instance = null;
 	}
-
-
 
 }

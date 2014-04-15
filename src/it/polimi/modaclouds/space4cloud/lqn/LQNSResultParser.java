@@ -70,6 +70,11 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 		dbFactory = DocumentBuilderFactory.newInstance();
 		try {
 			dBuilder = dbFactory.newDocumentBuilder();
+			
+			// TODO: sometimes the temporary file has a name ending with a tilde (why is that?)
+			if (!filePath.toFile().exists())
+				filePath = Paths.get(filePath.toString() + "~");
+			
 			resultDOM = dBuilder.parse(filePath.toFile());
 			resultDOM.getDocumentElement().normalize();
 		} catch (ParserConfigurationException e) {
