@@ -15,14 +15,31 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-public class ResourceEnvironmentExtentionLoader extends ExtensionParser {
+/**
+ * @author GiovanniPaolo
+ * Loads the extension of the Palladio resource environment model as defined in "resource_model_extension.xsd" under https://github.com/deib-polimi/modaclouds-qos-models, s4cextension branch  
+ */
+public class ResourceEnvironmentExtentionLoader extends ResourceEnvironmentExtensionParser {
 
+	/**
+	 * 
+	 * @param extensionFile xml file containing the extension of the model 
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws JAXBException
+	 */
 	public ResourceEnvironmentExtentionLoader(File extensionFile)
 			throws ParserConfigurationException, SAXException, IOException,
 			JAXBException {
+		//build structures
 		super(extensionFile, false);
+
+		//load the model 
 		ResourceModelExtension loadedExtension = XMLHelper.deserialize(
 				extension.toURI().toURL(), ResourceModelExtension.class);
+		
+		//fill structures
 		for (ResourceContainer container : loadedExtension
 				.getResourceContainer()) {
 			String id = container.getId();
@@ -33,10 +50,11 @@ public class ResourceEnvironmentExtentionLoader extends ExtensionParser {
 				serviceNames.put(id, resource.getServiceName());
 				instanceSizes.put(id, resource.getResourceSizeID());
 				String location = resource.getLocation().getRegion();
-				if(resource.getLocation().getZone() != null)
+				if(resource.getLocation().getZone() != null){
 					location += resource.getLocation().getZone();
+				}
 				serviceLocations.put(id, location);
-				int replicas[] = new int[HOURS];
+				int[] replicas = new int[HOURS];
 				for (int i = 0; i<HOURS;i++) {
 					replicas[i] = 1;
 				}

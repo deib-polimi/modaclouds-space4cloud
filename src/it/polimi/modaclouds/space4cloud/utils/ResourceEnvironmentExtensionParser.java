@@ -37,7 +37,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class ExtensionParser {
+public class ResourceEnvironmentExtensionParser {
 
 	protected File extension;
 	protected Map<String, String> serviceTypes = new HashMap<>();
@@ -53,7 +53,7 @@ public class ExtensionParser {
 	Document doc;
 
 
-	public ExtensionParser(File extensionFile,boolean parse)
+	public ResourceEnvironmentExtensionParser(File extensionFile,boolean parse)
 			throws ParserConfigurationException, SAXException, IOException {
 
 		this.extension = extensionFile;
@@ -61,7 +61,7 @@ public class ExtensionParser {
 			parse();
 	}
 
-	public ExtensionParser(File extensionFile) throws ParserConfigurationException, SAXException, IOException{
+	public ResourceEnvironmentExtensionParser(File extensionFile) throws ParserConfigurationException, SAXException, IOException{
 		this(extensionFile,true);
 	}
 

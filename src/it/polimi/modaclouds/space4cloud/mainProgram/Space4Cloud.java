@@ -54,6 +54,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -563,7 +565,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// plotting the number of VMs
 		Logger2JFreeChartImage vmLogger = new Logger2JFreeChartImage(
 				"vmCount.properties");
-		HashMap<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
+		Map<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
 		for (Tier t : providedSolution.getApplication(0)
 				.getTiersByResourceName().values()) {
 			vmSeriesHandlers.put(t.getId(), vmLogger.newSeries(t.getId()));
@@ -580,7 +582,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// plotting the response Times
 		Logger2JFreeChartImage rtLogger = new Logger2JFreeChartImage(
 				"responseTime.properties");
-		HashMap<String, SeriesHandle> rtSeriesHandlers = new HashMap<>();
+		Map<String, SeriesHandle> rtSeriesHandlers = new HashMap<>();
 		for (Tier t : providedSolution.getApplication(0)
 				.getTiersByResourceName().values())
 			for (Component c : t.getComponents())
@@ -601,7 +603,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// plotting the utilization
 		Logger2JFreeChartImage utilLogger = new Logger2JFreeChartImage(
 				"utilization.properties");
-		HashMap<String, SeriesHandle> utilSeriesHandlers = new HashMap<>();
+		Map<String, SeriesHandle> utilSeriesHandlers = new HashMap<>();
 		for (Tier t : providedSolution.getApplication(0)
 				.getTiersByResourceName().values())
 			utilSeriesHandlers.put(t.getId(), utilLogger.newSeries(t.getId()));
@@ -690,7 +692,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		// if we want to check the robustness of the solution, a number of
 		// modifications of the usage model file must be created.
-		ArrayList<File> usageModelExtFiles = new ArrayList<File>();
+		List<File> usageModelExtFiles = new ArrayList<File>();
 		if (functionality == ROBUSTNESS) {
 			// usageModelExtFiles.add(generateModifiedUsageModelExt(usageModelExtFile,
 			// 0.3));
@@ -755,7 +757,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// e.printStackTrace();
 		// }
 
-		ArrayList<File> solutions = new ArrayList<File>();
+		List<File> solutions = new ArrayList<File>();
 		int terminated = 0;
 		{
 			File f = new File(c.PROJECT_PATH + File.separator + resFolder

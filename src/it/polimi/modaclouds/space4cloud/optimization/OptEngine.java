@@ -38,7 +38,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
-import it.polimi.modaclouds.space4cloud.utils.ExtensionParser;
+import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
 import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
@@ -611,7 +611,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			SAXException, IOException, JAXBException {
 		initialSolution = new Solution();
 		// parse the extension file		
-		ExtensionParser resourceEnvParser= new ResourceEnvironmentExtentionLoader(
+		ResourceEnvironmentExtensionParser resourceEnvParser= new ResourceEnvironmentExtentionLoader(
 				resourceEnvExtension);
 		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(
 				usageModelExtension);

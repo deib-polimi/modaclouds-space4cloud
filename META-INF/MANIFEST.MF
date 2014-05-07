@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  de.uka.ipd.sdq.pcmsolver;bundle-version="3.0.0",
  org.apache.commons.lang;bundle-version="2.6.0",
  org.eclipse.emf.ecore;bundle-version="2.9.2",
- it.polimi.modaclouds.resourcemodel
+ it.polimi.modaclouds.resourcemodel,
+ org.junit
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: de.uka.ipd.sdq.identifier,
