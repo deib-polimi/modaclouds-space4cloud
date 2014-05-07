@@ -38,7 +38,18 @@ public class Constants {
 	/** The wdir. */
 	private static String WORKING_DIR;
 
+	/** Label for the Optimization Functionality*/
+	public static final String OPTIMIZATION = "Optimization";
 
+	/** Label for the Assesment Functionality*/
+	public static final String ASSESSMENT = "Assessment";
+	
+	/** Label for the Robustness Functionality*/
+	public static final String ROBUSTNESS = "Robustness";
+	
+	/** Label for the Cancel Functionality*/
+	public static final String CANCEL = "Cancel";
+	
 	/** The instance. */
 	private static Constants instance;
 

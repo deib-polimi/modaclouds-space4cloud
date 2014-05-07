@@ -19,28 +19,25 @@ import org.xml.sax.SAXException;
 public class UsageModelExtensionParser {
 
 	private static final int HOURS = 24;
-	private Map<String,Integer[]> populations = new HashMap<String,Integer[]>();
-	public Map<String, Integer[]> getPopulations() {
-		return populations;
-	}
-
-	public Map<String, Double[]> getThinkTimes() {
-		return thinkTimes;
-	}
-
-	private Map<String,Double[]> thinkTimes= new HashMap<String,Double[]>();
-
-
+	protected Map<String,Integer[]> populations = new HashMap<String,Integer[]>();
+	protected Map<String,Double[]> thinkTimes= new HashMap<String,Double[]>();
 	private DocumentBuilderFactory dbFactory;
 	private DocumentBuilder dBuilder;
 	private Document doc;
 	private File extension;
 	private static final Logger logger = LoggerHelper.getLogger(UsageModelExtensionParser.class);
 
-	public UsageModelExtensionParser(File extensionFile) throws ParserConfigurationException, SAXException, IOException {
-
-
+	public UsageModelExtensionParser(File extensionFile, boolean parse) throws ParserConfigurationException, SAXException, IOException {
 		this.extension = extensionFile;
+		if(parse)
+			parse();
+	}
+
+	public UsageModelExtensionParser(File extensionFile) throws ParserConfigurationException, SAXException, IOException {
+		this(extensionFile,true);
+	}
+
+	private void parse() throws ParserConfigurationException, SAXException, IOException{	
 		dbFactory = DocumentBuilderFactory.newInstance();
 		dBuilder = dbFactory.newDocumentBuilder();
 		doc = dBuilder.parse(extension);
@@ -85,5 +82,16 @@ public class UsageModelExtensionParser {
 			}
 		}
 
+	}
+	public Map<String, Integer[]> getPopulations() {
+		return populations;
+	}
+
+	public Map<String, Double[]> getThinkTimes() {
+		return thinkTimes;
+	}
+
+	protected File getExtension() {
+		return extension;
 	}
 }

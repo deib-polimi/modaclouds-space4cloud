@@ -133,11 +133,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected Cache<String, String> Memory;
 
 	protected SeriesHandle seriesHandler;
+
 	protected Random random = new Random(0);
-
 	protected int numIterNoImprov = 0;
-	protected int numTotImpr = 0;
 
+	protected int numTotImpr = 0;
 	protected StopWatch timer = new StopWatch();
 
 	protected EvaluationProxy evalProxy;
@@ -146,9 +146,9 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	// protected Logger loggerCurrent = LoggerFactory.getLogger("xdasLogger");
 
 	protected Logger2JFreeChartImage log2png;
+
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraints;
-
 	/**
 	 * Instantiates a new opt engine.
 	 * 
@@ -212,7 +212,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		timer.start();
 		timer.split();
 		evalProxy.EvaluateSolution(initialSolution);
-		System.out.println(initialSolution.showStatus());
 		logger.warn(initialSolution.showStatus());
 	}
 
@@ -412,6 +411,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		return evalProxy;
 	}
 
+	public Solution getInitialSolution() {
+		return initialSolution;
+	}
+
 	public int getMaxIterations() {
 		return MAXITERATIONS;
 	}
@@ -607,12 +610,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			File usageModelExtension) throws ParserConfigurationException,
 			SAXException, IOException, JAXBException {
 		initialSolution = new Solution();
-		// parse the extension file
-		ExtensionParser resourceEnvParser = new ExtensionParser(
+		// parse the extension file		
+		ExtensionParser resourceEnvParser= new ResourceEnvironmentExtentionLoader(
 				resourceEnvExtension);
-		ExtensionParser resourceEnvParserJaxb = new ResourceEnvironmentExtentionLoader(
-				resourceEnvExtension);
-		UsageModelExtensionParser usageModelParser = new UsageModelExtensionParser(
+		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(
 				usageModelExtension);
 
 		// set the region
@@ -650,7 +651,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			Path lqnModelPath = models[0].toPath();
 			application.initLqnHandler(lqnModelPath);
 
-			// add population and think time from usage model extension
+			// add population and think time from usage model extension considering a single usage scenario
 			int population = -1;
 			double thinktime = -1;
 			if (usageModelParser.getPopulations().size() == 1)
@@ -814,6 +815,23 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			evalProxy.evaluateInstance(application, c.SOLVER);
 			// initialSolution.showStatus();
 		}
+	}
+
+	public void loadInitialSolutionObject(File file) {
+		FileInputStream fis = null;
+		ObjectInputStream in = null;
+		try {
+			fis = new FileInputStream(file);
+			in = new ObjectInputStream(fis);
+			initialSolution = (Solution) in.readObject();
+			in.close();
+			fis.close();
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			logger.error(sw.toString());
+		}
+		System.out.println("Deserialized: " + initialSolution);
 	}
 
 	/**
@@ -1007,6 +1025,25 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	}
 
+	public void SerializeInitialSolution(File file) {
+		System.out.println("Serializing: " + initialSolution);
+		FileOutputStream fos = null;
+		ObjectOutputStream out = null;
+		try {
+			fos = new FileOutputStream(file);
+			out = new ObjectOutputStream(fos);
+			out.writeObject(initialSolution);
+			out.close();
+		} catch (Exception e) {
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			logger.error(sw.toString());
+		}
+
+		initialSolution = null;
+
+	}
+
 	/**
 	 * Sets the initial solution.
 	 * 
@@ -1078,42 +1115,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			this.numIterNoImprov += 1;
 		}
 
-	}
-
-	public void SerializeInitialSolution(File file) {
-		System.out.println("Serializing: " + initialSolution);
-		FileOutputStream fos = null;
-		ObjectOutputStream out = null;
-		try {
-			fos = new FileOutputStream(file);
-			out = new ObjectOutputStream(fos);
-			out.writeObject(initialSolution);
-			out.close();
-		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			logger.error(sw.toString());
-		}
-
-		initialSolution = null;
-
-	}
-
-	public void loadInitialSolutionObject(File file) {
-		FileInputStream fis = null;
-		ObjectInputStream in = null;
-		try {
-			fis = new FileInputStream(file);
-			in = new ObjectInputStream(fis);
-			initialSolution = (Solution) in.readObject();
-			in.close();
-			fis.close();
-		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			logger.error(sw.toString());
-		}
-		System.out.println("Deserialized: " + initialSolution);
 	}
 
 }
