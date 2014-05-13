@@ -12,16 +12,21 @@ import org.slf4j.LoggerFactory;
 
 public class LoggerHelper {
 	
+	private static final String DEFAULT_LOG_FILE = "log4j.appender.file.File";
+	private static final String LINEPERF_LOG_FILE = "log4j.appender.linePerf.File";
+
 	public static Logger getLogger(Class clazz){
 		Properties props = new Properties();
 		try {						
 			props.load(new URL(Constants.LOG4J_PROP_FILE).openStream());
-			Path logFilePath = Paths.get(Constants.getInstance().ABSOLUTE_WORKING_DIRECTORY,"space4cloud.log").toAbsolutePath();
-			props.setProperty("log4j.appender.file.File", logFilePath.toString());
+			Path logFilePath = Paths.get(Constants.getInstance().ABSOLUTE_WORKING_DIRECTORY,props.getProperty(DEFAULT_LOG_FILE)).toAbsolutePath();
+			props.setProperty(DEFAULT_LOG_FILE, logFilePath.toString());
+			Path lineLogFilePath = Paths.get(Constants.getInstance().ABSOLUTE_WORKING_DIRECTORY,props.getProperty(LINEPERF_LOG_FILE)).toAbsolutePath();
+			props.setProperty(LINEPERF_LOG_FILE, lineLogFilePath.toString());			
 			PropertyConfigurator.configure(props);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}		
 		return LoggerFactory.getLogger(clazz);
 	}
 	

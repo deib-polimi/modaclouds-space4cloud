@@ -15,11 +15,15 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang.time.StopWatch;
 
 public class Logger implements Runnable {
 	private BufferedReader in;
@@ -27,6 +31,10 @@ public class Logger implements Runnable {
 	private boolean running = false;
 	private boolean connected = false;
 	private Map<String,String> evaluations = new HashMap<String, String>();
+	private Map<String, StopWatch> timers= new HashMap<String,StopWatch>();
+	private static final org.slf4j.Logger logger = LoggerHelper.getLogger(Logger.class);
+	private static final Object SUBMITTED = "SUBMITTED";
+	private static final Object SOLVED = "SOLVED";
 
 	String prefix="";
 	public Logger(BufferedReader in, String prefix) {
@@ -100,14 +108,29 @@ public class Logger implements Runnable {
 		if(tokens.length == 4)
 			status = tokens[3];
 		else
-			status = tokens[2];
+			status = tokens[2];		
 		evaluations.put(modelName,status);
+		
+		if(status.equals(SUBMITTED)){
+			StopWatch timer = new StopWatch();
+			timer.start();
+			timers.put(modelName, timer);
+		}else if(status.equals(SOLVED)){
+			timers.get(modelName).stop();
+			logTime(modelName);
+		}
+		
+		
 	}
 	
 	public synchronized boolean isModelEvaluated(String modelPath){
 		modelPath = Paths.get(modelPath).toString();
 		return evaluations.containsKey(modelPath) && evaluations.get(modelPath).equals("SOLVED");		
 		//TODO clear the model form the map?
+	}
+	
+	private void logTime(String modelName){
+		logger.info(modelName+", "+evaluations.get(modelName)+", "+timers.get(modelName).getTime());
 	}
 
 

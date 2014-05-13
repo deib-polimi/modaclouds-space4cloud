@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2013 sp1 (http://www.altova.com) by ﻿Gibbo (GB) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:lrs="http://www.modaclouds.eu/xsd/2013/6/lineResult" targetNamespace="http://www.modaclouds.eu/xsd/2013/6/lineResult" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="cmcqn-model">
+		<xs:annotation>
+			<xs:documentation>Comment describing your root element</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="lrs:processor" maxOccurs="unbounded"/>
+				<xs:element ref="lrs:workload" maxOccurs="unbounded"/>
+				<xs:element ref="lrs:SEFF" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="name"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="processor">
+		<xs:complexType>
+			<xs:attribute name="name"/>
+			<xs:attribute name="util" type="xs:double"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="workload">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="lrs:station" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="name"/>
+			<xs:attribute name="responseTime" type="xs:double"/>
+			<xs:attribute name="throughput" type="xs:double"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="SEFF">
+		<xs:complexType>
+			<xs:attribute name="name"/>
+			<xs:attribute name="responseTime" type="xs:double"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="station">
+		<xs:complexType>
+			<xs:attribute name="name"/>
+			<xs:attribute name="responseTime" type="xs:double"/>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

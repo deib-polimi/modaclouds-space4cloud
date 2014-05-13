@@ -892,6 +892,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 */
 	public Integer optimize() {
 
+		logger.getName();
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
 			return -1;
@@ -903,7 +904,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// initialSolution.showStatus();
 		// Debugging constraintHandler
 
-		System.out.println("first evaluation");
+		logger.info("first evaluation");
 		bestSolution = initialSolution.clone();
 		seriesHandler = log2png.newSeries("Best solution");
 		log2png.addPoint2Series(seriesHandler,
