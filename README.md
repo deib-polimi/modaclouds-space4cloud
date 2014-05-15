@@ -13,7 +13,7 @@ To install the latest release of SPACE4CLOUD an installation of Palladio 3.5 is 
 SPACE4CLOUD uses version 4.5.7.2 of LQNS solver that can be obtained [here](http://www.sce.carleton.ca/rads/lqns/lqn-documentation/) and version 0.5f of LINE that can be obtained [here](http://code.google.com/p/line/). 
 
 
-To install SPACE4CLOUD you can either click on Help->Install new software.. and use the [update site](ftp://home.dei.polimi.it/outgoing/Giovanni.Paolo.Gibilisco/space4cloud/) or build it from the sources.
+To install SPACE4CLOUD you can either click on Help->Install new software.. and use ftp://home.dei.polimi.it/outgoing/Giovanni.Paolo.Gibilisco/space4cloud/ as update site or build it from the sources.
 
 In order to beuild from sources checkout the project called de.uka.ipd.sdq.pcmsolver under Core/trun k from [palladio official repository](https://svnserver.informatik.kit.edu/i43/svn/code/Palladio/Core/trunk/Solver/de.uka.ipd.sdq.pcmsolver/), credentials to access the repository can be found [here](https://sdqweb.ipd.kit.edu/wiki/Palladio_Component_Model).
 Then apply the patch de.uka.ipd.sdq.pcmsolver.patch that can be found under Palladio\patch. 
