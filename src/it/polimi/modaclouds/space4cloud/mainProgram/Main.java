@@ -66,7 +66,9 @@ public class Main {
 	public static void main(String[] args) 	
 	{		
 		
+		System.out.println("space");
 		Space4Cloud instance = new Space4Cloud();
+		System.out.println("execute");
 		instance.execute();
 		System.out.println("fine!");
 	}

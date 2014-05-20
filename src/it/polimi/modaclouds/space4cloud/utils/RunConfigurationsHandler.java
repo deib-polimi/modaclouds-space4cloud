@@ -20,8 +20,10 @@ package it.polimi.modaclouds.space4cloud.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,6 +39,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -50,7 +53,7 @@ import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
  */
 public class RunConfigurationsHandler 
 {
-
+	private static final Logger logger = LoggerHelper.getLogger(RunConfigurationsHandler.class);
 	/** The launch configs. */
 	private ILaunchConfiguration launchConfig;
 
@@ -71,7 +74,7 @@ public class RunConfigurationsHandler
 	 */
 	public RunConfigurationsHandler() 
 	{
-
+		logger.debug("Initializing run configuration from: "+constant.ABSOLUTE_WORKING_DIRECTORY+" and "+constant.LAUNCH_CONFIG);
 		// create the launch configuration
 		Path launchConfigPath = Paths.get(constant.ABSOLUTE_WORKING_DIRECTORY, constant.LAUNCH_CONFIG);
 		URL template;			
@@ -83,17 +86,22 @@ public class RunConfigurationsHandler
 			template = getClass().getResource("/launch_configs/PerformanceEngine.launch");
 		else
 			template = getClass().getResource("/launch_configs/SimuCom.launch");
+		
+		logger.debug("Using template: "+template);
 
 		//copy the template to be modified
-		try {
-			Path templatePath = Paths.get(FileLocator.toFileURL(template).toURI());
-			Files.copy(templatePath, launchConfigPath, StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e1) {
+		Path templatePath = null;
+		try {						
+			
+//			URI templateURI = URI.create(URLEncoder.encode(FileLocator.toFileURL(template).toString(), "UTF-8"));
+//			logger.debug("Template URI: "+templateURI);
+//			templatePath = Paths.get(templateURI);
+//			logger.debug("Template Path: "+templatePath);
+			Files.copy(template.openStream(), launchConfigPath, StandardCopyOption.REPLACE_EXISTING);
+			
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (URISyntaxException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			logger.error("error in copying the launch configuration from: "+templatePath+" to "+launchConfigPath,e);
 		}
 		launchConfigurationFile = launchConfigPath.toFile();
 		doc = DOM.getDocument(launchConfigurationFile);
@@ -143,8 +151,7 @@ public class RunConfigurationsHandler
 			.getProject(constant.PROJECT_NAME)
 			.refreshLocal(IResource.DEPTH_INFINITE,new NullProgressMonitor());
 		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("error in refreshing the workspace",e);
 		}
 
 

@@ -22,6 +22,7 @@ import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.gui.OptimizationConfigurationFrame;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.NumericalRange;
@@ -38,8 +39,8 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
-import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
 import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
@@ -48,7 +49,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
@@ -60,7 +60,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -114,7 +113,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	protected Constants c = Constants.getInstance();
 
-	protected String SELECTION_POLICY = "utilization"; // random,first,longest,utilization
+	protected SelectionPolicies SELECTION_POLICY;
 
 	protected int numberOfIterations;
 
@@ -123,9 +122,9 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected int MAXMEMORYSIZE = 10;
 
 	protected int MAXITERATIONS = 20; /*
-									 * 40 Now it is a constant in the future it
-									 * might become a parameter
-									 */
+	 * 40 Now it is a constant in the future it
+	 * might become a parameter
+	 */
 
 	protected int MAXFEASIBILITYITERATIONS = 10; // 20
 
@@ -167,7 +166,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		}
 
-		initByProperties("OptEngine.properties");
+		loadConfiguration(false); //false = show gui, true = batch mode
+
+		logger.info("Running the optimization with parameters:");
+		logger.info("Max Memory Size: "+MAXMEMORYSIZE);
+		logger.info("Max Iterations: "+MAXITERATIONS);
+		logger.info("Max Feasibility Iterations: "+MAXFEASIBILITYITERATIONS);
+		logger.info("Selection Policy: "+SELECTION_POLICY);
 		Memory = new Cache<>(MAXMEMORYSIZE);
 		constraintHandler = handler;
 
@@ -181,6 +186,30 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		this.evalProxy.setMachineLog(logVm);
 		this.evalProxy.setConstraintLog(logConstraints);
 		this.evalProxy.setTimer(timer);
+
+	}
+
+	private void loadConfiguration(boolean batch) {
+
+		OptimizationConfigurationFrame optLoader = new OptimizationConfigurationFrame();
+		//set the default configuration file
+		optLoader.setPreferenceFile("/config/OptEngine.properties");		
+
+		if(!batch){
+			//show the frame and ask let the user interact
+			optLoader.setVisible(true);
+			while(!optLoader.isSaved())
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					logger.error("Error in loading the configuration",e);
+				}
+		}
+		MAXMEMORYSIZE = optLoader.getMaxMemorySize();
+		MAXITERATIONS = optLoader.getMaxIterations();
+		MAXFEASIBILITYITERATIONS = optLoader.getMaxFeasIter();
+		SELECTION_POLICY = optLoader.getPolicy();
+
 
 	}
 
@@ -212,7 +241,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		timer.start();
 		timer.split();
 		evalProxy.EvaluateSolution(initialSolution);
-		logger.warn(initialSolution.showStatus());
+		logger.trace(initialSolution.showStatus());
 	}
 
 	protected IaaS findResource(Instance application, String id) {
@@ -226,7 +255,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 *            of the resurce in the constraint
 	 * @return a IaaS resource on which to perform a scale operation.
 	 */
-	protected IaaS findResource(Instance application, String id, String policy) {
+	protected IaaS findResource(Instance application, String id, SelectionPolicies policy) {
 
 		IaaS resource = null;
 		IConstrainable constrainedResource = application
@@ -242,19 +271,19 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					.getExternalCallTrace();
 			functionalityChain.add(0, (Functionality) constrainedResource);
 			// select the functionality to get the container and the IaaS
-			// reosurce from
+			// Resource from
 			Functionality selectedFun = null;
 			// with random policy
-			if (policy.equals("random"))
+			if (policy == SelectionPolicies.RANDOM)
 				selectedFun = functionalityChain.get(new Random()
-						.nextInt(functionalityChain.size()));
+				.nextInt(functionalityChain.size()));
 
 			// just the first of the list
-			else if (policy.equals("first"))
+			else if (policy == SelectionPolicies.RANDOM)
 				selectedFun = functionalityChain.get(0);
 
 			// the functionality that takes more time in the chain
-			else if (policy.equals("longest")) {
+			else if (policy  == SelectionPolicies.LONGEST) {
 				selectedFun = functionalityChain.get(0);
 				for (Functionality f : functionalityChain)
 					if (f.getResponseTime() > selectedFun.getResponseTime())
@@ -262,7 +291,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			}
 
 			// the functionality whose resource has higher utilization
-			else if (policy.equals("utilization")) {
+			else if (policy ==SelectionPolicies.UTILIZATION) {
 				selectedFun = functionalityChain.get(0);
 				resource = (IaaS) selectedFun.getContainer().getContainer()
 						.getCloudService();
@@ -287,7 +316,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// if the constraint is on a component
 		if (constrainedResource instanceof Component)
 			resource = (IaaS) ((Component) constrainedResource).getContainer()
-					.getCloudService();
+			.getCloudService();
 
 		// We need to find which resource to scale out in case the constraint is
 		// not directly on the resource
@@ -384,7 +413,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			for (Tier t : i.getTiers())
 				// if the cloud service hostin the application tier is a IaaS
 				if (t.getCloudService() instanceof IaaS &&
-				// and it has more than one replica
+						// and it has more than one replica
 						((IaaS) t.getCloudService()).getReplicas() > 1)
 					// add it to the list of resources that can be scaled in
 					resMemory.add((IaaS) t.getCloudService());
@@ -424,37 +453,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		return logVm;
 	}
 
-	/**
-	 * Initialization of the OptEngine by means of a properties File
-	 * 
-	 * @param propertiesFileName
-	 */
-	private void initByProperties(String propertiesFileName) {
-		try {
-			InputStream fileInput = this.getClass().getResourceAsStream(
-					propertiesFileName);
-			Properties properties = new Properties();
-			properties.load(fileInput);
-			fileInput.close();
-			MAXMEMORYSIZE = Integer.parseInt(properties
-					.getProperty("MAXMEMORYSIZE"));
 
-			MAXITERATIONS = Integer.parseInt(properties
-					.getProperty("MAXITERATIONS"));
-
-			MAXFEASIBILITYITERATIONS = Integer.parseInt(properties
-					.getProperty("MAXFEASIBILITYITERATIONS"));
-
-			SELECTION_POLICY = properties.getProperty("SELECTION_POLICY");
-
-		} catch (IOException e) {
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			logger.error(sw.toString());
-
-		}
-
-	}
 
 	/**
 	 * Internal optimization. The aim of this method is to locally optimize the
@@ -530,7 +529,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// if(!i.isFeasible())
 		// logger.warn("\thour: "+sol.getApplications().indexOf(i)+" violated constraints: "+i.getNumerOfViolatedConstraints());
 		boolean done = false;
-		System.out.println("\t Descent Optimization second phase");
+		logger.info("\t Descent Optimization second phase");
 		resetNoImprovementCounter();
 		Solution restartSol = sol.clone();
 		IaaS res;
@@ -634,19 +633,19 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// exposed component)
 
 		for (int i = 0; i < 24; i++) {
-			System.out.println("Initializing hour " + i);
+			logger.info("Initializing hour " + i);
 			Instance application = new Instance();
 			initialSolution.addApplication(application);
 			File[] models = Paths
 					.get(c.ABSOLUTE_WORKING_DIRECTORY,
 							c.PERFORMANCE_RESULTS_FOLDER, c.FOLDER_PREFIX + i)
-					.toFile().listFiles(new FilenameFilter() {
-						@Override
-						public boolean accept(File dir, String name) {
-							// TODO Auto-generated method stub
-							return name.endsWith(".xml");
-						}
-					});
+							.toFile().listFiles(new FilenameFilter() {
+								@Override
+								public boolean accept(File dir, String name) {
+									// TODO Auto-generated method stub
+									return name.endsWith(".xml");
+								}
+							});
 			// suppose there is just 1 model
 			Path lqnModelPath = models[0].toPath();
 			application.initLqnHandler(lqnModelPath);
@@ -656,10 +655,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			double thinktime = -1;
 			if (usageModelParser.getPopulations().size() == 1)
 				population = usageModelParser.getPopulations().values()
-						.iterator().next()[i];
+				.iterator().next()[i];
 			if (usageModelParser.getThinkTimes().size() == 1)
 				thinktime = usageModelParser.getThinkTimes().values()
-						.iterator().next()[i];
+				.iterator().next()[i];
 			application.getLqnHandler().setPopulation(population);
 			application.getLqnHandler().setThinktime(thinktime);
 			application.getLqnHandler().saveToFile();
@@ -693,7 +692,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				// pick a cloud provider if not specified by the extension
 				if (cloudProvider == null)
 					cloudProvider = dataHandler.getCloudProviders().iterator()
-							.next();
+					.next();
 
 				// pick a service if not specified by the extension
 				if (serviceName == null)
@@ -702,8 +701,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				// if the resource size has not been decided pick one
 				if (resourceSize == null)
 					resourceSize = dataHandler
-							.getCloudResourceSizes(cloudProvider, serviceName)
-							.iterator().next();
+					.getCloudResourceSizes(cloudProvider, serviceName)
+					.iterator().next();
 
 				double speed = dataHandler.getProcessingRate(cloudProvider,
 						serviceName, resourceSize);
@@ -831,7 +830,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			e.printStackTrace(new PrintWriter(sw));
 			logger.error(sw.toString());
 		}
-		System.out.println("Deserialized: " + initialSolution);
+		logger.info("Deserialized: " + initialSolution);
 	}
 
 	/**
@@ -844,7 +843,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		final double MIN_FACTOR = 1.2;
 		numberOfFeasibilityIterations = 0;
 		while (!sol.isFeasible() && !isMaxNumberOfFesibilityIterations()) {
-			System.out.println("\tFeasibility iteration: "
+			logger.info("\tFeasibility iteration: "
 					+ numberOfFeasibilityIterations);
 			for (int i = 0; i < 24; i++) {
 				// this part can be turned into a multithread section
@@ -880,9 +879,9 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			numberOfFeasibilityIterations += 1;
 		}
 		if (sol.isFeasible())
-			System.out.println("\n\t Solution made feasible");
+			logger.info("\n\t Solution made feasible");
 		else
-			System.out.println("Max number of feasibility iterations reached");
+			logger.info("Max number of feasibility iterations reached");
 	}
 
 	/**
@@ -922,7 +921,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// a stopping criterion. Mich
 		while (!isMaxNumberOfIterations()) {
 			setProgress(numberOfIterations);
-			System.out.println("Iteration: " + numberOfIterations + "cost: "
+			logger.info("Iteration: " + numberOfIterations + "cost: "
 					+ currentSolution.getCost() / 100);
 			// 2: Internal Optimization process
 
@@ -955,7 +954,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		}
 
 		logger.warn(bestSolution.showStatus());
-		System.out.println(bestSolution.showStatus());
+		logger.info(bestSolution.showStatus());
 		bestSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY + "solution.xml");
 		bestSolution.exportCSV(c.ABSOLUTE_WORKING_DIRECTORY + "results.csv");
 		evalProxy.showStatistics();
@@ -1027,7 +1026,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	public void SerializeInitialSolution(File file) {
-		System.out.println("Serializing: " + initialSolution);
+		logger.info("Serializing: " + initialSolution);
 		FileOutputStream fos = null;
 		ObjectOutputStream out = null;
 		try {

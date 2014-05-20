@@ -18,6 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.gui;
 
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -40,6 +42,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.slf4j.Logger;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -49,6 +52,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
  * 
  */
 public class LoadModel extends OperationCompletedClass {
+	
+	private static final Logger programLogger = LoggerHelper.getLogger(LoadModel.class);
 
 	public static List<File> explore(File root, final String ext) {
 		return explore(root, ext, Integer.MIN_VALUE);
@@ -156,10 +161,11 @@ public class LoadModel extends OperationCompletedClass {
 		oplist = listener;
 		this.extension = ext;
 		this.modelName = modelName;
+		programLogger.info("initializing projects window");
 		try {
 			initialize();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			programLogger.error("Error in loading projects",e);
 		}
 	}
 
@@ -300,10 +306,12 @@ public class LoadModel extends OperationCompletedClass {
 					.getRoot()
 					.getLocation()
 					.toOSString();
+			programLogger.debug("Workspace dir:"+workspaceDir);
 		} catch (Exception e) 
 		{
 			workspaceDir = System.getProperty("user.dir");
 			workspaceDir = workspaceDir.substring(0,workspaceDir.lastIndexOf("\\"));
+			programLogger.debug("Workspace dir:"+workspaceDir,e);
 		}
 
 		// retrieving all the files with a certain extension in the workspace directory

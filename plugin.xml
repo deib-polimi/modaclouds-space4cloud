@@ -5,42 +5,44 @@
    <extension
          point="org.eclipse.ui.commands">
       <category
-            name="%category.name"
-            id="it.polimi.franceschelli.space4cloud.commands.category">
+            name="Space4Cloud"
+            id="it.polimi.modaclouds.space4cloud.commands.category">
       </category>
       <command
-            categoryId="it.polimi.franceschelli.space4cloud.commands.category"
-            id="it.polimi.franceschelli.space4cloud.commands.sampleCommand"
-            name="%command.name">
+            categoryId="it.polimi.modaclouds.space4cloud.commands.category"
+            description="Run the Space4Cloud plugin"
+            id="it.polimi.modaclouds.space4cloud.commands.sampleCommand"
+            name="Run">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            commandId="it.polimi.franceschelli.space4cloud.commands.sampleCommand"
+            commandId="it.polimi.modaclouds.space4cloud.commands.sampleCommand"
             class="it.polimi.modaclouds.space4cloud.handlers.MainHandler">
       </handler>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="it.polimi.franceschelli.space4cloud.commands.sampleCommand"
+            commandId="it.polimi.modaclouds.space4cloud.commands.sampleCommand"
             contextId="org.eclipse.ui.contexts.window"
-            sequence="M1+6"
+            sequence="M1+7"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </key>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
          <toolbar
-               id="it.polimi.franceschelli.space4cloud.toolbars.sampleToolbar">
+               id="it.polimi.modaclouds.space4cloud.toolbars.sampleToolbar">
             <command
-                  commandId="it.polimi.franceschelli.space4cloud.commands.sampleCommand"
+                  commandId="it.polimi.modaclouds.space4cloud.commands.sampleCommand"
                   icon="icons/Cloud.png"
-                  tooltip="%command.tooltip"
-                  id="it.polimi.franceschelli.space4cloud.toolbars.sampleCommand">
+                  id="it.polimi.modaclouds.space4cloud.toolbars.sampleCommand"
+                  label="Run the Space4Cloud plugin"
+                  tooltip="Run the SPACE4Cloud tool">
             </command>
          </toolbar>
       </menuContribution>

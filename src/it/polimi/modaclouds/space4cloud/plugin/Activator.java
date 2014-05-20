@@ -30,7 +30,7 @@ public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	/** The Constant PLUGIN_ID. */
-	public static final String PLUGIN_ID = "it.polimi.franceschelli.space4cloud"; //$NON-NLS-1$
+	public static final String PLUGIN_ID = "it.polimi.modaclouds.space4cloud"; //$NON-NLS-1$
 
 	// The shared instance
 	/** The plugin. */
@@ -40,17 +40,16 @@ public class Activator extends AbstractUIPlugin {
 	 * The constructor.
 	 */
 	public Activator() {
-		// il costruttore è vuoto. 
+
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
-	public void start(BundleContext context) throws Exception {
-		//è un overload del padre. 
+	public void start(BundleContext context) throws Exception { 
 		super.start(context);
-		plugin = this; //salva se stesso in plugin
+		plugin = this; 
 	}
 
 	/*
@@ -79,7 +78,6 @@ public class Activator extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		//chiede l'immagine del plugin
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 }

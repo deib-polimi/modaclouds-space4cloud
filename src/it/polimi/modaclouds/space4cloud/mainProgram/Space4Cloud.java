@@ -83,8 +83,8 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	private static final int EXIT = 3;
 	private static OptimizationProgressWindow progressWindow;
 	private static AssesmentWindow assesmentWindow;
-	private Constants c;
-	private static Logger logger;
+	private Constants c;	
+	private static final Logger programLogger = LoggerHelper.getLogger(Space4Cloud.class);
 
 	private boolean batch;
 
@@ -125,7 +125,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private File askConstraintFile() {
 		File providedFile;
-		logger.info("Loading Constraints");
+		programLogger.info("Loading Constraints");
 		XMLFileSelection constraintSelector = new XMLFileSelection(
 				"Load Constraints");
 		constraintSelector.askFile();
@@ -151,7 +151,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private File askResourceEnvironmentExtensionFile()
 			throws MalformedURLException {
-		File providedFile;
+		File providedFile;		
 		XMLFileSelection extensionSelector = new XMLFileSelection(
 				"Load Resource Environment Extension");
 		// keep asking the file until a valid file is provided or the user
@@ -164,7 +164,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 					XMLHelper.deserialize(providedFile.toURI().toURL(),
 							ResourceModelExtension.class);
 			} catch (JAXBException e) {
-				logger.error("The resource Model extension file specified ("
+				programLogger.error("The resource Model extension file specified ("
 						+ resourceEnvExtFile + ") is not valid ", e);
 				providedFile = null;
 			}
@@ -193,14 +193,11 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	}
 
 	private void cleanExit() {
-		// TODO Auto-generated method stub
-
+		programLogger.info("Exiting SPACE4cloud");		
 	}
 
 	@Override
-	protected Object doInBackground() throws CoreException,
-			ParserConfigurationException, SAXException, IOException,
-			JAXBException, MalformedURLException {
+	protected Object doInBackground() throws CoreException, InitalFolderCreationException {
 
 		LoadModel lm;
 		if (!batch) {
@@ -210,14 +207,19 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			askForFunctionality();
 
 			// in case the user cancelled exit
-			if (functionality == EXIT)
+			if (functionality == EXIT){
+				cleanExit();
 				return null;
+			}
+			programLogger.info("Chosen functionality: "+functionality); 
 
 			/* Load the resourceEnvironment */
 			/* LoadModel */lm = new LoadModel(null, "Resource Model",
 					".resourceenvironment");
-			if (!lm.isChosen())
+			if (!lm.isChosen()){
+				cleanExit();
 				return null;
+			}
 			/* File */resourceEnvironmentFile = lm.getModelFile();
 
 		}
@@ -231,7 +233,6 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		c = Constants.getInstance();
 
 		c.changeWorkingDirectory(resFolder);
-		logger = LoggerHelper.getLogger(Space4Cloud.class);
 
 		c.RESOURCE_MODEL = resourceEnvironmentFile.getAbsolutePath();
 
@@ -269,7 +270,11 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 			refreshProject();
 			// load the new configuration
-			confHandler.loadConfiguration();
+			try {
+				confHandler.loadConfiguration();
+			} catch (IOException e) {
+				programLogger.error("Error in loading the configuration",e);
+			}
 
 			usageFile = new File(c.USAGE_MODEL);
 			allocationFile = new File(c.ALLOCATION_MODEL);
@@ -286,27 +291,35 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			if (!batch) {
 				// load the usage model
 				lm = new LoadModel(null, "Usage Model", ".usagemodel");
-				if (!lm.isChosen())
+				if (!lm.isChosen()){
+					cleanExit();
 					return null;
+				}
 				usageFile = lm.getModelFile();
 
 				// load the allocation model
 				lm = new LoadModel(null, "Allocation Model", ".allocation");
-				if (!lm.isChosen())
+				if (!lm.isChosen()){
+					cleanExit();		
 					return null;
+				}
 				allocationFile = lm.getModelFile();
 
 				// load the repository model
 				lm = new LoadModel(null, "Repository Model", ".repository");
-				if (!lm.isChosen())
+				if (!lm.isChosen()){
+					cleanExit();
 					return null;
+				}
 				repositoryFile = lm.getModelFile();
 
 				// load the solver
 				Choose choice = new Choose("Choose the Solver",
 						"Which Solver do you want to use?");
-				if (!choice.isChosen())
+				if (!choice.isChosen()){
+					cleanExit();
 					return null;
+				}
 				solver = choice.getSolver();
 
 				// if the solver is LINE it needs the path to its configuration
@@ -314,8 +327,10 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				if (solver.equals(MessageStrings.PERFENGINE_SOLVER)) {
 					lm = new LoadModel(null, "Performance Engine Config",
 							".properties");
-					if (!lm.isChosen())
+					if (!lm.isChosen()){
+						cleanExit();
 						return null;
+					}
 					lineConfFile = lm.getModelFile();
 				}
 			}
@@ -329,7 +344,11 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 			// save the configuration, it will be run later in the optimization
 			// process
-			confHandler.saveConfiguration();
+			try {
+				confHandler.saveConfiguration();
+			} catch (IOException e) {
+				programLogger.error("Error in saving the configuration", e);
+			}
 			// refresh the project in the workspace
 			refreshProject();
 
@@ -360,8 +379,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		// if the palladio run has not produced a lqn model exit
 		if (modelFiles.length != 1 || resultFiles.length != 1) {
-			logger.error("The first initialization run has encounter some problem during the generation of the first solution");
-			logger.error("SPACE4CLOUD will now exit.");
+			programLogger.error("The first initialization run has encounter some problem during the generation of the first solution");
+			programLogger.error("SPACE4CLOUD will now exit.");
+			cleanExit();
 			return null;
 		}
 
@@ -394,23 +414,31 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 								usageModelExtFile.toURI().toURL(),
 								UsageModelExtensions.class);
 				} catch (JAXBException e) {
-					logger.warn("The usage Model extension file specified ("
+					programLogger.warn("The usage Model extension file specified ("
 							+ usageModelExtFile + ") is not valid ", e);
 					usageModelExtFile = null;
+				} catch (MalformedURLException e) {
+					programLogger.error("Error in parsing the usage model Extension",e);
 				}
 			} while (!usageModelExtSelector.isCanceled()
 					&& usageModelExtFile == null);
 			if (usageModelExtSelector.isCanceled()) {
-				logger.info("No usage model extension selected. Quitting SPACE4CLOUD");
+				programLogger.info("No usage model extension selected. Quitting SPACE4CLOUD");
+				cleanExit();
 				return null;
 			}
 		}
 		c.RESOURCE_ENV_EXT_FILE = usageModelExtFile.getAbsolutePath();
 
 		if (!batch) {
-			/* File */resourceEnvExtFile = askResourceEnvironmentExtensionFile();
+			/* File */try {
+				resourceEnvExtFile = askResourceEnvironmentExtensionFile();
+			} catch (MalformedURLException e) {
+				programLogger.error("Error in loading the resource environment",e);
+			}
 			if (resourceEnvExtFile == null) {
-				logger.warn("No resource model extension selected. Quitting SPACE4CLOUD");
+				programLogger.warn("No resource model extension selected. Quitting SPACE4CLOUD");
+				cleanExit();
 				return null;
 			}
 		}
@@ -432,10 +460,11 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 							JOptionPane.PLAIN_MESSAGE, null, options,
 							options[1]);
 
-			logger.debug("Initial Solution generation: " + n);
+			programLogger.debug("Initial Solution generation: " + n);
 
 			if (n == 0) {
-				logger.info("Solution generation not supported yet");
+				programLogger.info("Solution generation not supported yet");
+				cleanExit();
 				return null;
 				// resourceEnvExtFile =
 				// informationparser.MainTest.generateSolution(
@@ -464,37 +493,59 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		// Parse the constraints and initialize the handler
 		constraintHandler = new ConstraintHandler();
-		constraintHandler.loadConstraints(constraintFile);
+		try {
+			constraintHandler.loadConstraints(constraintFile);
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			programLogger.error("Error in loading constraints",e);
+		}
 
 		switch (functionality) {
 		case ASSESMENT:
-			performAssessment(confHandler);
+			try {
+				programLogger.info("Performing Assesment");
+				performAssessment(confHandler);
+			} catch (NumberFormatException | IOException
+					| ParserConfigurationException | SAXException e) {
+				programLogger.error("Error in performing the assesment",e);
+			}
 			break;
 
 		case OPTIMIZATION:
-			performOptimization();
+			try {
+				programLogger.info("Performing Optimization");
+				performOptimization();
+			} catch (ParserConfigurationException | SAXException | IOException e) {
+				programLogger.error("Error in the optimization",e);
+			}
 			break;
 
 		case ROBUSTNESS:
-			performRobustnessAnalysis();
+			try {
+				programLogger.info("Performing Robustness Analysis");
+				performRobustnessAnalysis();
+			} catch (ParserConfigurationException | SAXException | IOException
+					| JAXBException e) {
+				programLogger.error("Error in the robustness analysis",e);
+			}
 			break;
 
 		default:
-			cleanExit();
+			programLogger.info("User exit at functionality choiche");
 			break;
 		}
 
+		cleanExit();
 		return null;
 	}
 
 	@Override
-	protected void done() {
+	protected void done() { 
 		try {
 			get();
 		} catch (ExecutionException e) {
-			logger.error("Execution error while running space4cloud ", e);
+			programLogger.error("Execution error while running space4cloud ", e);
 		} catch (InterruptedException e) {
-			logger.error("Interrupted execution of space4cloud ", e);
+			programLogger.error("Interrupted execution of space4cloud ", e);
 		}
 	}
 
@@ -523,7 +574,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		g = File.createTempFile("ume" + s + "-", ".xml");
 		XMLHelper.serialize(umes, UsageModelExtensions.class,
 				new FileOutputStream(g));
-		logger.info(g.getAbsolutePath());
+		programLogger.info(g.getAbsolutePath());
 		return g;
 
 	}
@@ -543,20 +594,21 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			throws NumberFormatException, IOException,
 			ParserConfigurationException, SAXException {
 
-		logger.info("Evaluating the solution");
+
 		OptEngine engine = new PartialEvaluationOptimizationEngine(
 				constraintHandler);
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension
-		logger.info("Parsing The Solution");
+		programLogger.info("Parsing The Solution");
 		try {
 			engine.loadInitialSolution(resourceEnvExtFile, usageModelExtFile);
 		} catch (JAXBException e) {
-			logger.error("Error in loading the initial solution", e);
+			programLogger.error("Error in loading the initial solution", e);
 		}
 
 		// evaluate the solution
+		programLogger.info("Evaluating the solution");
 		engine.evaluate();
 
 		// print the results
@@ -635,18 +687,18 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		// Build a new Optimization Engine engine and an empty initial
 		// solution
-		logger.info("Loading the optimization enging and perparing the solver");
+		programLogger.info("Loading the optimization enging and perparing the solver");
 
 		OptEngine engine = new PartialEvaluationOptimizationEngine(
 				constraintHandler);
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension
-		logger.info("Parsing The Solution");
+		programLogger.info("Parsing The Solution");
 		try {
 			engine.loadInitialSolution(resourceEnvExtFile, usageModelExtFile);
 		} catch (JAXBException e) {
-			logger.error("Error in loading the initial solution", e);
+			programLogger.error("Error in loading the initial solution", e);
 		}
 
 		// create the progress window
@@ -661,7 +713,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 
 		// start the optimization
-		logger.info("Starting the optimization");
+		programLogger.info("Starting the optimization");
 		engine.execute();
 
 		// TODO Auto-generated method stub
@@ -730,22 +782,22 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		// Build a new Optimization Engine engine and an empty initial
 		// solution
-		logger.info("Loading the optimization engine and preparing the solver");
+		programLogger.info("Loading the optimization engine and preparing the solver");
 
 		OptEngine engine = new PartialEvaluationOptimizationEngine(
 				constraintHandler);
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension
-		logger.info("Parsing The Solution");
+		programLogger.info("Parsing The Solution");
 		try {
 			engine.loadInitialSolution(resourceEnvExtFile, usageModelExtFile);
 		} catch (JAXBException e) {
-			logger.error("Error in loading the initial solution", e);
+			programLogger.error("Error in loading the initial solution", e);
 		}
 
 		// start the optimization
-		logger.info("Starting the optimization");
+		programLogger.info("Starting the optimization");
 		executor.execute(engine);
 
 		// Future<?> fut = executor.submit(engine);
@@ -891,7 +943,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// e.printStackTrace();
 		// }
 
-		logger.info("Check ended!");
+		programLogger.info("Check ended!");
 		// rpw.save2png(solutions.get(0).getParent());
 
 	}

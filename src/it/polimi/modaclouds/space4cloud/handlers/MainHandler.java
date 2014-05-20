@@ -23,6 +23,9 @@ import it.polimi.modaclouds.space4cloud.mainProgram.Main;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -47,12 +50,12 @@ public class MainHandler extends AbstractHandler {
 	 * @throws ExecutionException the execution exception
 	 */
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		/*
-		 * IWorkbenchWindow window =
-		 * HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		 * MessageDialog.openInformation( window.getShell(), "Space4cloud",
-		 * "Start SPACE4CLOUD"); return null;
-		 */
+//		
+//		 IWorkbenchWindow window =
+//		 HandlerUtil.getActiveWorkbenchWindowChecked(event);
+//		 MessageDialog.openInformation( window.getShell(), "Space4cloud",
+//		 "Start SPACE4CLOUD"); return null;
+//		
 		Main.main(null);
 		return null;
 	}
