@@ -42,18 +42,28 @@ public class ResourceEnvironmentExtentionLoader extends ResourceEnvironmentExten
 		//fill structures
 		for (ResourceContainer container : loadedExtension
 				.getResourceContainer()) {
-			String id = container.getId();
+//			String id = container.getId();
+			String id = container.getId() + container.getProvider();
 			providers.put(id, container.getProvider());
 			if (container.getCloudResource() != null) {
 				IaasService resource = container.getCloudResource();
 				serviceTypes.put(id, resource.getServiceType());
 				serviceNames.put(id, resource.getServiceName());
 				instanceSizes.put(id, resource.getResourceSizeID());
-				String location = resource.getLocation().getRegion();
-				if(resource.getLocation().getZone() != null){
-					location += resource.getLocation().getZone();
-				}
-				serviceLocations.put(id, location);
+				
+				if (resource.getLocation() != null) {
+                    String location = resource.getLocation().getRegion();
+                    if(resource.getLocation().getZone() != null)
+                        location += resource.getLocation().getZone();
+                    setRegion(container.getProvider(), location);
+                }
+				
+//				String location = resource.getLocation().getRegion();
+//				if(resource.getLocation().getZone() != null){
+//					location += resource.getLocation().getZone();
+//				}
+//				serviceLocations.put(id, location);
+				
 				int[] replicas = new int[HOURS];
 				for (int i = 0; i<HOURS;i++) {
 					replicas[i] = 1;

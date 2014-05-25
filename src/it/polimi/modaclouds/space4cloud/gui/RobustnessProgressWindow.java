@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 
@@ -27,6 +28,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JTabbedPane;
 import javax.xml.bind.JAXBException;
 
 import org.jfree.chart.ChartFactory;
@@ -34,7 +36,6 @@ import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.CategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
@@ -48,465 +49,868 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class RobustnessProgressWindow {
-	
-	private JFrame gui;
-	private JProgressBar progressBar;
-	
-	private JFreeChart graph;
-	private JPanel graphPanel;	
-	private JLabel graphLabel;
-	
-	private JFreeChart solution;
-	private JPanel solutionPanel;	
-	private JLabel solutionLabel;
-	
-	private JFreeChart tierg;
-	private JPanel tiersPanel;	
-	private JLabel tiersLabel;
-	
-	private JFreeChart tiergBasic;
-	
-	private int total;
-	
-	private DefaultCategoryDataset populations = new DefaultCategoryDataset();
-	private DefaultCategoryDataset solutions = new DefaultCategoryDataset();
-	private DefaultCategoryDataset tiers = new DefaultCategoryDataset();
-	private DefaultCategoryDataset tiersBasic = new DefaultCategoryDataset();
-	
-	private static enum Size { zero, t1micro, m1small, m1medium, c1medium, c3large, m1xlarge, c3xlarge };
-	private static enum BasicSize { zero, micro, small, medium, large, xlarge, xxlarge, xxxxlarge, xxxxxxxxlarge };
-	
-	public void add(String name, File usageModelExtension, File solution) throws MalformedURLException, JAXBException {
-		UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension.toURI().toURL(),
-				UsageModelExtensions.class);
-		
-		int maxPopulation = -1, maxHour = -1;
-		
-		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
-		if (cw != null) {
-			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
-				if (maxPopulation < we.getPopulation()) {
-					maxPopulation = we.getPopulation();
-					maxHour = we.getHour();
-				}
-				populations.addValue(we.getPopulation(), name, "" + we.getHour());
-			}
-		}
-		else {
-			
-			OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
-			if (ow != null) {
-				for (OpenWorkloadElement we : ow.getWorkloadElement()) {
-					if (maxPopulation < we.getPopulation()) {
-						maxPopulation = we.getPopulation();
-						maxHour = we.getHour();
-					}
-					populations.addValue(we.getPopulation(), name, "" + we.getHour());
-				}
-			}
-			else {
-				return;
-			}
-		}
-		
-		Document doc = DOM.getDocument(solution);
-		
-		NodeList nl = doc.getElementsByTagName("Tier");
-		
-		for (int i = 0; i < nl.getLength(); i++) {
-			Node tier = nl.item(i);
-			
-			String size = tier.getAttributes().getNamedItem("resourceName").getNodeValue();
-			Size s;
-			BasicSize bs;
-			try {
-				s = Size.valueOf(size.replace('.', '-').replaceAll("-", ""));
-				
-				String tmp = size.substring(size.indexOf('.') + 1);
-				if (tmp.charAt(0) == '2' || tmp.charAt(0) == '4' || tmp.charAt(0) == '8')
-					for (int u = 0; u < ((int)tmp.charAt(0))-1; ++u)
-						tmp = "x" + tmp;
-				bs = BasicSize.valueOf(tmp);
-			} catch (Exception e) {
-				s = Size.zero;
-				bs = BasicSize.zero;
-			}
-			tiers.addValue(s.ordinal(), "Tier " + i, "" + maxPopulation);
-			tiersBasic.addValue(bs.ordinal(), "Tier " + i, "" + maxPopulation);
-			
-			Element tierEl = (Element) tier;
-			NodeList hours = tierEl.getElementsByTagName("HourAllocation");
-			
-			for (int j = 0; j < hours.getLength(); j++) {
-				Node hour = hours.item(j);
-				int valHour = Integer.valueOf(hour.getAttributes().getNamedItem("hour").getNodeValue()) + 1;
-				
-				if (valHour == maxHour) {
-					solutions.addValue(Integer.valueOf(hour.getAttributes().getNamedItem("allocation").getNodeValue()), "Tier " + i, "" + maxPopulation);
-				}
-				
-			}
-		}
-		
-		sortDataset(solutions);
-		sortDataset(tiers);
-		
-		updateGraph();
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static void sortDataset(DefaultCategoryDataset dataset) {
-		for (int i = 0; i < dataset.getColumnCount()-1; ++i) {
-			for (int j = i+1; j < dataset.getColumnCount(); ++j) {
-				boolean bigger = false;
-				try {
-					bigger = (Integer.parseInt((String)dataset.getColumnKey(i))) > (Integer.parseInt((String)dataset.getColumnKey(j)));
-				} catch (Exception e) {
-					bigger = dataset.getColumnKey(i).compareTo(dataset.getColumnKey(j)) == 1;
-				}
-				
-				if (bigger) {
-					Comparable<?> key = dataset.getColumnKey(i);
-					
-					for (Object o : dataset.getRowKeys()) {
-						dataset.addValue(dataset.getValue((Comparable<?>)o, key), (Comparable<?>)o, "tmp");
-					}
-					dataset.removeColumn(i);
-					
-					for (Object o : dataset.getRowKeys()) {
-						dataset.addValue(dataset.getValue((Comparable<?>)o, "tmp"), (Comparable<?>)o, key);
-					}
-					dataset.removeColumn("tmp");
-				}
-			}
-		}
-	}
-	
-	public RobustnessProgressWindow(int total) {
-		this.total = total;
-		
-		updateGraph();
-		
-		
-		initialize();
-	}
-	
-	@SuppressWarnings({ "deprecation" })
-	public void updateGraph() {
-		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
-		
-		graph = ChartFactory.createLineChart(null, "Hour", "Population", populations);
-		{
-			CategoryPlot plot = (CategoryPlot) graph.getPlot();
-			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-			renderer.setShapesVisible(true);
-			renderer.setDrawOutlines(true);
-			renderer.setUseFillPaint(true);
-			renderer.setFillPaint(Color.white);
-			
-			CategoryAxis categoryAxis = plot.getDomainAxis();
-			categoryAxis.setLowerMargin(0.02);
-			categoryAxis.setUpperMargin(0.02);
-			categoryAxis.setTickLabelFont(font);
-			
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setTickLabelFont(font);
-			
-			
-		}
-		
-		solution = ChartFactory.createLineChart(null, "Max Population", "Allocation", solutions, PlotOrientation.VERTICAL, true, true, false);
-		{
-			CategoryPlot plot = (CategoryPlot) solution.getPlot();
-			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-			renderer.setShapesVisible(true);
-			renderer.setDrawOutlines(true);
-			renderer.setUseFillPaint(true);
-			renderer.setFillPaint(Color.white);
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setRange(0, rangeAxis.getRange().getUpperBound() * 1.1);
-			rangeAxis.setTickLabelFont(font);
-			
-			CategoryAxis categoryAxis = plot.getDomainAxis();
-			categoryAxis.setLowerMargin(0.02);
-			categoryAxis.setUpperMargin(0.02);
-			categoryAxis.setTickLabelFont(font);
-			
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
-			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0"));
-			renderer2.setItemLabelGenerator(generator);
-			renderer2.setItemLabelsVisible(true);
-			renderer2.setItemLabelFont(font);
-		}
-		
-		tierg = ChartFactory.createLineChart(null, "Max Population", "Size", tiers, PlotOrientation.VERTICAL, true, true, false);
-		{
-			CategoryPlot plot = (CategoryPlot) tierg.getPlot();
-			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-			renderer.setShapesVisible(true);
-			renderer.setDrawOutlines(true);
-			renderer.setUseFillPaint(true);
-			renderer.setFillPaint(Color.white);
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setTickLabelFont(font);
-			
-			int min = 10, max = 0, tmp;
-			for (int i = 0; i < tiers.getColumnCount(); ++i)
-				for (int j = 0; j < tiers.getRowCount(); ++j) {
-					tmp = tiers.getValue(j, i).intValue();
-					if (tmp < min)
-						min = tmp;
-					if (tmp > max)
-						max = tmp;
-				}
-			if (min == 10)
-				min = 0;
-			if (max == 0)
-				max = (int)rangeAxis.getRange().getUpperBound() + 1;
-			
-			rangeAxis.setRange(/*0*/ min - 0.5, /*rangeAxis.getRange().getUpperBound() + 1*/ max + 0.5);
-			
-			CategoryAxis categoryAxis = plot.getDomainAxis();
-			categoryAxis.setLowerMargin(0.02);
-			categoryAxis.setUpperMargin(0.02);
-			categoryAxis.setTickLabelFont(font);
-			
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
-			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0") {
 
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 1L;
-				
-				public StringBuffer format(double number,
-		                  StringBuffer result,
-		                  FieldPosition fieldPosition) {
-					result = new StringBuffer(Size.values()[(int)number].toString());
-					return result;
-				}
-				
-			});
-			renderer2.setItemLabelGenerator(generator);
-			renderer2.setItemLabelsVisible(true);
-			renderer2.setItemLabelFont(font);
-		}
-		
-		tiergBasic = ChartFactory.createLineChart(null, "Max Population", "Size", tiersBasic, PlotOrientation.VERTICAL, true, true, false);
-		{
-			CategoryPlot plot = (CategoryPlot) tiergBasic.getPlot();
-			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-			renderer.setShapesVisible(true);
-			renderer.setDrawOutlines(true);
-			renderer.setUseFillPaint(true);
-			renderer.setFillPaint(Color.white);
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setTickLabelFont(font);
-			
-			int min = 10, max = 0, tmp;
-			for (int i = 0; i < tiersBasic.getColumnCount(); ++i)
-				for (int j = 0; j < tiersBasic.getRowCount(); ++j) {
-					tmp = tiersBasic.getValue(j, i).intValue();
-					if (tmp < min)
-						min = tmp;
-					if (tmp > max)
-						max = tmp;
-				}
-			if (min == 10)
-				min = 0;
-			if (max == 0)
-				max = (int)rangeAxis.getRange().getUpperBound() + 1;
-			
-			rangeAxis.setRange(/*0*/ min - 0.5, /*rangeAxis.getRange().getUpperBound() + 1*/ max + 0.5);
-			
-			CategoryAxis categoryAxis = plot.getDomainAxis();
-			categoryAxis.setLowerMargin(0.02);
-			categoryAxis.setUpperMargin(0.02);
-			categoryAxis.setTickLabelFont(font);
-			
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
-			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0") {
-	
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 1L;
-				
-				public StringBuffer format(double number,
-		                  StringBuffer result,
-		                  FieldPosition fieldPosition) {
-					result = new StringBuffer(BasicSize.values()[(int)number].toString());
-					return result;
-				}
-				
-			});
-			renderer2.setItemLabelGenerator(generator);
-			renderer2.setItemLabelsVisible(true);
-			renderer2.setItemLabelFont(font);
-		}
-		
-	}
-	
-	public void initialize() {
-		gui = new JFrame();
-		gui.setTitle("Robustness Progress");
-		gui.setBounds(100, 100, 650, 400);
-		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		gui.getContentPane().setLayout(new BorderLayout(0, 0));
-		
-		JPanel upperPanel = new JPanel();
-		gui.getContentPane().add(upperPanel, BorderLayout.NORTH);
-		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
-		
-		progressBar = new JProgressBar(0, total);
-		progressBar.setValue(0);
-		progressBar.setStringPainted(true);
-		upperPanel.add(progressBar);
-		
-		JPanel lowerPanel = new JPanel();
-		lowerPanel.setLayout(new GridLayout(3, 1, 0, 0));
-		gui.getContentPane().add(lowerPanel, BorderLayout.CENTER);
-		
-		graphPanel = new JPanel();
-		lowerPanel.add(graphPanel);
-		
-		graphLabel = new JLabel();
-		graphLabel.setIcon(null);
-		graphPanel.add(graphLabel);
-		
-		solutionPanel = new JPanel();
-		lowerPanel.add(solutionPanel);
-		
-		solutionLabel = new JLabel();
-		solutionLabel.setIcon(null);
-		solutionPanel.add(solutionLabel);
-		
-		tiersPanel = new JPanel();
-		lowerPanel.add(tiersPanel);
-		
-		tiersLabel = new JLabel();
-		tiersLabel.setIcon(null);
-		tiersPanel.add(tiersLabel);
-		
-		//listener to resize images
-		gui.addComponentListener(new ComponentListener() {
+    private JFrame gui;
+    private JProgressBar progressBar;
 
-			@Override
-			public void componentShown(ComponentEvent e) {
-				updateImages();		
-			}
+    private JFreeChart populationsGraph;
+    private JPanel populationsPanel;
+    private JLabel populationsLabel;
 
-			@Override
-			public void componentResized(ComponentEvent e) {
-				updateImages();				
-			}
+    private JFreeChart solutionsGraph;
+    private JPanel solutionsPanel;
+    private JLabel solutionsLabel;
+    private JPanel solutionsPanel2;
+    private JLabel solutionsLabel2;
 
-			@Override
-			public void componentMoved(ComponentEvent e) {
-				// TODO Auto-generated method stub
+    private JFreeChart tiersGraph;
+    private JPanel tiersPanel;
+    private JLabel tiersLabel;
+    private JPanel tiersPanel2;
+    private JLabel tiersLabel2;
 
-			}
+    private JFreeChart tiersBasicGraph;
+    private JPanel tiersBasicPanel;
+    private JLabel tiersBasicLabel;
 
-			@Override
-			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub				
-			}
-		});
-		
-		gui.setVisible(true);
-		updateImages();
-	}
-	
-	public void setValue(int value) {
-		if (value > total)
-			value = total;
-		progressBar.setValue(value);
-	}
-	
-	public int getValue() {
-		return progressBar.getValue();
-	}
-	
-	private void updateImages() {
-		if (graph != null) {
-			ImageIcon icon;
-			try{
-				icon = new ImageIcon(graph.createBufferedImage(graphPanel.getSize().width, graphPanel.getSize().height)); 
-			}catch (NullPointerException e){
-				icon = new ImageIcon();
-			}
-			graphLabel.setIcon(icon);            
-			graphLabel.setVisible(true);
-			graphPanel.setPreferredSize(graphLabel.getPreferredSize());
-		}
-		
-		if (solution != null) {
-			ImageIcon icon;
-			try{
-				icon = new ImageIcon(solution.createBufferedImage(solutionPanel.getSize().width, solutionPanel.getSize().height)); 
-			}catch (NullPointerException e){
-				icon = new ImageIcon();
-			}
-			solutionLabel.setIcon(icon);            
-			solutionLabel.setVisible(true);
-			solutionPanel.setPreferredSize(solutionLabel.getPreferredSize());
-		}
-		
-		if (tiers != null) {
-			ImageIcon icon;
-			try{
-				icon = new ImageIcon(tierg.createBufferedImage(tiersPanel.getSize().width, tiersPanel.getSize().height)); 
-			}catch (NullPointerException e){
-				icon = new ImageIcon();
-			}
-			tiersLabel.setIcon(icon);            
-			tiersLabel.setVisible(true);
-			tiersPanel.setPreferredSize(tiersLabel.getPreferredSize());
-		}
-	}
-	
-	public void save2png(String path) throws IOException {
-		ChartUtilities.writeChartAsPNG(new FileOutputStream(new File(path + File.separator + "allocations.png")), solution, 1350, 700);
-		ChartUtilities.writeChartAsPNG(new FileOutputStream(new File(path + File.separator + "populations.png")), graph, 1350, 700);
-		ChartUtilities.writeChartAsPNG(new FileOutputStream(new File(path + File.separator + "sizes.png")), tierg, 1350, 700);
-		ChartUtilities.writeChartAsPNG(new FileOutputStream(new File(path + File.separator + "basicSizes.png")), tiergBasic, 1350, 700);
-	}
-	
-	public static void main(String args[]) {
-		int total = 3;
-		
-		RobustnessProgressWindow rpw = new RobustnessProgressWindow(total);
-		
-//		String basePath = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\workspace\\modaclouds-space4cloud\\src\\it\\polimi\\modaclouds\\space4cloud\\gui\\";
-		String basePath = "C:\\Users\\Riccardo\\Desktop\\tmp\\partials\\bipicco";
-		
-		try {
-//			rpw.add("Initial", new File(basePath + "usage_model_extensionOfBiz.xml"), new File(basePath + "solution-1.0.xml"));
-//			rpw.add("Var 0", new File(basePath + "ume0-3-8991782702721664551.xml"), new File(basePath + "solution-0.3.xml"));
-//			rpw.add("Var 1", new File(basePath + "ume0-5-7139252741102642498.xml"), new File(basePath + "solution-0.5.xml"));
-//			rpw.add("Var 2", new File(basePath + "ume0-7-6198876986015331066.xml"), new File(basePath + "solution-0.7.xml"));
-//			rpw.add("Var 3", new File(basePath + "ume0-9-5114252506963290152.xml"), new File(basePath + "solution-0.9.xml"));
-//			rpw.add("Var 4", new File(basePath + "ume1-1-417778809152828686.xml"), new File(basePath + "solution-1.1.xml"));
-//			rpw.add("Var 5", new File(basePath + "ume1-3-4388284814346709586.xml"), new File(basePath + "solution-1.3.xml"));
-//			rpw.add("Var 6", new File(basePath + "ume1-5-2764229859526493739.xml"), new File(basePath + "solution-1.5.xml"));
-//			rpw.add("Var 7", new File(basePath + "ume1-7-6585118236013770088.xml"), new File(basePath + "solution-1.7.xml"));
-			
-			for (int i = 100; i <= 10000; i += 300) {
-				rpw.add("" + i, new File(basePath + File.separator + "ume-" + i + ".xml"), new File(basePath + File.separator + "solution-" + i + ".xml"));
-			}
-			
-			rpw.save2png(basePath);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		for (int value = 0; value <= total; ++value) {
-			rpw.setValue(value);
-			try {
-				Thread.sleep(1000);
-			} catch (Exception e) { }
-		}
-	}
+    private JFreeChart feasibilitiesGraph;
+    private JPanel feasibilitiesPanel;
+    private JLabel feasibilitiesLabel;
+
+    private JFreeChart costsGraph;
+    private JPanel costsPanel;
+    private JLabel costsLabel;
+
+    private int total;
+
+    private DefaultCategoryDataset populations = new DefaultCategoryDataset();
+    private DefaultCategoryDataset solutions = new DefaultCategoryDataset();
+    private DefaultCategoryDataset tiers = new DefaultCategoryDataset();
+    private DefaultCategoryDataset tiersBasic = new DefaultCategoryDataset();
+    private DefaultCategoryDataset feasibilities = new DefaultCategoryDataset();
+    private DefaultCategoryDataset costs = new DefaultCategoryDataset();
+
+    public static enum Size {
+
+        // Amazon
+        zero ("zero", 0),
+        t1micro ("micro", 1),
+        m1small ("small", 2),
+        m1medium ("medium", 3),
+        c1medium ("medium", 3),
+        m1large ("large", 4),
+        c3large ("large", 4),
+        m1xlarge ("xlarge", 5),
+        m2xlarge ("xlarge", 5),
+        m3xlarge ("xlarge", 5),
+        c1xlarge ("xlarge", 5),
+        c3xlarge ("xlarge", 5),
+        m32xlarge ("xxlarge", 6),
+        c32xlarge ("xxlarge", 6),
+
+        // Microsoft
+        GeneralAvailabilityExtraSmallInstance ("ExtraSmall", 7),
+        PreviewExtraSmallInstance ("ExtraSmall", 7),
+        GeneralAvailabilitySmallInstance ("Small", 8),
+        PreviewSmallInstance ("Small", 8),
+        GeneralAvailabilityMediumInstance ("Medium", 9),
+        PreviewMediumInstance ("Medium", 9),
+        GeneralAvailabilityLargeInstance ("Large", 10),
+        PreviewLargeInstance ("Large", 10),
+        GeneralAvailabilityExtraLargeInstance ("ExtraLarge", 11),
+        PreviewExtraLargeInstance ("ExtraLarge", 11);
+
+        private static final int lastAmazonId = 6, lastMicrosoftId = 11;
+
+        public String basicName;
+        public int basicId;
+
+        private Size(String basicName, int basicId) {
+            this.basicName = basicName;
+            this.basicId = basicId;
+        }
+
+        public static Size getSizeByBasicId(int basicId) {
+            for (Size s : Size.values())
+                if (s.basicId == basicId)
+                    return s;
+            return Size.zero;
+        }
+
+        public boolean biggerThan(Size s) {
+            if (basicId == 0 || s.basicId == 0)
+                return false;
+            if (
+                    (basicId <= lastAmazonId && s.basicId <= lastAmazonId) ||
+                    (basicId > lastAmazonId && s.basicId > lastAmazonId && basicId <= lastMicrosoftId && s.basicId <= lastMicrosoftId)
+                )
+                return basicId > s.basicId;
+            return false;
+        }
+
+        public static Size parse(String size) {
+            Size s;
+            try {
+                s = Size.valueOf(size.replace('.', '-').replaceAll("-", "").replaceAll(" ", ""));
+            } catch (Exception e) {
+                e.printStackTrace();
+                s = Size.zero;
+            }
+            return s;
+        }
+    }
+
+    public void add(String name, File usageModelExtension, File solution) throws MalformedURLException, JAXBException {
+        UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension.toURI().toURL(),
+                UsageModelExtensions.class);
+
+        int maxPopulation = -1, maxHour = -1;
+
+        ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+        if (cw != null) {
+            for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+                if (maxPopulation < we.getPopulation()) {
+                    maxPopulation = we.getPopulation();
+                    maxHour = we.getHour();
+                }
+                populations.addValue(we.getPopulation(), name, "" + we.getHour());
+            }
+        }
+        else {
+
+            OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+            if (ow != null) {
+                for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+                    if (maxPopulation < we.getPopulation()) {
+                        maxPopulation = we.getPopulation();
+                        maxHour = we.getHour();
+                    }
+                    populations.addValue(we.getPopulation(), name, "" + we.getHour());
+                }
+            }
+            else {
+                return;
+            }
+        }
+
+        Document doc = DOM.getDocument(solution);
+
+        NodeList nl = doc.getElementsByTagName("Tier");
+
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node tier = nl.item(i);
+
+            String size = tier.getAttributes().getNamedItem("resourceName").getNodeValue();
+
+            Size s = Size.parse(size);
+
+            tiers.addValue(s.ordinal(), "Tier " + i, "" + maxPopulation);
+            tiersBasic.addValue(s.basicId, "Tier " + i, "" + maxPopulation);
+
+            Element tierEl = (Element) tier;
+            NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+
+            for (int j = 0; j < hours.getLength(); j++) {
+                Node hour = hours.item(j);
+                int valHour = Integer.valueOf(hour.getAttributes().getNamedItem("hour").getNodeValue()) + 1;
+
+                if (valHour == maxHour) {
+                    solutions.addValue(Integer.valueOf(hour.getAttributes().getNamedItem("allocation").getNodeValue()), "Tier " + i, "" + maxPopulation);
+                }
+
+            }
+        }
+
+        nl = doc.getElementsByTagName("SolutionResult");
+
+        if (nl.getLength() == 0)
+            nl = doc.getElementsByTagName("SolutionMultiResult");
+
+        if (nl.getLength() == 1) {
+            Node solutionResult = nl.item(0);
+
+            double cost = Double.parseDouble(solutionResult.getAttributes().getNamedItem("cost").getNodeValue());
+            boolean feasibility = Boolean.parseBoolean(solutionResult.getAttributes().getNamedItem("feasibility").getNodeValue());
+
+            costs.addValue(cost, "Solution"/*name*/, "" + "" + maxPopulation);
+            feasibilities.addValue(feasibility ? 1 : 0, "Solution"/*name*/, "" + "" + maxPopulation);
+        }
+
+        sortDataset(solutions);
+        sortDataset(tiers);
+        sortDataset(costs);
+        sortDataset(feasibilities);
+
+        updateGraph();
+        updateImages();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void sortDataset(DefaultCategoryDataset dataset) {
+        for (int i = 0; i < dataset.getColumnCount()-1; ++i) {
+            for (int j = i+1; j < dataset.getColumnCount(); ++j) {
+                boolean bigger = false;
+                try {
+                    bigger = (Integer.parseInt((String)dataset.getColumnKey(i))) > (Integer.parseInt((String)dataset.getColumnKey(j)));
+                } catch (Exception e) {
+                    bigger = dataset.getColumnKey(i).compareTo(dataset.getColumnKey(j)) == 1;
+                }
+
+                if (bigger) {
+                    Comparable<?> key = dataset.getColumnKey(i);
+
+                    for (Object o : dataset.getRowKeys()) {
+                        dataset.addValue(dataset.getValue((Comparable<?>)o, key), (Comparable<?>)o, "tmp");
+                    }
+                    dataset.removeColumn(i);
+
+                    for (Object o : dataset.getRowKeys()) {
+                        dataset.addValue(dataset.getValue((Comparable<?>)o, "tmp"), (Comparable<?>)o, key);
+                    }
+                    dataset.removeColumn("tmp");
+                }
+            }
+        }
+    }
+
+    public RobustnessProgressWindow(int total) {
+        this.total = total;
+
+        updateGraph();
+
+        initialize();
+    }
+
+    @SuppressWarnings({ "deprecation" })
+    public void updateGraph() {
+        Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+
+        populationsGraph = ChartFactory.createLineChart(null, "Hour", "Population", populations);
+        {
+            CategoryPlot plot = (CategoryPlot) populationsGraph.getPlot();
+            LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+            renderer.setShapesVisible(true);
+            renderer.setDrawOutlines(true);
+            renderer.setUseFillPaint(true);
+            renderer.setFillPaint(Color.white);
+
+            CategoryAxis categoryAxis = plot.getDomainAxis();
+            categoryAxis.setLowerMargin(0.02);
+            categoryAxis.setUpperMargin(0.02);
+            categoryAxis.setTickLabelFont(font);
+
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setTickLabelFont(font);
+
+
+        }
+
+        solutionsGraph = ChartFactory.createLineChart(null, "Max Population", "Allocation", solutions, PlotOrientation.VERTICAL, true, true, false);
+        {
+            CategoryPlot plot = (CategoryPlot) solutionsGraph.getPlot();
+            LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+            renderer.setShapesVisible(true);
+            renderer.setDrawOutlines(true);
+            renderer.setUseFillPaint(true);
+            renderer.setFillPaint(Color.white);
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setRange(0, rangeAxis.getRange().getUpperBound() * 1.1);
+            rangeAxis.setTickLabelFont(font);
+
+            CategoryAxis categoryAxis = plot.getDomainAxis();
+            categoryAxis.setLowerMargin(0.02);
+            categoryAxis.setUpperMargin(0.02);
+            categoryAxis.setTickLabelFont(font);
+
+            CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0"));
+            renderer2.setItemLabelGenerator(generator);
+            renderer2.setItemLabelsVisible(true);
+            renderer2.setItemLabelFont(font);
+        }
+
+        tiersGraph = ChartFactory.createLineChart(null, "Max Population", "Size", tiers, PlotOrientation.VERTICAL, true, true, false);
+        {
+            CategoryPlot plot = (CategoryPlot) tiersGraph.getPlot();
+            LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+            renderer.setShapesVisible(true);
+            renderer.setDrawOutlines(true);
+            renderer.setUseFillPaint(true);
+            renderer.setFillPaint(Color.white);
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setTickLabelFont(font);
+
+            int min = 10, max = 0, tmp;
+            for (int i = 0; i < tiers.getColumnCount(); ++i)
+                for (int j = 0; j < tiers.getRowCount(); ++j) {
+                    tmp = tiers.getValue(j, i).intValue();
+                    if (tmp < min)
+                        min = tmp;
+                    if (tmp > max)
+                        max = tmp;
+                }
+            if (min == 10)
+                min = 0;
+            if (max == 0)
+                max = (int)rangeAxis.getRange().getUpperBound() + 1;
+
+            rangeAxis.setRange(/*0*/ min - 0.5, /*rangeAxis.getRange().getUpperBound() + 1*/ max + 0.5);
+
+            CategoryAxis categoryAxis = plot.getDomainAxis();
+            categoryAxis.setLowerMargin(0.02);
+            categoryAxis.setUpperMargin(0.02);
+            categoryAxis.setTickLabelFont(font);
+
+            CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0") {
+
+                /**
+                 *
+                 */
+                private static final long serialVersionUID = 1L;
+
+                public StringBuffer format(double number,
+                          StringBuffer result,
+                          FieldPosition fieldPosition) {
+//                  result = new StringBuffer(Size.values()[(int)number].toString());
+                    result = new StringBuffer(Size.values()[(int)number].toString());
+                    return result;
+                }
+
+            });
+            renderer2.setItemLabelGenerator(generator);
+            renderer2.setItemLabelsVisible(true);
+            renderer2.setItemLabelFont(font);
+        }
+
+        tiersBasicGraph = ChartFactory.createLineChart(null, "Max Population", "Size", tiersBasic, PlotOrientation.VERTICAL, true, true, false);
+        {
+            CategoryPlot plot = (CategoryPlot) tiersBasicGraph.getPlot();
+            LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+            renderer.setShapesVisible(true);
+            renderer.setDrawOutlines(true);
+            renderer.setUseFillPaint(true);
+            renderer.setFillPaint(Color.white);
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setTickLabelFont(font);
+
+            int min = 10, max = 0, tmp;
+            for (int i = 0; i < tiersBasic.getColumnCount(); ++i)
+                for (int j = 0; j < tiersBasic.getRowCount(); ++j) {
+                    tmp = tiersBasic.getValue(j, i).intValue();
+                    if (tmp < min)
+                        min = tmp;
+                    if (tmp > max)
+                        max = tmp;
+                }
+            if (min == 10)
+                min = 0;
+            if (max == 0)
+                max = (int)rangeAxis.getRange().getUpperBound() + 1;
+
+            rangeAxis.setRange(/*0*/ min - 0.5, /*rangeAxis.getRange().getUpperBound() + 1*/ max + 0.5);
+
+            CategoryAxis categoryAxis = plot.getDomainAxis();
+            categoryAxis.setLowerMargin(0.02);
+            categoryAxis.setUpperMargin(0.02);
+            categoryAxis.setTickLabelFont(font);
+
+            CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0") {
+
+                /**
+                 *
+                 */
+                private static final long serialVersionUID = 1L;
+
+                public StringBuffer format(double number,
+                          StringBuffer result,
+                          FieldPosition fieldPosition) {
+//                  result = new StringBuffer(BasicSize.values()[(int)number].toString());
+                    result = new StringBuffer(Size.getSizeByBasicId((int)number).basicName);
+                    return result;
+                }
+
+            });
+            renderer2.setItemLabelGenerator(generator);
+            renderer2.setItemLabelsVisible(true);
+            renderer2.setItemLabelFont(font);
+        }
+
+        costsGraph = ChartFactory.createLineChart(null, "Max Population", "Cost", costs, PlotOrientation.VERTICAL, true, true, false);
+        {
+            CategoryPlot plot = (CategoryPlot) costsGraph.getPlot();
+            LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+            renderer.setShapesVisible(true);
+            renderer.setDrawOutlines(true);
+            renderer.setUseFillPaint(true);
+            renderer.setFillPaint(Color.white);
+
+            CategoryAxis categoryAxis = plot.getDomainAxis();
+            categoryAxis.setLowerMargin(0.02);
+            categoryAxis.setUpperMargin(0.02);
+            categoryAxis.setTickLabelFont(font);
+
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setTickLabelFont(font);
+
+            CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0") {
+
+                /**
+                 *
+                 */
+                private static final long serialVersionUID = 1L;
+
+                public StringBuffer format(double number,
+                          StringBuffer result,
+                          FieldPosition fieldPosition) {
+                    result = new StringBuffer("" + number);
+                    return result;
+                }
+
+            });
+            renderer2.setItemLabelGenerator(generator);
+            renderer2.setItemLabelsVisible(true);
+            renderer2.setItemLabelFont(font);
+        }
+
+        feasibilitiesGraph = ChartFactory.createLineChart(null, "Max Population", "Feasible", feasibilities, PlotOrientation.VERTICAL, true, true, false);
+        {
+            CategoryPlot plot = (CategoryPlot) feasibilitiesGraph.getPlot();
+            LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+            renderer.setShapesVisible(true);
+            renderer.setDrawOutlines(true);
+            renderer.setUseFillPaint(true);
+            renderer.setFillPaint(Color.white);
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setTickLabelFont(font);
+            rangeAxis.setRange(-0.5, 1.5);
+
+            CategoryAxis categoryAxis = plot.getDomainAxis();
+            categoryAxis.setLowerMargin(0.02);
+            categoryAxis.setUpperMargin(0.02);
+            categoryAxis.setTickLabelFont(font);
+
+            CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0") {
+
+                /**
+                 *
+                 */
+                private static final long serialVersionUID = 1L;
+
+                public StringBuffer format(double number,
+                          StringBuffer result,
+                          FieldPosition fieldPosition) {
+                    result = new StringBuffer(number == 1 ? "true" : "false");
+                    return result;
+                }
+
+            });
+            renderer2.setItemLabelGenerator(generator);
+            renderer2.setItemLabelsVisible(true);
+            renderer2.setItemLabelFont(font);
+        }
+
+    }
+
+    public void initialize() {
+        gui = new JFrame();
+        gui.setTitle("Robustness Progress");
+        gui.setBounds(100, 100, 650, 400);
+        gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //.DISPOSE_ON_CLOSE);
+        gui.getContentPane().setLayout(new BorderLayout(0, 0));
+
+        JPanel upperPanel = new JPanel();
+        gui.getContentPane().add(upperPanel, BorderLayout.NORTH);
+        upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
+
+        progressBar = new JProgressBar(0, total);
+        progressBar.setValue(0);
+        progressBar.setStringPainted(true);
+        upperPanel.add(progressBar);
+
+        JPanel lowerPanel = new JPanel();
+        lowerPanel.setLayout(new GridLayout(/*3*/2, 1, 0, 0));
+//      gui.getContentPane().add(lowerPanel, BorderLayout.CENTER);
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("Solutions", lowerPanel);
+        gui.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+
+//      populationsPanel = new JPanel();
+//      lowerPanel.add(populationsPanel);
+//
+//      populationsLabel = new JLabel();
+//      populationsLabel.setIcon(null);
+//      populationsPanel.add(populationsLabel);
+
+//      costsPanel = new JPanel();
+//      lowerPanel.add(costsPanel);
+//
+//      costsLabel = new JLabel();
+//      costsLabel.setIcon(null);
+//      costsPanel.add(costsLabel);
+
+        solutionsPanel = new JPanel();
+        lowerPanel.add(solutionsPanel);
+        solutionsLabel = new JLabel();
+        solutionsLabel.setIcon(null);
+        solutionsPanel.add(solutionsLabel);
+
+        tiersPanel = new JPanel();
+        lowerPanel.add(tiersPanel);
+        tiersLabel = new JLabel();
+        tiersLabel.setIcon(null);
+        tiersPanel.add(tiersLabel);
+
+        lowerPanel = new JPanel();
+        lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+        tabbedPane.addTab("Allocations", lowerPanel);
+        solutionsPanel2 = new JPanel();
+        lowerPanel.add(solutionsPanel2);
+        solutionsLabel2 = new JLabel();
+        solutionsLabel2.setIcon(null);
+        solutionsPanel2.add(solutionsLabel2);
+
+        lowerPanel = new JPanel();
+        lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+        tabbedPane.addTab("Sizes", lowerPanel);
+        tiersPanel2 = new JPanel();
+        lowerPanel.add(tiersPanel2);
+        tiersLabel2 = new JLabel();
+        tiersLabel2.setIcon(null);
+        tiersPanel2.add(tiersLabel2);
+
+        lowerPanel = new JPanel();
+        lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+        tabbedPane.addTab("Basic Sizes", lowerPanel);
+        tiersBasicPanel = new JPanel();
+        lowerPanel.add(tiersBasicPanel);
+        tiersBasicLabel = new JLabel();
+        tiersBasicLabel.setIcon(null);
+        tiersBasicPanel.add(tiersBasicLabel);
+
+        lowerPanel = new JPanel();
+        lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+        tabbedPane.addTab("Costs", lowerPanel);
+        costsPanel = new JPanel();
+        lowerPanel.add(costsPanel);
+        costsLabel = new JLabel();
+        costsLabel.setIcon(null);
+        costsPanel.add(costsLabel);
+
+        lowerPanel = new JPanel();
+        lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+        tabbedPane.addTab("Workloads", lowerPanel);
+        populationsPanel = new JPanel();
+        lowerPanel.add(populationsPanel);
+        populationsLabel = new JLabel();
+        populationsLabel.setIcon(null);
+        populationsPanel.add(populationsLabel);
+
+        lowerPanel = new JPanel();
+        lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+        tabbedPane.addTab("Feasibilities", lowerPanel);
+        feasibilitiesPanel = new JPanel();
+        lowerPanel.add(feasibilitiesPanel);
+        feasibilitiesLabel = new JLabel();
+        feasibilitiesLabel.setIcon(null);
+        feasibilitiesPanel.add(feasibilitiesLabel);
+
+        //listener to resize images
+        gui.addComponentListener(new ComponentListener() {
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+                updateImages();
+            }
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                updateImages();
+            }
+
+            @Override
+            public void componentMoved(ComponentEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+        gui.setVisible(true);
+        updateImages();
+    }
+
+    public void setValue(int value) {
+        if (value > total)
+            value = total;
+        progressBar.setValue(value);
+    }
+
+    public int getValue() {
+        return progressBar.getValue();
+    }
+
+
+    private boolean alreadyUpdating = false;
+
+    private void updateImages() {
+        if (alreadyUpdating)
+            return;
+        alreadyUpdating = true;
+
+        if (populationsGraph != null) {
+            ImageIcon icon;
+            try {
+                icon = new ImageIcon(populationsGraph.createBufferedImage(populationsPanel.getSize().width, populationsPanel.getSize().height));
+            } catch (NullPointerException e) {
+                icon = new ImageIcon();
+            }
+            populationsLabel.setIcon(icon);
+            populationsLabel.setVisible(true);
+            populationsPanel.setPreferredSize(populationsLabel.getPreferredSize());
+
+            populationsLabel.validate();
+        }
+
+        if (costsGraph != null) {
+            ImageIcon icon;
+            try {
+                icon = new ImageIcon(costsGraph.createBufferedImage(costsPanel.getSize().width, costsPanel.getSize().height));
+            } catch (NullPointerException e) {
+                icon = new ImageIcon();
+            }
+            costsLabel.setIcon(icon);
+            costsLabel.setVisible(true);
+            costsPanel.setPreferredSize(costsLabel.getPreferredSize());
+
+            costsLabel.validate();
+        }
+
+        if (solutionsGraph != null) {
+            ImageIcon icon, icon2;
+            try {
+                icon = new ImageIcon(solutionsGraph.createBufferedImage(solutionsPanel.getSize().width, solutionsPanel.getSize().height));
+                icon2 = new ImageIcon(solutionsGraph.createBufferedImage(solutionsPanel2.getSize().width, solutionsPanel2.getSize().height));
+            } catch (NullPointerException e) {
+                icon = new ImageIcon();
+                icon2 = new ImageIcon();
+            }
+            solutionsLabel.setIcon(icon);
+            solutionsLabel.setVisible(true);
+            solutionsPanel.setPreferredSize(solutionsLabel.getPreferredSize());
+
+            solutionsLabel.validate();
+
+            solutionsLabel2.setIcon(icon2);
+            solutionsLabel2.setVisible(true);
+            solutionsPanel2.setPreferredSize(solutionsLabel2.getPreferredSize());
+
+            solutionsLabel2.validate();
+        }
+
+        if (tiers != null) {
+            ImageIcon icon, icon2;
+            try {
+                icon = new ImageIcon(tiersGraph.createBufferedImage(tiersPanel.getSize().width, tiersPanel.getSize().height));
+                icon2 = new ImageIcon(tiersGraph.createBufferedImage(tiersPanel2.getSize().width, tiersPanel2.getSize().height));
+            } catch (NullPointerException e) {
+                icon = new ImageIcon();
+                icon2 = new ImageIcon();
+            }
+            tiersLabel.setIcon(icon);
+            tiersLabel.setVisible(true);
+            tiersPanel.setPreferredSize(tiersLabel.getPreferredSize());
+
+            tiersLabel.validate();
+
+            tiersLabel2.setIcon(icon2);
+            tiersLabel2.setVisible(true);
+            tiersPanel2.setPreferredSize(tiersLabel2.getPreferredSize());
+
+            tiersLabel2.validate();
+        }
+
+        if (tiersBasic != null) {
+            ImageIcon icon;
+            try {
+                icon = new ImageIcon(tiersBasicGraph.createBufferedImage(tiersBasicPanel.getSize().width, tiersBasicPanel.getSize().height));
+            } catch (NullPointerException e) {
+                icon = new ImageIcon();
+            }
+            tiersBasicLabel.setIcon(icon);
+            tiersBasicLabel.setVisible(true);
+            tiersBasicPanel.setPreferredSize(tiersBasicLabel.getPreferredSize());
+
+            tiersBasicLabel.validate();
+        }
+
+        if (feasibilities != null) {
+            ImageIcon icon;
+            try {
+                icon = new ImageIcon(feasibilitiesGraph.createBufferedImage(feasibilitiesPanel.getSize().width, feasibilitiesPanel.getSize().height));
+            } catch (NullPointerException e) {
+                icon = new ImageIcon();
+            }
+            feasibilitiesLabel.setIcon(icon);
+            feasibilitiesLabel.setVisible(true);
+            feasibilitiesPanel.setPreferredSize(feasibilitiesLabel.getPreferredSize());
+
+            feasibilitiesLabel.validate();
+        }
+
+        alreadyUpdating = false;
+    }
+
+    public void save2png(String path) throws IOException {
+        ChartUtilities.writeChartAsPNG(new FileOutputStream(Paths.get(path, "allocations.png").toFile()), solutionsGraph, 1350, 700);
+        ChartUtilities.writeChartAsPNG(new FileOutputStream(Paths.get(path, "populations.png").toFile()), populationsGraph, 1350, 700);
+        ChartUtilities.writeChartAsPNG(new FileOutputStream(Paths.get(path, "sizes.png").toFile()), tiersGraph, 1350, 700);
+        ChartUtilities.writeChartAsPNG(new FileOutputStream(Paths.get(path, "basicSizes.png").toFile()), tiersBasicGraph, 1350, 700);
+        ChartUtilities.writeChartAsPNG(new FileOutputStream(Paths.get(path, "costs.png").toFile()), costsGraph, 1350, 700);
+        ChartUtilities.writeChartAsPNG(new FileOutputStream(Paths.get(path, "feasibilities.png").toFile()), feasibilitiesGraph, 1350, 700);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static void compare(RobustnessProgressWindow rpw1, RobustnessProgressWindow rpw2, String pathFile) {
+        DefaultCategoryDataset costs1 = rpw1.costs, costs2 = rpw2.costs;
+        DefaultCategoryDataset costs3 = new DefaultCategoryDataset();
+
+        if (costs1.getColumnCount() != costs2.getColumnCount())
+            return;
+
+        float total = 0, max = Float.MIN_VALUE, min = Float.MAX_VALUE;
+
+        for (int i = 0; i < costs1.getColumnCount(); ++i) {
+            float diff = (float)((Double)costs1.getValue(0, i) - (Double)costs2.getValue(0, i));
+            total += diff;
+            if (diff < min)
+                min = diff;
+            if (diff > max)
+                max = diff;
+            costs3.addValue(diff, "Diff", costs1.getColumnKey(i));
+        }
+
+        JFreeChart costsGraph = ChartFactory.createLineChart("Total: " + total + ", Min: " + min + ", Max: " + max, "Max Population", "Difference", costs3, PlotOrientation.VERTICAL, true, true, false);
+        {
+            CategoryPlot plot = (CategoryPlot) costsGraph.getPlot();
+            LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
+            renderer.setShapesVisible(true);
+            renderer.setDrawOutlines(true);
+            renderer.setUseFillPaint(true);
+            renderer.setFillPaint(Color.white);
+            Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+
+            CategoryAxis categoryAxis = plot.getDomainAxis();
+            categoryAxis.setLowerMargin(0.02);
+            categoryAxis.setUpperMargin(0.02);
+            categoryAxis.setTickLabelFont(font);
+
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setTickLabelFont(font);
+
+            CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot.getRenderer();
+            CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0") {
+
+                /**
+                 *
+                 */
+                private static final long serialVersionUID = 1L;
+
+                public StringBuffer format(double number,
+                          StringBuffer result,
+                          FieldPosition fieldPosition) {
+                    result = new StringBuffer("" + (float)number);
+                    return result;
+                }
+
+            });
+            renderer2.setItemLabelGenerator(generator);
+            renderer2.setItemLabelsVisible(true);
+            renderer2.setItemLabelFont(font);
+        }
+
+        try {
+            ChartUtilities.writeChartAsPNG(new FileOutputStream(new File(pathFile)), costsGraph, 1350, 700);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static RobustnessProgressWindow redraw(String basePath, int testFrom, int testTo, int step) {
+        int total = (testTo - testFrom) / step;
+
+        RobustnessProgressWindow rpw = new RobustnessProgressWindow(total);
+
+        try {
+            for (int i = testFrom; i <= testTo; i += step) {
+                rpw.add("" + i, Paths.get(basePath, "ume-" + i + ".xml").toFile(), Paths.get(basePath, "solution-" + i + ".xml").toFile());
+
+                rpw.setValue(rpw.getValue() + 1);
+            }
+
+            rpw.save2png(basePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        rpw.setValue(total);
+
+        return rpw;
+    }
+
+    @SuppressWarnings("unused")
+    public static void main(String args[]) {
+        String basePath = "C:\\Users\\Riccardo\\Desktop\\tmp\\russo\\results-multi";
+
+        int testFrom = 100, testTo = 10000, step = 300;
+//      int testFrom = 30, testTo = 3000, step = 90;
+
+        if (args != null && args.length > 0) {
+            basePath = args[0];
+
+            if (args.length > 1) {
+                try {
+                    testFrom = Integer.parseInt(args[1]);
+                } catch (Exception e) { }
+
+                if (args.length > 2) {
+                    try {
+                        testTo = Integer.parseInt(args[2]);
+                    } catch (Exception e) { }
+
+                    if (args.length > 3) {
+                        try {
+                            step = Integer.parseInt(args[3]);
+                        } catch (Exception e) { }
+
+                    }
+                }
+            }
+        }
+
+//      redraw(basePath, testFrom, testTo, step);
+
+        RobustnessProgressWindow rpw1 = redraw(basePath, testFrom, testTo, step);
+//      rpw1.gui.dispose();
+
+//      RobustnessProgressWindow rpw2 = redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\russo\\bipicco3", 100, 10000, 300);
+//      rpw2.gui.dispose();
+//
+//      RobustnessProgressWindow rpw3 = redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\russo\\results-amazon2", 100, 10000, 300);
+//      rpw3.gui.dispose();
+//
+//      compare(rpw1, rpw2, basePath + File.separator + "costsDiffs-generated-non2.png");
+//      compare(rpw1, rpw3, basePath + File.separator + "costsDiffs-generated-generated2.png");
+//      compare(rpw3, rpw2, basePath + File.separator + "costsDiffs-generated2-non2.png");
+
+    }
 
 }

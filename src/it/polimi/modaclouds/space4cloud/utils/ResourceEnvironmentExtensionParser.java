@@ -230,6 +230,7 @@ public class ResourceEnvironmentExtensionParser {
 			return null;
 
 		String location = serviceLocations.values().iterator().next();
+		
 		for (Iterator<String> locationsIter = serviceLocations.values()
 				.iterator(); locationsIter.hasNext();)
 			if (!location.equals(locationsIter.next())) {
@@ -239,5 +240,21 @@ public class ResourceEnvironmentExtensionParser {
 			}
 		return location;
 	}
+	
+	public String getRegion(String provider) {
+        String value = serviceLocations.get(provider);
+        if (value != null && value.equals("not-valid"))
+            return null;
+        return value;
+    }
+
+    public void setRegion(String provider, String value) {
+        String old = serviceLocations.get(provider);
+        if (old != null && !old.equals(value))
+            serviceLocations.put(provider, "us-east");
+//          serviceLocations.put(provider, "not-valid");
+        else
+            serviceLocations.put(provider,  value);
+    }
 
 }

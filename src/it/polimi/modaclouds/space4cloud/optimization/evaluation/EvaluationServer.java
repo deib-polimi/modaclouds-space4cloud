@@ -188,19 +188,18 @@ public class EvaluationServer implements ActionListener{
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}	//loop until everything has been evaluated		
-
+				}	//loop until everything has been evaluated	
+			
 			//remove the counters for the evaluated solution
 			counters.remove(sol);
 			incrementTotalNumberOfEvaluations();
-		}	
+		}
 
 		//evaluate feasibility 
 		if(constraintHandler!= null)
 			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
 		sol.updateEvaluation();
 		
-
 		//evaluate costs
 		deriveCosts(sol);
 		
@@ -228,7 +227,7 @@ public class EvaluationServer implements ActionListener{
 		long startTime = System.nanoTime();
 		//costs
 		int totalCost = 0;
-		for(Instance i:sol.getHourApplication()){			
+		for(Instance i:sol.getHourApplication()){
 			int cost = costEvaulator.deriveCosts(i,sol.getHourApplication().indexOf(i));
 			totalCost +=cost;
 		}		
@@ -248,7 +247,9 @@ public class EvaluationServer implements ActionListener{
 		}else{
 
 			Solution sol = ((SolutionEvaluator)e.getSource()).getSolution();
+			
 			counters.put(sol, counters.get(sol)+1);
+			
 		}
 
 	}

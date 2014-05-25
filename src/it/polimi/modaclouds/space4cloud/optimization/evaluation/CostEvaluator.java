@@ -44,14 +44,23 @@ public class CostEvaluator {
 
 	DataHandler dataHandler = DataHandlerFactory.getHandler();
 
-	public int deriveCosts(Instance application, int hour){		
+	public int deriveCosts(Instance application, int hour){
 		int cost = 0;
 		//sum up costs for each tier  
 		for(Tier t:application.getTiers()){
-			CloudService service = t.getCloudService();			
+			
+			CloudService service = t.getCloudService();	
+			
 			if(service instanceof IaaS){
 				IaaS iaasResource = (IaaS) service;
 				it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler.getCloudResource(iaasResource.getProvider(), iaasResource.getServiceName(), iaasResource.getResourceName());
+
+				if (cloudResource == null) {
+					System.out.println("ERROR: The found resource is null!");
+					cost += 100000;
+					continue;
+				}
+				
 				List<Cost> lc = cloudResource.getHasCost();
 				List<Cost> onDemandLc = new ArrayList<Cost>();
 				
@@ -59,11 +68,11 @@ public class CostEvaluator {
 				for(Cost c:lc)
 					if(!c.getDescription().contains("Reserved"))
 						onDemandLc.add(c);
-						
+				
 				lc.clear();
 				//filter by region
 				for(Cost c:onDemandLc)
-					if(c.getRegion()==null || c.getRegion()=="" || c.getRegion().equals(application.getRegion()))
+					if (c.getRegion() == null || c.getRegion() == "" || application.getRegion() == null || c.getRegion().equals(application.getRegion()))
 						lc.add(c);
 
 				CostProfile cp = cloudResource.getHasCostProfile();

@@ -15,11 +15,15 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.chart;
 
+import it.polimi.modaclouds.space4cloud.utils.Constants;
+
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -132,7 +136,14 @@ public class Logger2JFreeChartImage {
 		chartCreator.removeAllSeries();
 		for (XYSeries s : seriesList)
 			chartCreator.addSeries(s);
-		ChartUtilities.saveChartAsPNG(new File(path2save),
+		
+//		Path path = Paths.get(path2save);
+		Path path = Paths.get(Constants.getInstance().ABSOLUTE_WORKING_DIRECTORY, path2save);
+		if (Files.notExists(path.getParent()))
+			Files.createDirectory(path.getParent());
+//		Files.deleteIfExists(path);
+		
+		ChartUtilities.saveChartAsPNG(path.toFile(), //new File(path2save),
 				chartCreator.getChart(), width, height);
 
 	}

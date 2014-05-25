@@ -26,10 +26,14 @@ import java.util.List;
 public class PartialEvaluationOptimizationEngine extends OptEngine{
 
 	private static final double DEFAULT_SCALE_IN_FACTOR = 2;
-	private static final double MAX_NUMBER_OF_ITERATIONS = 20;
+	private static final double MAX_NUMBER_OF_ITERATIONS = 20; // 30
 
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) {
 		super(handler);
+	}
+	
+	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, boolean batch) {
+		super(handler, batch);
 	}
 
 	@Override
