@@ -71,11 +71,13 @@ public class Main {
 		System.out.println("space");
 		Space4Cloud instance = new Space4Cloud();
 //		String basePath = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\OfBiz\\";
-//		Space4Cloud instance = new Space4Cloud(
-//				Space4Cloud.Operations.Optimization, basePath, new File(
+//		instance = new Space4Cloud(
+//				Space4Cloud.Operations.Robustness, basePath, new File(
 //						basePath + "ume-1000.xml"),
 ////				 new File(basePath + "rme-multi2.xml"),
 //				new File(basePath + "OfBiz-Constraint.xml"), 100, 10000, 300);
+//		instance.setProvidersInitialSolution("Amazon", "Microsoft");
+//		instance.setRobustnessAttempts(1);
 		System.out.println("execute");
 		instance.execute();
 		System.out.println("fine!");

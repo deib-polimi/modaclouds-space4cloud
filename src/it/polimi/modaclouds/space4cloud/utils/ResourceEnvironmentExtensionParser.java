@@ -249,11 +249,11 @@ public class ResourceEnvironmentExtensionParser {
     }
 
     public void setRegion(String provider, String value) {
-        String old = serviceLocations.get(provider);
-        if (old != null && !old.equals(value))
-            serviceLocations.put(provider, "us-east");
-//          serviceLocations.put(provider, "not-valid");
-        else
+//        String old = serviceLocations.get(provider);
+//        if (old != null && !old.equals(value))
+//            serviceLocations.put(provider, "us-east");
+////          serviceLocations.put(provider, "not-valid");
+//        else
             serviceLocations.put(provider,  value);
     }
 

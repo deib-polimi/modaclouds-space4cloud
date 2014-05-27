@@ -417,6 +417,28 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return result;
 	}
 	
+	public static int getCost(File solution) {
+		int cost = Integer.MAX_VALUE;
+		
+		if (solution != null && solution.exists())
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(solution);
+				doc.getDocumentElement().normalize();
+				
+				{
+					Element root = (Element) doc.getElementsByTagName("SolutionMultiResult").item(0);
+					
+					cost = (int)Math.round(Double.parseDouble(root.getAttribute("cost")) * 1000);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		
+		return cost;
+	}
+	
 	public boolean setFrom(File initialSolution, File initialMce) {
 		if (initialSolution == null)
 			return false;
@@ -457,7 +479,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 				int ram = dataHandler.getAmountMemory(provider, serviceName, resourceName);
 				int numberOfCores = dataHandler.getNumberOfReplicas(provider, serviceName, resourceName);
 				
-				System.out.printf("DEBUG: %s, %s, %s <-> %f, %d, %d.\n", provider, serviceName, resourceName, (float)speed, ram, numberOfCores);
+//				System.out.printf("DEBUG: %s, %s, %s <-> %f, %d, %d.\n", provider, serviceName, resourceName, (float)speed, ram, numberOfCores);
 				
 				NodeList hourAllocations = tier.getElementsByTagName("HourAllocation");
 				

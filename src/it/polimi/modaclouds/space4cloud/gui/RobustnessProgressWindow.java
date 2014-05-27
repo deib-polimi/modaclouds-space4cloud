@@ -6,6 +6,7 @@ import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
 import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 import java.awt.BorderLayout;
@@ -160,11 +161,12 @@ public class RobustnessProgressWindow {
         }
     }
 
-    public void add(String name, File usageModelExtension, File solution) throws MalformedURLException, JAXBException {
+    public void add(File usageModelExtension, File solution) throws MalformedURLException, JAXBException {
         UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension.toURI().toURL(),
                 UsageModelExtensions.class);
 
         int maxPopulation = -1, maxHour = -1;
+        String name = "Var " + Space4Cloud.getMaxPopulation(usageModelExtension);
 
         ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
         if (cw != null) {
@@ -851,7 +853,7 @@ public class RobustnessProgressWindow {
 
         try {
             for (int i = testFrom; i <= testTo; i += step) {
-                rpw.add("" + i, Paths.get(basePath, "ume-" + i + ".xml").toFile(), Paths.get(basePath, "solution-" + i + ".xml").toFile());
+                rpw.add(Paths.get(basePath, "ume-" + i + ".xml").toFile(), Paths.get(basePath, "solution-" + i + ".xml").toFile());
 
                 rpw.setValue(rpw.getValue() + 1);
             }

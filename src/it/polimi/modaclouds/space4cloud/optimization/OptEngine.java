@@ -1034,7 +1034,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 //      try {
 //          Files.copy(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "generated-solution.xml") , Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "solution.xml"));
 //      } catch (IOException e) {
-//          // TODO Auto-generated catch block
 //          e.printStackTrace();
 //      }
         //////
