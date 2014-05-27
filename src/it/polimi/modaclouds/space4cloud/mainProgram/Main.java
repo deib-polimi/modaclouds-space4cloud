@@ -18,7 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
-import java.io.File;
 
 
 
@@ -76,7 +75,8 @@ public class Main {
 //						basePath + "ume-1000.xml"),
 ////				 new File(basePath + "rme-multi2.xml"),
 //				new File(basePath + "OfBiz-Constraint.xml"), 100, 10000, 300);
-//		instance.setProvidersInitialSolution("Amazon", "Microsoft");
+////		instance.setProvidersInitialSolution("Amazon", "Microsoft");
+//		instance.setProvidersInitialSolution("Flexiscale");
 //		instance.setRobustnessAttempts(1);
 		System.out.println("execute");
 		instance.execute();

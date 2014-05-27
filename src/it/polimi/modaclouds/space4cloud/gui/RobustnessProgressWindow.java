@@ -119,9 +119,43 @@ public class RobustnessProgressWindow {
         GeneralAvailabilityLargeInstance ("Large", 10),
         PreviewLargeInstance ("Large", 10),
         GeneralAvailabilityExtraLargeInstance ("ExtraLarge", 11),
-        PreviewExtraLargeInstance ("ExtraLarge", 11);
+        PreviewExtraLargeInstance ("ExtraLarge", 11),
+        
+        // Flexiscale
+        Flexiscale512MB1CPUServer ("512 MB/1 CPU", 12),
+        Flexiscale512MB1CPUServerWindows ("512 MB/1 CPU", 12),
+        Flexiscale1GB1CPUServer ("1 GB/1 CPU", 13),
+        Flexiscale1GB1CPUServerWindows ("1 GB/1 CPU", 13),
+        Flexiscale2GB1CPUServer ("2 GB/1 CPU", 14),
+        Flexiscale2GB1CPUServerWindows ("2 GB/1 CPU", 14),
+        Flexiscale2GB2CPUServer ("2 GB/2 CPU", 15),
+        Flexiscale2GB2CPUServerWindows ("2 GB/2 CPU", 15),
+        Flexiscale4GB2CPUServer ("4 GB/2 CPU", 16),
+        Flexiscale4GB2CPUServerWindows ("4 GB/2 CPU", 16),
+        Flexiscale4GB3CPUServer ("4 GB/3 CPU", 17),
+        Flexiscale4GB3CPUServerWindows ("4 GB/3 CPU", 17),
+        Flexiscale4GB4CPUServer ("4 GB/4 CPU", 18),
+        Flexiscale4GB4CPUServerWindows ("4 GB/4 CPU", 18),
+        Flexiscale6GB3CPUServer ("6 GB/3 CPU", 19),
+        Flexiscale6GB3CPUServerWindows ("6 GB/3 CPU", 19),
+        Flexiscale6GB4CPUServer ("6 GB/4 CPU", 20),
+        Flexiscale6GB4CPUServerWindows ("6 GB/4 CPU", 20),
+        Flexiscale6GB5CPUServer ("6 GB/5 CPU", 21),
+        Flexiscale6GB5CPUServerWindows ("6 GB/5 CPU", 21),
+        Flexiscale6GB6CPUServer ("6 GB/6 CPU", 22),
+        Flexiscale6GB6CPUServerWindows ("6 GB/6 CPU", 22),
+        Flexiscale8GB4CPUServer ("8 GB/4 CPU", 23),
+        Flexiscale8GB4CPUServerWindows ("8 GB/4 CPU", 23),
+        Flexiscale8GB5CPUServer ("8 GB/5 CPU", 24),
+        Flexiscale8GB5CPUServerWindows ("8 GB/5 CPU", 24),
+        Flexiscale8GB6CPUServer ("8 GB/6 CPU", 25),
+        Flexiscale8GB6CPUServerWindows ("8 GB/6 CPU", 25),
+        Flexiscale8GB7CPUServer ("8 GB/7 CPU", 26),
+        Flexiscale8GB7CPUServerWindows ("8 GB/7 CPU", 26),
+        Flexiscale8GB8CPUServer ("8 GB/8 CPU", 27),
+        Flexiscale8GB8CPUServerWindows ("8 GB/8 CPU", 27);
 
-        private static final int lastAmazonId = 6, lastMicrosoftId = 11;
+        private static final int lastAmazonId = 6, lastMicrosoftId = 11, lastFlexiscaleId = 27;
 
         public String basicName;
         public int basicId;
@@ -143,7 +177,8 @@ public class RobustnessProgressWindow {
                 return false;
             if (
                     (basicId <= lastAmazonId && s.basicId <= lastAmazonId) ||
-                    (basicId > lastAmazonId && s.basicId > lastAmazonId && basicId <= lastMicrosoftId && s.basicId <= lastMicrosoftId)
+                    (basicId > lastAmazonId && s.basicId > lastAmazonId && basicId <= lastMicrosoftId && s.basicId <= lastMicrosoftId) ||
+                    (basicId > lastMicrosoftId && s.basicId > lastMicrosoftId && basicId <= lastFlexiscaleId && s.basicId <= lastFlexiscaleId)
                 )
                 return basicId > s.basicId;
             return false;
@@ -152,7 +187,7 @@ public class RobustnessProgressWindow {
         public static Size parse(String size) {
             Size s;
             try {
-                s = Size.valueOf(size.replace('.', '-').replaceAll("-", "").replaceAll(" ", ""));
+                s = Size.valueOf(size.replace('.', '-').replaceAll("-", "").replaceAll(" ", "").replaceAll("/", ""));
             } catch (Exception e) {
                 e.printStackTrace();
                 s = Size.zero;
@@ -342,7 +377,7 @@ public class RobustnessProgressWindow {
             NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
             rangeAxis.setTickLabelFont(font);
 
-            int min = 10, max = 0, tmp;
+            int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
             for (int i = 0; i < tiers.getColumnCount(); ++i)
                 for (int j = 0; j < tiers.getRowCount(); ++j) {
                     tmp = tiers.getValue(j, i).intValue();
@@ -351,9 +386,9 @@ public class RobustnessProgressWindow {
                     if (tmp > max)
                         max = tmp;
                 }
-            if (min == 10)
+            if (min == Integer.MAX_VALUE)
                 min = 0;
-            if (max == 0)
+            if (max == Integer.MIN_VALUE)
                 max = (int)rangeAxis.getRange().getUpperBound() + 1;
 
             rangeAxis.setRange(/*0*/ min - 0.5, /*rangeAxis.getRange().getUpperBound() + 1*/ max + 0.5);
@@ -396,7 +431,7 @@ public class RobustnessProgressWindow {
             NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
             rangeAxis.setTickLabelFont(font);
 
-            int min = 10, max = 0, tmp;
+            int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
             for (int i = 0; i < tiersBasic.getColumnCount(); ++i)
                 for (int j = 0; j < tiersBasic.getRowCount(); ++j) {
                     tmp = tiersBasic.getValue(j, i).intValue();
@@ -405,9 +440,9 @@ public class RobustnessProgressWindow {
                     if (tmp > max)
                         max = tmp;
                 }
-            if (min == 10)
+            if (min == Integer.MAX_VALUE)
                 min = 0;
-            if (max == 0)
+            if (max == Integer.MIN_VALUE)
                 max = (int)rangeAxis.getRange().getUpperBound() + 1;
 
             rangeAxis.setRange(/*0*/ min - 0.5, /*rangeAxis.getRange().getUpperBound() + 1*/ max + 0.5);
