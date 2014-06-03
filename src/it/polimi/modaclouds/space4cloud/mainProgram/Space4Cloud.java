@@ -45,6 +45,7 @@ import it.polimi.modaclouds.space4cloud.utils.ConfigurationHandler;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
+import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -69,6 +70,7 @@ import javax.swing.SwingWorker;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang.time.StopWatch;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -265,36 +267,36 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	}
 	
 	private void performGenerateInitialSolution() {
-		resourceEnvExtFile = null;
-		programLogger.warn("Generation of the first solution disabled at the moment!");
+//		resourceEnvExtFile = null;
+//		programLogger.warn("Generation of the first solution disabled at the moment!");
 		
 		/////////////////////////////
-//		RussianEvaluator re = new RussianEvaluator(usageModelExtFile, constraintFile);
-////        re.setProviders("Amazon"); //, "Microsoft");
-////        re.setRegions("us-east");
-//		
-////		if (!batch)
-////			askProvidersForInitialSolution();
-//		
-//		if (providersInitialSolution.size() > 0)
-//        	re.setProviders(getProvidersInitialSolution());
-//
-//        try {
-//            re.eval();
-//        } catch (Exception e) {
-//            programLogger.error("Error! It's impossible to generate the solution! Are you connected?");
-//            e.printStackTrace();
-//            return;
-//        }
-//
-//        resourceEnvExtFile = re.getResourceEnvExt();
-//        initialSolution = re.getSolution();
-//        initialMce = re.getMultiCloudExt();
-//
-//        programLogger.info("Generated resource model extension: " + resourceEnvExtFile.getAbsolutePath());
-//        programLogger.info("Generated solution: " + initialSolution.getAbsolutePath());
-//        programLogger.info("Generated multi cloud extension: " + initialMce.getAbsolutePath());
-//        programLogger.info("Cost: " + re.getCost() + ", computed in: " + re.getEvaluationTime() + " ms");
+		RussianEvaluator re = new RussianEvaluator(usageModelExtFile, constraintFile);
+		
+		if (providersInitialSolution.size() > 0)
+        	re.setProviders(getProvidersInitialSolution());
+
+        try {
+            re.eval();
+        } catch (Exception e) {
+            programLogger.error("Error! It's impossible to generate the solution! Are you connected?");
+            e.printStackTrace();
+            return;
+        }
+
+        resourceEnvExtFile = re.getResourceEnvExt();
+        initialSolution = re.getSolution();
+        initialMce = re.getMultiCloudExt();
+
+        programLogger.info("Generated resource model extension: " + resourceEnvExtFile.getAbsolutePath());
+        programLogger.info("Generated solution: " + initialSolution.getAbsolutePath());
+        programLogger.info("Generated multi cloud extension: " + initialMce.getAbsolutePath());
+        programLogger.info("Cost: " + re.getCost() + ", computed in: " + re.getEvaluationTime() + " ms");
+        
+        if (SolutionMulti.isEmpty(initialSolution)) {
+        	resourceEnvExtFile = null;
+        	programLogger.error("The generated solution is empty!");
+        }
         
     }
 
@@ -1163,15 +1165,24 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		
 		String duration = "";
 		{
-			int res = (attempts * (int)Math.ceil(((testTo - testFrom) / step))) * 2;
+			// an average of 2 minutes per attempt... maybe it's too little, but whatever...
+			int res = (attempts * (int)Math.ceil(((testTo - testFrom) / step))) * 2 * 60;
+			if (res > 60*60) {
+				duration += (res / (60*60)) + " h ";
+				res = res % (60*60);
+			}
 			if (res > 60) {
-				duration += (res / 60) + " hours ";
+				duration += (res / 60) + " m ";
 				res = res % 60;
 			}
-			duration += res + " mins";
+			duration += res + " s";
 		}
 		programLogger.info("Starting the robustness test, considering each problem " + attempts + " times (it could take up to " + duration + ")...");
-
+		
+		StopWatch timer = new StopWatch();
+		timer.start();
+		timer.split();
+		
 		usageModelExtFiles.add(0, usageModelExtFile);
 
 		List<File> solutions = new ArrayList<File>();
@@ -1264,8 +1275,25 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		
 
         executor.shutdown();
-
+        timer.stop();
+        
 		programLogger.info("Check ended!");
+		
+		String actualDuration = "";
+		{
+			int res = (int)timer.getTime() / 1000;
+			if (res > 60*60) {
+				actualDuration += (res / (60*60)) + " h ";
+				res = res % (60*60);
+			}
+			if (res > 60) {
+				actualDuration += (res / 60) + " m ";
+				res = res % 60;
+			}
+			actualDuration += res + " s";
+		}
+		
+		programLogger.info("Expected time of execution: " + duration + ", actual time of execution: " + actualDuration);
 
 	}
 

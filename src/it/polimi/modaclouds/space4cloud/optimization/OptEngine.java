@@ -54,6 +54,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -242,7 +243,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	@Override
 	protected Void doInBackground() throws Exception {
-		optimize();
+		if (initialSolution.size() > 1)
+			optimizeMultiprovider();
+		else
+			optimize();
 		return null;
 	}
 
@@ -952,7 +956,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	/**
-	 * This is the bulk of the optimization process.
+	 * This is the bulk of the optimization process in case of a single provider problem.
 	 * 
 	 * @return the integer -1 an error has happened.
 	 */
@@ -1037,6 +1041,97 @@ public class OptEngine extends SwingWorker<Void, Void> {
 //          e.printStackTrace();
 //      }
         //////
+
+		return -1;
+
+	}
+	
+	/**
+	 * This is the bulk of the optimization process in case of a multi-provider problem.
+	 * 
+	 * @return the integer -1 an error has happened.
+	 */
+	public Integer optimizeMultiprovider() {
+
+		logger.getName();
+		// 1: check if an initial solution has been set
+		if (this.initialSolution == null)
+			return -1;
+
+		timer.start();
+		timer.split();
+		evalProxy.EvaluateSolution(initialSolution);// evaluate the current
+		// solution
+		// initialSolution.showStatus();
+		// Debugging constraintHandler
+
+		logger.info("first evaluation");
+		bestSolution = initialSolution.clone();
+		seriesHandler = log2png.newSeries("Best solution");
+		log2png.addPoint2Series(seriesHandler,
+				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+				bestSolution.getCost() / 100);
+		logger.warn("" + bestSolution.getCost() / 100 + ", 1 " + ", "
+				+ bestSolution.isFeasible());
+
+		numberOfIterations = 1;
+		currentSolution = initialSolution.clone(); // the best solution is the
+
+		// evalSvr.EvaluateSolution(currentSolution);
+
+		// this is one possibility, I however prefer using the execution time as
+		// a stopping criterion. Mich
+		while (!isMaxNumberOfIterations()) {
+			setProgress(numberOfIterations);
+			logger.info("Iteration: " + numberOfIterations + "cost: "
+					+ currentSolution.getCost() / 100);
+			// 2: Internal Optimization process
+
+			InternalOptimization(currentSolution);
+
+			// 3: check whether the best solution has changed
+			// If the current solution is better than the best one it becomes
+			// the new best solution.
+			updateBestSolution(currentSolution);
+
+			// 3b: clone the best solution to start the scruble from it
+			currentSolution = bestSolution.clone();
+			// ogSolution(bestSolution); // a dire la verità questo è un po'
+			// restrittivo.
+
+			// 4 Scrambling the current solution.
+			scramble(currentSolution);
+
+			// increment the number of iterations
+			numberOfIterations += 1;
+
+		}
+
+		try {
+			log2png.save2png();
+			logVm.save2png();
+			logConstraints.save2png();
+		} catch (IOException e) {
+			logger.error("Unable to create charts", e);
+		}
+
+		logger.warn(bestSolution.showStatus());
+		logger.info(bestSolution.showStatus());
+		bestSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY + "solution.xml");
+		bestSolution.exportCSV(c.ABSOLUTE_WORKING_DIRECTORY + "results.csv");
+		evalProxy.showStatistics();
+		evalProxy.terminateServer();
+		
+//		//////
+//      evalProxy.showStatistics();
+//      System.out.println("End!");
+//
+//      try {
+//          Files.copy(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "generated-solution.xml") , Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "solution.xml"));
+//      } catch (IOException e) {
+//          e.printStackTrace();
+//      }
+//        //////
 
 		return -1;
 
@@ -1285,87 +1380,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
         evalProxy.EvaluateSolution(sols);
         updateBestSolution(sols);
-
-    }
-
-    protected void checkCloseProblems(Solution sol) {
-        checkCloseProblems(sol, 1.0);
-    }
-
-    protected void checkCloseProblems(Solution sol, double previousRate) {
-        Solution sol10 = sol.clone(), sol20 = sol.clone(), sol30 = sol.clone();
-
-        System.out.println(sol.showStatus());
-
-        changeWorkload(sol10, previousRate*1.20);
-//      sol10.getApplication(0).setEvaluated(false);
-//      sol10.updateEvaluation();
-//      evalProxy.EvaluateSolution(sol10);
-        System.out.println(sol10.showStatus());
-
-        changeWorkload(sol20, previousRate*1.40);
-//      sol20.getApplication(0).setEvaluated(false);
-//      sol20.updateEvaluation();
-//      evalProxy.EvaluateSolution(sol20);
-        System.out.println(sol20.showStatus());
-
-        changeWorkload(sol30, previousRate*1.60);
-//      sol30.getApplication(0).setEvaluated(false);
-//      sol30.updateEvaluation();
-//      evalProxy.EvaluateSolution(sol30);
-        System.out.println(sol30.showStatus());
-
-        int res = 0;
-        System.out.printf("The costs of the close solutions are:\n- sol: %f\n- sol10: %f\n- sol20: %f\n- sol30: %f.\n", sol.getCost(), sol10.getCost(), sol20.getCost(), sol30.getCost());
-
-        if (sol10.greaterThan(sol)) {
-            // sol10 > sol
-            if (sol20.greaterThan(sol10)) {
-                // sol20 > sol10
-                if (sol30.greaterThan(sol20)) {
-                    // sol30 > sol20 > sol10: sol30 la maggiore di tutte
-                    res = 30;
-                } else {
-                    // sol20 > sol10, sol20 > sol30: sol20 la maggiore di tutte
-                    res = 20;
-                }
-            } else if (sol30.greaterThan(sol10)) {
-                // sol30 > sol10 > sol20: sol30 la maggiore di tutte
-                res = 30;
-            } else {
-                // sol10 > sol20, sol10 > sol30: sol10 la maggiore di tutte
-                res = 10;
-            }
-        } else if (sol20.greaterThan(sol)) {
-            // sol20 > sol > sol10
-            if (sol20.greaterThan(sol30)) {
-                // sol30 > sol20 > sol > sol10: sol30 la maggiore di tutte
-                res = 30;
-            } else {
-                res = 20;
-            }
-        } else if (sol30.greaterThan(sol)) {
-            // sol30 > sol, sol > sol10, sol > sol20: sol30 la maggiore di tutte
-            res = 30;
-        }
-
-        switch (res) {
-        case 10:
-            changeWorkload(sol10, 1/1.20);
-            sol = sol10.clone();
-            System.out.println("The 1.10 solution is the best!");
-            break;
-        case 20:
-            changeWorkload(sol20, 1/1.40);
-            sol = sol20.clone();
-            System.out.println("The 1.20 solution is the best!");
-            break;
-        case 30:
-            changeWorkload(sol30, 1/1.60);
-            sol = sol30.clone();
-            System.out.println("The 1.30 solution is the best!");
-            break;
-        }
 
     }
 

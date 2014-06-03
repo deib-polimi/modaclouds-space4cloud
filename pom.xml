@@ -225,5 +225,15 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
+		<dependency>
+			<groupId>it.polimi.modaclouds.space4cloud</groupId>
+			<artifactId>milp</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.51</version>
+		</dependency>
 	</dependencies>
 </project>

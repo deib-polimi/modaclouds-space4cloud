@@ -439,6 +439,24 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return cost;
 	}
 	
+	public static boolean isEmpty(File solution) {
+		if (solution != null && solution.exists())
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(solution);
+				doc.getDocumentElement().normalize();
+				
+				{
+					NodeList nl = doc.getElementsByTagName("HourAllocation");
+					return (nl.getLength() == 0);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		return true;
+	}
+	
 	public boolean setFrom(File initialSolution, File initialMce) {
 		if (initialSolution == null)
 			return false;
