@@ -25,7 +25,6 @@ import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationConfigurationFrame;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.NumericalRange;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
@@ -53,7 +52,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -932,7 +930,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				// it to the set. Multiple constraints affecting the same
 				// resource are ignored since we use a Set as memory
 				for (Constraint c : constraintsEvaluation.keySet())
-					if (c.getRange() instanceof NumericalRange)
+					if (c.hasNumericalRange())
 						if (constraintsEvaluation.get(c) > 0)
 							resMemory.add(findResource(sol.getApplication(i),
 									c.getResourceID()));
@@ -1071,8 +1069,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		logger.info("first evaluation");
 		bestSolution = initialSolution.clone();
-		seriesHandler = log2png.newSeries("Best solution");
-		log2png.addPoint2Series(seriesHandler,
+		seriesHandler = costLogImage.newSeries("Best solution");
+		costLogImage.addPoint2Series(seriesHandler,
 				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 				bestSolution.getCost() / 100);
 		logger.warn("" + bestSolution.getCost() / 100 + ", 1 " + ", "
@@ -1112,7 +1110,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		}
 
 		try {
-			log2png.save2png();
+			costLogImage.save2png();
 			logVm.save2png();
 			logConstraints.save2png();
 		} catch (IOException e) {

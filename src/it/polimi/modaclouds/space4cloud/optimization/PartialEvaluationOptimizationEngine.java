@@ -15,7 +15,10 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Metric;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 
@@ -87,7 +90,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 //					List<Constraint> constraints = getConstraintHandler().getConstraintsByService(res);
 //					for(Constraint c:constraints)
 //						if(c.getMetric().equals(Metric.CPU))
-//							factor = ((UsageConstraint)c).getMax()/(100*res.getUtilization());
+//							factor = res.getUtilization()/((UsageConstraint)c).getMax();
 
 					moveArray[hour].scaleIn(res,factor);
 					//moveArray[hour].scaleIn(res);

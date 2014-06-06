@@ -1,15 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>it.polimi.modaclouds</groupId>
+	<groupId>it.polimi.modaclouds.space4cloud</groupId>
 	<artifactId>space4cloud</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<properties>
-		<bundle.symbolicName>${project.groupId}.${project.artifactId}</bundle.symbolicName>
-		<bundle.namespace>${project.groupId}.${project.artifactId}</bundle.namespace>
-	</properties>
-	<name>${project.artifactId}</name>
-	<packaging>bundle</packaging>
+
 	<repositories>
 		<repository>
 			<id>deib-polimi-releases</id>
@@ -41,6 +36,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.1</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -49,6 +45,10 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
+							<outputDirectory>${project.basedir}/target/dependency</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
 				</executions>
@@ -83,7 +83,6 @@
 						<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.9.0</version>
 				<executions>
 					<execution>
 						<id>common-schemas</id>
@@ -216,11 +215,6 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
-		<dependency>
-			<groupId>it.polimi.modaclouds.qos-models</groupId>
-			<artifactId>qos-models</artifactId>
-			<version>1.1-SNAPSHOT</version>
-		</dependency>
 		
 		<dependency>
 			<groupId>it.polimi.modaclouds.resourcemodel</groupId>
@@ -236,6 +230,11 @@
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
 			<version>0.1.51</version>
+		</dependency>
+		<dependency>
+			<groupId>it.polimi.modaclouds.qos-models</groupId>
+			<artifactId>qos-models</artifactId>
+			<version>2.0</version>
 		</dependency>
 	</dependencies>
 </project>

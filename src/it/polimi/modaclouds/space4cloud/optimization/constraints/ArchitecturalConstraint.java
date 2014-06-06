@@ -34,10 +34,9 @@ public abstract class ArchitecturalConstraint extends Constraint {
 	 * @param metric
 	 * @param priority
 	 * @param unit
-	 */
-	public ArchitecturalConstraint(String id, Metric metric, int priority,
-			Unit unit) {
-		super(id, metric, priority, unit);		
+	 */	
+	public ArchitecturalConstraint(it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
+		super(constraint);		
 		// TODO Auto-generated constructor stub
 	}
 

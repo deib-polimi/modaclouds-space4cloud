@@ -15,15 +15,16 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.chart;
 
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
-
 import it.polimi.modaclouds.space4cloud.utils.Constants;
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;

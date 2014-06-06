@@ -16,6 +16,8 @@
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 
+import it.polimi.modaclouds.qos_models.schema.Constraints;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
@@ -33,14 +35,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -49,98 +48,63 @@ import org.xml.sax.SAXException;
  */
 public class ConstraintHandler {
 
+	File constraintFile;
 	List<Constraint> constraints = new ArrayList<>();
-
+	private static final Logger logger = LoggerFactory.getLogger(ConstraintHandler.class);
 	public void addConstraint(Constraint constraint){
-		this.constraints.add(constraint);
+		constraints.add(constraint);
 	}	
 
 
-	public void loadConstraints(File constraintFile) throws ParserConfigurationException, SAXException, IOException {
-
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(constraintFile);
-		doc.getDocumentElement().normalize();
-
-		NodeList list = doc.getElementsByTagName("constraint");
-
-		for(int i=0;i<list.getLength();i++){
-			Node n=list.item(i);
-			Element nElem = (Element) n;			
-
-			//get the resource ID
-			String resourceId = nElem.getElementsByTagName("targetResourceIDRef").item(0).getTextContent();		
-
-			//get the metric of the constraint
-			Metric metric = Metric.getMetricFromTag(
-					nElem.getElementsByTagName("metric").item(0).getTextContent());				
-			//get the unit
-			Unit unit = Unit.getUnitFromTag(
-					nElem.getElementsByTagName("unit").item(0).getTextContent());
-
-			//get the strictness level
-			int priority = 0;
-			if(nElem.getElementsByTagName("priority").getLength() > 0)
-				priority = Integer.parseInt(nElem.getElementsByTagName("priority").item(0).getTextContent());
-
-			double max = Double.POSITIVE_INFINITY;
-			if(nElem.getElementsByTagName("hasMaxValue").getLength() > 0)
-				max = Double.parseDouble(nElem.getElementsByTagName("hasMaxValue").item(0).getTextContent());
-
-			double min = Double.NEGATIVE_INFINITY;
-			if(nElem.getElementsByTagName("hasMinValue").getLength() > 0)
-				min = Double.parseDouble(nElem.getElementsByTagName("hasMinValue").item(0).getTextContent());
-
-			Set<String> inSet;
-			if(nElem.getElementsByTagName("inSet").getLength() > 0)
-				inSet = parseSet(nElem.getElementsByTagName("inSet").item(0).getTextContent());
-
-			Set<String> outSet;
-			if(nElem.getElementsByTagName("outSet").getLength() > 0)
-				outSet = parseSet(nElem.getElementsByTagName("outSet").item(0).getTextContent());
-
-			//Create the constraint													
-			Constraint constraint = null;				
+	public void loadConstraints(File selectedFile)
+			throws ParserConfigurationException, SAXException, IOException, JAXBException {
+		constraintFile = selectedFile;
+		//load from the XML
+		Constraints  loadedConstraints = XMLHelper.deserialize(
+				constraintFile.toURI().toURL(), Constraints.class);
+		for(it.polimi.modaclouds.qos_models.schema.Constraint cons:loadedConstraints.getConstraints()){
+			//first get the metric
+			Metric metric = Metric.getMetricFromTag(cons.getMetric());			
+			//then create the appropriate constraint
+			Constraint constraint = null;	
 			switch (metric) {
 			case RESPONSETIME:
-				constraint = new ResponseTimeConstraint(resourceId, metric, priority, unit);
-				((ResponseTimeConstraint) constraint).setMax(max);
+				constraint = new ResponseTimeConstraint(cons);
 				break;
 			case CPU:
-				constraint = new UsageConstraint(resourceId, metric, priority, unit);	
-				((UsageConstraint)constraint).setMax(max);
+				constraint = new UsageConstraint(cons);					
 				break;
 			case RAM:
-				constraint = new RamConstraint(resourceId,metric , priority, unit);
-				((RamConstraint)constraint).setMin(min);
+				constraint = new RamConstraint(cons);
 				break;
 				//add other constraints
 			default:
-				System.err.println("Type of constraint: "+metric+" not defined");
-			}	
+				logger.error("Type of constraint: "+metric+" not defined");
+			}
 			addConstraint(constraint);
 		}
 
 		//debug
 		for(Constraint c:constraints){
 
-			System.out.println("Constraint:");
-			System.out.println("\tResource: "+c.getResourceID());
-			System.out.println("\tpriority: "+c.getPriority());
-			System.out.println("\tunit: "+c.getUnit());
+			logger.info("Constraint:");
+			logger.info("\tResource: "+c.getResourceID());
+			logger.info("\tpriority: "+c.getPriority());
 
-			System.out.println("\tmetric: "+c.getMetric());
+			logger.info("\tmetric: "+c.getMetric());
 			if(c instanceof ResponseTimeConstraint){
-				System.out.println("\tmax: "+((ResponseTimeConstraint)c).getMax());			
+				logger.info("\tmax: "+((ResponseTimeConstraint)c).getMax());			
 			}else if(c instanceof UsageConstraint){
-				System.out.println("\tmax: "+((UsageConstraint)c).getMax());			
+				logger.info("\tmax: "+((UsageConstraint)c).getMax());			
 			}else if(c instanceof RamConstraint){
-				System.out.println("\tmin: "+((RamConstraint)c).getMin());			
+				logger.info("\tmin: "+((RamConstraint)c).getMin());			
 			}
 
 		}
+		
 	}
+	
+
 
 
 
@@ -168,19 +132,12 @@ public class ConstraintHandler {
 				//else
 				//System.err.println("Resource with id: "+resource.getId()+" of class "+resource.getClass()+" not yet supported");
 			}else
-				System.err.println("No resource found with id: "+c.getResourceID()+" while evaluating constraints.");
+				logger.error("No resource found with id: "+c.getResourceID()+" while evaluating constraints.");
 		}
 
 		return result;
 	}
 
-	private Set<String> parseSet(String value){
-		HashSet<String> set= new HashSet<>();
-		String[] tokens = value.split(",");
-		for(String s:tokens)
-			set.add(s);		
-		return set;
-	}
 
 
 

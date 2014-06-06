@@ -114,6 +114,8 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			//there should be exactly one
 			Element resultProcessor = (Element)processors.item(i).getFirstChild().getNextSibling();
 			double utilization = Double.parseDouble(resultProcessor.getAttribute("utilization"))/cores;
+			//LQNS uses values from 0 to 100 we use from 0 to 1
+			utilization /= 100;
 
 			//add the processor utilization to the hashmap
 			//System.out.println("proc id: "+id+ " utilization: "+utilization);

@@ -17,6 +17,7 @@ package it.polimi.modaclouds.space4cloud.mainProgram;
 
 import it.polimi.modaclouds.qos_models.schema.ClosedWorkload;
 import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.Constraints;
 import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
 import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
@@ -28,7 +29,6 @@ import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.exceptions.InitalFolderCreationException;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
-import it.polimi.modaclouds.space4cloud.gui.Choose;
 import it.polimi.modaclouds.space4cloud.gui.LoadModel;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
@@ -40,11 +40,13 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.ConfigurationHandler;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
+import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,6 +60,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -68,6 +71,7 @@ import javax.swing.SwingWorker;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang.time.StopWatch;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -79,10 +83,7 @@ import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
 
 public class Space4Cloud extends SwingWorker<Object, Object> {
 
-//	private static final int ASSESMENT = 0;
-//	private static final int OPTIMIZATION = 1;
-//	private static final int ROBUSTNESS = 2;
-//	private static final int EXIT = 3;
+
 	private static OptimizationProgressWindow progressWindow;
 	private static AssesmentWindow assesmentWindow;
 	private Constants c;	
@@ -150,17 +151,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
         }
     }
 
-	private File askConstraintFile() {
-		File providedFile;
-		programLogger.info("Loading Constraints");
-		XMLFileSelection constraintSelector = new XMLFileSelection(
-				"Load Constraints");
-		constraintSelector.askFile();
-		/* File */providedFile = constraintSelector.getFile();
-		if (providedFile == null)
-			cleanExit();
-		return providedFile;
-	}
+
 
 	/**
 	 * Asks the user to choose the desired functionality
@@ -299,18 +290,33 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private File askResourceEnvironmentExtensionFile()
 			throws MalformedURLException {
+		return askFile("Load Resource Environment Extension",ResourceModelExtension.class);
+	}
+	
+	private File askConstraintFile()
+			throws MalformedURLException {
+		return askFile("Load Constraints", Constraints.class);
+	}
+	
+	private <T> File askFile(String message, Class<T> clazz )
+			throws MalformedURLException {
 		File providedFile;		
-		XMLFileSelection extensionSelector = new XMLFileSelection(
-				"Load Resource Environment Extension");
+		XMLFileSelection extensionSelector = new XMLFileSelection(message);
 		// keep asking the file until a valid file is provided or the user
 		// pressed cancel
 		do {
 			extensionSelector.askFile();
+			if(extensionSelector.isCanceled()){
+				cleanExit();
+				return null;
+			}
+				
+			
 			providedFile = extensionSelector.getFile();
 			try {
 				if (providedFile != null)
 					XMLHelper.deserialize(providedFile.toURI().toURL(),
-							ResourceModelExtension.class);
+							clazz);
 			} catch (JAXBException e) {
 				programLogger.error("The resource Model extension file specified ("
 						+ resourceEnvExtFile + ") is not valid ", e);
@@ -322,6 +328,10 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 		return providedFile;
 	}
+	
+
+	
+
 
 	private void buildFolderStructure(Path lqnModelPath, Path resultModelPath)
 			throws IOException {
@@ -343,7 +353,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	}
 
 	private void cleanExit() {
-		programLogger.info("Exiting SPACE4cloud");		
+		programLogger.info("Exiting SPACE4cloud");	
+		//TODO relese any used resource
+		this.cancel(true);
 	}
 
 	@Override
@@ -586,14 +598,19 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		
 		/* Load the Constraint file */
 		if (!batch) {
-			constraintFile = askConstraintFile();
+			try {
+				constraintFile = askConstraintFile();
+			} catch (MalformedURLException e) {
+				programLogger.error("Error in loading the constraint file",e);				
+			}
+			
 		}
 
 		// Parse the constraints and initialize the handler
 		constraintHandler = new ConstraintHandler();
 		try {
 			constraintHandler.loadConstraints(constraintFile);
-		} catch (ParserConfigurationException | SAXException | IOException e) {
+		} catch (ParserConfigurationException | SAXException | IOException | JAXBException e) {
 			programLogger.error("Error in loading constraints",e);
 		}
 		
@@ -784,7 +801,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 
 		OptEngine engine = new PartialEvaluationOptimizationEngine(
-				constraintHandler, batch);
+				constraintHandler, true);
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension
