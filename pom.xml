@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.polimi.modaclouds.space4cloud</groupId>
 	<artifactId>space4cloud</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-aplha</version>
 
 	<repositories>
 		<repository>

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Space 4 Cloud
 Bundle-SymbolicName: it.polimi.modaclouds.space4cloud;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.0.alpha
 Bundle-Activator: it.polimi.modaclouds.space4cloud.plugin.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
