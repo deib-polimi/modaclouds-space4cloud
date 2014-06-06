@@ -108,7 +108,6 @@ public class SolutionEvaluator implements Runnable {
 
 	@Override
 	public void run() {
-
 		//Update and write the lqn model
 		instance.updateLqn();		
 		lqnHandler.saveToFile();

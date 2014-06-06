@@ -78,10 +78,12 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param res
 	 */
 	public void scaleOut(IaaS res) {			
-		//perform the move
-		setCloudResource(res);
-		setNumberOfReplicas(resource.getReplicas()+1);
-		apply();
+//		//perform the move
+//		setCloudResource(res);
+//		setNumberOfReplicas(resource.getReplicas()+1);
+//		apply();
+		
+		scale(res, res.getReplicas()+1);
 	}
 	
 	
@@ -92,14 +94,20 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param factor
 	 */
 	public void scaleOut(IaaS res, double factor) {
-		//perform the move
-		setCloudResource(res);		
-		int newReplicas = (int)Math.ceil(resource.getReplicas()*factor);		
+//		//perform the move
+//		setCloudResource(res);		
+//		int newReplicas = (int)Math.ceil(resource.getReplicas()*factor);		
+//		if(newReplicas <= res.getReplicas())
+//			scaleOut(res);
+//		else
+//			setNumberOfReplicas(newReplicas);
+//		apply();
+		
+		int newReplicas = (int)Math.ceil(res.getReplicas()*factor);		
 		if(newReplicas <= res.getReplicas())
 			scaleOut(res);
 		else
-			setNumberOfReplicas(newReplicas);
-		apply();
+			scale(res, newReplicas);
 	}
 	
 
@@ -111,7 +119,8 @@ public class MoveOnVM extends AbsMoveHour {
 	 */
 	public void scale(IaaS res, int numberOfReplicas){
 		//perform the move
-		setCloudResource(resource);
+//		setCloudResource(resource);
+		setCloudResource(res);
 		setNumberOfReplicas(numberOfReplicas);
 		apply();
 	}
@@ -121,10 +130,12 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param res
 	 */
 	public void scaleIn(IaaS res) {
-		//perform the move
-		setCloudResource(res);
-		setNumberOfReplicas(resource.getReplicas()-1);
-		apply();
+//		//perform the move
+//		setCloudResource(res);
+//		setNumberOfReplicas(resource.getReplicas()-1);
+//		apply();
+		
+		scale(res, res.getReplicas()-1);
 	}
 	
 	
@@ -135,14 +146,20 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param factor
 	 */
 	public void scaleIn(IaaS res, double factor) {
-		//perform the move
-		setCloudResource(res);		
-		int newReplicas = (int)Math.ceil(resource.getReplicas()*(1/factor));		
+//		//perform the move
+//		setCloudResource(res);		
+//		int newReplicas = (int)Math.ceil(resource.getReplicas()*(1/factor));		
+//		if(newReplicas == res.getReplicas() || newReplicas==0)
+//			scaleIn(res);
+//		else
+//			setNumberOfReplicas(newReplicas);
+//		apply();
+		
+		int newReplicas = (int)Math.ceil(res.getReplicas()*(1/factor));		
 		if(newReplicas == res.getReplicas() || newReplicas==0)
 			scaleIn(res);
 		else
-			setNumberOfReplicas(newReplicas);
-		apply();
+			scale(res, newReplicas);
 	}
 	
 	/* (non-Javadoc)

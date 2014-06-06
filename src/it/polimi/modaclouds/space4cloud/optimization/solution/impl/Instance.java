@@ -77,26 +77,37 @@ public class Instance implements Cloneable , Serializable{
 	public boolean changeValues(String idCloudResource, List<String> propertyNames,
 			List<Object> propertyValues) {		
 
-		try {
-			// 1: find the resource
-			Tier tier = tiersByResourceId.get(idCloudResource);
-
-			CloudService service = tier.getCloudService();
-
-
-
-			// 2: modify the resource
-			// modifications may involve both resource and tier.
-			for (int i = 0; i < propertyNames.size(); i++) {
-				ReflectionUtility.set(service, propertyNames.get(i), propertyValues.get(i));
-				ReflectionUtility.set(tier, propertyNames.get(i), propertyValues.get(i));
-
+		if (idCloudResource != null) {
+			try {
+				// 1: find the resource
+				Tier tier = tiersByResourceId.get(idCloudResource);
+	
+				CloudService service = tier.getCloudService();
+	
+	
+	
+				// 2: modify the resource
+				// modifications may involve both resource and tier.
+				for (int i = 0; i < propertyNames.size(); i++) {
+					ReflectionUtility.set(service, propertyNames.get(i), propertyValues.get(i));
+					ReflectionUtility.set(tier, propertyNames.get(i), propertyValues.get(i));
+	
+				}
+							//update the LQN for the modified reources/tiers (Not needed since we rewrite it before evaluation)
+				//lqnHandler.updateElement(resource);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
 			}
-						//update the LQN for the modified reources/tiers (Not needed since we rewrite it before evaluation)
-			//lqnHandler.updateElement(resource);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
+		} else {
+			try {
+				for (int i = 0; i < propertyNames.size(); i++) {
+					ReflectionUtility.set(this, propertyNames.get(i), propertyValues.get(i));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
 		}
 
 		//if we changed something we invalidate the evaluation of the solution
@@ -116,6 +127,9 @@ public class Instance implements Cloneable , Serializable{
 			e.printStackTrace();
 			cloneInst = new Instance();
 		}
+		
+		// the information about the workload should be copied in the new instance
+		cloneInst.setWorkload(getWorkload());
 
 		//clone the lqnHandler		
 		cloneInst.setLqnHandler(this.getLqnHandler().clone());
@@ -181,6 +195,8 @@ public class Instance implements Cloneable , Serializable{
 	 */
 	public String getHashString(){
 		String str = Integer.toString(workload);
+		if (tiers.size() > 0)
+			str += tiers.get(0).getCloudService().getProvider();
 		for (String s : tiersByResourceName.keySet()){
 			Tier t = tiersByResourceName.get(s);
 			IaaS res =(IaaS) t.getCloudService();
@@ -299,12 +315,13 @@ public class Instance implements Cloneable , Serializable{
 		this.workload = workload;
 	}
 
-	public String showStatus(String prefix) {		
-		String result = "\tEvaluated: "+evaluated;
+	public String showStatus(String prefix) {
+		String result = prefix+"lqnFile: "+lqnHandler.getLqnFilePath();
+		result += "\n\tEvaluated: "+evaluated;
 		result += "\tFeasible: "+feasible;
 		for(Tier t:tiersByResourceName.values()){
-			result += prefix+"tier: "+t.getCloudService().getName();
-			result += t.showStatus(prefix+"\t");
+			result += "\n"+prefix+"Tier"+t.getCloudService().getName();
+			result += "\n"+t.showStatus(prefix+"\t");
 			
 		}
 		return result;
@@ -321,6 +338,8 @@ public class Instance implements Cloneable , Serializable{
 			CloudService service = t.getCloudService();
 			lqnHandler.updateElement(service);
 		}
+		
+		lqnHandler.setPopulation(workload);
 		
 	}
 

@@ -100,6 +100,8 @@ public class Constants {
 
 	/** The palladio extension file. */	
 	public  String RESOURCE_ENV_EXT_FILE = "extension.xml";
+	
+	public  String USAGE_MODEL_EXT_FILE = "usagemodel.xml";
 
 	public	String LINE_PROPERTIES_FILE = "LINE.properties";
 

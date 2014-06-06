@@ -54,8 +54,9 @@ public class SimpleEvaluator {
 	protected static final Logger logger = LoggerHelper.getLogger(SimpleEvaluator.class);
 
 	public SimpleEvaluator() {
-
+		
 	}
+	
 	public void eval(){
 		//set the solver to use
 //		evalServer.setSolver(c.SOLVER);

@@ -18,6 +18,8 @@ package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +37,10 @@ public class EvaluationProxy extends EvaluationServer {
 	public EvaluationProxy(String solver) {
 		super(solver);
 	}
+	
 	public void ProxyIn(Solution sol){
+		if (!enabled)
+			return;
 
 		for (Instance instance : sol.getApplications()) {
 			if(!instance.isEvaluated()){
@@ -50,6 +55,9 @@ public class EvaluationProxy extends EvaluationServer {
 		}
 	}
 	public Solution ProxyOut(Solution sol){
+		if (!enabled)
+			return sol;
+		
 		for(Instance instance : sol.getApplications()){
 			String hashStr = instance.getHashString();
 			if (!map.containsKey(hashStr))
@@ -60,8 +68,13 @@ public class EvaluationProxy extends EvaluationServer {
 		return sol;
 	}
 
-
-
+	// This enable or disable the proxy! If set to "false", the proxy won't act as a proxy, evaluating
+	// each and every solution requested. Useful!
+	private boolean enabled = true;
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+	
 
 
 
@@ -69,8 +82,8 @@ public class EvaluationProxy extends EvaluationServer {
 		this.ProxyIn(sol);
 		super.EvaluateSolution(sol);
 		this.ProxyOut(sol);
-		
 	}
+	
 	public int getProxiedSolutions() {
 		return proxiedSolutions;
 	}
@@ -79,6 +92,12 @@ public class EvaluationProxy extends EvaluationServer {
 	public void showStatistics() {
 		super.showStatistics();
 		System.out.println("Number of proxied solutions "+getProxiedSolutions());
+	}
+	
+	public void EvaluateSolution(SolutionMulti sol) {
+		for (Solution s : sol.getAll())
+			EvaluateSolution(s);
+		sol.updateEvaluation();
 	}
 
 }

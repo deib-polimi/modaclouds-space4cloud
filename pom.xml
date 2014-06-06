@@ -24,10 +24,10 @@
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
 			<resource>
-				<directory>.</directory>
-				<includes>
-					<include>plugin.xml</include>
-				</includes>
+				<directory>src</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
 			</resource>
 		</resources>
 		<plugins>
@@ -44,7 +44,7 @@
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
-						<phase>package</phase>
+						<phase>compile</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>
@@ -80,18 +80,10 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
-				<configuration>
-					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
+						<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
+				<version>0.9.0</version>
 				<executions>
 					<execution>
 						<id>common-schemas</id>
@@ -114,75 +106,13 @@
 								</plugin>
 							</plugins>
 							<extension>true</extension>
-							<schemaDirectory>${project.basedir}/schema</schemaDirectory>
+							<schemaDirectory>${project.basedir}/schema</schemaDirectory>						
 							<generatePackage>it.polimi.modaclouds.space4cloud.line</generatePackage>
 							<generateDirectory>${project.basedir}/src</generateDirectory>
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<version>1.4.0</version>
-				<extensions>true</extensions>
-			<!-- 	<executions>
-					<execution>
-						<id>bundle-manifest</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>manifest</goal>
-						</goals>
-					</execution>
-				</executions> -->
-				<configuration>
-					<manifestLocation>META-INF</manifestLocation>
-					<instructions>
-						<Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
-						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package></Export-Package>
-						<Private-Package>${bundle.namespace}.*</Private-Package>
-						<Bundle-Activator>${bundle.namespace}.plugin.Activator</Bundle-Activator>
-						<Import-Package>de.uka.ipd.sdq.identifier,
-							de.uka.ipd.sdq.pcm.allocation,
-							de.uka.ipd.sdq.pcm.core.composition,
-							de.uka.ipd.sdq.pcm.core.entity,
-							de.uka.ipd.sdq.pcm.parameter,
-							de.uka.ipd.sdq.pcm.repository,
-							de.uka.ipd.sdq.pcm.resourceenvironment,
-							de.uka.ipd.sdq.pcm.resourcetype,
-							de.uka.ipd.sdq.pcm.resultdecorator,
-							de.uka.ipd.sdq.pcm.resultdecorator.repositorydecorator,
-							de.uka.ipd.sdq.pcm.resultdecorator.resourceenvironmentdecorator,
-							de.uka.ipd.sdq.pcm.seff,
-							de.uka.ipd.sdq.pcm.system,
-							de.uka.ipd.sdq.pcm.usagemodel,
-							org.eclipse.emf.ecore.xmi.impl</Import-Package>
-						<Embed-Dependency>*;scope=compile|runtime;inline=false</Embed-Dependency>
-						<Embed-Directory>target/dependency</Embed-Directory>
-						<Embed-StripGroup>true</Embed-StripGroup>
-						<Embed-Transitive>true</Embed-Transitive>
-						<Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
-						<Require-Bundle>org.eclipse.ui,
-							org.eclipse.core.runtime,
-							org.eclipse.debug.core;bundle-version="3.6.1",
-							org.eclipse.jdt.launching;bundle-version="3.6.1",
-							org.eclipse.jdt.core;bundle-version="3.6.1",
-							org.eclipse.jdt.debug.ui;bundle-version="3.6.1",
-							ch.ethz.iks.r_osgi.remote;bundle-version="1.0.0",
-							de.uka.ipd.sdq.pcmsolver;bundle-version="3.0.0",
-							org.apache.commons.lang;bundle-version="2.6.0",
-							org.eclipse.emf.ecore;bundle-version="2.9.2",
-							it.polimi.modaclouds.resourcemodel,
-							org.junit,
-							org.eclipse.ui.console;bundle-version="3.5.200"</Require-Bundle>
-					</instructions>
-				</configuration>
-			</plugin>
-
-
-
+			</plugin>			
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -251,30 +181,7 @@
 		<dependency>
 			<groupId>org.jvnet.jaxb2_commons</groupId>
 			<artifactId>jaxb2-basics-runtime</artifactId>
-			<scope>compile</scope>
 			<version>0.6.5.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>osgi_R4_core</artifactId>
-			<version>1.0</version>
-			<scope>provided</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>osgi_R4_compendium</artifactId>
-			<version>1.0</version>
-			<scope>provided</scope>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>compile</scope>
-			<optional>true</optional>
 		</dependency>
 
 		<dependency>
@@ -319,6 +226,16 @@
 			<groupId>it.polimi.modaclouds.resourcemodel</groupId>
 			<artifactId>resourcemodel</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>it.polimi.modaclouds.space4cloud</groupId>
+			<artifactId>milp</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.51</version>
 		</dependency>
 	</dependencies>
 </project>

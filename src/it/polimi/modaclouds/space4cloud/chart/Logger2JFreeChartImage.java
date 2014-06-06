@@ -17,6 +17,8 @@ package it.polimi.modaclouds.space4cloud.chart;
 
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
+import it.polimi.modaclouds.space4cloud.utils.Constants;
+
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -138,7 +140,14 @@ public class Logger2JFreeChartImage {
 		for (XYSeries s : seriesList)
 			chartCreator.addSeries(s);
 		try{
-		ChartUtilities.saveChartAsPNG(new File(path2save),
+		
+//		Path path = Paths.get(path2save);
+		Path path = Paths.get(Constants.getInstance().ABSOLUTE_WORKING_DIRECTORY, path2save);
+		if (Files.notExists(path.getParent()))
+			Files.createDirectory(path.getParent());
+//		Files.deleteIfExists(path);
+		
+		ChartUtilities.saveChartAsPNG(path.toFile(), //new File(path2save),
 				chartCreator.getChart(), width, height);
 		}catch(IOException e){
 			logger.error("Could not create cost image",e);

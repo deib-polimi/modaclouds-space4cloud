@@ -29,14 +29,14 @@ public class UsageModelExtensionLoader extends UsageModelExtensionParser {
 		if(extension.getClosedWorkload()!=null){
 			Double[] thinkTime = new Double[24];			
 			for(ClosedWorkloadElement wlElement: extension.getClosedWorkload().getWorkloadElement()){
-				thinkTime[wlElement.getHour()]=Double.parseDouble(new Float(wlElement.getThinkTime()).toString());;
-				population[wlElement.getHour()]=wlElement.getPopulation();
+				thinkTime[wlElement.getHour() - 1]=Double.parseDouble(new Float(wlElement.getThinkTime()).toString());;
+				population[wlElement.getHour() - 1]=wlElement.getPopulation();
 			}
 			thinkTimes.put(extension.getScenarioId(), thinkTime);
 		}
 		else if(extension.getOpenWorkload()!=null){						
 			for(OpenWorkloadElement wlElement: extension.getOpenWorkload().getWorkloadElement()){
-				population[wlElement.getHour()]=wlElement.getPopulation();
+				population[wlElement.getHour() - 1]=wlElement.getPopulation();
 			}
 		}
 		

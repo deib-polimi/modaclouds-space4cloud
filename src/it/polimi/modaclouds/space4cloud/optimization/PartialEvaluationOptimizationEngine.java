@@ -35,6 +35,10 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) {
 		super(handler);
 	}
+	
+	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, boolean batch) {
+		super(handler, batch);
+	}
 
 	@Override
 	protected void IteratedRandomScaleInLS(Solution sol) {
