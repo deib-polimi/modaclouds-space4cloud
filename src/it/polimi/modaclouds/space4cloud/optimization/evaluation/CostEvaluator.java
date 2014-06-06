@@ -44,8 +44,8 @@ public class CostEvaluator {
 
 	DataHandler dataHandler = DataHandlerFactory.getHandler();
 
-	public int deriveCosts(Instance application, int hour){		
-		int cost = 0;
+	public double deriveCosts(Instance application, int hour){
+		double cost = 0;
 		//sum up costs for each tier  
 		for(Tier t:application.getTiers()){
 			CloudService service = t.getCloudService();			
@@ -67,7 +67,7 @@ public class CostEvaluator {
 						lc.add(c);
 
 				CostProfile cp = cloudResource.getHasCostProfile();
-				cost += (int) 1000*deriveCosts(lc, cp, iaasResource.getReplicas(), hour);
+				cost += deriveCosts(lc, cp, iaasResource.getReplicas(), hour);
 			}
 			//TODO Add Platform costs
 		}

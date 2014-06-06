@@ -27,7 +27,6 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.NumericalRange;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
@@ -76,6 +75,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.emf.common.util.EList;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import de.uka.ipd.sdq.pcm.allocation.AllocationContext;
@@ -141,10 +141,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	protected EvaluationProxy evalProxy;
 
-	protected Logger logger = LoggerHelper.getLogger(EvaluationServer.class);
-	// protected Logger loggerCurrent = LoggerFactory.getLogger("xdasLogger");
+	protected Logger logger = LoggerHelper.getLogger(OptEngine.class);
+	protected Logger optimLogger = LoggerFactory.getLogger("optimLogger");
 
-	protected Logger2JFreeChartImage log2png;
+
+	protected Logger2JFreeChartImage costLogImage;
 
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraints;
@@ -157,7 +158,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	public OptEngine(ConstraintHandler handler) {
 
 		try {
-			log2png = new Logger2JFreeChartImage();
+			costLogImage = new Logger2JFreeChartImage();
 			logVm = new Logger2JFreeChartImage("vmCount.properties");
 			logConstraints = new Logger2JFreeChartImage(
 					"constraints.properties");
@@ -166,7 +167,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		}
 
-		loadConfiguration(false); //false = show gui, true = batch mode
+		loadConfiguration(Constants.CONFIGURATIONGUI); //false = show gui, true = batch mode
 
 		logger.info("Running the optimization with parameters:");
 		logger.info("Max Memory Size: "+MAXMEMORYSIZE);
@@ -182,20 +183,20 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		/* this object is a server needed to evaluate the solutions */
 		this.evalProxy = new EvaluationProxy(c.SOLVER);
 		this.evalProxy.setConstraintHandler(handler);
-		this.evalProxy.setLog2png(log2png);
+		this.evalProxy.setLog2png(costLogImage);
 		this.evalProxy.setMachineLog(logVm);
 		this.evalProxy.setConstraintLog(logConstraints);
 		this.evalProxy.setTimer(timer);
 
 	}
 
-	private void loadConfiguration(boolean batch) {
+	private void loadConfiguration(boolean showgui) {
 
 		OptimizationConfigurationFrame optLoader = new OptimizationConfigurationFrame();
 		//set the default configuration file
 		optLoader.setPreferenceFile("/config/OptEngine.properties");		
 
-		if(!batch){
+		if(showgui){
 			//show the frame and ask let the user interact
 			optLoader.setVisible(true);
 			while(!optLoader.isSaved())
@@ -433,7 +434,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	public Logger2JFreeChartImage getCostLogger() {
-		return log2png;
+		return costLogImage;
 	}
 
 	public EvaluationProxy getEvalProxy() {
@@ -449,7 +450,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	public Logger2JFreeChartImage getVMLogger() {
-		// TODO Auto-generated method stub
 		return logVm;
 	}
 
@@ -493,12 +493,16 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// if the solution is unfeasible there is a first fase in which the
 		// solution is forced to became feasible
 
+		optimLogger.trace("feasibility phase");
 		makeFeasible(sol);
+		optimLogger.trace("feasible solution: "+sol.showStatus());
 		// If the current solution is better than the best one it becomes the
 		// new best solution.
 		updateBestSolution(sol);
 
+		optimLogger.info("costReduction phase");
 		descentOptimize(sol);
+		optimLogger.trace("optimized solution"+sol.showStatus());
 
 	}
 
@@ -661,8 +665,9 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				.iterator().next()[i];
 			application.getLqnHandler().setPopulation(population);
 			application.getLqnHandler().setThinktime(thinktime);
-			application.getLqnHandler().saveToFile();
 			application.setWorkload(population);
+			application.getLqnHandler().saveToFile();
+
 
 			// create a tier for each resource container
 			EList<ResourceContainer> resourceContainers = pcm
@@ -878,6 +883,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			evalProxy.EvaluateSolution(sol);
 			numberOfFeasibilityIterations += 1;
 		}
+		optimLogger.trace(sol.showStatus());
 		if (sol.isFeasible())
 			logger.info("\n\t Solution made feasible");
 		else
@@ -890,26 +896,24 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * @return the integer -1 an error has happened.
 	 */
 	public Integer optimize() {
-
-		logger.getName();
+		
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
 			return -1;
-
+		optimLogger.trace("starting the optimization");
 		timer.start();
 		timer.split();
 		evalProxy.EvaluateSolution(initialSolution);// evaluate the current
 		// solution
 		// initialSolution.showStatus();
 		// Debugging constraintHandler
-
-		logger.info("first evaluation");
+		
 		bestSolution = initialSolution.clone();
-		seriesHandler = log2png.newSeries("Best solution");
-		log2png.addPoint2Series(seriesHandler,
+		seriesHandler = costLogImage.newSeries("Best solution");
+		costLogImage.addPoint2Series(seriesHandler,
 				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-				bestSolution.getCost() / 100);
-		logger.warn("" + bestSolution.getCost() / 100 + ", 1 " + ", "
+				bestSolution.getCost());
+		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
 				+ bestSolution.isFeasible());
 
 		numberOfIterations = 1;
@@ -921,10 +925,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// a stopping criterion. Mich
 		while (!isMaxNumberOfIterations()) {
 			setProgress(numberOfIterations);
-			logger.info("Iteration: " + numberOfIterations + "cost: "
-					+ currentSolution.getCost() / 100);
+			optimLogger.info("Iteration: " + numberOfIterations + "solution: "+ currentSolution.showStatus());
+			
 			// 2: Internal Optimization process
-
+			
 			InternalOptimization(currentSolution);
 
 			// 3: check whether the best solution has changed
@@ -946,14 +950,14 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		}
 
 		try {
-			log2png.save2png();
+			costLogImage.save2png();
 			logVm.save2png();
 			logConstraints.save2png();
 		} catch (IOException e) {
 			logger.error("Unable to create charts", e);
 		}
 
-		logger.warn(bestSolution.showStatus());
+
 		logger.info(bestSolution.showStatus());
 		bestSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY + "solution.xml");
 		bestSolution.exportCSV(c.ABSOLUTE_WORKING_DIRECTORY + "results.csv");
@@ -1097,19 +1101,20 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	/**
 	 * 
 	 */
-	protected void updateBestSolution(Solution sol) {
+	protected void updateBestSolution(Solution sol) {		
 		if (sol.greaterThan(bestSolution)) {
 
 			// updating the best solution
 			bestSolution = sol.clone();
 			this.numIterNoImprov = 0;
 			this.numTotImpr += 1;
-			logger.warn("" + bestSolution.getCost() / 100 + ", "
+			logger.warn("" + bestSolution.getCost() + ", "
 					+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())
 					+ ", " + bestSolution.isFeasible());
-			log2png.addPoint2Series(seriesHandler,
+			costLogImage.addPoint2Series(seriesHandler,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-					bestSolution.getCost() / 100);
+					bestSolution.getCost());
+			logger.info("updated best solution"+sol.showStatus());
 
 		} else {
 			this.numIterNoImprov += 1;

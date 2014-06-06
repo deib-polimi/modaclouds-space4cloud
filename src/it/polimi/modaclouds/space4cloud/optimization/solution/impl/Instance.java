@@ -299,13 +299,12 @@ public class Instance implements Cloneable , Serializable{
 		this.workload = workload;
 	}
 
-	public String showStatus(String prefix) {
-		String result = prefix+"lqnFile: "+lqnHandler.getLqnFilePath();
-		result += "\tEvaluated: "+evaluated;
+	public String showStatus(String prefix) {		
+		String result = "\tEvaluated: "+evaluated;
 		result += "\tFeasible: "+feasible;
 		for(Tier t:tiersByResourceName.values()){
-			result += "\n"+prefix+"Tier"+t.getCloudService().getName();
-			result += "\n"+t.showStatus(prefix+"\t");
+			result += prefix+"tier: "+t.getCloudService().getName();
+			result += t.showStatus(prefix+"\t");
 			
 		}
 		return result;

@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry exported="true" kind="lib" path="target/dependency/jcommon-1.0.21.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/jfreechart-1.0.17.jar"/>
-	<classpathentry exported="true" kind="lib" path="target/dependency/qos-models-1.1-s4cextension-SNAPSHOT.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/jaxb2-basics-runtime-0.6.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/commons-io-2.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/mysql-connector-java-5.1.30.jar"/>

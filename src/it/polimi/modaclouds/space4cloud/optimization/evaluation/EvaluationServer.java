@@ -68,7 +68,7 @@ public class EvaluationServer implements ActionListener{
 
 	protected SeriesHandle seriesHandleExecution;
 	protected SeriesHandle seriesHandleTier1;
-	//protected SeriesHandle seriesHandleTier2;
+	protected SeriesHandle seriesHandleTier2;
 	protected SeriesHandle seriesHandleConstraint;
 	protected StopWatch timer  = new StopWatch();
 	protected long costEvaluationTime = 0;	
@@ -114,7 +114,7 @@ public class EvaluationServer implements ActionListener{
 	public void setMachineLog(Logger2JFreeChartImage logVM){
 		this.logVm = logVM;
 		seriesHandleTier1 = logVm.newSeries("Tier1VMs");
-		//seriesHandleTier2 = logVm.newSeries("Tier2VMs");
+		seriesHandleTier2 = logVm.newSeries("Tier2VMs");
 	}
 
 	public void setConstraintLog(Logger2JFreeChartImage logConstraint){
@@ -204,14 +204,14 @@ public class EvaluationServer implements ActionListener{
 		//evaluate costs
 		deriveCosts(sol);
 		
-		logger.info(""+sol.getCost()/100+", "+TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())+", "+sol.isFeasible());
+		logger.info(""+sol.getCost()+", "+TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())+", "+sol.isFeasible());
 
 		long middleTime = System.nanoTime();
 		if (log2png != null && logVm!=null && logConstraint != null &&  timer != null) {
 			timer.split();
-			log2png.addPoint2Series(seriesHandleExecution, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getCost()/100 );
+			log2png.addPoint2Series(seriesHandleExecution, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getCost() );
 			logVm.addPoint2Series(seriesHandleTier1, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getVmNumberPerTier(0) );
-		//	logVm.addPoint2Series(seriesHandleTier2, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getVmNumberPerTier(1) );
+			logVm.addPoint2Series(seriesHandleTier2, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getVmNumberPerTier(1) );
 			logConstraint.addPoint2Series(seriesHandleConstraint, TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()), sol.getNumberOfViolatedConstraints());
 		}
 		long endTime = System.nanoTime();
@@ -227,9 +227,9 @@ public class EvaluationServer implements ActionListener{
 	public double deriveCosts(Solution sol){
 		long startTime = System.nanoTime();
 		//costs
-		int totalCost = 0;
+		double totalCost = 0;
 		for(Instance i:sol.getHourApplication()){			
-			int cost = costEvaulator.deriveCosts(i,sol.getHourApplication().indexOf(i));
+			double cost = costEvaulator.deriveCosts(i,sol.getHourApplication().indexOf(i));
 			totalCost +=cost;
 		}		
 		sol.setCost(totalCost);
@@ -281,13 +281,13 @@ public class EvaluationServer implements ActionListener{
 
 
 	public void showStatistics() {
-		System.out.println("Avg cost evaluation time: "+(TimeUnit.MILLISECONDS.convert(costEvaluationTime/costEvaluations, TimeUnit.NANOSECONDS)));
-		System.out.println("Avg plotting time: "+TimeUnit.MILLISECONDS.convert(plottingTime/totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
-		System.out.println("Avg full evaluation time: "+TimeUnit.MILLISECONDS.convert(fullEvaluationTime/totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
-		System.out.println("Avg evaluation time: "+TimeUnit.MILLISECONDS.convert(evaluationTime/totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
-		System.out.println("Number of fully evaluated solutions: "+totalNumberOfEvaluations);
-		System.out.println("Number of total cost evaluations: "+costEvaluations);
-		System.out.println("Number of solutions with only cost evaluations "+(costEvaluations-totalNumberOfEvaluations));
+		logger.info("Avg cost evaluation time: "+(TimeUnit.MILLISECONDS.convert(costEvaluationTime/costEvaluations, TimeUnit.NANOSECONDS)));
+		logger.info("Avg plotting time: "+TimeUnit.MILLISECONDS.convert(plottingTime/totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
+		logger.info("Avg full evaluation time: "+TimeUnit.MILLISECONDS.convert(fullEvaluationTime/totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
+		logger.info("Avg evaluation time: "+TimeUnit.MILLISECONDS.convert(evaluationTime/totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
+		logger.info("Number of fully evaluated solutions: "+totalNumberOfEvaluations);
+		logger.info("Number of total cost evaluations: "+costEvaluations);
+		logger.info("Number of solutions with only cost evaluations "+(costEvaluations-totalNumberOfEvaluations));
 
 	}
 

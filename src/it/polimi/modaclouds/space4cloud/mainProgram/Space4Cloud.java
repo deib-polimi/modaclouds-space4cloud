@@ -513,6 +513,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		case OPTIMIZATION:
 			try {
 				programLogger.info("Performing Optimization");
+				c.CONFIGURATIONGUI=true;
 				performOptimization();
 			} catch (ParserConfigurationException | SAXException | IOException e) {
 				programLogger.error("Error in the optimization",e);

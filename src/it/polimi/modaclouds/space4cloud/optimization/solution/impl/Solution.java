@@ -68,7 +68,7 @@ public class Solution implements Cloneable, Serializable {
 	private boolean feasible = false; 
 
 	/** The Cost. */
-	private int cost = 0;
+	private double cost = 0;
 
 	/** The Cost. */
 	private String region;
@@ -221,7 +221,7 @@ public class Solution implements Cloneable, Serializable {
 			doc.appendChild(rootElement);
 
 			// set cost
-			rootElement.setAttribute("cost",""+getCost()/1000);
+			rootElement.setAttribute("cost",""+getCost());
 			//set evaluationtime
 			rootElement.setAttribute("time",""+getEvaluationTime());
 			//set feasibility
@@ -479,7 +479,7 @@ public class Solution implements Cloneable, Serializable {
 	 *
 	 * @param totalCost the new cost
 	 */
-	public void setCost(int totalCost) {
+	public void setCost(double totalCost) {
 		this.cost = totalCost;
 
 	}
@@ -552,14 +552,15 @@ public class Solution implements Cloneable, Serializable {
 	 * Show status.
 	 */
 	public String showStatus() {
-		String result = "Solution Status\n";
-		result += "Cost: "+cost;
+		
+		String result = "Cost: "+cost;
 		result += "\tEvaluated: "+evaluated;
 		result += "\tFeasible: "+isFeasible();
 		for(Instance i:hourApplication){
-			result += "\nHour: "+hourApplication.indexOf(i);
-			result += "\n"+i.showStatus("\t");
+			result += "\th: "+hourApplication.indexOf(i);
+			result += i.showStatus("\t");
 		}
+		result +="\n";
 		return result;
 	}
 

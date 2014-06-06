@@ -22,11 +22,15 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class PartialEvaluationOptimizationEngine extends OptEngine{
 
 	private static final double DEFAULT_SCALE_IN_FACTOR = 2;
 	private static final double MAX_NUMBER_OF_ITERATIONS = 20;
+	private static final Logger logger = LoggerFactory.getLogger(PartialEvaluationOptimizationEngine.class);
 
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) {
 		super(handler);
@@ -34,6 +38,8 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 
 	@Override
 	protected void IteratedRandomScaleInLS(Solution sol) {
+		logger.info("initializing scale in phase");
+		optimLogger.trace("scaleIn phase");
 		MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
 
 		ArrayList<ArrayList<IaaS>> vettResTot = generateVettResTot(sol);
@@ -44,11 +50,12 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 		//			if(!i.isFeasible())
 		//				logger.warn("\thour: "+sol.getApplications().indexOf(i)+" violated constraints: "+i.getNumerOfViolatedConstraints());
 		boolean done = false;
-		System.out.println("\t Descent Optimization second phase");
+		logger.info(sol.showStatus());
 		resetNoImprovementCounter();
 		Solution restartSol = sol.clone();
 		IaaS res;
  		while (this.numIterNoImprov < MAX_NUMBER_OF_ITERATIONS) {
+ 			optimLogger.trace("iteration "+numIterNoImprov);
 			done = false;
 			List<Integer> hoursList = new ArrayList<Integer>();
 			for(int p=0;p<24;p++) hoursList.add(p);
@@ -96,9 +103,9 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 				//evaluate the feasibility only if the cost is better than the best solution cost
 				//System.out.println("Count: "+count);
 				evalProxy.deriveCosts(sol);
+				logger.info("proposed solution: "+sol.showStatus());
 				if(sol.getCost() < bestSolution.getCost()){
 					evalProxy.EvaluateSolution(sol);
-
 					updateBestSolution(sol);
 					if(!sol.isFeasible())
 						done = true;							
@@ -113,17 +120,23 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 					done = true;	
 				}
 
+				optimLogger.trace(sol.showStatus());
 			}
 
 			// here we have to implement the restart
 
 			// the clone could be avoided if we save the original state of the
 			// tiers
+			
+			logger.info("restarting scale in");
 			sol = restartSol.clone();
 			moveArray = generateArrayMoveOnVM(sol);
 			vettResTot = generateVettResTot(sol);
 
-		}// while number of iterations
+			
+		}
+ 		
+ 		logger.info("scale in ended");// while number of iterations
 
 	}
 

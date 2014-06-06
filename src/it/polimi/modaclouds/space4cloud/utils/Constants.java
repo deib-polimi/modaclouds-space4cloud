@@ -49,6 +49,8 @@ public class Constants {
 	
 	/** Label for the Cancel Functionality*/
 	public static final String CANCEL = "Cancel";
+
+	public static boolean CONFIGURATIONGUI = false;
 	
 	/** The instance. */
 	private static Constants instance;

@@ -15,6 +15,8 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.chart;
 
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -30,6 +32,7 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.slf4j.Logger;
 
 /**
  * @author Michele Ciavotta The target of this class is to create a
@@ -46,6 +49,8 @@ public class Logger2JFreeChartImage {
 
 	private int height = 300;
 	final ChartCreator chartCreator = new ChartCreator("");
+	
+	private static final Logger logger = LoggerHelper.getLogger(Logger2JFreeChartImage.class);
 
 	private List<XYSeries> seriesList = new ArrayList<XYSeries>();
 
@@ -132,8 +137,13 @@ public class Logger2JFreeChartImage {
 		chartCreator.removeAllSeries();
 		for (XYSeries s : seriesList)
 			chartCreator.addSeries(s);
+		try{
 		ChartUtilities.saveChartAsPNG(new File(path2save),
 				chartCreator.getChart(), width, height);
+		}catch(IOException e){
+			logger.error("Could not create cost image",e);
+			throw e;
+		}
 
 	}
 

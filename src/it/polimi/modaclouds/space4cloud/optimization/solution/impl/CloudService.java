@@ -89,7 +89,7 @@ public abstract class CloudService implements Cloneable, IConstrainable, Seriali
 
 	
 	public String showStatus(String prefix) {
-		return prefix+"Cloud resource id: "+getId()+"\t type: "+getServiceType()+"\t provider: "+getProvider()+"\t service Name: "+getServiceName()+"\t resource Name: "+getResourceName();		
+		return prefix+"resource id: "+getId()+"\t type: "+getServiceType()+"\t provider: "+getProvider()+"\t service Name: "+getServiceName()+"\t resource Name: "+getResourceName();		
 	}
 
 	public String getServiceName() {

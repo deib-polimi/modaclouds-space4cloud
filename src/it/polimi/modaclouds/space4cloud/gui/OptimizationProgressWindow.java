@@ -70,9 +70,9 @@ public class OptimizationProgressWindow implements PropertyChangeListener{
 	private void initialize() {
 
 		frmOptimizationProgress =  new JFrame();
-		frmOptimizationProgress.setTitle("Optimization Progress");
+		frmOptimizationProgress.setTitle("Solution Cost");
 		frmOptimizationProgress.setBounds(100, 100, 450, 300);
-		frmOptimizationProgress.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmOptimizationProgress.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frmOptimizationProgress.getContentPane().setLayout(new BorderLayout(0, 0));
 
 		//Upper panel (for progress bar)
@@ -94,7 +94,7 @@ public class OptimizationProgressWindow implements PropertyChangeListener{
 
 		//vmPanel for VM image
 		vmPanel = new JPanel();
-		vmPanel.setBorder(new TitledBorder(null, "Number of VMs", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		vmPanel.setBorder(new TitledBorder(null, "Total Number of VMs", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		lowerPanel.add(vmPanel);
 
 		//vmLabel for VM image
@@ -114,7 +114,7 @@ public class OptimizationProgressWindow implements PropertyChangeListener{
 
 		//Constraint panel for constraint image
 		constraintPanel = new JPanel();		
-		constraintPanel.setBorder(new TitledBorder(null, "ViolatedConstraints", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		constraintPanel.setBorder(new TitledBorder(null, "Violated Constraints", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		lowerPanel.add(constraintPanel);
 
 		//Constraint label for constraint image
