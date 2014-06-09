@@ -54,7 +54,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 		//			if(!i.isFeasible())
 		//				logger.warn("\thour: "+sol.getApplications().indexOf(i)+" violated constraints: "+i.getNumerOfViolatedConstraints());
 		boolean done = false;
-		logger.info(sol.showStatus());
+		//logger.info(sol.showStatus());
 		resetNoImprovementCounter();
 		Solution restartSol = sol.clone();
 		IaaS res;
@@ -107,7 +107,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 				//evaluate the feasibility only if the cost is better than the best solution cost
 				//System.out.println("Count: "+count);
 				evalProxy.deriveCosts(sol);
-				logger.info("proposed solution: "+sol.showStatus());
+				//logger.info("proposed solution: "+sol.showStatus());
 				if(sol.getCost() < bestSolution.getCost()){
 					evalProxy.EvaluateSolution(sol);
 					updateBestSolution(sol);
@@ -124,7 +124,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine{
 					done = true;	
 				}
 
-				optimLogger.trace(sol.showStatus());
+				//optimLogger.trace(sol.showStatus());
 			}
 
 			// here we have to implement the restart
