@@ -35,6 +35,6 @@ To run the SPACE4CLOUD plugin launch the Eclipse Application run configuration t
 In order to retrieve information about cloud resources SPACE4CLOUD interacts with a database that hosts the resource model. In this preliminary version the database is hosted on [Flexiscale](http://www.flexiscale.com/) and can be used only for testing purposes. The accuracy and update frequency of the information stored in the database is not guaranteed. 
 
 #Examples
-An example project can be found [here](ftp://home.dei.polimi.it/outgoing/Giovanni.Paolo.Gibilisco/space4cloudExample). The example cam be imported in the new instance of Eclipse, evaluated using LINE or LQNS or used for the optimization performed by SPACE4CLOUD. 
+An example project can be found here: ftp://home.dei.polimi.it/outgoing/Giovanni.Paolo.Gibilisco/space4cloudExample. The example cam be imported in the new instance of Eclipse, evaluated using LINE or LQNS or used for the optimization performed by SPACE4CLOUD. 
 
 The example model also contains some examples of constraints and extension that are used to drive the solution generation. 
