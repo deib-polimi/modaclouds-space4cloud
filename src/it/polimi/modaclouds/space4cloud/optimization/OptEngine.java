@@ -507,14 +507,14 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		optimLogger.trace("feasibility phase");
 		makeFeasible(sol);
-		optimLogger.trace("feasible solution: "+sol.showStatus());
+//		optimLogger.trace("feasible solution: "+sol.showStatus());
 		// If the current solution is better than the best one it becomes the
 		// new best solution.
 		updateBestSolution(sol);
 
 		optimLogger.info("costReduction phase");
 		descentOptimize(sol);
-		optimLogger.trace("optimized solution"+sol.showStatus());
+//		optimLogger.trace("optimized solution"+sol.showStatus());
 
 	}
 	
@@ -952,7 +952,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			evalProxy.EvaluateSolution(sol);
 			numberOfFeasibilityIterations += 1;
 		}
-		optimLogger.trace(sol.showStatus());
+//		optimLogger.trace(sol.showStatus());
 		if (sol.isFeasible())
 			logger.info("\n\t Solution made feasible");
 		else

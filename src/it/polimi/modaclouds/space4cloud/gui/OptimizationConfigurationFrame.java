@@ -33,6 +33,10 @@ public class OptimizationConfigurationFrame extends JFrame implements ActionList
 	 * 
 	 */
 	private static final long serialVersionUID = -179380632887639091L;
+	private static final int DEFAULT_MEMORY_SIZE = 10;
+	private static final int DEFAULT_MAX_ITERATIONS = 10;
+	private static final int DEFAULT_MAX_FEASIBILITY = 10;
+	private static final String DEFAULT_SELECTION_POLICY = "utilization";
 	private JPanel contentPane;
 	private JLabel lblNotification; 
 	private JTextField txtConfFile;
@@ -212,6 +216,10 @@ public class OptimizationConfigurationFrame extends JFrame implements ActionList
 		try {
 			parseFile(preferenceFile);
 		} catch (IOException e) {
+			setMaxMemorySize(DEFAULT_MEMORY_SIZE);
+			setMaxIterations(DEFAULT_MAX_ITERATIONS);
+			setMaxFeasIter(DEFAULT_MAX_FEASIBILITY);
+			setPolicy(SelectionPolicies.getPropertyFromName(DEFAULT_SELECTION_POLICY));
 			notifyFileError(preferenceFile);
 		}
 	}
