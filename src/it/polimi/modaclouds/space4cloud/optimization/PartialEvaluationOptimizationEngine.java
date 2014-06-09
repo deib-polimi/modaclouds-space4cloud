@@ -28,7 +28,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 	private static final double DEFAULT_SCALE_IN_FACTOR = 2;
 	private static final double MAX_NUMBER_OF_ITERATIONS = 25;
-	private static final double MAX_NUMBER_OF_ITERATIONS_NO_IMPR = 7;
+	private static final double MAX_NUMBER_OF_ITERATIONS_NO_IMPR = 10;
 	private static final Logger logger = LoggerFactory
 			.getLogger(PartialEvaluationOptimizationEngine.class);
 
@@ -79,12 +79,17 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	private boolean noImprovementPhase(Solution sol) {
 
 		// initialize the factors (one for each hour) to the default value
+		//we should use a factor for each hour and for each tier but if the number 
+		//of tiers is significantly smaller than the number of iterations then it 
+		//is likely that each tier will be scaled using just 1 factor for each hour
 		double[] factors = new double[24];
 		for (int i = 0; i < 24; i++)
 			factors[i] = DEFAULT_SCALE_IN_FACTOR;
 		boolean noScaleIn = true;
-
-		for (int iterations = 0; iterations < MAX_NUMBER_OF_ITERATIONS; iterations++) {
+		//TODO: check if the number of iterstions without improvment could be used alone. 
+		//if the evaluation of a reverted solution is very quick a high value of numIterNoImprove should be sufficient condition
+		//if this is the case then wee a dependency between the factors and this number and remove the max number of iterations
+		for (int iterations = 0; iterations < MAX_NUMBER_OF_ITERATIONS && numIterNoImprov < MAX_NUMBER_OF_ITERATIONS_NO_IMPR; iterations++) {
 			String scalingFactors = "";
 			for (int i = 0; i < 24; i++)
 				scalingFactors += " h: " + i + " val: " + factors[i];
@@ -125,17 +130,30 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 			// evaluate the solution
 			evalProxy.EvaluateSolution(sol);
-			updateBestSolution(sol);
+			boolean improvement = updateBestSolution(sol);
+			
+			//if there has been no improvement then signal it 
+			if(!improvement){
+				numIterNoImprov++;				
+			}
 
 			// if an application has become feasible, revert it and try again
 			// with a smaller factor
+			boolean reverted = false;
 			for (int i = 0; i < 24; i++) {
 				if (!sol.getApplication(i).isFeasible()) {
 					sol.copyApplication(previousSol.getApplication(i), i);
 					factors[i] = DEFAULT_SCALE_IN_FACTOR
 							- ((iterations + 1) / MAX_NUMBER_OF_ITERATIONS)
 							* (DEFAULT_SCALE_IN_FACTOR - 1);
+					reverted = true;
 				}
+			}
+			//this should not be necessary since hourly solutions are independent
+			if(reverted){
+				// evaluate the solution
+				evalProxy.EvaluateSolution(sol);
+				updateBestSolution(sol);
 			}
 
 		}

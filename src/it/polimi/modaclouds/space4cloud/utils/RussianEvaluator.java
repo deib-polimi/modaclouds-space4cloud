@@ -97,7 +97,7 @@ public class RussianEvaluator {
 
 			Element root = (Element) nl.item(0);
 			cost = (int) Math.round(Double.parseDouble(root
-					.getAttribute("cost")) * 1000);
+					.getAttribute("cost")));
 			evaluationTime = Long.parseLong(root.getAttribute("time"));
 
 		} catch (Exception e) {

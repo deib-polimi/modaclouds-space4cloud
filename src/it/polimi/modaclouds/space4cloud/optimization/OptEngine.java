@@ -101,6 +101,8 @@ import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
  */
 public class OptEngine extends SwingWorker<Void, Void> {
 
+	private static String bestTmpSol;
+
 	protected SolutionMulti initialSolution = null;
 	// protected Solution initialSolution = null;
 
@@ -151,6 +153,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraints;
+
+	private int bestTmpSolIndex;
 
 	public OptEngine(ConstraintHandler handler) {
 		this(handler, false);
@@ -235,42 +239,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		InternalOptimization(currentSolution);
 
-		// System.out.printf("We now proceed to select the least powerful machine for the tiers...\n");
-		//
-		// List<Tier> tierList = sol.getApplication(0).getTiers();
-		//
-		// MoveTypeVM moveVM = new MoveTypeVM(sol); /* the move */
-		//
-		// for (Tier selectedTier : tierList) {
-		// boolean done = false;
-		// int memoryHit = 0;
-		// while (!done) {
-		// CloudService origRes = selectedTier.getCloudService();
-		// List<IaaS> resList = dataHandler.getSameServiceResource(origRes,
-		// sol.getRegion());
-		// constraintHandler.filterResources(resList, origRes);
-		// if (resList.size() == 0) {
-		// done = true;
-		// System.out.printf("Error!\n");
-		// logger.warn("No resource found!");
-		// }
-		// CloudService newRes = resList.get(random.nextInt(resList.size()));
-		//
-		// if (!Memory.containsKey(origRes.getId() + newRes.getId())) {
-		// Memory.put(origRes.getId() + newRes.getResourceName(), "MOVE");
-		// moveVM.changeMachine(origRes.getId(), (Compute) newRes);
-		// evalProxy.EvaluateSolution(sol);
-		// done = true;
-		// memoryHit++;
-		// System.out.printf("Done!\n");
-		// }
-		// if (memoryHit >= 200) {
-		// done = true;
-		// logger.warn("memory hitted 200 times, skipping move");
-		// System.out.printf("Error!\n");
-		// }
-		// }
-		// }
 	}
 
 	protected void changeWorkload(SolutionMulti sols) {
@@ -1243,6 +1211,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
 			return -1;
+		bestTmpSol = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY + "OptimalSolutionTraces"+"OptimSol").toString();
 		optimLogger.trace("starting the optimization");
 		timer.start();
 		timer.split();
@@ -1349,8 +1318,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		seriesHandler = costLogImage.newSeries("Best solution");
 		costLogImage.addPoint2Series(seriesHandler,
 				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-				bestSolution.getCost() / 100);
-		logger.warn("" + bestSolution.getCost() / 100 + ", 1 " + ", "
+				bestSolution.getCost());
+		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
 				+ bestSolution.isFeasible());
 
 		numberOfIterations = 1;
@@ -1363,7 +1332,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		while (!isMaxNumberOfIterations()) {
 			setProgress(numberOfIterations);
 			logger.info("Iteration: " + numberOfIterations + "cost: "
-					+ currentSolution.getCost() / 100);
+					+ currentSolution.getCost());
 			// 2: Internal Optimization process
 
 			InternalOptimization(currentSolution);
@@ -1553,14 +1522,21 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	}
 
+	
 	/**
-	 * 
+	 * Checks wether the solution is "better" with respect to the current optimal solution. 
+	 * Better here means that the solution is Evaluated, Feasible and cost less 
+	 * @param the new solution
+	 * @return true if sol has become the new best solution
 	 */
-	protected void updateBestSolution(Solution sol) {
+	protected boolean updateBestSolution(Solution sol) {
 		if (sol.greaterThan(bestSolution)) {
 
 			// updating the best solution
 			// bestSolution = sol.clone();
+			bestTmpSolIndex++;
+			String filename = bestTmpSol + bestTmpSolIndex+".xml";
+			sol.exportLight(filename);
 			bestSolution.add(sol.clone());
 			this.numIterNoImprov = 0;
 			this.numTotImpr += 1;
@@ -1571,10 +1547,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					bestSolution.getCost());
 			logger.info("updated best solution" + sol.showStatus());
-
-		} else {
-			this.numIterNoImprov += 1;
+			return true;
 		}
+		return false;
+		
 
 	}
 

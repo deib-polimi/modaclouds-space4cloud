@@ -58,7 +58,7 @@ public class CostEvaluator {
 
 				if (cloudResource == null) {
 					System.out.println("ERROR: The found resource is null!");
-					cost += 100;
+					cost += 1;
 					continue;
 				}
 

@@ -931,7 +931,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 
 		// create the progress window
-		if (!batch) {
+//		if (!batch) {
 			progressWindow = new OptimizationProgressWindow();
 			progressWindow.setMax(engine.getMaxIterations());
 			progressWindow.setCostLogger(engine.getCostLogger());
@@ -939,7 +939,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
 			engine.addPropertyChangeListener(progressWindow);
 			engine.getEvalProxy().addPropertyChangeListener(progressWindow);
-		}
+//		}
 
 		// start the optimization
 		programLogger.info("Starting the optimization");

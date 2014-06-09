@@ -61,7 +61,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 							"SolutionMultiResult").item(0);
 
 					cost = (int) Math.round(Double.parseDouble(root
-							.getAttribute("cost")) * 1000);
+							.getAttribute("cost")));
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -218,7 +218,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			doc.appendChild(rootElement);
 
 			// set cost
-			rootElement.setAttribute("cost", "" + getCost() / 1000);
+			rootElement.setAttribute("cost", "" + getCost());
 			// set evaluationtime
 			rootElement.setAttribute("time", "" + getEvaluationTime());
 			// set feasibility
@@ -229,7 +229,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 				rootElement.appendChild(solution);
 
 				// set cost
-				solution.setAttribute("cost", "" + sol.getCost() / 1000);
+				solution.setAttribute("cost", "" + sol.getCost());
 				// set evaluationtime
 				solution.setAttribute("time", "" + sol.getEvaluationTime());
 				// set feasibility
@@ -454,7 +454,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 						"SolutionMultiResult").item(0);
 
 				cost = (int) Math.round(Double.parseDouble(root
-						.getAttribute("cost")) * 1000);
+						.getAttribute("cost")));
 			}
 
 			NodeList tiers = doc.getElementsByTagName("Tier");
