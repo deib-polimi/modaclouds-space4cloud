@@ -40,9 +40,36 @@ import org.w3c.dom.Document;
 public class DOM {
 
 	/**
-	 * Instantiates a new dom.
+	 * Provides a new Document.
+	 * 
+	 * @return the new Document object.
 	 */
-	private DOM() {
+	public static Document getDocument() {
+		return getDocument(null);
+	}
+
+	/**
+	 * Loads an existing Document.
+	 * 
+	 * @param f
+	 *            is the input File containing the serialized document.
+	 * @return the de-serialized Document if the input File is not null, a new
+	 *         Document otherwise.
+	 */
+	public static Document getDocument(File f) {
+		try {
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory
+					.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+			Document doc = docBuilder.newDocument();
+			if (f != null)
+				if (f.exists())
+					doc = docBuilder.parse(f);
+			return doc;
+		} catch (Exception exc) {
+			exc.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -94,35 +121,8 @@ public class DOM {
 	}
 
 	/**
-	 * Provides a new Document.
-	 * 
-	 * @return the new Document object.
+	 * Instantiates a new dom.
 	 */
-	public static Document getDocument() {
-		return getDocument(null);
-	}
-
-	/**
-	 * Loads an existing Document.
-	 * 
-	 * @param f
-	 *            is the input File containing the serialized document.
-	 * @return the de-serialized Document if the input File is not null, a new
-	 *         Document otherwise.
-	 */
-	public static Document getDocument(File f) {
-		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			Document doc = docBuilder.newDocument();
-			if (f != null)
-				if (f.exists())
-					doc = docBuilder.parse(f);
-			return doc;
-		} catch (Exception exc) {
-			exc.printStackTrace();
-			return null;
-		}
+	private DOM() {
 	}
 }

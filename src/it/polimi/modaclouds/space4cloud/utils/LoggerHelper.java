@@ -8,18 +8,6 @@ import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleConstants;
-import org.eclipse.ui.console.IConsoleManager;
-import org.eclipse.ui.console.IConsoleView;
-import org.eclipse.ui.console.MessageConsole;
-import org.eclipse.ui.console.MessageConsoleStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +18,15 @@ public class LoggerHelper {
 
 	public static Logger getLogger(Class clazz) {
 
-
-		Properties props = new Properties();		
+		Properties props = new Properties();
 		// if the project has not been chosen provide a logger with the default
 		// initialization
 		try {
-			if (Constants.LOG4J_PROP_FILE == null) {				
-				FileLocator.toFileURL(clazz.getResource("/log/log4j.properties"));
-				props.load(clazz.getResource("/log/log4j.properties").openStream());
+			if (Constants.LOG4J_PROP_FILE == null) {
+				FileLocator.toFileURL(clazz
+						.getResource("/log/log4j.properties"));
+				props.load(clazz.getResource("/log/log4j.properties")
+						.openStream());
 
 			} else {
 

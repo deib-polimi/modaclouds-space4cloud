@@ -30,12 +30,6 @@ import java.util.Random;
 public class IdHandler {
 
 	/**
-	 * Instantiates a new id handler.
-	 */
-	private IdHandler() {
-	}
-
-	/**
 	 * Returns a string representing the id of the object provided as parameter.
 	 * The id is a string composed of 23 alpha-numeric characters.
 	 * 
@@ -54,12 +48,19 @@ public class IdHandler {
 
 	/**
 	 * The main method.
-	 *
-	 * @param args the arguments
+	 * 
+	 * @param args
+	 *            the arguments
 	 */
 	public static void main(String[] args) {
 		IdHandler idh = new IdHandler();
 		System.out.println(idh.hashCode());
 		System.out.println(IdHandler.getId(idh));
+	}
+
+	/**
+	 * Instantiates a new id handler.
+	 */
+	private IdHandler() {
 	}
 }

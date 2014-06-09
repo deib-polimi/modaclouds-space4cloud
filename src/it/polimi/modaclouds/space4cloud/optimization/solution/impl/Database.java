@@ -31,15 +31,15 @@ public abstract class Database extends PaaS {
 	}
 
 	@Override
-	public void update(LqnResultParser parser) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public CloudService clone() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void update(LqnResultParser parser) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

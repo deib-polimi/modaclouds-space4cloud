@@ -27,15 +27,10 @@ import java.io.File;
 public class Order {
 
 	/**
-	 * Instantiates a new order.
-	 */
-	private Order() {
-	}
-
-	/**
 	 * Order.
-	 *
-	 * @param list the list
+	 * 
+	 * @param list
+	 *            the list
 	 * @return the file[]
 	 */
 	public static File[] order(File[] list) {
@@ -51,12 +46,18 @@ public class Order {
 				int index2 = name.indexOf(".");
 				int index = Integer
 						.parseInt(name.substring(index1 + 1, index2));
-				res[index]=list[i];
+				res[index] = list[i];
 			}
 			return res;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	/**
+	 * Instantiates a new order.
+	 */
+	private Order() {
 	}
 }

@@ -100,7 +100,10 @@ public class DataHandler {
 
 		// TODO: Controllare questa cosa :(
 		for (CloudResource cr : cloudResourceList) {
-			if (cr.getName().equals(resourceName)) { //&& cr.getHasCost() != null && cr.getHasCost().size() > 0) {
+			if (cr.getName().equals(resourceName)) { // && cr.getHasCost() !=
+														// null &&
+														// cr.getHasCost().size()
+														// > 0) {
 				return cr;
 			}
 		}
@@ -253,7 +256,8 @@ public class DataHandler {
 				// if the iaas has not been already inserted AND (the region has
 				// not been specified OR it has the same region)
 				if (!resources.contains(iaas)
-						&& (region == null || cost.getRegion() == null || cost.getRegion().equals(region))) {
+						&& (region == null || cost.getRegion() == null || cost
+								.getRegion().equals(region))) {
 					resources.add(iaas);
 				}
 			}

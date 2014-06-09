@@ -21,7 +21,6 @@ import it.polimi.modaclouds.qos_models.schema.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public abstract class Constraint {
 
 	protected String id;
@@ -31,10 +30,22 @@ public abstract class Constraint {
 	protected AggregateFunction metricAcggregationFunction;
 	protected int priority;
 	protected Range range;
-	private static final Logger logger = LoggerFactory.getLogger(Constraint.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(Constraint.class);
 
+	public Constraint(
+			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
+		this.id = constraint.getId();
+		this.name = constraint.getName();
+		this.resourceId = constraint.getTargetResourceIDRef();
+		this.metric = Metric.getMetricFromTag(constraint.getMetric());
+		this.priority = (constraint.getPriority() == null ? 0 : constraint
+				.getPriority()).intValue();
+		this.range = constraint.getRange();
+	}
 
-	public Constraint(String id, String name, String resourceId, Metric metric, int priority) {
+	public Constraint(String id, String name, String resourceId, Metric metric,
+			int priority) {
 		this.id = id;
 		this.name = name;
 		this.resourceId = resourceId;
@@ -42,57 +53,39 @@ public abstract class Constraint {
 		this.priority = priority;
 	}
 
-	public Constraint(it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
-		this.id = constraint.getId();
-		this.name = constraint.getName();
-		this.resourceId = constraint.getTargetResourceIDRef();
-		this.metric = Metric.getMetricFromTag(constraint.getMetric());
-		this.priority = (constraint.getPriority() == null ? 0 : constraint.getPriority()).intValue();
-		this.range = constraint.getRange();
+	// Positive distance if the constraint has not been fulfilled.
+	public double checkConstraintDistance(Object measurement) {
+		double value = 0;
+		if (measurement instanceof Double)
+			value = (Double) measurement;
+		else if (measurement instanceof Integer)
+			value = ((Integer) measurement).doubleValue();
+		else if (measurement instanceof Float)
+			value = ((Float) measurement).doubleValue();
+		else
+			logger.error("Error in casting the value to check");
+		if (range.getHasMaxValue() != null)
+			return value - range.getHasMaxValue();
+		else
+			return range.getHasMinValue() - value;
 	}
 
-
-
-	public int getPriority(){
-		return priority; 
-	}
-
-	public String getResourceID(){
-		return resourceId;
-	}
-
-	public Metric getMetric(){
+	public Metric getMetric() {
 		return metric;
 	}
 
-	
-	//Positive distance if the constraint has not been fulfilled.	
-	public double checkConstraintDistance(Object measurement) {		
-		double value = 0;
-		if(measurement instanceof Double)
-		value = (Double) measurement;
-		else if(measurement instanceof Integer)
-		value = ((Integer)measurement).doubleValue();
-		else if(measurement instanceof Float)
-		value = ((Float)measurement).doubleValue();
-		else 
-			logger.error("Error in casting the value to check");
-		if(range.getHasMaxValue() != null)
-			return value - range.getHasMaxValue();
-		else
-			return range.getHasMinValue() - value;		
+	public int getPriority() {
+		return priority;
 	}
 
+	public String getResourceID() {
+		return resourceId;
+	}
 
 	public boolean hasNumericalRange() {
-		if(range.getHasMaxValue() != null || range.getHasMinValue() != null)
+		if (range.getHasMaxValue() != null || range.getHasMinValue() != null)
 			return true;
 		return false;
 	}
-
-
-
-
-
 
 }

@@ -32,12 +32,28 @@ import org.w3c.dom.NodeList;
  */
 public class AllocationProfile {
 
+	/**
+	 * The main method.
+	 * 
+	 * @param args
+	 *            the arguments
+	 */
+	public static void main(String[] args) {
+		AllocationProfile ap = new AllocationProfile();
+		ap.serialize(new File(System.getProperty("user.dir")
+				+ "\\Palladio\\all.xml"));
+		AllocationSpecification sp1 = new AllocationSpecification(10, 12);
+		ap.addSpecification(sp1);
+		ap.serialize(new File(System.getProperty("user.dir")
+				+ "\\Palladio\\all1.xml"));
+	}
+
 	/** The specifications. */
 	private AllocationSpecification specifications[];
-	
+
 	/** The doc. */
 	private Document doc;
-	
+
 	/** The allocation profile element. */
 	private Element allocationProfileElement;
 
@@ -54,8 +70,9 @@ public class AllocationProfile {
 
 	/**
 	 * Instantiates a new allocation profile.
-	 *
-	 * @param e the e
+	 * 
+	 * @param e
+	 *            the e
 	 */
 	public AllocationProfile(Element e) {
 		doc = DOM.getDocument();
@@ -66,8 +83,9 @@ public class AllocationProfile {
 
 	/**
 	 * Instantiates a new allocation profile.
-	 *
-	 * @param inputModel the input model
+	 * 
+	 * @param inputModel
+	 *            the input model
 	 */
 	public AllocationProfile(File inputModel) {
 		doc = DOM.getDocument(inputModel);
@@ -75,35 +93,10 @@ public class AllocationProfile {
 	}
 
 	/**
-	 * Initialize.
-	 *
-	 * @param e the e
-	 */
-	private void initialize(Element e) {
-		allocationProfileElement = e;
-		specifications = new AllocationSpecification[24];
-		NodeList nl = e.getElementsByTagName("Allocation_Specification");
-		if (nl.getLength() <= 24)
-			if (nl.getLength() > 0)
-				for (int i = 0; i < nl.getLength(); i++) {
-					Element x = (Element) nl.item(i);
-					int index = Integer.parseInt(x.getAttribute("hour"));
-					specifications[index] = new AllocationSpecification(x);
-				}
-	}
-
-	/**
-	 * Generate default profile.
-	 */
-	private void generateDefaultProfile() {
-		for (int i = 0; i < 24; i++)
-			addSpecification(new AllocationSpecification(i, 1));
-	}
-
-	/**
 	 * Adds the specification.
-	 *
-	 * @param asp the asp
+	 * 
+	 * @param asp
+	 *            the asp
 	 */
 	public void addSpecification(AllocationSpecification asp) {
 		specifications[asp.getHour()] = asp;
@@ -122,8 +115,25 @@ public class AllocationProfile {
 	}
 
 	/**
+	 * Generate default profile.
+	 */
+	private void generateDefaultProfile() {
+		for (int i = 0; i < 24; i++)
+			addSpecification(new AllocationSpecification(i, 1));
+	}
+
+	/**
+	 * Gets the allocation profile element.
+	 * 
+	 * @return the allocation profile element
+	 */
+	public Element getAllocationProfileElement() {
+		return allocationProfileElement;
+	}
+
+	/**
 	 * Gets the specifications.
-	 *
+	 * 
 	 * @return the specifications
 	 */
 	public AllocationSpecification[] getSpecifications() {
@@ -131,9 +141,49 @@ public class AllocationProfile {
 	}
 
 	/**
+	 * Initialize.
+	 * 
+	 * @param e
+	 *            the e
+	 */
+	private void initialize(Element e) {
+		allocationProfileElement = e;
+		specifications = new AllocationSpecification[24];
+		NodeList nl = e.getElementsByTagName("Allocation_Specification");
+		if (nl.getLength() <= 24)
+			if (nl.getLength() > 0)
+				for (int i = 0; i < nl.getLength(); i++) {
+					Element x = (Element) nl.item(i);
+					int index = Integer.parseInt(x.getAttribute("hour"));
+					specifications[index] = new AllocationSpecification(x);
+				}
+	}
+
+	/**
+	 * Serialize.
+	 * 
+	 * @param outputFile
+	 *            the output file
+	 */
+	public void serialize(File outputFile) {
+		DOM.serialize(doc, outputFile);
+	}
+
+	/**
+	 * Sets the allocation profile element.
+	 * 
+	 * @param allocationProfileElement
+	 *            the new allocation profile element
+	 */
+	public void setAllocationProfileElement(Element allocationProfileElement) {
+		initialize((Element) doc.importNode(allocationProfileElement, true));
+	}
+
+	/**
 	 * Sets the specifications.
-	 *
-	 * @param specifications the new specifications
+	 * 
+	 * @param specifications
+	 *            the new specifications
 	 */
 	public void setSpecifications(AllocationSpecification[] specifications) {
 		if (specifications != null)
@@ -144,47 +194,5 @@ public class AllocationProfile {
 					x.appendChild(doc.importNode(
 							es.getAllocationSpecificationElement(), true));
 			}
-	}
-
-	/**
-	 * Gets the allocation profile element.
-	 *
-	 * @return the allocation profile element
-	 */
-	public Element getAllocationProfileElement() {
-		return allocationProfileElement;
-	}
-
-	/**
-	 * Sets the allocation profile element.
-	 *
-	 * @param allocationProfileElement the new allocation profile element
-	 */
-	public void setAllocationProfileElement(Element allocationProfileElement) {
-		initialize((Element) doc.importNode(allocationProfileElement, true));
-	}
-	
-	/**
-	 * Serialize.
-	 *
-	 * @param outputFile the output file
-	 */
-	public void serialize(File outputFile) {
-		DOM.serialize(doc, outputFile);
-	}
-	
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 */
-	public static void main(String[] args) {
-		AllocationProfile ap = new AllocationProfile();
-		ap.serialize(new File(System.getProperty("user.dir")
-				+ "\\Palladio\\all.xml"));
-		AllocationSpecification sp1 = new AllocationSpecification(10, 12);
-		ap.addSpecification(sp1);
-		ap.serialize(new File(System.getProperty("user.dir")
-				+ "\\Palladio\\all1.xml"));
 	}
 }

@@ -31,43 +31,77 @@ import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.Middleware;
 import it.polimi.modaclouds.resourcemodel.cloud.PaaS_Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 // TODO: Auto-generated Javadoc
 /**
  * Interface for a Provider Database Connaector.
+ * 
  * @author Davide
- *
+ * 
  */
 public interface GenericDBConnector {
 
 	/**
-	 * Retrieves the list of IaaS Cloud Services.
+	 * Retrieves the list of the Backend Cloud Platforms provided by the
+	 * specified PaaS Service.
 	 * 
-	 * @return a List of IaaS_Service.
-	 * @see IaaS_Service
+	 * @param paas
+	 *            is the specified PaaS_Service element.
+	 * @return a List of Backend elements.
+	 * @see PaaS_Service
+	 * @see Backend
 	 */
-	public List<IaaS_Service> getIaaSServices();
-	
+	public List<Backend> getBackendCloudPlatforms(PaaS_Service paas);
+
 	/**
-	 * Gets the hash map of the Iaas Cloud Services.
-	 *
-	 * @return the hash map
+	 * Retrieves the list of the Blob Storage Cloud Resources provided by the
+	 * specified IaaS Service.
+	 * 
+	 * @param iaas
+	 *            is the specified IaaS_Service element.
+	 * @return a List of BlobStorage elements.
+	 * @see IaaS_Service
+	 * @see BlobStorage
 	 */
-	public Map<String, IaaS_Service> getIaaSServicesHashMap();
+	public List<BlobStorage> getBlobStorageCloudResources(IaaS_Service iaas);
+
+	/**
+	 * Retrieves the list of Cloud Platforms provided by the specified PaaS
+	 * Service.
+	 * 
+	 * @param paas
+	 *            is the PaaS-Service element.
+	 * @return a List of CloudPlatform elements.
+	 * @see PaaS_Service
+	 * @see CloudPlatform
+	 */
+	public List<CloudPlatform> getCloudPlatforms(PaaS_Service paas);
 
 	/**
 	 * Retrieves the list of Cloud Resources provided by the specified IaaS
 	 * Service.
 	 * 
-	 * @param iaas is the IaaS_Service element.
+	 * @param iaas
+	 *            is the IaaS_Service element.
 	 * @return a List of Cloudresource elements.
 	 * @see IaaS_Service
 	 * @see CloudResource
 	 */
 	public List<CloudResource> getCloudResources(IaaS_Service iaas);
+
+	/**
+	 * Retrieves the list of the Cloud Storage Cloud Resources provided by the
+	 * specified IaaS Service.
+	 * 
+	 * @param iaas
+	 *            is the specified IaaS_Service element.
+	 * @return a List of CloudStorage elements.
+	 * @see IaaS_Service
+	 * @see CloudStorage
+	 */
+	public List<CloudStorage> getCloudStorageCloudResources(IaaS_Service iaas);
 
 	/**
 	 * Retrieves the list of the Compute Cloud Resources provided by the
@@ -82,16 +116,16 @@ public interface GenericDBConnector {
 	public List<Compute> getComputeCloudResources(IaaS_Service iaas);
 
 	/**
-	 * Retrieves the list of the Cloud Storage Cloud Resources provided by the
-	 * specified IaaS Service.
+	 * Retrieves the list of the Database Cloud Platforms provided by the
+	 * specified PaaS Service.
 	 * 
-	 * @param iaas
-	 *            is the specified IaaS_Service element.
-	 * @return a List of CloudStorage elements.
-	 * @see IaaS_Service
-	 * @see CloudStorage
+	 * @param paas
+	 *            is the specified PaaS_Service element.
+	 * @return a List of Database elements.
+	 * @see PaaS_Service
+	 * @see Database
 	 */
-	public List<CloudStorage> getCloudStorageCloudResources(IaaS_Service iaas);
+	public List<Database> getDatabaseCloudPlatforms(PaaS_Service paas);
 
 	/**
 	 * Retrieves the list of the Filesystem Storage Cloud Resources provided by
@@ -107,45 +141,6 @@ public interface GenericDBConnector {
 			IaaS_Service iaas);
 
 	/**
-	 * Retrieves the list of the Blob Storage Cloud Resources provided by the
-	 * specified IaaS Service.
-	 * 
-	 * @param iaas
-	 *            is the specified IaaS_Service element.
-	 * @return a List of BlobStorage elements.
-	 * @see IaaS_Service
-	 * @see BlobStorage
-	 */
-	public List<BlobStorage> getBlobStorageCloudResources(IaaS_Service iaas);
-
-	/**
-	 * Retrieves the list of PaaS Cloud Services.
-	 * 
-	 * @return a List of PaaS_Service elements.
-	 * @see PaaS_Service
-	 */
-	public List<PaaS_Service> getPaaSServices();
-	
-	/**
-	 * Gets the paas services hash map.
-	 *
-	 * @return the paas services hash map
-	 */
-	public Map<String, PaaS_Service> getPaaSServicesHashMap();
-
-	/**
-	 * Retrieves the list of Cloud Platforms provided by the specified PaaS
-	 * Service.
-	 * 
-	 * @param paas
-	 *            is the PaaS-Service element.
-	 * @return a List of CloudPlatform elements.
-	 * @see PaaS_Service
-	 * @see CloudPlatform
-	 */
-	public List<CloudPlatform> getCloudPlatforms(PaaS_Service paas);
-
-	/**
 	 * Retrieves the list of the Frontend Cloud Platforms provided by the
 	 * specified PaaS Service.
 	 * 
@@ -156,6 +151,21 @@ public interface GenericDBConnector {
 	 * @see Frontend
 	 */
 	public List<Frontend> getFrontendCloudPlatforms(PaaS_Service paas);
+
+	/**
+	 * Retrieves the list of IaaS Cloud Services.
+	 * 
+	 * @return a List of IaaS_Service.
+	 * @see IaaS_Service
+	 */
+	public List<IaaS_Service> getIaaSServices();
+
+	/**
+	 * Gets the hash map of the Iaas Cloud Services.
+	 * 
+	 * @return the hash map
+	 */
+	public Map<String, IaaS_Service> getIaaSServicesHashMap();
 
 	/**
 	 * Retrieves the list of the Middleware Cloud Platforms provided by the
@@ -170,27 +180,18 @@ public interface GenericDBConnector {
 	public List<Middleware> getMiddlewareCloudPlatforms(PaaS_Service paas);
 
 	/**
-	 * Retrieves the list of the Backend Cloud Platforms provided by the
-	 * specified PaaS Service.
+	 * Retrieves the list of PaaS Cloud Services.
 	 * 
-	 * @param paas
-	 *            is the specified PaaS_Service element.
-	 * @return a List of Backend elements.
+	 * @return a List of PaaS_Service elements.
 	 * @see PaaS_Service
-	 * @see Backend
 	 */
-	public List<Backend> getBackendCloudPlatforms(PaaS_Service paas);
+	public List<PaaS_Service> getPaaSServices();
 
 	/**
-	 * Retrieves the list of the Database Cloud Platforms provided by the
-	 * specified PaaS Service.
+	 * Gets the paas services hash map.
 	 * 
-	 * @param paas
-	 *            is the specified PaaS_Service element.
-	 * @return a List of Database elements.
-	 * @see PaaS_Service
-	 * @see Database
+	 * @return the paas services hash map
 	 */
-	public List<Database> getDatabaseCloudPlatforms(PaaS_Service paas);
+	public Map<String, PaaS_Service> getPaaSServicesHashMap();
 
 }

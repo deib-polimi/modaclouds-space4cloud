@@ -37,7 +37,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -57,16 +56,16 @@ public class CostDerivation {
 
 	/** The output. */
 	private File output;
-	
+
 	/** The doc. */
 	private Document doc;
-	
+
 	/** The root. */
 	private Element root;
-	
+
 	/** The total cost. */
 	private double totalCost = 0.0;
-	
+
 	/** The hourly costs. */
 	private double hourlyCosts[];
 
@@ -100,7 +99,7 @@ public class CostDerivation {
 	 *            is the Map object containing key-value elements, where the key
 	 *            is an ExtendedResourceContainer object, while the value is a
 	 *            CloudElement object.
-	 * @throws TransformerException 
+	 * @throws TransformerException
 	 * @see CloudElement
 	 * @see ExtendedResourceContainer
 	 * @see #deriveCostsForCloudPlatform(ExtendedResourceContainer,
@@ -108,7 +107,8 @@ public class CostDerivation {
 	 * @see #deriveCostsForCloudResource(ExtendedResourceContainer,
 	 *      CloudResource)
 	 */
-	public void derive(Map<ExtendedResourceContainer, CloudElement> map) throws TransformerException {
+	public void derive(Map<ExtendedResourceContainer, CloudElement> map)
+			throws TransformerException {
 		for (Map.Entry<ExtendedResourceContainer, CloudElement> e : map
 				.entrySet())
 			if (e.getValue() instanceof CloudResource)
@@ -127,110 +127,6 @@ public class CostDerivation {
 		x.setAttribute("value", "" + totalCost);
 		root.appendChild(x);
 		serialize();
-	}
-
-	/**
-	 * Serializes the cost model.
-	 * @throws TransformerException 
-	 */
-	private void serialize() throws TransformerException {
-			TransformerFactory transformerFactory = TransformerFactory
-					.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty(
-					"{http://xml.apache.org/xslt}indent-amount", "4");
-			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(output);
-			transformer.transform(source, result);		
-	}
-
-	/**
-	 * Derives costs from the mapping between an Extended Resource Container and
-	 * a Cloud Platform.
-	 * 
-	 * @param erc
-	 *            is the ExtendedResourceContainer object derived from the
-	 *            CloudPlatform.
-	 * @param cp
-	 *            is the CloudPlatform object.
-	 * @see ExtendedResourceContainer
-	 * @see CloudPlatform
-	 */
-	private void deriveCostsForCloudPlatform(ExtendedResourceContainer erc,
-			CloudPlatform cp) {
-		List<Cost> lc = cp.getHasCost();
-		CostProfile costp = cp.getHasCostProfile();
-		List<CloudResource> lcr = cp.getRunsOnCloudResource();
-		Element x = doc.createElement("CloudPlatform");
-		x.setAttribute("name", cp.getName());
-		x.setAttribute("type", cp.getPlatformType().getName());
-		x.setAttribute("id", "" + cp.getId());
-		x.setAttribute("mappedTo", erc.getName() + "[" + erc.getId() + "]");
-		Element costList = doc.createElement("Cost_List");
-		x.appendChild(costList);
-		AllocationProfile ap = erc.getAllocationProfile();
-		AllocationSpecification[] as = null;
-		if (ap != null)
-			as = ap.getSpecifications();
-		double cost = deriveCosts(lc, costp, costList, as);
-		if (lcr != null)
-			for (CloudResource cr : lcr) {
-				Element y = doc.createElement("CloudResource");
-				y.setAttribute("name", cr.getName());
-				y.setAttribute("type", cr.getResourceType().getName());
-				y.setAttribute("id", "" + cr.getId());
-				List<Cost> lc1 = cr.getHasCost();
-				CostProfile cp1 = cr.getHasCostProfile();
-				Element costList1 = doc.createElement("Cost_List");
-				y.appendChild(costList1);
-				double temp = deriveCosts(lc1, cp1, costList1, as);
-
-				// Update the total system cost
-				cost += temp;
-
-				x.appendChild(y);
-			}
-		totalCost += cost;
-		Element total = doc.createElement("Total_Container_Cost");
-		total.setAttribute("value", "" + cost);
-		x.appendChild(total);
-		root.appendChild(x);
-	}
-
-	/**
-	 * Derives costs from the mapping between an Extended Resource Container and
-	 * a Cloud Resource.
-	 * 
-	 * @param erc
-	 *            is the ExtendedResourceContainer object derived from the
-	 *            CloudResource.
-	 * @param cr
-	 *            is the CloudResource object.
-	 * @see ExtendedResourceContainer
-	 * @see CloudResource
-	 */
-	private void deriveCostsForCloudResource(ExtendedResourceContainer erc,
-			CloudResource cr) {
-		Element x = doc.createElement("CloudResource");
-		x.setAttribute("name", cr.getName());
-		x.setAttribute("type", cr.getResourceType().getName());
-		x.setAttribute("id", "" + cr.getId());
-		x.setAttribute("mappedTo", erc.getName() + "[" + erc.getId() + "]");
-		List<Cost> lc = cr.getHasCost();
-		CostProfile cp = cr.getHasCostProfile();
-		Element costList = doc.createElement("Cost_List");
-		x.appendChild(costList);
-		AllocationProfile ap = erc.getAllocationProfile();
-		AllocationSpecification[] as = null;
-		if (ap != null)
-			as = ap.getSpecifications();
-		double cost = deriveCosts(lc, cp, costList, as);
-		totalCost += cost;
-		Element total = doc.createElement("Total_Container_Cost");
-		total.setAttribute("value", "" + cost);
-		x.appendChild(total);
-		root.appendChild(x);
 	}
 
 	/**
@@ -406,6 +302,94 @@ public class CostDerivation {
 	}
 
 	/**
+	 * Derives costs from the mapping between an Extended Resource Container and
+	 * a Cloud Platform.
+	 * 
+	 * @param erc
+	 *            is the ExtendedResourceContainer object derived from the
+	 *            CloudPlatform.
+	 * @param cp
+	 *            is the CloudPlatform object.
+	 * @see ExtendedResourceContainer
+	 * @see CloudPlatform
+	 */
+	private void deriveCostsForCloudPlatform(ExtendedResourceContainer erc,
+			CloudPlatform cp) {
+		List<Cost> lc = cp.getHasCost();
+		CostProfile costp = cp.getHasCostProfile();
+		List<CloudResource> lcr = cp.getRunsOnCloudResource();
+		Element x = doc.createElement("CloudPlatform");
+		x.setAttribute("name", cp.getName());
+		x.setAttribute("type", cp.getPlatformType().getName());
+		x.setAttribute("id", "" + cp.getId());
+		x.setAttribute("mappedTo", erc.getName() + "[" + erc.getId() + "]");
+		Element costList = doc.createElement("Cost_List");
+		x.appendChild(costList);
+		AllocationProfile ap = erc.getAllocationProfile();
+		AllocationSpecification[] as = null;
+		if (ap != null)
+			as = ap.getSpecifications();
+		double cost = deriveCosts(lc, costp, costList, as);
+		if (lcr != null)
+			for (CloudResource cr : lcr) {
+				Element y = doc.createElement("CloudResource");
+				y.setAttribute("name", cr.getName());
+				y.setAttribute("type", cr.getResourceType().getName());
+				y.setAttribute("id", "" + cr.getId());
+				List<Cost> lc1 = cr.getHasCost();
+				CostProfile cp1 = cr.getHasCostProfile();
+				Element costList1 = doc.createElement("Cost_List");
+				y.appendChild(costList1);
+				double temp = deriveCosts(lc1, cp1, costList1, as);
+
+				// Update the total system cost
+				cost += temp;
+
+				x.appendChild(y);
+			}
+		totalCost += cost;
+		Element total = doc.createElement("Total_Container_Cost");
+		total.setAttribute("value", "" + cost);
+		x.appendChild(total);
+		root.appendChild(x);
+	}
+
+	/**
+	 * Derives costs from the mapping between an Extended Resource Container and
+	 * a Cloud Resource.
+	 * 
+	 * @param erc
+	 *            is the ExtendedResourceContainer object derived from the
+	 *            CloudResource.
+	 * @param cr
+	 *            is the CloudResource object.
+	 * @see ExtendedResourceContainer
+	 * @see CloudResource
+	 */
+	private void deriveCostsForCloudResource(ExtendedResourceContainer erc,
+			CloudResource cr) {
+		Element x = doc.createElement("CloudResource");
+		x.setAttribute("name", cr.getName());
+		x.setAttribute("type", cr.getResourceType().getName());
+		x.setAttribute("id", "" + cr.getId());
+		x.setAttribute("mappedTo", erc.getName() + "[" + erc.getId() + "]");
+		List<Cost> lc = cr.getHasCost();
+		CostProfile cp = cr.getHasCostProfile();
+		Element costList = doc.createElement("Cost_List");
+		x.appendChild(costList);
+		AllocationProfile ap = erc.getAllocationProfile();
+		AllocationSpecification[] as = null;
+		if (ap != null)
+			as = ap.getSpecifications();
+		double cost = deriveCosts(lc, cp, costList, as);
+		totalCost += cost;
+		Element total = doc.createElement("Total_Container_Cost");
+		total.setAttribute("value", "" + cost);
+		x.appendChild(total);
+		root.appendChild(x);
+	}
+
+	/**
 	 * Derive the cost relative to the specified size considering the cost
 	 * intervals defined within the cost specification.
 	 * 
@@ -459,5 +443,22 @@ public class CostDerivation {
 					return c.getValue() * (b - a);
 			}
 		}
+	}
+
+	/**
+	 * Serializes the cost model.
+	 * 
+	 * @throws TransformerException
+	 */
+	private void serialize() throws TransformerException {
+		TransformerFactory transformerFactory = TransformerFactory
+				.newInstance();
+		Transformer transformer = transformerFactory.newTransformer();
+		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		transformer.setOutputProperty(
+				"{http://xml.apache.org/xslt}indent-amount", "4");
+		DOMSource source = new DOMSource(doc);
+		StreamResult result = new StreamResult(output);
+		transformer.transform(source, result);
 	}
 }

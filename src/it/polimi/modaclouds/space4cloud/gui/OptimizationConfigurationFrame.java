@@ -8,7 +8,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,9 +24,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-import org.eclipse.core.runtime.FileLocator;
-
-public class OptimizationConfigurationFrame extends JFrame implements ActionListener{
+public class OptimizationConfigurationFrame extends JFrame implements
+		ActionListener {
 
 	/**
 	 * 
@@ -37,20 +35,6 @@ public class OptimizationConfigurationFrame extends JFrame implements ActionList
 	private static final int DEFAULT_MAX_ITERATIONS = 10;
 	private static final int DEFAULT_MAX_FEASIBILITY = 10;
 	private static final String DEFAULT_SELECTION_POLICY = "utilization";
-	private JPanel contentPane;
-	private JLabel lblNotification; 
-	private JTextField txtConfFile;
-	private JTextField txtMaxIteration;
-	private JTextField txtMaxFeasIter;
-	private JComboBox<SelectionPolicies> policyBox;
-	private String preferenceFile;
-	private int maxMemorySize;
-	private int maxIterations;
-	private int maxFeasIter;
-	private SelectionPolicies policy;	
-	private JTextField txtMaxMemorySize;
-	private boolean saved = false;
-
 	/**
 	 * Launch the application.
 	 */
@@ -66,8 +50,20 @@ public class OptimizationConfigurationFrame extends JFrame implements ActionList
 			}
 		});
 	}
+	private JPanel contentPane;
+	private JLabel lblNotification;
+	private JTextField txtConfFile;
+	private JTextField txtMaxIteration;
+	private JTextField txtMaxFeasIter;
+	private JComboBox<SelectionPolicies> policyBox;
+	private String preferenceFile;
+	private int maxMemorySize;
+	private int maxIterations;
+	private int maxFeasIter;
+	private SelectionPolicies policy;
+	private JTextField txtMaxMemorySize;
 
-
+	private boolean saved = false;
 
 	/**
 	 * Create the frame.
@@ -81,12 +77,12 @@ public class OptimizationConfigurationFrame extends JFrame implements ActionList
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] {141, 400, 100};
-		gbl_contentPane.rowHeights = new int[] {30, 30, 30, 30, 30, 30};
-		gbl_contentPane.columnWeights = new double[]{0.0, 1.0, 0.0};
-		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+		gbl_contentPane.columnWidths = new int[] { 141, 400, 100 };
+		gbl_contentPane.rowHeights = new int[] { 30, 30, 30, 30, 30, 30 };
+		gbl_contentPane.columnWeights = new double[] { 0.0, 1.0, 0.0 };
+		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0,
+				0.0 };
 		contentPane.setLayout(gbl_contentPane);
-
 
 		JLabel lblConfFile = new JLabel("Configuration File");
 		lblConfFile.setHorizontalAlignment(SwingConstants.CENTER);
@@ -178,7 +174,8 @@ public class OptimizationConfigurationFrame extends JFrame implements ActionList
 		contentPane.add(lblPolicy, gbc_lblPolicy);
 
 		policyBox = new JComboBox<SelectionPolicies>();
-		policyBox.setModel(new DefaultComboBoxModel<SelectionPolicies>(SelectionPolicies.values()));
+		policyBox.setModel(new DefaultComboBoxModel<SelectionPolicies>(
+				SelectionPolicies.values()));
 		GridBagConstraints gbc_comboBox = new GridBagConstraints();
 		gbc_comboBox.anchor = GridBagConstraints.WEST;
 		gbc_comboBox.insets = new Insets(0, 0, 5, 5);
@@ -202,13 +199,105 @@ public class OptimizationConfigurationFrame extends JFrame implements ActionList
 		btnSave.addActionListener(this);
 	}
 
+	public void actionPerformed(ActionEvent e) {
 
+		JButton button = (JButton) e.getSource();
+		// if the load button is pressed
+		if (button.getText().equals("Load")) {
+			final JFileChooser fc = new JFileChooser();
+			int returnVal = fc.showOpenDialog(button.getParent());
+			fc.setDialogTitle("Optimization PArameter Configuration File");
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				setPreferenceFile(fc.getSelectedFile().getAbsolutePath());
+			}
+		} else if (button.getText().equals("Save")) {
+			maxFeasIter = Integer.parseInt(txtMaxFeasIter.getText());
+			maxIterations = Integer.parseInt(txtMaxIteration.getText());
+			maxMemorySize = Integer.parseInt(txtMaxMemorySize.getText());
+			policy = (SelectionPolicies) policyBox.getSelectedItem();
+			this.setVisible(false);
+			setSaved(true);
+		}
+
+	}
+
+	public int getMaxFeasIter() {
+		return maxFeasIter;
+	}
+
+	public int getMaxIterations() {
+		return maxIterations;
+	}
+
+	public int getMaxMemorySize() {
+		return maxMemorySize;
+	}
+
+	public SelectionPolicies getPolicy() {
+		return policy;
+	}
 
 	public String getPreferenceFile() {
 		return preferenceFile;
 	}
 
+	public synchronized boolean isSaved() {
+		return saved;
+	}
 
+	private void notifyFileError(String preferenceFile2) {
+		lblNotification
+				.setText("<html><font color='red'>Error in loading the configuration from file</font></html>");
+	}
+
+	/**
+	 * Initialization of the OptEngine by means of a properties File
+	 * 
+	 * @param propertiesFileName
+	 * @throws IOException
+	 */
+	private void parseFile(String propertiesFileName) throws IOException {
+
+		InputStream fileInput = null;
+		// load it from the plugin
+		fileInput = this.getClass().getResourceAsStream(propertiesFileName);
+		// load it from the path
+		if (fileInput == null)
+			fileInput = new FileInputStream(propertiesFileName);
+
+		Properties properties = new Properties();
+		properties.load(fileInput);
+		fileInput.close();
+		setMaxMemorySize(Integer.parseInt(properties
+				.getProperty("MAXMEMORYSIZE")));
+		setMaxIterations(Integer.parseInt(properties
+				.getProperty("MAXITERATIONS")));
+		setMaxFeasIter(Integer.parseInt(properties
+				.getProperty("MAXFEASIBILITYITERATIONS")));
+		setPolicy(SelectionPolicies.getPropertyFromName(properties
+				.getProperty("SELECTION_POLICY")));
+
+	}
+
+	private void setMaxFeasIter(int maxFeasIter) {
+		this.maxFeasIter = maxFeasIter;
+		txtMaxFeasIter.setText("" + this.maxFeasIter);
+	}
+
+	private void setMaxIterations(int maxIterations) {
+		this.maxIterations = maxIterations;
+		txtMaxIteration.setText("" + this.maxIterations);
+	}
+
+	private void setMaxMemorySize(int maxMemorySize) {
+		this.maxMemorySize = maxMemorySize;
+		txtMaxMemorySize.setText("" + this.maxMemorySize);
+	}
+
+	private void setPolicy(SelectionPolicies policy) {
+		this.policy = policy;
+		policyBox.setSelectedItem(this.policy);
+	}
 
 	public void setPreferenceFile(String preferenceFile) {
 		this.preferenceFile = preferenceFile;
@@ -219,128 +308,14 @@ public class OptimizationConfigurationFrame extends JFrame implements ActionList
 			setMaxMemorySize(DEFAULT_MEMORY_SIZE);
 			setMaxIterations(DEFAULT_MAX_ITERATIONS);
 			setMaxFeasIter(DEFAULT_MAX_FEASIBILITY);
-			setPolicy(SelectionPolicies.getPropertyFromName(DEFAULT_SELECTION_POLICY));
+			setPolicy(SelectionPolicies
+					.getPropertyFromName(DEFAULT_SELECTION_POLICY));
 			notifyFileError(preferenceFile);
 		}
 	}
 
-
-
-	private void notifyFileError(String preferenceFile2) {		
-		lblNotification.setText("<html><font color='red'>Error in loading the configuration from file</font></html>");		
-	}
-
-
-
-	public int getMaxMemorySize() {
-		return maxMemorySize;
-	}
-
-
-
-	public int getMaxIterations() {
-		return maxIterations;
-	}
-
-
-
-	public int getMaxFeasIter() {
-		return maxFeasIter;
-	}
-
-
-
-	public SelectionPolicies getPolicy() {
-		return policy;
-	}
-
-	/**
-	 * Initialization of the OptEngine by means of a properties File
-	 * 
-	 * @param propertiesFileName
-	 * @throws IOException 
-	 */
-	private void parseFile(String propertiesFileName) throws IOException {
-
-		InputStream fileInput = null; 
-		//load it from the plugin
-		fileInput = this.getClass().getResourceAsStream(
-				propertiesFileName);
-		//load it from the path
-		if(fileInput==null)			
-			fileInput = new FileInputStream(propertiesFileName);
-		
-			
-		Properties properties = new Properties();
-		properties.load(fileInput);
-		fileInput.close();
-		setMaxMemorySize(Integer.parseInt(properties.getProperty("MAXMEMORYSIZE")));
-		setMaxIterations(Integer.parseInt(properties.getProperty("MAXITERATIONS")));
-		setMaxFeasIter(Integer.parseInt(properties.getProperty("MAXFEASIBILITYITERATIONS")));
-		setPolicy(SelectionPolicies.getPropertyFromName(properties.getProperty("SELECTION_POLICY")));
-
-	}
-
-
-
-	private void setMaxMemorySize(int maxMemorySize) {
-		this.maxMemorySize = maxMemorySize;
-		txtMaxMemorySize.setText(""+this.maxMemorySize);
-	}
-
-
-
-	private void setMaxIterations(int maxIterations) {
-		this.maxIterations = maxIterations;
-		txtMaxIteration.setText(""+this.maxIterations);
-	}
-
-
-
-	private void setMaxFeasIter(int maxFeasIter) {
-		this.maxFeasIter = maxFeasIter;
-		txtMaxFeasIter.setText(""+this.maxFeasIter);
-	}
-
-
-
-	private void setPolicy(SelectionPolicies policy) {
-		this.policy = policy;
-		policyBox.setSelectedItem(this.policy);
-	}
-
-
-	public void actionPerformed(ActionEvent e) {
-
-		JButton button = (JButton) e.getSource();
-		//if the load button is pressed
-		if(button.getText().equals("Load")){
-			final JFileChooser fc = new JFileChooser();
-			int returnVal = fc.showOpenDialog(button.getParent());
-			fc.setDialogTitle("Optimization PArameter Configuration File");					
-			if(returnVal == JFileChooser.APPROVE_OPTION){
-				setPreferenceFile(fc.getSelectedFile().getAbsolutePath());
-			}
-		}
-		else if(button.getText().equals("Save")){
-			maxFeasIter=Integer.parseInt(txtMaxFeasIter.getText());
-			maxIterations=Integer.parseInt(txtMaxIteration.getText());
-			maxMemorySize=Integer.parseInt(txtMaxMemorySize.getText());
-			policy=(SelectionPolicies) policyBox.getSelectedItem();
-			this.setVisible(false);
-			setSaved(true);			
-		}
-
-	}
-	
 	private synchronized void setSaved(boolean value) {
-		saved = value;		
+		saved = value;
 	}
-
-
-	public synchronized boolean isSaved(){
-		return saved;
-	}
-
 
 }

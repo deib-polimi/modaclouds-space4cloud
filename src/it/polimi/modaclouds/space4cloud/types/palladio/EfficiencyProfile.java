@@ -32,12 +32,32 @@ import org.w3c.dom.NodeList;
  */
 public class EfficiencyProfile {
 
+	/**
+	 * The main method.
+	 * 
+	 * @param args
+	 *            the arguments
+	 */
+	public static void main(String[] args) {
+		EfficiencyProfile ep = new EfficiencyProfile();
+		EfficiencySpecification es = new EfficiencySpecification(0, 0.01);
+		ep.addSpecification(es);
+		es.setHour(12);
+		es.setEfficiency(0.02);
+		ep.addSpecification(es);
+		es.setHour(23);
+		es.setEfficiency(0.0001);
+		ep.addSpecification(es);
+		ep.serialize(new File(System.getProperty("user.dir")
+				+ "\\Palladio\\eff.efficiencyxml"));
+	}
+
 	/** The specifications. */
 	private EfficiencySpecification specifications[];
-	
+
 	/** The doc. */
 	private Document doc;
-	
+
 	/** The efficiency profile element. */
 	private Element efficiencyProfileElement;
 
@@ -54,8 +74,9 @@ public class EfficiencyProfile {
 
 	/**
 	 * Instantiates a new efficiency profile.
-	 *
-	 * @param e the e
+	 * 
+	 * @param e
+	 *            the e
 	 */
 	public EfficiencyProfile(Element e) {
 		doc = DOM.getDocument();
@@ -66,8 +87,9 @@ public class EfficiencyProfile {
 
 	/**
 	 * Instantiates a new efficiency profile.
-	 *
-	 * @param inputModel the input model
+	 * 
+	 * @param inputModel
+	 *            the input model
 	 */
 	public EfficiencyProfile(File inputModel) {
 		doc = DOM.getDocument(inputModel);
@@ -75,9 +97,58 @@ public class EfficiencyProfile {
 	}
 
 	/**
+	 * Adds the specification.
+	 * 
+	 * @param es
+	 *            the es
+	 */
+	public void addSpecification(EfficiencySpecification es) {
+		specifications[es.getHour()] = es;
+		NodeList nl = efficiencyProfileElement
+				.getElementsByTagName("Efficiency_Specification");
+		Element x = (Element) doc.importNode(
+				es.getEfficiencySpecificationElement(), true);
+		for (int i = 0; i < nl.getLength(); i++)
+			if (((Element) nl.item(i)).getAttribute("hour").equals(
+					"" + es.getHour())) {
+				efficiencyProfileElement.removeChild(nl.item(i));
+				efficiencyProfileElement.insertBefore(x, nl.item(i));
+				return;
+			}
+		efficiencyProfileElement.appendChild(x);
+	}
+
+	/**
+	 * Generate default profile.
+	 */
+	private void generateDefaultProfile() {
+		for (int i = 0; i < 24; i++)
+			addSpecification(new EfficiencySpecification(i, 1.0));
+	}
+
+	/**
+	 * Gets the efficiency profile element.
+	 * 
+	 * @return the efficiency profile element
+	 */
+	public Element getEfficiencyProfileElement() {
+		return efficiencyProfileElement;
+	}
+
+	/**
+	 * Gets the specifications.
+	 * 
+	 * @return the specifications
+	 */
+	public EfficiencySpecification[] getSpecifications() {
+		return specifications;
+	}
+
+	/**
 	 * Initialize.
-	 *
-	 * @param e the e
+	 * 
+	 * @param e
+	 *            the e
 	 */
 	private void initialize(Element e) {
 		efficiencyProfileElement = e;
@@ -94,26 +165,29 @@ public class EfficiencyProfile {
 
 	/**
 	 * Serialize.
-	 *
-	 * @param outputFile the output file
+	 * 
+	 * @param outputFile
+	 *            the output file
 	 */
 	public void serialize(File outputFile) {
 		DOM.serialize(doc, outputFile);
 	}
 
 	/**
-	 * Gets the specifications.
-	 *
-	 * @return the specifications
+	 * Sets the efficiency profile element.
+	 * 
+	 * @param efficiencyProfileElement
+	 *            the new efficiency profile element
 	 */
-	public EfficiencySpecification[] getSpecifications() {
-		return specifications;
+	public void setEfficiencyProfileElement(Element efficiencyProfileElement) {
+		initialize((Element) doc.importNode(efficiencyProfileElement, true));
 	}
 
 	/**
 	 * Sets the specifications.
-	 *
-	 * @param specifications the new specifications
+	 * 
+	 * @param specifications
+	 *            the new specifications
 	 */
 	public void setSpecifications(EfficiencySpecification[] specifications) {
 		if (specifications != null)
@@ -124,70 +198,5 @@ public class EfficiencyProfile {
 					x.appendChild(doc.importNode(
 							es.getEfficiencySpecificationElement(), true));
 			}
-	}
-
-	/**
-	 * Adds the specification.
-	 *
-	 * @param es the es
-	 */
-	public void addSpecification(EfficiencySpecification es) {
-		specifications[es.getHour()] = es;
-		NodeList nl = efficiencyProfileElement
-				.getElementsByTagName("Efficiency_Specification");
-		Element x = (Element) doc.importNode(
-				es.getEfficiencySpecificationElement(), true);
-		for(int i=0;i<nl.getLength();i++)
-			if(((Element)nl.item(i)).getAttribute("hour").equals(""+es.getHour())){
-				efficiencyProfileElement.removeChild(nl.item(i));
-				efficiencyProfileElement.insertBefore(x, nl.item(i));
-				return;
-			}
-		efficiencyProfileElement.appendChild(x);
-	}
-
-	/**
-	 * Gets the efficiency profile element.
-	 *
-	 * @return the efficiency profile element
-	 */
-	public Element getEfficiencyProfileElement() {
-		return efficiencyProfileElement;
-	}
-
-	/**
-	 * Sets the efficiency profile element.
-	 *
-	 * @param efficiencyProfileElement the new efficiency profile element
-	 */
-	public void setEfficiencyProfileElement(Element efficiencyProfileElement) {
-		initialize((Element) doc.importNode(efficiencyProfileElement, true));
-	}
-
-	/**
-	 * Generate default profile.
-	 */
-	private void generateDefaultProfile() {
-		for (int i = 0; i < 24; i++)
-			addSpecification(new EfficiencySpecification(i, 1.0));
-	}
-
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 */
-	public static void main(String[] args) {
-		EfficiencyProfile ep = new EfficiencyProfile();
-		EfficiencySpecification es = new EfficiencySpecification(0, 0.01);
-		ep.addSpecification(es);
-		es.setHour(12);
-		es.setEfficiency(0.02);
-		ep.addSpecification(es);
-		es.setHour(23);
-		es.setEfficiency(0.0001);
-		ep.addSpecification(es);
-		ep.serialize(new File(System.getProperty("user.dir")
-				+ "\\Palladio\\eff.efficiencyxml"));
 	}
 }

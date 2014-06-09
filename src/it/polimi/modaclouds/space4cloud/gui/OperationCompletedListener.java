@@ -32,8 +32,9 @@ public interface OperationCompletedListener extends EventListener {
 
 	/**
 	 * Operation completed event occurred.
-	 *
-	 * @param evt the evt
+	 * 
+	 * @param evt
+	 *            the evt
 	 */
 	public void operationCompletedEventOccurred(OperationCompletedEvent evt);
 

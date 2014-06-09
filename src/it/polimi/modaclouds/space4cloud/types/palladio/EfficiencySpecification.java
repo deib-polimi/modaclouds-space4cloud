@@ -31,26 +31,27 @@ public class EfficiencySpecification {
 
 	/** The efficiency specification element. */
 	private Element efficiencySpecificationElement;
-	
+
 	/** The hour. */
 	private int hour = 0;
-	
+
 	/** The efficiency. */
 	private double efficiency = 1.0;
-	
+
 	/** The doc. */
 	private Document doc;
-	
+
 	/** The Constant MIN_EFFICIENCY. */
 	private final static double MIN_EFFICIENCY = 0.0;
-	
+
 	/** The Constant MAX_EFFICIENCY. */
 	private final static double MAX_EFFICIENCY = 1.0;
 
 	/**
 	 * Instantiates a new efficiency specification.
-	 *
-	 * @param item the item
+	 * 
+	 * @param item
+	 *            the item
 	 */
 	public EfficiencySpecification(Element item) {
 		doc = DOM.getDocument();
@@ -61,9 +62,11 @@ public class EfficiencySpecification {
 
 	/**
 	 * Instantiates a new efficiency specification.
-	 *
-	 * @param hour the hour
-	 * @param efficiency the efficiency
+	 * 
+	 * @param hour
+	 *            the hour
+	 * @param efficiency
+	 *            the efficiency
 	 */
 	public EfficiencySpecification(int hour, double efficiency) {
 		doc = DOM.getDocument();
@@ -79,9 +82,37 @@ public class EfficiencySpecification {
 	}
 
 	/**
+	 * Gets the efficiency.
+	 * 
+	 * @return the efficiency
+	 */
+	public double getEfficiency() {
+		return efficiency;
+	}
+
+	/**
+	 * Gets the efficiency specification element.
+	 * 
+	 * @return the efficiency specification element
+	 */
+	public Element getEfficiencySpecificationElement() {
+		return efficiencySpecificationElement;
+	}
+
+	/**
+	 * Gets the hour.
+	 * 
+	 * @return the hour
+	 */
+	public int getHour() {
+		return hour;
+	}
+
+	/**
 	 * Initialize.
-	 *
-	 * @param e the e
+	 * 
+	 * @param e
+	 *            the e
 	 */
 	private void initialize(Element e) {
 		efficiencySpecificationElement = e;
@@ -94,59 +125,32 @@ public class EfficiencySpecification {
 	}
 
 	/**
-	 * Gets the efficiency specification element.
-	 *
-	 * @return the efficiency specification element
+	 * Checks if is valid.
+	 * 
+	 * @param eff
+	 *            the eff
+	 * @return true, if is valid
 	 */
-	public Element getEfficiencySpecificationElement() {
-		return efficiencySpecificationElement;
+	private boolean isValid(double eff) {
+		return eff >= MIN_EFFICIENCY && eff <= MAX_EFFICIENCY;
 	}
 
 	/**
-	 * Sets the efficiency specification element.
-	 *
-	 * @param efficiencySpecificationElement the new efficiency specification element
+	 * Checks if is valid.
+	 * 
+	 * @param hour
+	 *            the hour
+	 * @return true, if is valid
 	 */
-	public void setEfficiencySpecificationElement(
-			Element efficiencySpecificationElement) {
-		initialize((Element) doc.importNode(efficiencySpecificationElement,
-				true));
-	}
-
-	/**
-	 * Gets the hour.
-	 *
-	 * @return the hour
-	 */
-	public int getHour() {
-		return hour;
-	}
-
-	/**
-	 * Sets the hour.
-	 *
-	 * @param hour the new hour
-	 */
-	public void setHour(int hour) {
-		if (isValid(hour)) {
-			this.hour = hour;
-			efficiencySpecificationElement.setAttribute("hour", "" + hour);
-		}
-	}
-
-	/**
-	 * Gets the efficiency.
-	 *
-	 * @return the efficiency
-	 */
-	public double getEfficiency() {
-		return efficiency;
+	private boolean isValid(int hour) {
+		return hour >= 0 && hour <= 23;
 	}
 
 	/**
 	 * Sets the efficiency.
-	 *
-	 * @param efficiency the new efficiency
+	 * 
+	 * @param efficiency
+	 *            the new efficiency
 	 */
 	public void setEfficiency(double efficiency) {
 		if (isValid(efficiency)) {
@@ -157,22 +161,27 @@ public class EfficiencySpecification {
 	}
 
 	/**
-	 * Checks if is valid.
-	 *
-	 * @param hour the hour
-	 * @return true, if is valid
+	 * Sets the efficiency specification element.
+	 * 
+	 * @param efficiencySpecificationElement
+	 *            the new efficiency specification element
 	 */
-	private boolean isValid(int hour) {
-		return hour >= 0 && hour <= 23;
+	public void setEfficiencySpecificationElement(
+			Element efficiencySpecificationElement) {
+		initialize((Element) doc.importNode(efficiencySpecificationElement,
+				true));
 	}
 
 	/**
-	 * Checks if is valid.
-	 *
-	 * @param eff the eff
-	 * @return true, if is valid
+	 * Sets the hour.
+	 * 
+	 * @param hour
+	 *            the new hour
 	 */
-	private boolean isValid(double eff) {
-		return eff >= MIN_EFFICIENCY && eff <= MAX_EFFICIENCY;
+	public void setHour(int hour) {
+		if (isValid(hour)) {
+			this.hour = hour;
+			efficiencySpecificationElement.setAttribute("hour", "" + hour);
+		}
 	}
 }

@@ -17,7 +17,8 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 public class UsageConstraint extends QoSConstraint {
 
-	public UsageConstraint(it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
+	public UsageConstraint(
+			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
 	}
 

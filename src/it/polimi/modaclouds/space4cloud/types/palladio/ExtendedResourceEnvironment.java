@@ -43,311 +43,11 @@ import org.w3c.dom.NodeList;
  */
 public class ExtendedResourceEnvironment {
 
-	/** The extended resource environment element. */
-	private Element extendedResourceEnvironmentElement;
-	
-	/** The extended resource containers. */
-	private List<ExtendedResourceContainer> extendedResourceContainers;
-	
-	/** The linking resources. */
-	private List<LinkingResource> linkingResources;
-	
-	/** The model. */
-	private File model = null;
-	
-	/** The doc. */
-	private Document doc;
-
-	private Map<String, Integer> tierAllocation;
-
-	/**
-	 * Loads an existing Extended Resource Environment Model.
-	 * 
-	 * @param inputModel
-	 *            is the File containing the model.
-	 */
-	public ExtendedResourceEnvironment(File inputModel) {
-		try {
-			model = inputModel;
-			doc = DOM.getDocument(inputModel);
-			initialize(doc.getDocumentElement());
-		} catch (Exception exc) {
-			exc.printStackTrace();
-		}
-	}
-
-	/**
-	 * Loads an existing Extended Resource Environment Model.
-	 * 
-	 * @param root
-	 *            is the DOM root Element representing the model.
-	 */
-	public ExtendedResourceEnvironment(Element root) {
-		doc = DOM.getDocument();
-		Element x = (Element) doc.importNode(root, true);
-		doc.appendChild(x);
-		initialize(x);
-	}
-
-	/**
-	 * Creates a new Extended Resource Environment Model.
-	 */
-	public ExtendedResourceEnvironment() {
-		try {
-			doc = DOM.getDocument();
-			Element el = doc
-					.createElement("resourceenvironment:ResourceEnvironment");
-			el.setAttribute("xmi:version", "2.0");
-			el.setAttribute("xmlns:xmi", "http://www.omg.org/XMI");
-			el.setAttribute("xmlns:resourceenvironment",
-					"http://sdq.ipd.uka.de/PalladioComponentModel/ResourceEnvironment/5.0");
-			doc.appendChild(el);
-			initialize(el);
-		} catch (Exception exc) {
-			exc.printStackTrace();
-		}
-	}
-
-	/**
-	 * Initialize the class attributes with the information contained in the
-	 * Extended Resource Environment model.
-	 * 
-	 * @param root
-	 *            is the DOM root Element representing the model.
-	 */
-	private void initialize(Element root) {
-		extendedResourceEnvironmentElement = root;
-		linkingResources = new ArrayList<LinkingResource>();
-		extendedResourceContainers = new ArrayList<ExtendedResourceContainer>();
-		NodeList rc = extendedResourceEnvironmentElement
-				.getElementsByTagName("resourceContainer_ResourceEnvironment");
-		if (rc != null)
-			for (int i = 0; i < rc.getLength(); i++)
-				extendedResourceContainers.add(new ExtendedResourceContainer(
-						(Element) rc.item(i)));
-		rc = extendedResourceEnvironmentElement
-				.getElementsByTagName("linkingResources__ResourceEnvironment");
-		if (rc != null)
-			for (int i = 0; i < rc.getLength(); i++)
-				linkingResources.add(new LinkingResource((Element) rc.item(i)));
-	}
-
-	/**
-	 * Returns the Node representing the Linking Resource identified by the
-	 * specified id.
-	 * 
-	 * @param ID
-	 *            is the id of the Node.
-	 * @return the Node representing the Linking Resource with the specified id,
-	 *         null otherwise.
-	 */
-	private Node getLinkByID(String ID) {
-		NodeList nl = extendedResourceEnvironmentElement
-				.getElementsByTagName("linkingResources__ResourceEnvironment");
-		for (int i = 0; i < nl.getLength(); i++)
-			if (((Element) nl.item(i)).getAttribute("id").equals(ID))
-				return nl.item(i);
-		return null;
-	}
-
-	/**
-	 * Returns the Node representing the Extended Resource Container identified
-	 * by the specified id.
-	 * 
-	 * @param ID
-	 *            is the id of the Node.
-	 * @return the Node representing the Resource Container with the specified
-	 *         id, null otherwise.
-	 */
-	private Node getContainerByID(String ID) {
-		NodeList nl = extendedResourceEnvironmentElement
-				.getElementsByTagName("resourceContainer_ResourceEnvironment");
-		for (int i = 0; i < nl.getLength(); i++)
-			if (((Element) nl.item(i)).getAttribute("id").equals(ID))
-				return nl.item(i);
-		return null;
-	}
-
-	/**
-	 * Gets the resource environment element.
-	 *
-	 * @return the root Element representing the model.
-	 */
-	public Element getResourceEnvironmentElement() {
-		return extendedResourceEnvironmentElement;
-	}
-
-	/**
-	 * Re-initialize the model using the provided DOM root Element.
-	 * 
-	 * @param extendedResourceEnvironmentElement
-	 *            is the DOM root Element representing the new model.
-	 */
-	public void setExtendedResourceEnvironmentElement(
-			Element extendedResourceEnvironmentElement) {
-		initialize(extendedResourceEnvironmentElement);
-	}
-
-	/**
-	 * Gets the extended resource containers.
-	 *
-	 * @return the List of the Extended Resource Containers within the model.
-	 * @see ExtendedResourceContainer
-	 */
-	public List<ExtendedResourceContainer> getExtendedResourceContainers() {
-		return extendedResourceContainers;
-	}
-
-	/**
-	 * Replaces the Extended Resource Containers within the model with the ones
-	 * contained in the provided List.
-	 * 
-	 * @param extendedResourceContainers
-	 *            is the List of the new Extended Resource Containers.
-	 * @see ExtendedResourceContainer
-	 */
-	public void setExtendedResourceContainers(
-			List<ExtendedResourceContainer> extendedResourceContainers) {
-		this.extendedResourceContainers = new ArrayList<ExtendedResourceContainer>();
-		NodeList nl = extendedResourceEnvironmentElement
-				.getElementsByTagName("resourceContainer_ResourceEnvironment");
-		for (int i = 0; i < nl.getLength(); i++)
-			extendedResourceEnvironmentElement.removeChild(nl.item(i));
-		for (ExtendedResourceContainer rc : extendedResourceContainers)
-			addExtendedResourceContainer(rc);
-	}
-
-	/**
-	 * Gets the linking resources.
-	 *
-	 * @return the List of the Linking Resources within the model.
-	 * @see LinkingResource
-	 */
-	public List<LinkingResource> getLinkingResources() {
-		return linkingResources;
-	}
-
-	/**
-	 * Replaces the Linking Resources within the model with the ones contained
-	 * in the provided List.
-	 * 
-	 * @param linkingResources
-	 *            is the List of the new Linking Resources.
-	 * @see LinkingResource
-	 */
-	public void setLinkingResources(List<LinkingResource> linkingResources) {
-		this.linkingResources = new ArrayList<LinkingResource>();
-		NodeList nl = extendedResourceEnvironmentElement
-				.getElementsByTagName("linkingResources__ResourceEnvironment");
-		for (int i = 0; i < nl.getLength(); i++)
-			extendedResourceEnvironmentElement.removeChild(nl.item(i));
-		
-		for (LinkingResource lr : linkingResources)
-			addLinkingResource(lr);
-	}
-
-	/**
-	 * Adds an Extended Resource Container to the model.
-	 * 
-	 * @param rc
-	 *            is the Extended Resource Container to add.
-	 * @see ExtendedResourceContainer
-	 */
-	public void addExtendedResourceContainer(ExtendedResourceContainer rc) {
-		extendedResourceContainers.add(rc);
-		Element x = (Element) doc.importNode(
-				rc.getExtendedResourceContainerElement(), true);
-		extendedResourceEnvironmentElement.appendChild(x);
-	}
-
-	/**
-	 * Replaces an existing Extended Resource Container within the model with a
-	 * new one. All the Linking Resources related to the old Extended Resource
-	 * Container are updated and linked to the new Extended Resource Container.
-	 * 
-	 * @param oldC
-	 *            is the existing Extended Resource Container to replace.
-	 * @param newC
-	 *            is the new Extended Resource Container.
-	 * @see ExtendedResourceContainer
-	 */
-	public void replaceExtendedResourceContainer(
-			ExtendedResourceContainer oldC, ExtendedResourceContainer newC) {
-		Node el = getContainerByID(oldC.getId());
-		if (el != null) {
-			List<LinkingResource> newlinks = new ArrayList<LinkingResource>();
-			for (LinkingResource lr : linkingResources) {
-				lr.substitueConnection(oldC.getId(), newC.getId());
-				newlinks.add(lr);
-			}
-			Element x = (Element) doc.importNode(
-					newC.getExtendedResourceContainerElement(), true);
-			extendedResourceEnvironmentElement.replaceChild(x, el);
-			initialize(extendedResourceEnvironmentElement);
-			setLinkingResources(newlinks);
-		}
-	}
-
-	/**
-	 * Adds a new Linking Resource to the model.
-	 * 
-	 * @param lr
-	 *            is the new Linking Resource to add.
-	 * @see LinkingResource
-	 */
-	public void addLinkingResource(LinkingResource lr) {
-		linkingResources.add(lr);
-		Element x = (Element) doc.importNode(lr.getLinkingResourceElement(),
-				true);
-		extendedResourceEnvironmentElement.appendChild(x);
-	}
-
-	/**
-	 * Replaces an existing Linking Resource within the model with a new one.
-	 * 
-	 * @param oldC
-	 *            is the existing Linking Resource to replace.
-	 * @param newC
-	 *            is the new Linking Resource.
-	 * @see LinkingResource
-	 */
-	public void replaceLinkingResource(LinkingResource oldC,
-			LinkingResource newC) {
-		Node el = getLinkByID(oldC.getId());
-		if (el != null) {
-			extendedResourceEnvironmentElement.removeChild(el);
-			initialize(extendedResourceEnvironmentElement);
-			addLinkingResource(newC);
-		}
-	}
-
-	/**
-	 * Serialize.
-	 */
-	public void serialize() {
-		serialize(model);
-	}
-
-	/**
-	 * Serialize.
-	 *
-	 * @param f the f
-	 */
-	public void serialize(File f) {
-		try {
-			if (model == null)
-				model = new File(System.getProperty("user.dir")
-						+ "\\Palladio\\MyRE.resourceenvironment");
-			DOM.serialize(doc, f);
-		} catch (Exception exc) {
-			exc.printStackTrace();
-		}
-	}
-
 	/**
 	 * The main method.
-	 *
-	 * @param args the arguments
+	 * 
+	 * @param args
+	 *            the arguments
 	 */
 	public static void main(String[] args) {
 		ExtendedResourceEnvironment re = new ExtendedResourceEnvironment();
@@ -383,7 +83,329 @@ public class ExtendedResourceEnvironment {
 				+ "\\Palladio\\xxx.resourceenvironment"));
 	}
 
-	/* (non-Javadoc)
+	/** The extended resource environment element. */
+	private Element extendedResourceEnvironmentElement;
+
+	/** The extended resource containers. */
+	private List<ExtendedResourceContainer> extendedResourceContainers;
+
+	/** The linking resources. */
+	private List<LinkingResource> linkingResources;
+
+	/** The model. */
+	private File model = null;
+
+	/** The doc. */
+	private Document doc;
+
+	private Map<String, Integer> tierAllocation;
+
+	/**
+	 * Creates a new Extended Resource Environment Model.
+	 */
+	public ExtendedResourceEnvironment() {
+		try {
+			doc = DOM.getDocument();
+			Element el = doc
+					.createElement("resourceenvironment:ResourceEnvironment");
+			el.setAttribute("xmi:version", "2.0");
+			el.setAttribute("xmlns:xmi", "http://www.omg.org/XMI");
+			el.setAttribute("xmlns:resourceenvironment",
+					"http://sdq.ipd.uka.de/PalladioComponentModel/ResourceEnvironment/5.0");
+			doc.appendChild(el);
+			initialize(el);
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}
+	}
+
+	/**
+	 * Loads an existing Extended Resource Environment Model.
+	 * 
+	 * @param root
+	 *            is the DOM root Element representing the model.
+	 */
+	public ExtendedResourceEnvironment(Element root) {
+		doc = DOM.getDocument();
+		Element x = (Element) doc.importNode(root, true);
+		doc.appendChild(x);
+		initialize(x);
+	}
+
+	/**
+	 * Loads an existing Extended Resource Environment Model.
+	 * 
+	 * @param inputModel
+	 *            is the File containing the model.
+	 */
+	public ExtendedResourceEnvironment(File inputModel) {
+		try {
+			model = inputModel;
+			doc = DOM.getDocument(inputModel);
+			initialize(doc.getDocumentElement());
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}
+	}
+
+	/**
+	 * Adds an Extended Resource Container to the model.
+	 * 
+	 * @param rc
+	 *            is the Extended Resource Container to add.
+	 * @see ExtendedResourceContainer
+	 */
+	public void addExtendedResourceContainer(ExtendedResourceContainer rc) {
+		extendedResourceContainers.add(rc);
+		Element x = (Element) doc.importNode(
+				rc.getExtendedResourceContainerElement(), true);
+		extendedResourceEnvironmentElement.appendChild(x);
+	}
+
+	/**
+	 * Adds a new Linking Resource to the model.
+	 * 
+	 * @param lr
+	 *            is the new Linking Resource to add.
+	 * @see LinkingResource
+	 */
+	public void addLinkingResource(LinkingResource lr) {
+		linkingResources.add(lr);
+		Element x = (Element) doc.importNode(lr.getLinkingResourceElement(),
+				true);
+		extendedResourceEnvironmentElement.appendChild(x);
+	}
+
+	/**
+	 * Returns the Node representing the Extended Resource Container identified
+	 * by the specified id.
+	 * 
+	 * @param ID
+	 *            is the id of the Node.
+	 * @return the Node representing the Resource Container with the specified
+	 *         id, null otherwise.
+	 */
+	private Node getContainerByID(String ID) {
+		NodeList nl = extendedResourceEnvironmentElement
+				.getElementsByTagName("resourceContainer_ResourceEnvironment");
+		for (int i = 0; i < nl.getLength(); i++)
+			if (((Element) nl.item(i)).getAttribute("id").equals(ID))
+				return nl.item(i);
+		return null;
+	}
+
+	/**
+	 * Gets the extended resource containers.
+	 * 
+	 * @return the List of the Extended Resource Containers within the model.
+	 * @see ExtendedResourceContainer
+	 */
+	public List<ExtendedResourceContainer> getExtendedResourceContainers() {
+		return extendedResourceContainers;
+	}
+
+	/**
+	 * Returns the Node representing the Linking Resource identified by the
+	 * specified id.
+	 * 
+	 * @param ID
+	 *            is the id of the Node.
+	 * @return the Node representing the Linking Resource with the specified id,
+	 *         null otherwise.
+	 */
+	private Node getLinkByID(String ID) {
+		NodeList nl = extendedResourceEnvironmentElement
+				.getElementsByTagName("linkingResources__ResourceEnvironment");
+		for (int i = 0; i < nl.getLength(); i++)
+			if (((Element) nl.item(i)).getAttribute("id").equals(ID))
+				return nl.item(i);
+		return null;
+	}
+
+	/**
+	 * Gets the linking resources.
+	 * 
+	 * @return the List of the Linking Resources within the model.
+	 * @see LinkingResource
+	 */
+	public List<LinkingResource> getLinkingResources() {
+		return linkingResources;
+	}
+
+	/**
+	 * Gets the resource environment element.
+	 * 
+	 * @return the root Element representing the model.
+	 */
+	public Element getResourceEnvironmentElement() {
+		return extendedResourceEnvironmentElement;
+	}
+
+	// GIBBO
+	public Map<String, Integer> getTierAllocation() {
+
+		if (tierAllocation == null) {
+			tierAllocation = new HashMap<String, Integer>();
+
+			List<ExtendedResourceContainer> lrc = getExtendedResourceContainers();
+			for (ExtendedResourceContainer rc : lrc) {
+				String id = rc.getId();
+				int replicas = rc.getExtendedProcessingResources().get(0)
+						.getNumberOfReplicas();
+				tierAllocation.put(id, replicas);
+			}
+		}
+
+		return tierAllocation;
+	}
+
+	/**
+	 * Initialize the class attributes with the information contained in the
+	 * Extended Resource Environment model.
+	 * 
+	 * @param root
+	 *            is the DOM root Element representing the model.
+	 */
+	private void initialize(Element root) {
+		extendedResourceEnvironmentElement = root;
+		linkingResources = new ArrayList<LinkingResource>();
+		extendedResourceContainers = new ArrayList<ExtendedResourceContainer>();
+		NodeList rc = extendedResourceEnvironmentElement
+				.getElementsByTagName("resourceContainer_ResourceEnvironment");
+		if (rc != null)
+			for (int i = 0; i < rc.getLength(); i++)
+				extendedResourceContainers.add(new ExtendedResourceContainer(
+						(Element) rc.item(i)));
+		rc = extendedResourceEnvironmentElement
+				.getElementsByTagName("linkingResources__ResourceEnvironment");
+		if (rc != null)
+			for (int i = 0; i < rc.getLength(); i++)
+				linkingResources.add(new LinkingResource((Element) rc.item(i)));
+	}
+
+	/**
+	 * Replaces an existing Extended Resource Container within the model with a
+	 * new one. All the Linking Resources related to the old Extended Resource
+	 * Container are updated and linked to the new Extended Resource Container.
+	 * 
+	 * @param oldC
+	 *            is the existing Extended Resource Container to replace.
+	 * @param newC
+	 *            is the new Extended Resource Container.
+	 * @see ExtendedResourceContainer
+	 */
+	public void replaceExtendedResourceContainer(
+			ExtendedResourceContainer oldC, ExtendedResourceContainer newC) {
+		Node el = getContainerByID(oldC.getId());
+		if (el != null) {
+			List<LinkingResource> newlinks = new ArrayList<LinkingResource>();
+			for (LinkingResource lr : linkingResources) {
+				lr.substitueConnection(oldC.getId(), newC.getId());
+				newlinks.add(lr);
+			}
+			Element x = (Element) doc.importNode(
+					newC.getExtendedResourceContainerElement(), true);
+			extendedResourceEnvironmentElement.replaceChild(x, el);
+			initialize(extendedResourceEnvironmentElement);
+			setLinkingResources(newlinks);
+		}
+	}
+
+	/**
+	 * Replaces an existing Linking Resource within the model with a new one.
+	 * 
+	 * @param oldC
+	 *            is the existing Linking Resource to replace.
+	 * @param newC
+	 *            is the new Linking Resource.
+	 * @see LinkingResource
+	 */
+	public void replaceLinkingResource(LinkingResource oldC,
+			LinkingResource newC) {
+		Node el = getLinkByID(oldC.getId());
+		if (el != null) {
+			extendedResourceEnvironmentElement.removeChild(el);
+			initialize(extendedResourceEnvironmentElement);
+			addLinkingResource(newC);
+		}
+	}
+
+	/**
+	 * Serialize.
+	 */
+	public void serialize() {
+		serialize(model);
+	}
+
+	/**
+	 * Serialize.
+	 * 
+	 * @param f
+	 *            the f
+	 */
+	public void serialize(File f) {
+		try {
+			if (model == null)
+				model = new File(System.getProperty("user.dir")
+						+ "\\Palladio\\MyRE.resourceenvironment");
+			DOM.serialize(doc, f);
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}
+	}
+
+	/**
+	 * Replaces the Extended Resource Containers within the model with the ones
+	 * contained in the provided List.
+	 * 
+	 * @param extendedResourceContainers
+	 *            is the List of the new Extended Resource Containers.
+	 * @see ExtendedResourceContainer
+	 */
+	public void setExtendedResourceContainers(
+			List<ExtendedResourceContainer> extendedResourceContainers) {
+		this.extendedResourceContainers = new ArrayList<ExtendedResourceContainer>();
+		NodeList nl = extendedResourceEnvironmentElement
+				.getElementsByTagName("resourceContainer_ResourceEnvironment");
+		for (int i = 0; i < nl.getLength(); i++)
+			extendedResourceEnvironmentElement.removeChild(nl.item(i));
+		for (ExtendedResourceContainer rc : extendedResourceContainers)
+			addExtendedResourceContainer(rc);
+	}
+
+	/**
+	 * Re-initialize the model using the provided DOM root Element.
+	 * 
+	 * @param extendedResourceEnvironmentElement
+	 *            is the DOM root Element representing the new model.
+	 */
+	public void setExtendedResourceEnvironmentElement(
+			Element extendedResourceEnvironmentElement) {
+		initialize(extendedResourceEnvironmentElement);
+	}
+
+	/**
+	 * Replaces the Linking Resources within the model with the ones contained
+	 * in the provided List.
+	 * 
+	 * @param linkingResources
+	 *            is the List of the new Linking Resources.
+	 * @see LinkingResource
+	 */
+	public void setLinkingResources(List<LinkingResource> linkingResources) {
+		this.linkingResources = new ArrayList<LinkingResource>();
+		NodeList nl = extendedResourceEnvironmentElement
+				.getElementsByTagName("linkingResources__ResourceEnvironment");
+		for (int i = 0; i < nl.getLength(); i++)
+			extendedResourceEnvironmentElement.removeChild(nl.item(i));
+
+		for (LinkingResource lr : linkingResources)
+			addLinkingResource(lr);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -422,23 +444,6 @@ public class ExtendedResourceEnvironment {
 		}
 		output += "\n######################################";
 		return output;
-	}
-
-	//GIBBO
-	public Map<String, Integer> getTierAllocation() {
-		
-		if(tierAllocation == null){
-			tierAllocation = new HashMap<String, Integer>();
-				
-			List<ExtendedResourceContainer> lrc = getExtendedResourceContainers();	
-			for (ExtendedResourceContainer rc : lrc) {
-				String id =  rc.getId();
-				int replicas = rc.getExtendedProcessingResources().get(0).getNumberOfReplicas();
-				tierAllocation.put(id, replicas);
-			}
-		}
-		
-		return tierAllocation;
 	}
 
 }

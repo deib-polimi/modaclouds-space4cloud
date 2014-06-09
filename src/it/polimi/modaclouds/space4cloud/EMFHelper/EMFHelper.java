@@ -14,6 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.EMFHelper;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -52,11 +53,11 @@ import de.uka.ipd.sdq.pcm.system.SystemPackage;
 import de.uka.ipd.sdq.pcm.usagemodel.UsagemodelPackage;
 
 /**
- * Also see {@link EcoreUtil} for more helper functions 
- * like {@link EcoreUtil#equals(EObject, EObject)} to 
- * test for equality. 
+ * Also see {@link EcoreUtil} for more helper functions like
+ * {@link EcoreUtil#equals(EObject, EObject)} to test for equality.
+ * 
  * @author martens
- *
+ * 
  */
 public class EMFHelper {
 
@@ -64,8 +65,8 @@ public class EMFHelper {
 	 * Checks for two PCM model elements whether they are the same, i.e. whether
 	 * they have the same ID. The model elements have to be derived from
 	 * Identifier. Note that two systems might use the same assembly contexts
-	 * and components, but still are two different systems. If one of the 
-	 * Identifiers in null, false is returned. 
+	 * and components, but still are two different systems. If one of the
+	 * Identifiers in null, false is returned.
 	 * 
 	 * @param i1
 	 *            One Identifier
@@ -76,83 +77,88 @@ public class EMFHelper {
 	public static boolean checkIdentity(EObject i1, EObject i2) {
 		if (i1 == null || i2 == null)
 			return false;
-		if (i1 instanceof Identifier && i2 instanceof Identifier){
+		if (i1 instanceof Identifier && i2 instanceof Identifier) {
 			return ((Identifier) i1).getId().equals(((Identifier) i2).getId());
-		}
-		else {
+		} else {
 			return EcoreUtil.equals(i1, i2);
 		}
 	}
 
 	/**
-	 * Implements an identifier-based contains. Calls {@link #checkIdentity(Identifier, Identifier)}
-	 * to compare the {@link Identifier} i with the contents of the collection. 
+	 * Implements an identifier-based contains. Calls
+	 * {@link #checkIdentity(Identifier, Identifier)} to compare the
+	 * {@link Identifier} i with the contents of the collection.
 	 * 
 	 * @param coll
 	 * @param i
-	 * @return true if there is an {@link Identifier} in coll with an id equal to i.getID().
+	 * @return true if there is an {@link Identifier} in coll with an id equal
+	 *         to i.getID().
 	 */
-	public static boolean contains(Collection<? extends EObject> coll, EObject i){
+	public static boolean contains(Collection<? extends EObject> coll, EObject i) {
 		for (EObject identifier : coll) {
-			if (checkIdentity(identifier, i)){
+			if (checkIdentity(identifier, i)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public static boolean retainAll(Collection<? extends Identifier> collection, Collection<? extends EObject> itemsToRetain){
-		boolean removedAny = false;
-		for (Iterator<? extends Identifier> iterator = collection.iterator(); iterator.hasNext();) {
-			Identifier identifier = iterator.next();
-			boolean identifierContainedInItemsToRetain = false;
-			for (EObject identifierToRetain : itemsToRetain) {
-				if (checkIdentity(identifier, identifierToRetain)){
-					identifierContainedInItemsToRetain = true;
-				}
-			}
-			if (!identifierContainedInItemsToRetain){
-				iterator.remove();
-				removedAny = true;
-			}
-		}
-		return removedAny;
+	public static List<AllocationContext> getAllUsedAllocationContexts(
+			Allocation allocation) {
+		return allocation.getAllocationContexts_Allocation();
 	}
 
 	/**
-	 * Save the given EObject to the file given by filename.
-	 * 
-	 * @param modelToSave
-	 *            The EObject to save
-	 * @param fileName
-	 *            The filename where to save.
-	 * @throws IOException 
-	 */
-	public static void saveToXMIFile(final EObject modelToSave, final String fileName) throws IOException {
+	 * Recursively get all contained AssemblyContexts in one flat list.
+	 * */
+	public static List<AssemblyContext> getAllUsedAssemblyContexts(
+			ComposedProvidingRequiringEntity composite) {
+		List<AssemblyContext> resultList = new LinkedList<AssemblyContext>();
 
-		// Create a resource set.
-		ResourceSet resourceSet = new ResourceSetImpl();
+		List<AssemblyContext> currentAssemblyContexts = composite
+				.getAssemblyContexts__ComposedStructure();
+		resultList.addAll(currentAssemblyContexts);
 
-		// Register the default resource factory -- only needed for stand-alone!
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-		.put(Resource.Factory.Registry.DEFAULT_EXTENSION,
-				new XMIResourceFactoryImpl());
-
-		URI fileURI = URI.createFileURI(new File(fileName).getAbsolutePath());
-		Resource resource = resourceSet.createResource(fileURI);
-		resource.getContents().add(modelToSave);
-
-
-
-		try {
-			resource.save(Collections.EMPTY_MAP);
-		} catch (FileNotFoundException e){
-			if (fileName.length() > 250){
-				//try again with a shorter filename
-				saveToXMIFile(modelToSave, fileName.substring(0, fileName.indexOf('-'))+"-shortened-"+fileName.hashCode());
+		for (AssemblyContext assemblyContext : currentAssemblyContexts) {
+			RepositoryComponent innerComponent = assemblyContext
+					.getEncapsulatedComponent__AssemblyContext();
+			if (innerComponent instanceof ComposedProvidingRequiringEntity) {
+				resultList
+						.addAll(getAllUsedAssemblyContexts((ComposedProvidingRequiringEntity) innerComponent));
 			}
-		} 
-		// logger.debug("Saved " + fileURI);
+		}
+		return resultList;
+
+	}
+
+	public static List<PassiveResource> getPassiveResources(
+			List<Repository> repositoryList) {
+
+		List<PassiveResource> passiveResourceList = new ArrayList<PassiveResource>(
+				repositoryList.size());
+
+		for (Repository repository : repositoryList) {
+			List<RepositoryComponent> repoComponents = repository
+					.getComponents__Repository();
+			for (RepositoryComponent repositoryComponent : repoComponents) {
+				if (repositoryComponent instanceof BasicComponent) {
+					BasicComponent basicComponent = (BasicComponent) repositoryComponent;
+					List<PassiveResource> passiveResourceOfComponentList = basicComponent
+							.getPassiveResource_BasicComponent();
+					for (PassiveResource passiveResource : passiveResourceOfComponentList) {
+
+						passiveResourceList.add(passiveResource);
+					}
+
+				}
+			}
+		}
+		return passiveResourceList;
+	}
+
+	public static int indexOfByID(List<? extends Entity> entities, String id) {
+		Entity entity = retrieveEntityByID(entities, id);
+		return entities.indexOf(entity);
 	}
 
 	/**
@@ -168,9 +174,11 @@ public class EMFHelper {
 
 		// Register the appropriate resource factory to handle all file
 		// extensions.
-		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
-		.put(Resource.Factory.Registry.DEFAULT_EXTENSION,
-				new XMIResourceFactoryImpl());
+		resourceSet
+				.getResourceFactoryRegistry()
+				.getExtensionToFactoryMap()
+				.put(Resource.Factory.Registry.DEFAULT_EXTENSION,
+						new XMIResourceFactoryImpl());
 
 		// Register the package to ensure it is available during loading.
 		registerPackages(resourceSet);
@@ -178,7 +186,8 @@ public class EMFHelper {
 		return loadFromXMIFile(fileName, resourceSet);
 	}
 
-	public static EObject loadFromXMIFile(final String fileName, ResourceSet resourceSet){
+	public static EObject loadFromXMIFile(final String fileName,
+			ResourceSet resourceSet) {
 		// Construct the URI for the instance file.
 		// The argument is treated as a file path only if it denotes an existing
 		// file. Otherwise, it's directly treated as a URL.
@@ -189,9 +198,7 @@ public class EMFHelper {
 		Resource resource = null;
 		// Demand load resource for this file.
 		resource = resourceSet.getResource(uri, true);
-	
 
-	
 		EObject eObject = (EObject) resource.getContents().iterator().next();
 		return EcoreUtil.getRootContainer(eObject);
 	}
@@ -225,81 +232,89 @@ public class EMFHelper {
 
 	}
 
-	public static Entity retrieveEntityByID(List<? extends EObject> entities, EObject object){
-		if (object instanceof Entity){
-			List<Entity> castedEntities = new ArrayList<Entity>();
-			for (EObject eObject : entities) {
-				if (eObject instanceof Entity){
-					castedEntities.add((Entity) eObject);
+	public static boolean retainAll(
+			Collection<? extends Identifier> collection,
+			Collection<? extends EObject> itemsToRetain) {
+		boolean removedAny = false;
+		for (Iterator<? extends Identifier> iterator = collection.iterator(); iterator
+				.hasNext();) {
+			Identifier identifier = iterator.next();
+			boolean identifierContainedInItemsToRetain = false;
+			for (EObject identifierToRetain : itemsToRetain) {
+				if (checkIdentity(identifier, identifierToRetain)) {
+					identifierContainedInItemsToRetain = true;
 				}
 			}
-			return retrieveEntityByID(castedEntities, ((Entity)object).getId());
+			if (!identifierContainedInItemsToRetain) {
+				iterator.remove();
+				removedAny = true;
+			}
 		}
-		return null;
+		return removedAny;
 	}
 
-	public static Entity retrieveEntityByID(List<? extends Entity> entities, String id) {
+	public static Entity retrieveEntityByID(List<? extends Entity> entities,
+			String id) {
 		for (Entity entity : entities) {
 
-			if (entity.getId().equals(id)){
+			if (entity.getId().equals(id)) {
 				return entity;
 			}
 		}
 		return null;
 	}
 
-	public static int indexOfByID(List<? extends Entity> entities, String id) {
-		Entity entity = retrieveEntityByID(entities, id);
-		return entities.indexOf(entity);
-	}
-
-
-
-	public static List<PassiveResource> getPassiveResources(List<Repository> repositoryList){
-
-
-		List<PassiveResource> passiveResourceList = new ArrayList<PassiveResource>(repositoryList.size());
-
-		for (Repository repository : repositoryList) {
-			List<RepositoryComponent> repoComponents = repository
-					.getComponents__Repository();
-			for (RepositoryComponent repositoryComponent : repoComponents) {
-				if (repositoryComponent instanceof BasicComponent) {
-					BasicComponent basicComponent = (BasicComponent) repositoryComponent;
-					List<PassiveResource> passiveResourceOfComponentList = basicComponent
-							.getPassiveResource_BasicComponent();
-					for (PassiveResource passiveResource : passiveResourceOfComponentList) {
-
-						passiveResourceList.add(passiveResource);
-					}
-
+	public static Entity retrieveEntityByID(List<? extends EObject> entities,
+			EObject object) {
+		if (object instanceof Entity) {
+			List<Entity> castedEntities = new ArrayList<Entity>();
+			for (EObject eObject : entities) {
+				if (eObject instanceof Entity) {
+					castedEntities.add((Entity) eObject);
 				}
 			}
+			return retrieveEntityByID(castedEntities, ((Entity) object).getId());
 		}
-		return passiveResourceList;
+		return null;
 	}
 
-	/** Recursively get all contained AssemblyContexts in one flat list. 
-	 * */
-	public static List<AssemblyContext> getAllUsedAssemblyContexts(ComposedProvidingRequiringEntity composite){
-		List<AssemblyContext> resultList = new LinkedList<AssemblyContext>();
+	/**
+	 * Save the given EObject to the file given by filename.
+	 * 
+	 * @param modelToSave
+	 *            The EObject to save
+	 * @param fileName
+	 *            The filename where to save.
+	 * @throws IOException
+	 */
+	public static void saveToXMIFile(final EObject modelToSave,
+			final String fileName) throws IOException {
 
-		List<AssemblyContext> currentAssemblyContexts = composite.getAssemblyContexts__ComposedStructure();
-		resultList.addAll(currentAssemblyContexts);
+		// Create a resource set.
+		ResourceSet resourceSet = new ResourceSetImpl();
 
-		for (AssemblyContext assemblyContext : currentAssemblyContexts) {
-			RepositoryComponent innerComponent = assemblyContext.getEncapsulatedComponent__AssemblyContext();
-			if (innerComponent instanceof ComposedProvidingRequiringEntity){
-				resultList.addAll(getAllUsedAssemblyContexts((ComposedProvidingRequiringEntity) innerComponent));
+		// Register the default resource factory -- only needed for stand-alone!
+		resourceSet
+				.getResourceFactoryRegistry()
+				.getExtensionToFactoryMap()
+				.put(Resource.Factory.Registry.DEFAULT_EXTENSION,
+						new XMIResourceFactoryImpl());
+
+		URI fileURI = URI.createFileURI(new File(fileName).getAbsolutePath());
+		Resource resource = resourceSet.createResource(fileURI);
+		resource.getContents().add(modelToSave);
+
+		try {
+			resource.save(Collections.EMPTY_MAP);
+		} catch (FileNotFoundException e) {
+			if (fileName.length() > 250) {
+				// try again with a shorter filename
+				saveToXMIFile(modelToSave,
+						fileName.substring(0, fileName.indexOf('-'))
+								+ "-shortened-" + fileName.hashCode());
 			}
 		}
-		return resultList;
-
-	}
-
-	public static List<AllocationContext> getAllUsedAllocationContexts(
-			Allocation allocation) {
-		return allocation.getAllocationContexts_Allocation();
+		// logger.debug("Saved " + fileURI);
 	}
 
 }

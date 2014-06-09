@@ -26,15 +26,16 @@ public enum WorkloadT {
 
 	/** The open. */
 	OPEN("usagemodel:OpenWorkload"), /** The closed. */
- CLOSED("usagemodel:ClosedWorkload");
+	CLOSED("usagemodel:ClosedWorkload");
 
 	/** The type. */
 	private final String type;
 
 	/**
 	 * Instantiates a new workload t.
-	 *
-	 * @param t the t
+	 * 
+	 * @param t
+	 *            the t
 	 */
 	private WorkloadT(String t) {
 		type = t;
@@ -42,7 +43,7 @@ public enum WorkloadT {
 
 	/**
 	 * Gets the type.
-	 *
+	 * 
 	 * @return the type
 	 */
 	public String getType() {

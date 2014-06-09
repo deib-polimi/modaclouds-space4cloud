@@ -40,19 +40,19 @@ public class ExtendedResourceContainer {
 
 	/** The extended resource container element. */
 	private Element extendedResourceContainerElement;
-	
+
 	/** The name. */
 	private String name;
-	
+
 	/** The id. */
 	private String id;
-	
+
 	/** The allocation profile. */
 	private AllocationProfile allocationProfile;
-	
+
 	/** The extended processing resources. */
 	private List<ExtendedProcessingResource> extendedProcessingResources;
-	
+
 	/** The doc. */
 	private Document doc;
 
@@ -117,6 +117,95 @@ public class ExtendedResourceContainer {
 	}
 
 	/**
+	 * Adds an Extended Processing Resource to the container.
+	 * 
+	 * @param epr
+	 *            is the Extended Processing Resource to add
+	 * @see ExtendedProcessingResource
+	 */
+	public void addExtendedProcessingResource(ExtendedProcessingResource epr) {
+		extendedProcessingResources.add(epr);
+		Element x = (Element) doc.importNode(
+				epr.getProcessingResourceElement(), true);
+		extendedResourceContainerElement.appendChild(x);
+	}
+
+	/**
+	 * Gets the allocation profile.
+	 * 
+	 * @return the Allocation Profile associated to the container.
+	 */
+	public AllocationProfile getAllocationProfile() {
+		return allocationProfile;
+	}
+
+	/**
+	 * Gets the doc.
+	 * 
+	 * @return the Document representing the container model.
+	 */
+	public Document getDoc() {
+		return doc;
+	}
+
+	/**
+	 * Returns the Node representing the Extended Processing Resource identified
+	 * by the specified id.
+	 * 
+	 * @param ID
+	 *            is the id of the Node.
+	 * @return the Node representing the Extended Processing Resource with the
+	 *         specified id, null otherwise.
+	 * @see ExtendedProcessingResource
+	 */
+	private Node getExtendedProcessingResourceByID(String ID) {
+		NodeList nl = extendedResourceContainerElement
+				.getElementsByTagName("activeResourceSpecifications_ResourceContainer");
+		if (nl != null)
+			for (int i = 0; i < nl.getLength(); i++)
+				if (((Element) nl.item(i)).getAttribute("id").equals(ID))
+					return nl.item(i);
+		return null;
+	}
+
+	/**
+	 * Gets the extended processing resources.
+	 * 
+	 * @return the List of the Extended Processing Resources within the
+	 *         container.
+	 */
+	public List<ExtendedProcessingResource> getExtendedProcessingResources() {
+		return extendedProcessingResources;
+	}
+
+	/**
+	 * Gets the extended resource container element.
+	 * 
+	 * @return the DOM Element representing the container.
+	 */
+	public Element getExtendedResourceContainerElement() {
+		return extendedResourceContainerElement;
+	}
+
+	/**
+	 * Gets the id.
+	 * 
+	 * @return the String representing the id of the container.
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
+	 * Gets the name.
+	 * 
+	 * @return the String representing the name of the container.
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
 	 * Initializes the attributes of the model using the information provided by
 	 * the root Element.
 	 * 
@@ -152,6 +241,27 @@ public class ExtendedResourceContainer {
 	}
 
 	/**
+	 * Replaces an existing Extended Processing Resource within the model with a
+	 * new one.
+	 * 
+	 * @param oldPR
+	 *            is the existing Extended Processing Resource to replace.
+	 * @param newPR
+	 *            is the new Extended Processing Resource.
+	 * @see ExtendedProcessingResource
+	 */
+	public void replaceExtendedProcessingResource(
+			ExtendedProcessingResource oldPR, ExtendedProcessingResource newPR) {
+		Node n = getExtendedProcessingResourceByID(oldPR.getId());
+		if (n != null) {
+			Element x = (Element) doc.importNode(
+					newPR.getProcessingResourceElement(), true);
+			extendedResourceContainerElement.replaceChild(x, n);
+			initialize(extendedResourceContainerElement);
+		}
+	}
+
+	/**
 	 * Sets an Allocation Profile for the Resource Container. Only one
 	 * Allocation Profile per container is allowed. If there's already an
 	 * Allocation Profile, it is replaced by the new one.
@@ -170,65 +280,6 @@ public class ExtendedResourceContainer {
 		Element x = (Element) doc.importNode(
 				allocationProfile.getAllocationProfileElement(), true);
 		extendedResourceContainerElement.appendChild(x);
-	}
-
-	/**
-	 * Gets the allocation profile.
-	 *
-	 * @return the Allocation Profile associated to the container.
-	 */
-	public AllocationProfile getAllocationProfile() {
-		return allocationProfile;
-	}
-
-	/**
-	 * Gets the extended resource container element.
-	 *
-	 * @return the DOM Element representing the container.
-	 */
-	public Element getExtendedResourceContainerElement() {
-		return extendedResourceContainerElement;
-	}
-
-	/**
-	 * Re-initialize the model using the provided DOM root Element.
-	 * 
-	 * @param extendedResourceContainerElement
-	 *            is the DOM root Element representing the new model.
-	 */
-	public void setExtendedResourceContainerElement(
-			Element extendedResourceContainerElement) {
-		initialize(extendedResourceContainerElement);
-	}
-
-	/**
-	 * Gets the name.
-	 *
-	 * @return the String representing the name of the container.
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * Sets the name of the container.
-	 * 
-	 * @param name
-	 *            is the String representing the name to set.
-	 */
-	public void setName(String name) {
-		this.name = name;
-		extendedResourceContainerElement.setAttribute("entityName", name);
-	}
-
-	/**
-	 * Gets the extended processing resources.
-	 *
-	 * @return the List of the Extended Processing Resources within the
-	 * container.
-	 */
-	public List<ExtendedProcessingResource> getExtendedProcessingResources() {
-		return extendedProcessingResources;
 	}
 
 	/**
@@ -252,67 +303,14 @@ public class ExtendedResourceContainer {
 	}
 
 	/**
-	 * Adds an Extended Processing Resource to the container.
+	 * Re-initialize the model using the provided DOM root Element.
 	 * 
-	 * @param epr
-	 *            is the Extended Processing Resource to add
-	 * @see ExtendedProcessingResource
+	 * @param extendedResourceContainerElement
+	 *            is the DOM root Element representing the new model.
 	 */
-	public void addExtendedProcessingResource(ExtendedProcessingResource epr) {
-		extendedProcessingResources.add(epr);
-		Element x = (Element) doc.importNode(
-				epr.getProcessingResourceElement(), true);
-		extendedResourceContainerElement.appendChild(x);
-	}
-
-	/**
-	 * Returns the Node representing the Extended Processing Resource identified
-	 * by the specified id.
-	 * 
-	 * @param ID
-	 *            is the id of the Node.
-	 * @return the Node representing the Extended Processing Resource with the
-	 *         specified id, null otherwise.
-	 * @see ExtendedProcessingResource
-	 */
-	private Node getExtendedProcessingResourceByID(String ID) {
-		NodeList nl = extendedResourceContainerElement
-				.getElementsByTagName("activeResourceSpecifications_ResourceContainer");
-		if (nl != null)
-			for (int i = 0; i < nl.getLength(); i++)
-				if (((Element) nl.item(i)).getAttribute("id").equals(ID))
-					return nl.item(i);
-		return null;
-	}
-
-	/**
-	 * Replaces an existing Extended Processing Resource within the model with a
-	 * new one.
-	 * 
-	 * @param oldPR
-	 *            is the existing Extended Processing Resource to replace.
-	 * @param newPR
-	 *            is the new Extended Processing Resource.
-	 * @see ExtendedProcessingResource
-	 */
-	public void replaceExtendedProcessingResource(
-			ExtendedProcessingResource oldPR, ExtendedProcessingResource newPR) {
-		Node n = getExtendedProcessingResourceByID(oldPR.getId());
-		if (n != null) {
-			Element x = (Element) doc.importNode(
-					newPR.getProcessingResourceElement(), true);
-			extendedResourceContainerElement.replaceChild(x, n);
-			initialize(extendedResourceContainerElement);
-		}
-	}
-
-	/**
-	 * Gets the id.
-	 *
-	 * @return the String representing the id of the container.
-	 */
-	public String getId() {
-		return id;
+	public void setExtendedResourceContainerElement(
+			Element extendedResourceContainerElement) {
+		initialize(extendedResourceContainerElement);
 	}
 
 	/**
@@ -327,15 +325,19 @@ public class ExtendedResourceContainer {
 	}
 
 	/**
-	 * Gets the doc.
-	 *
-	 * @return the Document representing the container model.
+	 * Sets the name of the container.
+	 * 
+	 * @param name
+	 *            is the String representing the name to set.
 	 */
-	public Document getDoc() {
-		return doc;
+	public void setName(String name) {
+		this.name = name;
+		extendedResourceContainerElement.setAttribute("entityName", name);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

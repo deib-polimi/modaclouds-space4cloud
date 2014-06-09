@@ -16,30 +16,12 @@
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 public enum Metric {
-	REPLICATION("Replication"), 
-	RAM("RAM"), 
-	HDD("HardDisk"), 
-	CORES("Cores"), 
-	CPU("CPUUtilization"),
-	MACHINETYPE("MachineType"), 
-	SERVICETYPE ("ServiceType"),
-	RESPONSETIME("ResponseTime"), 
-	AVAILABILITY("Availability"),	
-	RELIABILITY("Reliability");
-	
-	private String xmlTag; //the tag of the type attribute in the xml file
+	REPLICATION("Replication"), RAM("RAM"), HDD("HardDisk"), CORES("Cores"), CPU(
+			"CPUUtilization"), MACHINETYPE("MachineType"), SERVICETYPE(
+			"ServiceType"), RESPONSETIME("ResponseTime"), AVAILABILITY(
+			"Availability"), RELIABILITY("Reliability");
 
-
-	private Metric(String xmlTag){
-		this.xmlTag = xmlTag;
-	}
-
-	
-	public String getXmlTag() {
-		return xmlTag;
-	}
-	
-	public static Metric getMetricFromTag(String tag){
+	public static Metric getMetricFromTag(String tag) {
 		switch (tag) {
 		case "Replication":
 			return REPLICATION;
@@ -65,5 +47,14 @@ public enum Metric {
 			return null;
 		}
 	}
-}
 
+	private String xmlTag; // the tag of the type attribute in the xml file
+
+	private Metric(String xmlTag) {
+		this.xmlTag = xmlTag;
+	}
+
+	public String getXmlTag() {
+		return xmlTag;
+	}
+}

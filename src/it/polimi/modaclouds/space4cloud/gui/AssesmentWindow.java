@@ -18,7 +18,8 @@ package it.polimi.modaclouds.space4cloud.gui;
 import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
@@ -27,9 +28,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
-
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 
 public class AssesmentWindow {
 
@@ -53,7 +51,6 @@ public class AssesmentWindow {
 
 	JLabel utilImgLabel;
 
-
 	/**
 	 * Create the application.
 	 */
@@ -73,44 +70,39 @@ public class AssesmentWindow {
 		frame.getContentPane().add(imageContainerPanel, BorderLayout.CENTER);
 		imageContainerPanel.setLayout(new GridLayout(0, 1, 0, 0));
 
-		
-		
 		vmPanel = new JPanel();
-		vmPanel.setBorder(new TitledBorder(null, "Number of VMs", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		vmPanel.setBorder(new TitledBorder(null, "Number of VMs",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		imageContainerPanel.add(vmPanel);
 		vmPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		vmImgLabel = new JLabel();
 		vmPanel.add(vmImgLabel);
-		
-				utilPanel = new JPanel();
-				utilPanel.setBorder(new TitledBorder(null, "Utilization", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-				imageContainerPanel.add(utilPanel);
-				utilPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-				
-						utilImgLabel = new JLabel();
-						utilPanel.add(utilImgLabel);
+
+		utilPanel = new JPanel();
+		utilPanel.setBorder(new TitledBorder(null, "Utilization",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		imageContainerPanel.add(utilPanel);
+		utilPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
+		utilImgLabel = new JLabel();
+		utilPanel.add(utilImgLabel);
 
 		rtPanel = new JPanel();
-		rtPanel.setBorder(new TitledBorder(null, "Response Times", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		rtPanel.setBorder(new TitledBorder(null, "Response Times",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		imageContainerPanel.add(rtPanel);
 		rtPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
 		rtImgLabel = new JLabel();
 		rtPanel.add(rtImgLabel);
-		
 
-		//listener to resize images
+		// listener to resize images
 		frame.addComponentListener(new ComponentListener() {
 
 			@Override
-			public void componentShown(ComponentEvent e) {
-				// TODO Auto-generated method stub				
-			}
-
-			@Override
-			public void componentResized(ComponentEvent e) {
-				updateImages();				
+			public void componentHidden(ComponentEvent e) {
+				// TODO Auto-generated method stub
 			}
 
 			@Override
@@ -120,15 +112,23 @@ public class AssesmentWindow {
 			}
 
 			@Override
-			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub				
+			public void componentResized(ComponentEvent e) {
+				updateImages();
+			}
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+				// TODO Auto-generated method stub
 			}
 		});
 	}
 
-
 	public void setResponseTimeLogger(Logger2JFreeChartImage costLogger) {
 		this.rtLogger = costLogger;
+	}
+
+	public void setUtilizationLogger(Logger2JFreeChartImage constraintsLogger) {
+		this.utilLogger = constraintsLogger;
 	}
 
 	public void setVMLogger(Logger2JFreeChartImage vmLogger) {
@@ -136,31 +136,30 @@ public class AssesmentWindow {
 
 	}
 
-	public void setUtilizationLogger(Logger2JFreeChartImage constraintsLogger) {
-		this.utilLogger = constraintsLogger;
+	public void show() {
+		frame.setVisible(true);
 	}
 
-	public void updateImages(){
-		if(rtLogger != null ){
-			rtImgLabel.setIcon(new ImageIcon(rtLogger.save2buffer(rtPanel.getSize())));            
+	public void updateImages() {
+		if (rtLogger != null) {
+			rtImgLabel.setIcon(new ImageIcon(rtLogger.save2buffer(rtPanel
+					.getSize())));
 			rtImgLabel.setVisible(true);
 			rtPanel.setPreferredSize(rtImgLabel.getPreferredSize());
 		}
-		if(vmLogger != null ){
-			vmImgLabel.setIcon(new ImageIcon(vmLogger.save2buffer(vmPanel.getSize())));
+		if (vmLogger != null) {
+			vmImgLabel.setIcon(new ImageIcon(vmLogger.save2buffer(vmPanel
+					.getSize())));
 			vmImgLabel.setVisible(true);
 			vmPanel.setPreferredSize(vmImgLabel.getPreferredSize());
 		}
-		if(utilLogger != null ){
-			utilImgLabel.setIcon(new ImageIcon(utilLogger.save2buffer(utilPanel.getSize())));
+		if (utilLogger != null) {
+			utilImgLabel.setIcon(new ImageIcon(utilLogger.save2buffer(utilPanel
+					.getSize())));
 			utilImgLabel.setVisible(true);
 			utilPanel.setPreferredSize(utilImgLabel.getPreferredSize());
 		}
 
-	}
-
-	public void show() {
-		frame.setVisible(true);
 	}
 
 }

@@ -29,33 +29,41 @@ public enum SchedulingT {
 
 	/** The fcfs. */
 	FCFS("First-Come-First-Served",
-			"pathmap://PCM_MODELS/Palladio.resourcetype#FCFS"), 
- /** The ps. */
- PS(
-			"Processor Sharing",
-			"pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"), 
- /** The delay. */
- DELAY(
-			"Delay", "pathmap://PCM_MODELS/Palladio.resourcetype#Delay"), 
- /** The nd. */
- ND(
-			"ND", "");
+			"pathmap://PCM_MODELS/Palladio.resourcetype#FCFS"),
+	/** The ps. */
+	PS("Processor Sharing",
+			"pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"),
+	/** The delay. */
+	DELAY("Delay", "pathmap://PCM_MODELS/Palladio.resourcetype#Delay"),
+	/** The nd. */
+	ND("ND", "");
 
 	/** The pathmap. */
 	private final String pathmap;
-	
+
 	/** The name. */
 	private final String name;
 
 	/**
 	 * Instantiates a new scheduling t.
-	 *
-	 * @param name the name
-	 * @param pathMap the path map
+	 * 
+	 * @param name
+	 *            the name
+	 * @param pathMap
+	 *            the path map
 	 */
 	SchedulingT(String name, String pathMap) {
 		pathmap = pathMap;
 		this.name = name;
+	}
+
+	/**
+	 * Returns the name of the current scheduling type.
+	 * 
+	 * @return the String representing the current scheduling type.
+	 */
+	public String getName() {
+		return name;
 	}
 
 	/**
@@ -66,15 +74,6 @@ public enum SchedulingT {
 	 */
 	public String getPathmap() {
 		return pathmap;
-	}
-
-	/**
-	 * Returns the name of the current scheduling type.
-	 * 
-	 * @return the String representing the current scheduling type.
-	 */
-	public String getName() {
-		return name;
 	}
 
 }

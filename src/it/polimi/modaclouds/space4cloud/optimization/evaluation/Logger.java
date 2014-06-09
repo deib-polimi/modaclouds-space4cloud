@@ -30,20 +30,34 @@ public class Logger implements Runnable {
 	private boolean read = true;
 	private boolean running = false;
 	private boolean connected = false;
-	private Map<String,String> evaluations = new HashMap<String, String>();
-	private Map<String, StopWatch> timers= new HashMap<String,StopWatch>();
-	private static final org.slf4j.Logger logger = LoggerHelper.getLogger(Logger.class);
+	private Map<String, String> evaluations = new HashMap<String, String>();
+	private Map<String, StopWatch> timers = new HashMap<String, StopWatch>();
+	private static final org.slf4j.Logger logger = LoggerHelper
+			.getLogger(Logger.class);
 	private static final Object SUBMITTED = "SUBMITTED";
 	private static final Object SOLVED = "SOLVED";
 
-	String prefix="";
+	String prefix = "";
+
 	public Logger(BufferedReader in, String prefix) {
 		this.in = in;
-		if(prefix != null)
-			this.prefix = prefix; 
+		if (prefix != null)
+			this.prefix = prefix;
 	}
-	public synchronized void close(){
+
+	public synchronized void close() {
 		read = false;
+	}
+
+	public synchronized boolean isConnected() {
+		return connected;
+	}
+
+	public synchronized boolean isModelEvaluated(String modelPath) {
+		modelPath = Paths.get(modelPath).toString();
+		return evaluations.containsKey(modelPath)
+				&& evaluations.get(modelPath).equals("SOLVED");
+		// TODO clear the model form the map?
 	}
 
 	private synchronized boolean isRead() {
@@ -54,34 +68,36 @@ public class Logger implements Runnable {
 		return running;
 	}
 
-	public synchronized boolean isConnected(){
-		return connected;
+	private void logTime(String modelName) {
+		logger.info(modelName + ", " + evaluations.get(modelName) + ", "
+				+ timers.get(modelName).getTime());
 	}
 
 	@Override
 	public void run() {
-		while(isRead())
+		while (isRead())
 			try {
 				Thread.sleep(100);
-				if(in.ready()){
-					String line = in.readLine();				
-					System.out.println("LINE "+prefix+": "+line);
+				if (in.ready()) {
+					String line = in.readLine();
+					System.out.println("LINE " + prefix + ": " + line);
 
-					//set the starting
-					if(line.contains("Listening on port"))
+					// set the starting
+					if (line.contains("Listening on port"))
 						setRunning(true);
-					if(line.contains("LINE READY"))
+					if (line.contains("LINE READY"))
 						setConnected(true);
-					if(line.contains("LINE STOP"))
+					if (line.contains("LINE STOP"))
 						setRunning(false);
-					if(line.contains("MODEL"))
+					if (line.contains("MODEL"))
 						updateModelEvaluation(line);
 				}
 
 			} catch (IOException e) {
-				if(e.getMessage().equals("Stream closed"))
-					System.out.println("LINE "+prefix+": "+e.getMessage());
-				else 
+				if (e.getMessage().equals("Stream closed"))
+					System.out
+							.println("LINE " + prefix + ": " + e.getMessage());
+				else
 					e.printStackTrace();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -89,50 +105,36 @@ public class Logger implements Runnable {
 			}
 	}
 
-	private synchronized void setRunning(boolean running){
-		this.running = running;
-	}
-
-	private synchronized void setConnected(boolean connected){
+	private synchronized void setConnected(boolean connected) {
 		this.connected = connected;
 	}
 
+	private synchronized void setRunning(boolean running) {
+		this.running = running;
+	}
 
-	private synchronized void updateModelEvaluation(String message){
-		message = message.trim().replaceAll(" +", " ");		
+	private synchronized void updateModelEvaluation(String message) {
+		message = message.trim().replaceAll(" +", " ");
 		String[] tokens = message.split(" ");
-		String modelName = tokens[1];		
+		String modelName = tokens[1];
 		modelName = modelName.replace("_res.xml", ".xml");
 		modelName = Paths.get(modelName).toString();
-		String status = null;		
-		if(tokens.length == 4)
+		String status = null;
+		if (tokens.length == 4)
 			status = tokens[3];
 		else
-			status = tokens[2];		
-		evaluations.put(modelName,status);
-		
-		if(status.equals(SUBMITTED)){
+			status = tokens[2];
+		evaluations.put(modelName, status);
+
+		if (status.equals(SUBMITTED)) {
 			StopWatch timer = new StopWatch();
 			timer.start();
 			timers.put(modelName, timer);
-		}else if(status.equals(SOLVED)){
+		} else if (status.equals(SOLVED)) {
 			timers.get(modelName).stop();
 			logTime(modelName);
 		}
-		
-		
-	}
-	
-	public synchronized boolean isModelEvaluated(String modelPath){
-		modelPath = Paths.get(modelPath).toString();
-		return evaluations.containsKey(modelPath) && evaluations.get(modelPath).equals("SOLVED");		
-		//TODO clear the model form the map?
-	}
-	
-	private void logTime(String modelName){
-		logger.info(modelName+", "+evaluations.get(modelName)+", "+timers.get(modelName).getTime());
-	}
 
-
+	}
 
 }

@@ -83,23 +83,24 @@ public class ProviderDBConnector implements GenericDBConnector {
 	/** The iaas list. */
 	private List<IaaS_Service> iaasList;
 
-	/** The iaas dictionary**/
+	/** The iaas dictionary **/
 	private Map<String, IaaS_Service> iaasMap;
 
 	/** The paas list. */
 	private List<PaaS_Service> paasList;
 
-	/** The paas dictionary**/
+	/** The paas dictionary **/
 	private Map<String, PaaS_Service> paasMap;
-	
-	private static final Logger logger = LoggerHelper.getLogger(ProviderDBConnector.class);
 
+	private static final Logger logger = LoggerHelper
+			.getLogger(ProviderDBConnector.class);
 
 	/**
 	 * Creates a new Database Connector for a Generic Cloud Provider.
-	 *
-	 * @param cp the cp
-	 * @throws SQLException 
+	 * 
+	 * @param cp
+	 *            the cp
+	 * @throws SQLException
 	 */
 	public ProviderDBConnector(CloudProvider cp) throws SQLException {
 		dbConnection = new DatabaseConnector().getConnection();
@@ -108,74 +109,12 @@ public class ProviderDBConnector implements GenericDBConnector {
 	}
 
 	/**
-	 * Return the database connection.
-	 * 
-	 * @return a Connection element.
-	 */
-	public Connection getDbConnection() {
-		return dbConnection;
-	}
-
-	/**
-	 * Return the Cloud Provider.
-	 * 
-	 * @return a CloudProvider element.
-	 * @see CloudProvider
-	 */
-	public CloudProvider getProvider() {
-		return provider;
-	}
-
-	/**
-	 * Return an EMF instance.
-	 * 
-	 * @return an EMF element.
-	 * @see EMF
-	 */
-	public EMF getEmf() {
-		return emf;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getIaaSServices()
-	 */
-	@Override
-	public List<IaaS_Service> getIaaSServices() {
-		if (iaasList != null)
-			return iaasList;
-		try {
-			createIaasSets();
-			return iaasList;
-		} catch (Exception e) {
-			logger.error("Unable to get IaaS Services",e);
-			return null;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector#getIaaSServicesHashMap()
-	 */
-	@Override
-	public Map<String, IaaS_Service> getIaaSServicesHashMap(){
-		if (iaasMap != null){
-			return iaasMap;
-		}
-		try {
-			createIaasSets();
-			return iaasMap;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-
-	}
-
-	/**
 	 * Creates the iaas sets: List and HashMap.
-	 *
-	 * @throws SQLException the sQL exception
+	 * 
+	 * @throws SQLException
+	 *             the sQL exception
 	 */
-	private  void createIaasSets() throws SQLException  {
+	private void createIaasSets() throws SQLException {
 		ResultSet rs = dbConnection.createStatement().executeQuery(
 				"select * from iaas_service where CloudProvider_id="
 						+ provider.getId() + " order by name");
@@ -198,26 +137,9 @@ public class ProviderDBConnector implements GenericDBConnector {
 		rs.close();
 	}
 
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getPaaSServices()
-	 */
-
-
-	@Override
-	public List<PaaS_Service> getPaaSServices() {
-		if (paasList != null)
-			return paasList;
-		try {
-			createPaasSets();
-			return paasList;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 	/**
 	 * Method that create the PaasSets : List and HashMap
+	 * 
 	 * @throws SQLException
 	 */
 	private void createPaasSets() throws SQLException {
@@ -232,7 +154,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			i = cf.createPaaS_Service();
 			i.setId(rs.getInt(1));
 			i.setName(rs.getString(3));
-			for (CloudPlatform cp : getCloudPlatforms(i)){
+			for (CloudPlatform cp : getCloudPlatforms(i)) {
 				i.getComposedOf().add(cp);
 			}
 			list.add(i);
@@ -243,31 +165,63 @@ public class ProviderDBConnector implements GenericDBConnector {
 		rs.close();
 	}
 
-	/* (non-Javadoc)
-	 * @see it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector#getPaaSServicesHashMap()
+	/**
+	 * Sets the costs of the specified Cloud Element.
+	 * 
+	 * @param ce
+	 *            is the input CloudElement.
+	 * @see CloudElement
 	 */
-	@Override
-	public Map<String, PaaS_Service> getPaaSServicesHashMap(){
-		if (paasMap != null)
-			return paasMap;
-		try {
-			createPaasSets();
-			return paasMap;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+	private void defineCosts(CloudElement ce) {
+		List<Cost> lc = getCosts(ce);
+		if (lc != null)
+			for (Cost c : lc)
+				ce.getHasCost().add(c);
 	}
 
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getCloudPlatforms(cloud.PaaS_Service)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getBackendCloudPlatforms(cloud.PaaS_Service)
+	 */
+	@Override
+	public List<Backend> getBackendCloudPlatforms(PaaS_Service paas) {
+		List<Backend> lb = new ArrayList<Backend>();
+		for (CloudPlatform cp : paas.getComposedOf())
+			if (cp instanceof Backend)
+				lb.add((Backend) cp);
+		return lb;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getBlobStorageCloudResources(cloud.IaaS_Service)
+	 */
+	@Override
+	public List<BlobStorage> getBlobStorageCloudResources(IaaS_Service iaas) {
+		List<BlobStorage> lbs = new ArrayList<BlobStorage>();
+		for (CloudResource cr : getCloudResources(iaas))
+			if (cr instanceof BlobStorage)
+				lbs.add((BlobStorage) cr);
+		return lbs;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getCloudPlatforms(cloud.PaaS_Service)
 	 */
 	@Override
 	public List<CloudPlatform> getCloudPlatforms(PaaS_Service paas) {
 		try {
 			ResultSet rs = dbConnection.createStatement().executeQuery(
 					"select * from paas_service_composedof P, cloudplatform CP where P.PaaS_id="
-							+ paas.getId() + " and P.CloudPlatform_id=CP.id order by name");
+							+ paas.getId()
+							+ " and P.CloudPlatform_id=CP.id order by name");
 			CloudFactory cf = emf.getCloudFactory();
 			List<CloudPlatform> list = new ArrayList<CloudPlatform>();
 			CloudPlatform i;
@@ -332,7 +286,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 						break;
 					case CLOUDSTORAGE:
 						CloudStorageType storageType = CloudStorageType
-						.getByName(rs1.getString(6));
+								.getByName(rs1.getString(6));
 						switch (storageType) {
 						case BLOBSTORAGE:
 							BlobStorage bs = cf.createBlobStorage();
@@ -378,6 +332,121 @@ public class ProviderDBConnector implements GenericDBConnector {
 			e.printStackTrace();
 			return new ArrayList<CloudPlatform>();
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getPaaSServices()
+	 */
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getCloudResources(cloud.IaaS_Service)
+	 */
+	@Override
+	public List<CloudResource> getCloudResources(IaaS_Service iaas) {
+		try {
+
+			/*
+			 * TODO: Non capisco questo codice, perchè accedere di nuovo al db?
+			 * abbiamo già caricato le risorse cloud quando abbiamo caricato i
+			 * servizi anche se effettivamente non ne abbiamo definito il tipo
+			 */
+			ResultSet rs = dbConnection.createStatement().executeQuery(
+					"select * from iaas_service_composedof I, cloudresource CR where I.IaaS_id="
+							+ iaas.getId()
+							+ " and I.CloudResource_id=CR.id order by name");
+
+			CloudFactory cf = emf.getCloudFactory();
+			List<CloudResource> list = new ArrayList<CloudResource>();
+			CloudResource i;
+			while (rs.next()) {
+				CloudResourceType type = CloudResourceType.getByName(rs
+						.getString(5));
+				switch (type) {
+				case COMPUTE:
+					Compute c = cf.createCompute();
+					c.setOS(OSType.getByName(rs.getString(7)));
+					i = c;
+					break;
+				case CLOUDSTORAGE:
+					CloudStorageType storageType = CloudStorageType
+							.getByName(rs.getString(6));
+					switch (storageType) {
+					case BLOBSTORAGE:
+						BlobStorage bs = cf.createBlobStorage();
+						bs.setStorageType(storageType);
+						i = bs;
+						break;
+					case FILESYSTEM:
+						FilesystemStorage fs = cf.createFilesystemStorage();
+						fs.setStorageType(storageType);
+						i = fs;
+						break;
+					default:
+						rs.close();
+						throw new Exception("Undefined Cloud Storage Type.");
+					}
+					break;
+				default:
+					rs.close();
+					throw new Exception("Undefined Cloud Resource Type.");
+				}
+				i.setType(CloudElementType.RESOURCE);
+				i.setResourceType(type);
+				i.setId(rs.getInt(3));
+				i.setName(rs.getString(4));
+				List<VirtualHWResource> lvhr = getVHRs(i);
+				if (lvhr != null)
+					for (VirtualHWResource v : lvhr)
+						i.getComposedOf().add(v);
+
+				if (rs.getObject(8) != null)
+					i.setHasCostProfile(getCostProfile(i, rs.getInt(8)));
+
+				defineCosts(i);
+				list.add(i);
+			}
+			rs.close();
+			return list;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ArrayList<CloudResource>();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getCloudStorageCloudResources(cloud.IaaS_Service)
+	 */
+	@Override
+	public List<CloudStorage> getCloudStorageCloudResources(IaaS_Service iaas) {
+		List<CloudStorage> lcs = new ArrayList<CloudStorage>();
+		for (CloudResource cr : getCloudResources(iaas))
+			if (cr instanceof CloudStorage)
+				lcs.add((CloudStorage) cr);
+		return lcs;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getComputeCloudResources(cloud.IaaS_Service)
+	 */
+	@Override
+	public List<Compute> getComputeCloudResources(IaaS_Service iaas) {
+		List<Compute> lc = new ArrayList<Compute>();
+		for (CloudResource cr : getCloudResources(iaas))
+			if (cr instanceof Compute)
+				lc.add((Compute) cr);
+		return lc;
 	}
 
 	/**
@@ -479,7 +548,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			List<Cost> list = new ArrayList<Cost>();
 			ResultSet rs = dbConnection.createStatement().executeQuery(
 					"select * from cost C, " + s + "_cost X where X." + s1
-					+ "_id=" + ce.getId() + " and X.Cost_id=C.id");
+							+ "_id=" + ce.getId() + " and X.Cost_id=C.id");
 			CloudFactory cf = emf.getCloudFactory();
 			while (rs.next()) {
 				Cost cost = cf.createCost();
@@ -503,12 +572,225 @@ public class ProviderDBConnector implements GenericDBConnector {
 				if (rs.getObject(8) != null)
 					cost.setUpperBound(rs.getInt(8));
 				else
-					cost.setUpperBound(-1);				
-				cost.setRegion(rs.getString(9));					
-				list.add(cost);				
+					cost.setUpperBound(-1);
+				cost.setRegion(rs.getString(9));
+				list.add(cost);
 			}
 			rs.close();
 			return list;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getDatabaseCloudPlatforms(cloud.PaaS_Service)
+	 */
+	@Override
+	public List<Database> getDatabaseCloudPlatforms(PaaS_Service paas) {
+		List<Database> ld = new ArrayList<Database>();
+		for (CloudPlatform cp : paas.getComposedOf())
+			if (cp instanceof Database)
+				ld.add((Database) cp);
+		return ld;
+	}
+
+	/**
+	 * Return the database connection.
+	 * 
+	 * @return a Connection element.
+	 */
+	public Connection getDbConnection() {
+		return dbConnection;
+	}
+
+	/**
+	 * Return an EMF instance.
+	 * 
+	 * @return an EMF element.
+	 * @see EMF
+	 */
+	public EMF getEmf() {
+		return emf;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getFileSystemStorageCloudResources(cloud.IaaS_Service)
+	 */
+	@Override
+	public List<FilesystemStorage> getFileSystemStorageCloudResources(
+			IaaS_Service iaas) {
+		List<FilesystemStorage> lfs = new ArrayList<FilesystemStorage>();
+		for (CloudResource cr : getCloudResources(iaas))
+			if (cr instanceof FilesystemStorage)
+				lfs.add((FilesystemStorage) cr);
+		return lfs;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getFrontendCloudPlatforms(cloud.PaaS_Service)
+	 */
+	@Override
+	public List<Frontend> getFrontendCloudPlatforms(PaaS_Service paas) {
+		List<Frontend> lf = new ArrayList<Frontend>();
+		for (CloudPlatform cp : paas.getComposedOf())
+			if (cp instanceof Frontend)
+				lf.add((Frontend) cp);
+		return lf;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getIaaSServices()
+	 */
+	@Override
+	public List<IaaS_Service> getIaaSServices() {
+		if (iaasList != null)
+			return iaasList;
+		try {
+			createIaasSets();
+			return iaasList;
+		} catch (Exception e) {
+			logger.error("Unable to get IaaS Services", e);
+			return null;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector#
+	 * getIaaSServicesHashMap()
+	 */
+	@Override
+	public Map<String, IaaS_Service> getIaaSServicesHashMap() {
+		if (iaasMap != null) {
+			return iaasMap;
+		}
+		try {
+			createIaasSets();
+			return iaasMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#
+	 * getMiddlewareCloudPlatforms(cloud.PaaS_Service)
+	 */
+	@Override
+	public List<Middleware> getMiddlewareCloudPlatforms(PaaS_Service paas) {
+		List<Middleware> lm = new ArrayList<Middleware>();
+		for (CloudPlatform cp : paas.getComposedOf())
+			if (cp instanceof Middleware)
+				lm.add((Middleware) cp);
+		return lm;
+	}
+
+	@Override
+	public List<PaaS_Service> getPaaSServices() {
+		if (paasList != null)
+			return paasList;
+		try {
+			createPaasSets();
+			return paasList;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector#
+	 * getPaaSServicesHashMap()
+	 */
+	@Override
+	public Map<String, PaaS_Service> getPaaSServicesHashMap() {
+		if (paasMap != null)
+			return paasMap;
+		try {
+			createPaasSets();
+			return paasMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * Return the Cloud Provider.
+	 * 
+	 * @return a CloudProvider element.
+	 * @see CloudProvider
+	 */
+	public CloudProvider getProvider() {
+		return provider;
+	}
+
+	/**
+	 * Retrieves from the database the Virtual Hardware Resource with the
+	 * specified id.
+	 * 
+	 * @param id
+	 *            is the id of the VirtualHWResource element.
+	 * @return a VirtualHWResource element if the operation succeeds, null
+	 *         otherwise.
+	 * @see VirtualHWResource
+	 */
+	private VirtualHWResource getVHRByID(int id) {
+		try {
+			ResultSet rs = dbConnection.createStatement().executeQuery(
+					"select * from virtualhwresource where id=" + id);
+			CloudFactory cf = emf.getCloudFactory();
+			VirtualHWResource v = null;
+			while (rs.next()) {
+				VirtualHWResourceType type = VirtualHWResourceType.getByName(rs
+						.getString(2));
+				switch (type) {
+				case CPU:
+					v = cf.createV_CPU();
+					break;
+				case MEMORY:
+					V_Memory m = cf.createV_Memory();
+					m.setSize(rs.getInt(5));
+					v = m;
+					break;
+				case STORAGE:
+					V_Storage s = cf.createV_Storage();
+					s.setSize(rs.getInt(5));
+					v = s;
+					break;
+				default:
+					rs.close();
+					throw new Exception(
+							"Undefined Virtual Hardware Resource Type.");
+				}
+				v.setId(rs.getInt(1));
+				v.setType(type);
+				v.setProcessingRate(rs.getDouble(3));
+				v.setNumberOfReplicas(rs.getInt(4));
+			}
+			rs.close();
+			return v;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -571,239 +853,6 @@ public class ProviderDBConnector implements GenericDBConnector {
 			e.printStackTrace();
 			return null;
 		}
-	}
-
-	/**
-	 * Retrieves from the database the Virtual Hardware Resource with the
-	 * specified id.
-	 * 
-	 * @param id
-	 *            is the id of the VirtualHWResource element.
-	 * @return a VirtualHWResource element if the operation succeeds, null
-	 *         otherwise.
-	 * @see VirtualHWResource
-	 */
-	private VirtualHWResource getVHRByID(int id) {
-		try {
-			ResultSet rs = dbConnection.createStatement().executeQuery(
-					"select * from virtualhwresource where id=" + id);
-			CloudFactory cf = emf.getCloudFactory();
-			VirtualHWResource v = null;
-			while (rs.next()) {
-				VirtualHWResourceType type = VirtualHWResourceType.getByName(rs
-						.getString(2));
-				switch (type) {
-				case CPU:
-					v = cf.createV_CPU();
-					break;
-				case MEMORY:
-					V_Memory m = cf.createV_Memory();
-					m.setSize(rs.getInt(5));
-					v = m;
-					break;
-				case STORAGE:
-					V_Storage s = cf.createV_Storage();
-					s.setSize(rs.getInt(5));
-					v = s;
-					break;
-				default:
-					rs.close();
-					throw new Exception(
-							"Undefined Virtual Hardware Resource Type.");
-				}
-				v.setId(rs.getInt(1));
-				v.setType(type);
-				v.setProcessingRate(rs.getDouble(3));
-				v.setNumberOfReplicas(rs.getInt(4));
-			}
-			rs.close();
-			return v;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	/**
-	 * Sets the costs of the specified Cloud Element.
-	 * 
-	 * @param ce
-	 *            is the input CloudElement.
-	 * @see CloudElement
-	 */
-	private void defineCosts(CloudElement ce) {
-		List<Cost> lc = getCosts(ce);
-		if (lc != null)
-			for (Cost c : lc)
-				ce.getHasCost().add(c);
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getFrontendCloudPlatforms(cloud.PaaS_Service)
-	 */
-	@Override
-	public List<Frontend> getFrontendCloudPlatforms(PaaS_Service paas) {
-		List<Frontend> lf = new ArrayList<Frontend>();
-		for (CloudPlatform cp : paas.getComposedOf())
-			if (cp instanceof Frontend)
-				lf.add((Frontend) cp);
-		return lf;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getMiddlewareCloudPlatforms(cloud.PaaS_Service)
-	 */
-	@Override
-	public List<Middleware> getMiddlewareCloudPlatforms(PaaS_Service paas) {
-		List<Middleware> lm = new ArrayList<Middleware>();
-		for (CloudPlatform cp : paas.getComposedOf())
-			if (cp instanceof Middleware)
-				lm.add((Middleware) cp);
-		return lm;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getBackendCloudPlatforms(cloud.PaaS_Service)
-	 */
-	@Override
-	public List<Backend> getBackendCloudPlatforms(PaaS_Service paas) {
-		List<Backend> lb = new ArrayList<Backend>();
-		for (CloudPlatform cp : paas.getComposedOf())
-			if (cp instanceof Backend)
-				lb.add((Backend) cp);
-		return lb;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getDatabaseCloudPlatforms(cloud.PaaS_Service)
-	 */
-	@Override
-	public List<Database> getDatabaseCloudPlatforms(PaaS_Service paas) {
-		List<Database> ld = new ArrayList<Database>();
-		for (CloudPlatform cp : paas.getComposedOf())
-			if (cp instanceof Database)
-				ld.add((Database) cp);
-		return ld;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getCloudResources(cloud.IaaS_Service)
-	 */
-	@Override
-	public List<CloudResource> getCloudResources(IaaS_Service iaas) {
-		try {
-
-			/*TODO: Non capisco questo codice, perchè accedere di nuovo al db? abbiamo già caricato le 
-			 * risorse cloud quando abbiamo caricato i servizi anche se effettivamente non ne abbiamo definito il tipo*/
-			ResultSet rs = dbConnection.createStatement().executeQuery(
-					"select * from iaas_service_composedof I, cloudresource CR where I.IaaS_id="
-							+ iaas.getId() + " and I.CloudResource_id=CR.id order by name");
-
-			CloudFactory cf = emf.getCloudFactory();
-			List<CloudResource> list = new ArrayList<CloudResource>();
-			CloudResource i;
-			while (rs.next()) {
-				CloudResourceType type = CloudResourceType.getByName(rs
-						.getString(5));
-				switch (type) {
-				case COMPUTE:
-					Compute c = cf.createCompute();
-					c.setOS(OSType.getByName(rs.getString(7)));
-					i = c;
-					break;
-				case CLOUDSTORAGE:
-					CloudStorageType storageType = CloudStorageType
-					.getByName(rs.getString(6));
-					switch (storageType) {
-					case BLOBSTORAGE:
-						BlobStorage bs = cf.createBlobStorage();
-						bs.setStorageType(storageType);
-						i = bs;
-						break;
-					case FILESYSTEM:
-						FilesystemStorage fs = cf.createFilesystemStorage();
-						fs.setStorageType(storageType);
-						i = fs;
-						break;
-					default:
-						rs.close();
-						throw new Exception("Undefined Cloud Storage Type.");
-					}
-					break;
-				default:
-					rs.close();
-					throw new Exception("Undefined Cloud Resource Type.");				
-				}
-				i.setType(CloudElementType.RESOURCE);
-				i.setResourceType(type);
-				i.setId(rs.getInt(3));
-				i.setName(rs.getString(4));
-				List<VirtualHWResource> lvhr = getVHRs(i);
-				if (lvhr != null)
-					for (VirtualHWResource v : lvhr)
-						i.getComposedOf().add(v);
-
-				if (rs.getObject(8) != null)
-					i.setHasCostProfile(getCostProfile(i, rs.getInt(8)));
-
-				defineCosts(i);
-				list.add(i);
-			}
-			rs.close();
-			return list;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ArrayList<CloudResource>();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getComputeCloudResources(cloud.IaaS_Service)
-	 */
-	@Override
-	public List<Compute> getComputeCloudResources(IaaS_Service iaas) {
-		List<Compute> lc = new ArrayList<Compute>();
-		for (CloudResource cr : getCloudResources(iaas))
-			if (cr instanceof Compute)
-				lc.add((Compute) cr);
-		return lc;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getCloudStorageCloudResources(cloud.IaaS_Service)
-	 */
-	@Override
-	public List<CloudStorage> getCloudStorageCloudResources(IaaS_Service iaas) {
-		List<CloudStorage> lcs = new ArrayList<CloudStorage>();
-		for (CloudResource cr : getCloudResources(iaas))
-			if (cr instanceof CloudStorage)
-				lcs.add((CloudStorage) cr);
-		return lcs;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getFileSystemStorageCloudResources(cloud.IaaS_Service)
-	 */
-	@Override
-	public List<FilesystemStorage> getFileSystemStorageCloudResources(
-			IaaS_Service iaas) {
-		List<FilesystemStorage> lfs = new ArrayList<FilesystemStorage>();
-		for (CloudResource cr : getCloudResources(iaas))
-			if (cr instanceof FilesystemStorage)
-				lfs.add((FilesystemStorage) cr);
-		return lfs;
-	}
-
-	/* (non-Javadoc)
-	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getBlobStorageCloudResources(cloud.IaaS_Service)
-	 */
-	@Override
-	public List<BlobStorage> getBlobStorageCloudResources(IaaS_Service iaas) {
-		List<BlobStorage> lbs = new ArrayList<BlobStorage>();
-		for (CloudResource cr : getCloudResources(iaas))
-			if (cr instanceof BlobStorage)
-				lbs.add((BlobStorage) cr);
-		return lbs;
 	}
 
 }

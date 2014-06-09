@@ -7,3 +7,4 @@
 
 @javax.xml.bind.annotation.XmlSchema(namespace = "http://www.modaclouds.eu/xsd/2013/6/lineResult", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package it.polimi.modaclouds.space4cloud.line;
+

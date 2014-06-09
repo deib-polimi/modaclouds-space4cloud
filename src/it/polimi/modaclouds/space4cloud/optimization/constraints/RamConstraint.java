@@ -20,26 +20,24 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 
 public class RamConstraint extends ArchitecturalConstraint {
 
-
-	public RamConstraint(it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
+	public RamConstraint(
+			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
 	}
 
 	@Override
 	public boolean checkConstraint(CloudService resource) {
-		if(resource instanceof Compute && 
-				checkConstraintDistance(((Compute)resource).getRam()) < 0)
-				return true;
+		if (resource instanceof Compute
+				&& checkConstraintDistance(((Compute) resource).getRam()) < 0)
+			return true;
 		return false;
 	}
 
-
-	public double getMin(){
-		return range.getHasMinValue();
-	}
-	
-
-	public double getMax(){
+	public double getMax() {
 		return range.getHasMaxValue();
+	}
+
+	public double getMin() {
+		return range.getHasMinValue();
 	}
 }

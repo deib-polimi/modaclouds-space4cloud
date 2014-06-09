@@ -37,6 +37,43 @@ import org.w3c.dom.NodeList;
  */
 public class ExtendedProcessingResource extends ProcessingResource {
 
+	/**
+	 * The main method.
+	 * 
+	 * @param args
+	 *            the arguments
+	 */
+	public static void main(String[] args) {
+		ProcessingResource pr = new ProcessingResource(ProcessingResourceT.CPU,
+				SchedulingT.PS, 1000, 4, 10000, 200);
+		EfficiencyProfile ep = new EfficiencyProfile();
+		ExtendedProcessingResource extpr = new ExtendedProcessingResource(pr,
+				ep);
+		ResourceContainer rc = new ResourceContainer("AppServer");
+		rc.addProcessingResource(extpr);
+		ResourceEnvironment renv = new ResourceEnvironment();
+		renv.addResourceContainer(rc);
+		renv.serialize(new File(System.getProperty("user.dir")
+				+ "\\Palladio\\newRE.xml"));
+		ExtendedProcessingResource extpr1 = new ExtendedProcessingResource(
+				pr.getProcessingResourceElement(), ep);
+		rc = new ResourceContainer("AppServer");
+		rc.addProcessingResource(extpr1);
+		renv = new ResourceEnvironment();
+		renv.addResourceContainer(rc);
+		renv.serialize(new File(System.getProperty("user.dir")
+				+ "\\Palladio\\newRE1.xml"));
+		ExtendedProcessingResource extpr2 = new ExtendedProcessingResource(
+				ProcessingResourceT.CPU, SchedulingT.PS, 1000, 4, 500000, 200,
+				ep);
+		rc = new ResourceContainer("AppServer");
+		rc.addProcessingResource(extpr2);
+		renv = new ResourceEnvironment();
+		renv.addResourceContainer(rc);
+		renv.serialize(new File(System.getProperty("user.dir")
+				+ "\\Palladio\\newRE2.xml"));
+	}
+
 	/** The efficiency profile. */
 	private EfficiencyProfile efficiencyProfile;
 
@@ -53,36 +90,6 @@ public class ExtendedProcessingResource extends ProcessingResource {
 	 */
 	public ExtendedProcessingResource(Element e, EfficiencyProfile ep) {
 		super(e);
-		if (ep != null)
-			setEfficiencyProfile(ep);
-	}
-
-	/**
-	 * Creates a new Extended Processing Resource.
-	 * 
-	 * @param type
-	 *            is the Processing Resource Type.
-	 * @param schedulingPolicy
-	 *            is the Scheduling Policy Type.
-	 * @param processingRate
-	 *            is the processing rate.
-	 * @param numberOfReplicas
-	 *            is the number of processing cores.
-	 * @param MTTF
-	 *            is the Mean Time To Failure.
-	 * @param MTTR
-	 *            is the Mean Time To Repair.
-	 * @param ep
-	 *            is the Efficiency Profile.
-	 * @see ProcessingResourceT
-	 * @see SchedulingT
-	 * @see EfficiencyProfile
-	 */
-	public ExtendedProcessingResource(ProcessingResourceT type,
-			SchedulingT schedulingPolicy, double processingRate,
-			int numberOfReplicas, double MTTF, double MTTR, EfficiencyProfile ep) {
-		super(type, schedulingPolicy, processingRate, numberOfReplicas, MTTF,
-				MTTR);
 		if (ep != null)
 			setEfficiencyProfile(ep);
 	}
@@ -118,6 +125,36 @@ public class ExtendedProcessingResource extends ProcessingResource {
 	}
 
 	/**
+	 * Creates a new Extended Processing Resource.
+	 * 
+	 * @param type
+	 *            is the Processing Resource Type.
+	 * @param schedulingPolicy
+	 *            is the Scheduling Policy Type.
+	 * @param processingRate
+	 *            is the processing rate.
+	 * @param numberOfReplicas
+	 *            is the number of processing cores.
+	 * @param MTTF
+	 *            is the Mean Time To Failure.
+	 * @param MTTR
+	 *            is the Mean Time To Repair.
+	 * @param ep
+	 *            is the Efficiency Profile.
+	 * @see ProcessingResourceT
+	 * @see SchedulingT
+	 * @see EfficiencyProfile
+	 */
+	public ExtendedProcessingResource(ProcessingResourceT type,
+			SchedulingT schedulingPolicy, double processingRate,
+			int numberOfReplicas, double MTTF, double MTTR, EfficiencyProfile ep) {
+		super(type, schedulingPolicy, processingRate, numberOfReplicas, MTTF,
+				MTTR);
+		if (ep != null)
+			setEfficiencyProfile(ep);
+	}
+
+	/**
 	 * Retrieves the Efficiency Profile.
 	 * 
 	 * @return the Efficiency Profile associated to the Extended Processing
@@ -148,41 +185,5 @@ public class ExtendedProcessingResource extends ProcessingResource {
 				efficiencyProfile.getEfficiencyProfileElement(), true);
 		pr.appendChild(x);
 		setProcessingResourceElement(pr);
-	}
-
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 */
-	public static void main(String[] args) {
-		ProcessingResource pr = new ProcessingResource(ProcessingResourceT.CPU,
-				SchedulingT.PS, 1000, 4, 10000, 200);
-		EfficiencyProfile ep = new EfficiencyProfile();
-		ExtendedProcessingResource extpr = new ExtendedProcessingResource(pr,
-				ep);
-		ResourceContainer rc = new ResourceContainer("AppServer");
-		rc.addProcessingResource(extpr);
-		ResourceEnvironment renv = new ResourceEnvironment();
-		renv.addResourceContainer(rc);
-		renv.serialize(new File(System.getProperty("user.dir")
-				+ "\\Palladio\\newRE.xml"));
-		ExtendedProcessingResource extpr1 = new ExtendedProcessingResource(
-				pr.getProcessingResourceElement(), ep);
-		rc = new ResourceContainer("AppServer");
-		rc.addProcessingResource(extpr1);
-		renv = new ResourceEnvironment();
-		renv.addResourceContainer(rc);
-		renv.serialize(new File(System.getProperty("user.dir")
-				+ "\\Palladio\\newRE1.xml"));
-		ExtendedProcessingResource extpr2 = new ExtendedProcessingResource(
-				ProcessingResourceT.CPU, SchedulingT.PS, 1000, 4, 500000, 200,
-				ep);
-		rc = new ResourceContainer("AppServer");
-		rc.addProcessingResource(extpr2);
-		renv = new ResourceEnvironment();
-		renv.addResourceContainer(rc);
-		renv.serialize(new File(System.getProperty("user.dir")
-				+ "\\Palladio\\newRE2.xml"));
 	}
 }

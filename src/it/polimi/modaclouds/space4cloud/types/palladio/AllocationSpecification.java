@@ -46,8 +46,9 @@ public class AllocationSpecification {
 
 	/**
 	 * Instantiates a new allocation specification.
-	 *
-	 * @param e the e
+	 * 
+	 * @param e
+	 *            the e
 	 */
 	public AllocationSpecification(Element e) {
 		doc = DOM.getDocument();
@@ -58,17 +59,19 @@ public class AllocationSpecification {
 
 	/**
 	 * Instantiates a new allocation specification.
-	 *
-	 * @param hour the hour
-	 * @param size the size
+	 * 
+	 * @param hour
+	 *            the hour
+	 * @param size
+	 *            the size
 	 */
 	public AllocationSpecification(int hour, int size) {
 		doc = DOM.getDocument();
 		Element x = doc.createElement("Allocation_Specification");
-		if (!isValidHour(hour)){
+		if (!isValidHour(hour)) {
 			hour = 0;
 		}
-		if (!isValidSize(size)){
+		if (!isValidSize(size)) {
 			size = 1;
 		}
 		x.setAttribute("hour", "" + hour);
@@ -78,9 +81,37 @@ public class AllocationSpecification {
 	}
 
 	/**
+	 * Gets the allocation specification element.
+	 * 
+	 * @return the allocation specification element
+	 */
+	public Element getAllocationSpecificationElement() {
+		return allocationSpecificationElement;
+	}
+
+	/**
+	 * Gets the hour.
+	 * 
+	 * @return the hour
+	 */
+	public int getHour() {
+		return hour;
+	}
+
+	/**
+	 * Gets the size.
+	 * 
+	 * @return the size
+	 */
+	public int getSize() {
+		return size;
+	}
+
+	/**
 	 * Initialize.
-	 *
-	 * @param x the x
+	 * 
+	 * @param x
+	 *            the x
 	 */
 	private void initialize(Element x) {
 		allocationSpecificationElement = x;
@@ -89,18 +120,32 @@ public class AllocationSpecification {
 	}
 
 	/**
-	 * Gets the allocation specification element.
-	 *
-	 * @return the allocation specification element
+	 * Checks if is valid hour.
+	 * 
+	 * @param hour
+	 *            the hour
+	 * @return true, if is valid hour
 	 */
-	public Element getAllocationSpecificationElement() {
-		return allocationSpecificationElement;
+	private boolean isValidHour(int hour) {
+		return hour >= 0 && hour <= 23;
+	}
+
+	/**
+	 * Checks if is valid size.
+	 * 
+	 * @param size
+	 *            the size
+	 * @return true, if is valid size
+	 */
+	private boolean isValidSize(int size) {
+		return size >= MIN_SIZE;
 	}
 
 	/**
 	 * Sets the allocation specification element.
-	 *
-	 * @param allocationSpecificationElement the new allocation specification element
+	 * 
+	 * @param allocationSpecificationElement
+	 *            the new allocation specification element
 	 */
 	public void setAllocationSpecificationElement(
 			Element allocationSpecificationElement) {
@@ -109,18 +154,10 @@ public class AllocationSpecification {
 	}
 
 	/**
-	 * Gets the hour.
-	 *
-	 * @return the hour
-	 */
-	public int getHour() {
-		return hour;
-	}
-
-	/**
 	 * Sets the hour.
-	 *
-	 * @param hour the new hour
+	 * 
+	 * @param hour
+	 *            the new hour
 	 */
 	public void setHour(int hour) {
 		if (isValidHour(hour)) {
@@ -130,43 +167,15 @@ public class AllocationSpecification {
 	}
 
 	/**
-	 * Gets the size.
-	 *
-	 * @return the size
-	 */
-	public int getSize() {
-		return size;
-	}
-
-	/**
 	 * Sets the size.
-	 *
-	 * @param size the new size
+	 * 
+	 * @param size
+	 *            the new size
 	 */
 	public void setSize(int size) {
 		if (isValidSize(size)) {
 			this.size = size;
 			allocationSpecificationElement.setAttribute("size", "" + size);
 		}
-	}
-
-	/**
-	 * Checks if is valid hour.
-	 *
-	 * @param hour the hour
-	 * @return true, if is valid hour
-	 */
-	private boolean isValidHour(int hour) {
-		return hour >= 0 && hour <= 23;
-	}
-
-	/**
-	 * Checks if is valid size.
-	 *
-	 * @param size the size
-	 * @return true, if is valid size
-	 */
-	private boolean isValidSize(int size) {
-		return size >= MIN_SIZE;
 	}
 }

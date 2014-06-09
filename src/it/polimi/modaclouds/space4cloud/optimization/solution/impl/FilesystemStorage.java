@@ -15,7 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-public class FilesystemStorage extends Storage{
+public class FilesystemStorage extends Storage {
 
 	/**
 	 * 

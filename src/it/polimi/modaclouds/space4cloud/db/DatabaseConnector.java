@@ -35,22 +35,23 @@ import org.slf4j.Logger;
  */
 public class DatabaseConnector {
 
-
 	/** The connection */
 	private Connection conn;
 
-	protected static final Logger logger = LoggerHelper.getLogger(DatabaseConnector.class);
+	protected static final Logger logger = LoggerHelper
+			.getLogger(DatabaseConnector.class);
 
 	/**
 	 * Creates a new Database Connector instance.
-	 * @throws SQLException 
-	 * @throws ClassNotFoundException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * 
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
 	public DatabaseConnector() throws SQLException {
-//		String url = "jdbc:mysql://localhost:3306/";
-//		String dbName = "cloud";
+		// String url = "jdbc:mysql://localhost:3306/";
+		// String dbName = "cloud";
 		String url = "jdbc:mysql://109.231.122.191:3306/";
 		String dbName = "cloud";
 		String driver = "com.mysql.jdbc.Driver";
@@ -61,10 +62,9 @@ public class DatabaseConnector {
 			Class.forName(driver).newInstance();
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException e) {
-			logger.error("Unable to find the JDBC driver",e);
+			logger.error("Unable to find the JDBC driver", e);
 		}
-		conn = DriverManager
-				.getConnection(url + dbName, userName, password);
+		conn = DriverManager.getConnection(url + dbName, userName, password);
 	}
 
 	/**
@@ -76,4 +76,3 @@ public class DatabaseConnector {
 		return conn;
 	}
 }
-

@@ -40,30 +40,23 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class XMLFileSelection {
 
-
 	File file = null;
 	boolean canceled = true;
-	Constants c; 
+	Constants c;
 	JFileChooser fileChooser;
+
 	/**
 	 * Creates the window and asks to search for the file.
-	 * @param string 
+	 * 
+	 * @param string
 	 */
-	public  XMLFileSelection(String title) 
-	{		
+	public XMLFileSelection(String title) {
 		c = Constants.getInstance();
-		 fileChooser = new JFileChooser(c.ABSOLUTE_WORKING_DIRECTORY);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("XML files", "xml");
+		fileChooser = new JFileChooser(c.ABSOLUTE_WORKING_DIRECTORY);
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+				"XML files", "xml");
 		fileChooser.setFileFilter(filter);
-		fileChooser.setDialogTitle(title);		
-	}
-
-	public File getFile() {
-		return file;
-	}
-
-	public boolean isCanceled() {
-		return canceled;
+		fileChooser.setDialogTitle(title);
 	}
 
 	public void askFile() {
@@ -74,5 +67,12 @@ public class XMLFileSelection {
 		}
 
 	}
-}
 
+	public File getFile() {
+		return file;
+	}
+
+	public boolean isCanceled() {
+		return canceled;
+	}
+}

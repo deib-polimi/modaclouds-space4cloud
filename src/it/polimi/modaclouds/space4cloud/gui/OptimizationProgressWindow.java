@@ -32,7 +32,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.border.TitledBorder;
 
-public class OptimizationProgressWindow implements PropertyChangeListener{
+public class OptimizationProgressWindow implements PropertyChangeListener {
 
 	private JFrame frmOptimizationProgress;
 
@@ -40,22 +40,18 @@ public class OptimizationProgressWindow implements PropertyChangeListener{
 	private JPanel upperPanel;
 	private JPanel lowerPanel;
 
-	private JPanel vmPanel;	
+	private JPanel vmPanel;
 	private JLabel vmLabel;
 	private JPanel costPanel;
 	private JLabel costLabel;
 	private JPanel constraintPanel;
 	private JLabel constraintLabel;
 
-
 	private Logger2JFreeChartImage costLogger;
 
 	private Logger2JFreeChartImage vmLogger;
 
 	private Logger2JFreeChartImage constraintsLogger;
-
-
-
 
 	/**
 	 * Create the application.
@@ -69,70 +65,72 @@ public class OptimizationProgressWindow implements PropertyChangeListener{
 	 */
 	private void initialize() {
 
-		frmOptimizationProgress =  new JFrame();
+		frmOptimizationProgress = new JFrame();
 		frmOptimizationProgress.setTitle("Solution Cost");
 		frmOptimizationProgress.setBounds(100, 100, 450, 300);
-		frmOptimizationProgress.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frmOptimizationProgress.getContentPane().setLayout(new BorderLayout(0, 0));
+		frmOptimizationProgress
+				.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frmOptimizationProgress.getContentPane().setLayout(
+				new BorderLayout(0, 0));
 
-		//Upper panel (for progress bar)
+		// Upper panel (for progress bar)
 		upperPanel = new JPanel();
-		frmOptimizationProgress.getContentPane().add(upperPanel, BorderLayout.NORTH);
+		frmOptimizationProgress.getContentPane().add(upperPanel,
+				BorderLayout.NORTH);
 		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
 
-		//progress bar
+		// progress bar
 		progressBar = new JProgressBar(0, 100);
 		upperPanel.add(progressBar);
 		progressBar.setValue(0);
 		progressBar.setStringPainted(true);
 
-
-		//Lower panel (for images)
+		// Lower panel (for images)
 		lowerPanel = new JPanel();
-		frmOptimizationProgress.getContentPane().add(lowerPanel, BorderLayout.CENTER);
+		frmOptimizationProgress.getContentPane().add(lowerPanel,
+				BorderLayout.CENTER);
 		lowerPanel.setLayout(new GridLayout(0, 3, 0, 0));
 
-		//vmPanel for VM image
+		// vmPanel for VM image
 		vmPanel = new JPanel();
-		vmPanel.setBorder(new TitledBorder(null, "Total Number of VMs", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		vmPanel.setBorder(new TitledBorder(null, "Total Number of VMs",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		lowerPanel.add(vmPanel);
 
-		//vmLabel for VM image
+		// vmLabel for VM image
 		vmLabel = new JLabel();
 		vmLabel.setIcon(null);
 		vmPanel.add(vmLabel);
 
-		//Cost panel for cost image
-		costPanel = new JPanel();		
-		costPanel.setBorder(new TitledBorder(null, "Cost", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		// Cost panel for cost image
+		costPanel = new JPanel();
+		costPanel.setBorder(new TitledBorder(null, "Cost",
+				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		lowerPanel.add(costPanel);
 
-		//Cost label for cost image
+		// Cost label for cost image
 		costLabel = new JLabel();
 		costLabel.setIcon(null);
 		costPanel.add(costLabel);
 
-		//Constraint panel for constraint image
-		constraintPanel = new JPanel();		
-		constraintPanel.setBorder(new TitledBorder(null, "Violated Constraints", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		// Constraint panel for constraint image
+		constraintPanel = new JPanel();
+		constraintPanel.setBorder(new TitledBorder(null,
+				"Violated Constraints", TitledBorder.LEADING, TitledBorder.TOP,
+				null, null));
 		lowerPanel.add(constraintPanel);
 
-		//Constraint label for constraint image
+		// Constraint label for constraint image
 		constraintLabel = new JLabel();
-		constraintLabel .setIcon(null);
-		constraintPanel.add(constraintLabel );
+		constraintLabel.setIcon(null);
+		constraintPanel.add(constraintLabel);
 
-		//listener to resize images
+		// listener to resize images
 		frmOptimizationProgress.addComponentListener(new ComponentListener() {
 
 			@Override
-			public void componentShown(ComponentEvent e) {
-				// TODO Auto-generated method stub				
-			}
-
-			@Override
-			public void componentResized(ComponentEvent e) {
-				updateImages();				
+			public void componentHidden(ComponentEvent e) {
+				// TODO Auto-generated method stub
 			}
 
 			@Override
@@ -142,39 +140,31 @@ public class OptimizationProgressWindow implements PropertyChangeListener{
 			}
 
 			@Override
-			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub				
+			public void componentResized(ComponentEvent e) {
+				updateImages();
+			}
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+				// TODO Auto-generated method stub
 			}
 		});
 
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {		
+	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getPropertyName().equals("progress")) {
 			updateProgressBar((int) evt.getNewValue());
 			updateImages();
 		} else
-		//TODO: add evaluation to the list of bound properties and add this class as listener to the evaluation server
-		if (evt.getPropertyName().equals("totalNumberOfEvaluations")) {            
+		// TODO: add evaluation to the list of bound properties and add this
+		// class as listener to the evaluation server
+		if (evt.getPropertyName().equals("totalNumberOfEvaluations")) {
 			updateImages();
-		} else{
-			System.out.println("property: "+evt.getPropertyName());
+		} else {
+			System.out.println("property: " + evt.getPropertyName());
 		}
-		
-	}
-
-	public void setMax(int max) {
-		progressBar.setMaximum(max);    	
-		frmOptimizationProgress.setVisible(true);
-	}
-
-	public void setCostLogger(Logger2JFreeChartImage costLogger) {
-		this.costLogger = costLogger;
-	}
-
-	public void setVMLogger(Logger2JFreeChartImage vmLogger) {
-		this.vmLogger = vmLogger;
 
 	}
 
@@ -182,28 +172,39 @@ public class OptimizationProgressWindow implements PropertyChangeListener{
 		this.constraintsLogger = constraintsLogger;
 	}
 
-	private void updateProgressBar(int progress){
-		progressBar.setValue(progress);            
+	public void setCostLogger(Logger2JFreeChartImage costLogger) {
+		this.costLogger = costLogger;
 	}
 
-	private void updateImages(){
-		if(costLogger != null ){
+	public void setMax(int max) {
+		progressBar.setMaximum(max);
+		frmOptimizationProgress.setVisible(true);
+	}
+
+	public void setVMLogger(Logger2JFreeChartImage vmLogger) {
+		this.vmLogger = vmLogger;
+
+	}
+
+	private void updateImages() {
+		if (costLogger != null) {
 			ImageIcon icon;
-			try{
-				icon = new ImageIcon(costLogger.save2buffer(costPanel.getSize())); 
-			}catch (NullPointerException e){
+			try {
+				icon = new ImageIcon(
+						costLogger.save2buffer(costPanel.getSize()));
+			} catch (NullPointerException e) {
 				icon = new ImageIcon();
 			}
-			costLabel.setIcon(icon);            
+			costLabel.setIcon(icon);
 			costLabel.setVisible(true);
 			costPanel.setPreferredSize(costLabel.getPreferredSize());
 		}
 
-		if(vmLogger != null ){
+		if (vmLogger != null) {
 			ImageIcon icon;
-			try{
-				icon = new ImageIcon(vmLogger.save2buffer(vmPanel.getSize())); 
-			}catch (NullPointerException e){
+			try {
+				icon = new ImageIcon(vmLogger.save2buffer(vmPanel.getSize()));
+			} catch (NullPointerException e) {
 				icon = new ImageIcon();
 			}
 			vmLabel.setIcon(icon);
@@ -211,17 +212,23 @@ public class OptimizationProgressWindow implements PropertyChangeListener{
 			vmPanel.setPreferredSize(vmLabel.getPreferredSize());
 		}
 
-		if(constraintsLogger != null ){
+		if (constraintsLogger != null) {
 			ImageIcon icon;
-			try{
-				icon = new ImageIcon(constraintsLogger.save2buffer(constraintPanel.getSize())); 
-			}catch (NullPointerException e){
+			try {
+				icon = new ImageIcon(
+						constraintsLogger.save2buffer(constraintPanel.getSize()));
+			} catch (NullPointerException e) {
 				icon = new ImageIcon();
 			}
 			constraintLabel.setIcon(icon);
 			constraintLabel.setVisible(true);
-			constraintPanel.setPreferredSize(constraintLabel.getPreferredSize());
+			constraintPanel
+					.setPreferredSize(constraintLabel.getPreferredSize());
 		}
+	}
+
+	private void updateProgressBar(int progress) {
+		progressBar.setValue(progress);
 	}
 
 }

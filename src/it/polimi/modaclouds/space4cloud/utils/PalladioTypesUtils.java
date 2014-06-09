@@ -36,79 +36,6 @@ public class PalladioTypesUtils {
 
 	/**
 	 * Returns the String representing the Palladio Processing Resource Type by
-	 * analyzing the href within the Processing Resource Specification.
-	 * 
-	 * @param href
-	 *            is the String representing the hyper reference to the Palladio
-	 *            Processing Resource Type.
-	 * @return the Processing Resource Type in the String format.
-	 * @see ProcessingResourceT
-	 */
-	public static String getProcessingResourceTypeStringByHref(String href) {
-		if (href.equals(ProcessingResourceT.CPU.getPathmap()))
-			return "CPU";
-		else if (href.equals(ProcessingResourceT.HDD.getPathmap()))
-			return "HDD";
-		else if (href.equals(ProcessingResourceT.DELAY.getPathmap()))
-			return "DELAY";
-		else
-			return "ND";
-	}
-
-	/**
-	 * Returns the Processing Resource Type by analyzing the href attribute.
-	 * 
-	 * @param href
-	 *            is the String representing the hyper reference to the Palladio
-	 *            Processing Resource Type.
-	 * @return a ProcessingResourceT object.
-	 * @see ProcessingResourceT
-	 */
-	public static ProcessingResourceT getProcessingResourceTypeByHref(
-			String href) {
-		String s = getProcessingResourceTypeStringByHref(href);
-		return getProcessingResourceTypeByName(s);
-	}
-
-	/**
-	 * Returns the String representing the Palladio Processing Resource
-	 * Scheduling Type by analyzing the href within the Processing Resource
-	 * Specification.
-	 * 
-	 * @param href
-	 *            is the String representing the hyper reference to the Palladio
-	 *            Processing Resource Scheduling Type.
-	 * @return the Processing Resource Scheduling Type in the String format.
-	 * @see SchedulingT
-	 */
-	public static String getSchedulingTypeStringByHref(String href) {
-		if (href.equals(SchedulingT.PS.getPathmap()))
-			return "Processor Sharing";
-		else if (href.equals(SchedulingT.FCFS.getPathmap()))
-			return "First-Come-First-Served";
-		else if (href.equals(SchedulingT.DELAY.getPathmap()))
-			return "Delay";
-		else
-			return "ND";
-	}
-
-	/**
-	 * Returns the Processing Resource Scheduling Type by analyzing the href
-	 * attribute.
-	 * 
-	 * @param href
-	 *            is the String representing the hyper reference to the Palladio
-	 *            Processing Resource Scheduling Type.
-	 * @return a SchedulingT object.
-	 * @see SchedulingT
-	 */
-	public static SchedulingT getSchedulingTypeByHref(String href) {
-		String s = getSchedulingTypeStringByHref(href);
-		return getSchedulingTypeByName(s);
-	}
-
-	/**
-	 * Returns the String representing the Palladio Processing Resource Type by
 	 * analyzing the Element representing the Processing Resource.
 	 * 
 	 * @param e
@@ -139,32 +66,18 @@ public class PalladioTypesUtils {
 	}
 
 	/**
-	 * Returns the String representing the Palladio Processing Resource
-	 * Scheduling Type by analyzing the Element representing the Processing
-	 * Resource.
+	 * Returns the Processing Resource Type by analyzing the href attribute.
 	 * 
-	 * @param e
-	 *            is the Element representing the Processing Resource.
-	 * @return the Processing Resource Scheduling Type in the String format.
+	 * @param href
+	 *            is the String representing the hyper reference to the Palladio
+	 *            Processing Resource Type.
+	 * @return a ProcessingResourceT object.
 	 * @see ProcessingResourceT
 	 */
-	public static String getSchedulingTypeStringByElement(Element e) {
-		return getSchedulingTypeStringByHref(((Element) e.getElementsByTagName(
-				"schedulingPolicy").item(0)).getAttribute("href"));
-	}
-
-	/**
-	 * Returns the Processing Resource Scheduling Type by analyzing the Element
-	 * representing the Processing Resource.
-	 * 
-	 * @param e
-	 *            is the Element representing the Processing Resource.
-	 * @return a SchedulingT object.
-	 * @see SchedulingT
-	 */
-	public static SchedulingT getSchedulingTypeByElement(Element e) {
-		String s = getSchedulingTypeStringByElement(e);
-		return getSchedulingTypeByName(s);
+	public static ProcessingResourceT getProcessingResourceTypeByHref(
+			String href) {
+		String s = getProcessingResourceTypeStringByHref(href);
+		return getProcessingResourceTypeByName(s);
 	}
 
 	/**
@@ -188,6 +101,56 @@ public class PalladioTypesUtils {
 	}
 
 	/**
+	 * Returns the String representing the Palladio Processing Resource Type by
+	 * analyzing the href within the Processing Resource Specification.
+	 * 
+	 * @param href
+	 *            is the String representing the hyper reference to the Palladio
+	 *            Processing Resource Type.
+	 * @return the Processing Resource Type in the String format.
+	 * @see ProcessingResourceT
+	 */
+	public static String getProcessingResourceTypeStringByHref(String href) {
+		if (href.equals(ProcessingResourceT.CPU.getPathmap()))
+			return "CPU";
+		else if (href.equals(ProcessingResourceT.HDD.getPathmap()))
+			return "HDD";
+		else if (href.equals(ProcessingResourceT.DELAY.getPathmap()))
+			return "DELAY";
+		else
+			return "ND";
+	}
+
+	/**
+	 * Returns the Processing Resource Scheduling Type by analyzing the Element
+	 * representing the Processing Resource.
+	 * 
+	 * @param e
+	 *            is the Element representing the Processing Resource.
+	 * @return a SchedulingT object.
+	 * @see SchedulingT
+	 */
+	public static SchedulingT getSchedulingTypeByElement(Element e) {
+		String s = getSchedulingTypeStringByElement(e);
+		return getSchedulingTypeByName(s);
+	}
+
+	/**
+	 * Returns the Processing Resource Scheduling Type by analyzing the href
+	 * attribute.
+	 * 
+	 * @param href
+	 *            is the String representing the hyper reference to the Palladio
+	 *            Processing Resource Scheduling Type.
+	 * @return a SchedulingT object.
+	 * @see SchedulingT
+	 */
+	public static SchedulingT getSchedulingTypeByHref(String href) {
+		String s = getSchedulingTypeStringByHref(href);
+		return getSchedulingTypeByName(s);
+	}
+
+	/**
 	 * Returns the Processing Resource Scheduling Type starting from its String
 	 * representation.
 	 * 
@@ -206,5 +169,42 @@ public class PalladioTypesUtils {
 			return SchedulingT.DELAY;
 		else
 			return SchedulingT.ND;
+	}
+
+	/**
+	 * Returns the String representing the Palladio Processing Resource
+	 * Scheduling Type by analyzing the Element representing the Processing
+	 * Resource.
+	 * 
+	 * @param e
+	 *            is the Element representing the Processing Resource.
+	 * @return the Processing Resource Scheduling Type in the String format.
+	 * @see ProcessingResourceT
+	 */
+	public static String getSchedulingTypeStringByElement(Element e) {
+		return getSchedulingTypeStringByHref(((Element) e.getElementsByTagName(
+				"schedulingPolicy").item(0)).getAttribute("href"));
+	}
+
+	/**
+	 * Returns the String representing the Palladio Processing Resource
+	 * Scheduling Type by analyzing the href within the Processing Resource
+	 * Specification.
+	 * 
+	 * @param href
+	 *            is the String representing the hyper reference to the Palladio
+	 *            Processing Resource Scheduling Type.
+	 * @return the Processing Resource Scheduling Type in the String format.
+	 * @see SchedulingT
+	 */
+	public static String getSchedulingTypeStringByHref(String href) {
+		if (href.equals(SchedulingT.PS.getPathmap()))
+			return "Processor Sharing";
+		else if (href.equals(SchedulingT.FCFS.getPathmap()))
+			return "First-Come-First-Served";
+		else if (href.equals(SchedulingT.DELAY.getPathmap()))
+			return "Delay";
+		else
+			return "ND";
 	}
 }

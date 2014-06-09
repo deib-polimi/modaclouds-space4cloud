@@ -102,13 +102,13 @@ import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
 public class OptEngine extends SwingWorker<Void, Void> {
 
 	protected SolutionMulti initialSolution = null;
-//  protected Solution initialSolution = null;
+	// protected Solution initialSolution = null;
 
-    protected SolutionMulti bestSolution = null;
-//  protected Solution bestSolution = null;
+	protected SolutionMulti bestSolution = null;
+	// protected Solution bestSolution = null;
 
-    protected SolutionMulti currentSolution = null;
-//  protected Solution currentSolution = null;
+	protected SolutionMulti currentSolution = null;
+	// protected Solution currentSolution = null;
 
 	protected ConstraintHandler constraintHandler;
 
@@ -125,9 +125,9 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected int MAXMEMORYSIZE = 10;
 
 	protected int MAXITERATIONS = 20; /*
-	 * 40 Now it is a constant in the future it
-	 * might become a parameter
-	 */
+									 * 40 Now it is a constant in the future it
+									 * might become a parameter
+									 */
 
 	protected int MAXFEASIBILITYITERATIONS = 10; // 20
 
@@ -147,16 +147,15 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected Logger logger = LoggerHelper.getLogger(OptEngine.class);
 	protected Logger optimLogger = LoggerFactory.getLogger("optimLogger");
 
-
 	protected Logger2JFreeChartImage costLogImage;
 
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraints;
-	
+
 	public OptEngine(ConstraintHandler handler) {
 		this(handler, false);
 	}
-	
+
 	/**
 	 * Instantiates a new opt engine.
 	 * 
@@ -175,13 +174,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		}
 
-		loadConfiguration(batch); //false = show gui, true = batch mode
+		loadConfiguration(batch); // false = show gui, true = batch mode
 
 		logger.info("Running the optimization with parameters:");
-		logger.info("Max Memory Size: "+MAXMEMORYSIZE);
-		logger.info("Max Iterations: "+MAXITERATIONS);
-		logger.info("Max Feasibility Iterations: "+MAXFEASIBILITYITERATIONS);
-		logger.info("Selection Policy: "+SELECTION_POLICY);
+		logger.info("Max Memory Size: " + MAXMEMORYSIZE);
+		logger.info("Max Iterations: " + MAXITERATIONS);
+		logger.info("Max Feasibility Iterations: " + MAXFEASIBILITYITERATIONS);
+		logger.info("Selection Policy: " + SELECTION_POLICY);
 		Memory = new Cache<>(MAXMEMORYSIZE);
 		constraintHandler = handler;
 
@@ -196,30 +195,268 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		this.evalProxy.setConstraintLog(logConstraints);
 		this.evalProxy.setTimer(timer);
 
-//		this.evalProxy.setEnabled(false);
+		// this.evalProxy.setEnabled(false);
 	}
 
-	private void loadConfiguration(boolean batch) {
+	/**
+	 * This method should allow the change of workload at runtime!
+	 * 
+	 * @param sol
+	 *            the current solution that is going to be modified by the
+	 *            method.
+	 * @param rate
+	 *            the rate by which we'll multiply the actual workload, taken
+	 *            from the usage model extension file.
+	 */
+	protected void changeWorkload(Solution sol, double rate) {
+		System.out.printf("The hourly values of the workload are: ");
+		for (Instance i : sol.getApplications())
+			System.out.printf("%d ", i.getWorkload());
+		System.out.printf("\nTrying the change them using a rate of %f...",
+				rate);
 
-		OptimizationConfigurationFrame optLoader = new OptimizationConfigurationFrame();
-		//set the default configuration file
-		optLoader.setPreferenceFile("/config/OptEngine.properties");		
+		MoveChangeWorkload move = new MoveChangeWorkload(sol);
 
-		if(!batch){
-			//show the frame and ask let the user interact
-			optLoader.setVisible(true);
-			while(!optLoader.isSaved())
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					logger.error("Error in loading the configuration",e);
-				}
+		try {
+			move.modifyWorkload(new File(c.USAGE_MODEL_EXT_FILE), rate);
+			System.out.printf("done!\nThe new values are: ");
+			for (Instance i : sol.getApplications())
+				System.out.printf("%d ", i.getWorkload());
+			System.out.println();
+
+		} catch (ParserConfigurationException | SAXException | IOException
+				| JAXBException e) {
+			System.out.printf("error!\n");
+			e.printStackTrace();
+			logger.error("Error performing the change of the workload.\n"
+					+ e.getMessage());
+			return;
 		}
-		MAXMEMORYSIZE = optLoader.getMaxMemorySize();
-		MAXITERATIONS = optLoader.getMaxIterations();
-		MAXFEASIBILITYITERATIONS = optLoader.getMaxFeasIter();
-		SELECTION_POLICY = optLoader.getPolicy();
 
+		InternalOptimization(currentSolution);
+
+		// System.out.printf("We now proceed to select the least powerful machine for the tiers...\n");
+		//
+		// List<Tier> tierList = sol.getApplication(0).getTiers();
+		//
+		// MoveTypeVM moveVM = new MoveTypeVM(sol); /* the move */
+		//
+		// for (Tier selectedTier : tierList) {
+		// boolean done = false;
+		// int memoryHit = 0;
+		// while (!done) {
+		// CloudService origRes = selectedTier.getCloudService();
+		// List<IaaS> resList = dataHandler.getSameServiceResource(origRes,
+		// sol.getRegion());
+		// constraintHandler.filterResources(resList, origRes);
+		// if (resList.size() == 0) {
+		// done = true;
+		// System.out.printf("Error!\n");
+		// logger.warn("No resource found!");
+		// }
+		// CloudService newRes = resList.get(random.nextInt(resList.size()));
+		//
+		// if (!Memory.containsKey(origRes.getId() + newRes.getId())) {
+		// Memory.put(origRes.getId() + newRes.getResourceName(), "MOVE");
+		// moveVM.changeMachine(origRes.getId(), (Compute) newRes);
+		// evalProxy.EvaluateSolution(sol);
+		// done = true;
+		// memoryHit++;
+		// System.out.printf("Done!\n");
+		// }
+		// if (memoryHit >= 200) {
+		// done = true;
+		// logger.warn("memory hitted 200 times, skipping move");
+		// System.out.printf("Error!\n");
+		// }
+		// }
+		// }
+	}
+
+	protected void changeWorkload(SolutionMulti sols) {
+		if (sols.size() < 2)
+			return;
+
+		HashMap<String, Double> processingRatesMap = new HashMap<String, Double>();
+		HashMap<String, Integer> memoriesMap = new HashMap<String, Integer>();
+		HashMap<String, double[]> ratesMap = new HashMap<String, double[]>();
+		HashMap<String, ArrayList<Tier>> tierMap = new HashMap<String, ArrayList<Tier>>();
+
+		for (Solution sol : sols.getAll()) {
+			System.out.printf("The hourly values of the workload for "
+					+ sol.getProvider() + " are: ");
+			for (Instance i : sol.getApplications())
+				System.out.printf("%d ", i.getWorkload());
+			System.out.println();
+
+			List<Tier> tierList = sol.getApplication(0).getTiers();
+			String provider = sol.getProvider();
+
+			for (Tier tier : tierList) {
+				String id = tier.getId();
+
+				ArrayList<Tier> tierByIdList = tierMap.get(id);
+				if (tierByIdList == null)
+					tierByIdList = new ArrayList<Tier>();
+
+				tierByIdList.add(tier);
+				tierMap.put(id, tierByIdList);
+
+				CloudService origRes = tier.getCloudService();
+
+				double processingRate = dataHandler.getProcessingRate(
+						origRes.getProvider(), origRes.getServiceName(),
+						origRes.getResourceName());
+				int memory = dataHandler.getAmountMemory(origRes.getProvider(),
+						origRes.getServiceName(), origRes.getResourceName());
+
+				processingRatesMap.put(id + provider, processingRate);
+				memoriesMap.put(id + provider, memory);
+			}
+
+			double[] rates = new double[24];
+			for (int i = 0; i < 24; ++i)
+				rates[i] = sol.getPercentageWorkload(i);
+
+			ratesMap.put(provider, rates);
+		}
+
+		for (int i = 0; i < 24; ++i) {
+
+			for (String id : tierMap.keySet()) {
+				System.out.printf("Hour: %d, Tier ID: %s\n", i, id);
+
+				ArrayList<Tier> tierByIdList = tierMap.get(id);
+				double processingRates[] = new double[tierByIdList.size()];
+				int memories[] = new int[tierByIdList.size()];
+
+				int x = 0;
+				for (Tier tier : tierByIdList) {
+					IaaS service = (IaaS) tier.getCloudService();
+					String provider = service.getProvider();
+					processingRates[x] = service.getReplicas()
+							* processingRatesMap.get(id + provider);
+					memories[x] = service.getReplicas()
+							* memoriesMap.get(id + provider);
+					x++;
+				}
+
+				int idMaxProcs = 0, idMaxMemory = 0;
+
+				for (int j = 1; j < processingRates.length; ++j) {
+					if (processingRates[j] > processingRates[idMaxProcs])
+						idMaxProcs = j;
+					if (memories[j] > memories[idMaxMemory])
+						idMaxMemory = j;
+				}
+
+				String providerMaxProcs = tierByIdList.get(idMaxProcs)
+						.getCloudService().getProvider();
+				String providerMaxMemory = tierByIdList.get(idMaxMemory)
+						.getCloudService().getProvider();
+				String providerRandom = tierByIdList
+						.get((int) Math.floor(Math.random() * sols.size()))
+						.getCloudService().getProvider();
+				boolean doRandom = (Math.random() > 0.4);
+
+				for (Solution sol : sols.getAll()) {
+					double[] rates = ratesMap.get(sol.getProvider());
+
+					if (sol.getProvider().equals(providerMaxProcs)) {
+						rates[i] = rates[i] + 0.05 * (sols.size() - 1);
+					} else {
+						rates[i] = rates[i] - 0.05;
+					}
+
+					if (sol.getProvider().equals(providerMaxMemory)) {
+						rates[i] = rates[i] + 0.05 * (sols.size() - 1);
+					} else {
+						rates[i] = rates[i] - 0.05;
+					}
+
+					if (doRandom) {
+						if (sol.getProvider().equals(providerRandom)) {
+							rates[i] = rates[i] + 0.03 * (sols.size() - 1);
+						} else {
+							rates[i] = rates[i] - 0.03;
+						}
+					}
+
+					System.out.print("\t" + sol.getProvider() + ": ");
+					for (double rate : rates) {
+						System.out.print((int) (rate * 100) + " ");
+					}
+					System.out.println();
+
+					ratesMap.put(sol.getProvider(), rates);
+				}
+
+				int bad = 0;
+				for (Solution sol : sols.getAll()) {
+					// for (int k = 0; k < sols.size(); ++k) {
+					// Solution sol = sols.get(k);
+					double[] rates = ratesMap.get(sol.getProvider());
+
+					if (rates[i] < 0.1) {
+						double diff = (0.1 - rates[i]) / (sols.size() - ++bad);
+						rates[i] = 0.1;
+						// for (Solution sol2 : sols.getAll()) {
+						for (int l = 0; l < sols.size(); ++l) {
+							Solution sol2 = sols.get(l);
+							if (!sol.getProvider().equals(sol2.getProvider())) {
+								double[] rates2 = ratesMap.get(sol2
+										.getProvider());
+								rates2[i] -= diff;
+
+								if (rates2[i] < 0.1) {
+									diff += (0.1 - rates[i])
+											/ (sols.size() - ++bad);
+									rates2[i] = 0.1;
+									l = 0;
+								}
+
+								ratesMap.put(sol2.getProvider(), rates2);
+							}
+						}
+
+						System.out.print("Fixed: " + sol.getProvider() + ": ");
+						for (double rate : rates) {
+							System.out.print((int) (rate * 100) + " ");
+						}
+						System.out.println();
+
+						ratesMap.put(sol.getProvider(), rates);
+					}
+				}
+
+			}
+
+		}
+
+		for (Solution sol : sols.getAll()) {
+			MoveChangeWorkload move = new MoveChangeWorkload(sol);
+
+			try {
+				move.modifyWorkload(new File(c.USAGE_MODEL_EXT_FILE),
+						ratesMap.get(sol.getProvider()));
+				System.out.printf("Done! The new values for "
+						+ sol.getProvider() + " are: ");
+				for (Instance i : sol.getApplications())
+					System.out.printf("%d ", i.getWorkload());
+				System.out.println();
+
+			} catch (ParserConfigurationException | SAXException | IOException
+					| JAXBException e) {
+				System.out.printf("error!\n");
+				e.printStackTrace();
+				logger.error("Error performing the change of the workload.\n"
+						+ e.getMessage());
+				// return;
+			}
+		}
+
+		evalProxy.EvaluateSolution(sols);
+		updateBestSolution(sols);
 
 	}
 
@@ -268,7 +505,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 *            of the resurce in the constraint
 	 * @return a IaaS resource on which to perform a scale operation.
 	 */
-	protected IaaS findResource(Instance application, String id, SelectionPolicies policy) {
+	protected IaaS findResource(Instance application, String id,
+			SelectionPolicies policy) {
 
 		IaaS resource = null;
 		IConstrainable constrainedResource = application
@@ -289,14 +527,14 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			// with random policy
 			if (policy == SelectionPolicies.RANDOM)
 				selectedFun = functionalityChain.get(new Random()
-				.nextInt(functionalityChain.size()));
+						.nextInt(functionalityChain.size()));
 
 			// just the first of the list
 			else if (policy == SelectionPolicies.RANDOM)
 				selectedFun = functionalityChain.get(0);
 
 			// the functionality that takes more time in the chain
-			else if (policy  == SelectionPolicies.LONGEST) {
+			else if (policy == SelectionPolicies.LONGEST) {
 				selectedFun = functionalityChain.get(0);
 				for (Functionality f : functionalityChain)
 					if (f.getResponseTime() > selectedFun.getResponseTime())
@@ -304,7 +542,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			}
 
 			// the functionality whose resource has higher utilization
-			else if (policy ==SelectionPolicies.UTILIZATION) {
+			else if (policy == SelectionPolicies.UTILIZATION) {
 				selectedFun = functionalityChain.get(0);
 				resource = (IaaS) selectedFun.getContainer().getContainer()
 						.getCloudService();
@@ -329,7 +567,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// if the constraint is on a component
 		if (constrainedResource instanceof Component)
 			resource = (IaaS) ((Component) constrainedResource).getContainer()
-			.getCloudService();
+					.getCloudService();
 
 		// We need to find which resource to scale out in case the constraint is
 		// not directly on the resource
@@ -426,7 +664,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			for (Tier t : i.getTiers())
 				// if the cloud service hostin the application tier is a IaaS
 				if (t.getCloudService() instanceof IaaS &&
-						// and it has more than one replica
+				// and it has more than one replica
 						((IaaS) t.getCloudService()).getReplicas() > 1)
 					// add it to the list of resources that can be scaled in
 					resMemory.add((IaaS) t.getCloudService());
@@ -464,8 +702,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	public Logger2JFreeChartImage getVMLogger() {
 		return logVm;
 	}
-
-
 
 	/**
 	 * Internal optimization. The aim of this method is to locally optimize the
@@ -507,21 +743,21 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		optimLogger.trace("feasibility phase");
 		makeFeasible(sol);
-//		optimLogger.trace("feasible solution: "+sol.showStatus());
+		// optimLogger.trace("feasible solution: "+sol.showStatus());
 		// If the current solution is better than the best one it becomes the
 		// new best solution.
 		updateBestSolution(sol);
 
 		optimLogger.info("costReduction phase");
 		descentOptimize(sol);
-//		optimLogger.trace("optimized solution"+sol.showStatus());
+		// optimLogger.trace("optimized solution"+sol.showStatus());
 
 	}
-	
+
 	protected void InternalOptimization(SolutionMulti sol) {
-        for (Solution s : sol.getAll())
-            InternalOptimization(s);
-    }
+		for (Solution s : sol.getAll())
+			InternalOptimization(s);
+	}
 
 	protected boolean isMaxNumberOfFesibilityIterations() {
 
@@ -614,23 +850,29 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		}// while
 
 	}
-	
-	/**
-     * Load initial solution. The aim of this method is to load the initial
-     * solution from file.
-     *
-     * @param resourceEnvExtension
-     *            the extension file
-     * @throws IOException
-     * @throws SAXException
-     * @throws ParserConfigurationException
-     * @throws JAXBException
-     */
-    public void loadInitialSolution(File resourceEnvExtension,
-            File usageModelExtension) throws ParserConfigurationException,
-            SAXException, IOException, JAXBException {
-        loadInitialSolution(resourceEnvExtension, usageModelExtension, null, null);
-    }
+
+	private void loadConfiguration(boolean batch) {
+
+		OptimizationConfigurationFrame optLoader = new OptimizationConfigurationFrame();
+		// set the default configuration file
+		optLoader.setPreferenceFile("/config/OptEngine.properties");
+
+		if (!batch) {
+			// show the frame and ask let the user interact
+			optLoader.setVisible(true);
+			while (!optLoader.isSaved())
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					logger.error("Error in loading the configuration", e);
+				}
+		}
+		MAXMEMORYSIZE = optLoader.getMaxMemorySize();
+		MAXITERATIONS = optLoader.getMaxIterations();
+		MAXFEASIBILITYITERATIONS = optLoader.getMaxFeasIter();
+		SELECTION_POLICY = optLoader.getPolicy();
+
+	}
 
 	/**
 	 * Load initial solution. The aim of this method is to load the initial
@@ -643,14 +885,33 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * @throws ParserConfigurationException
 	 * @throws JAXBException
 	 */
-    public void loadInitialSolution(File resourceEnvExtension,
-            File usageModelExtension, File generatedInitialSolution, File generatedInitialMce) throws ParserConfigurationException,
-            SAXException, IOException, JAXBException {
-//		initialSolution = new Solution();
-    	this.initialSolution = new SolutionMulti();
-    	
-		// parse the extension file		
-		ResourceEnvironmentExtensionParser resourceEnvParser= new ResourceEnvironmentExtentionLoader(
+	public void loadInitialSolution(File resourceEnvExtension,
+			File usageModelExtension) throws ParserConfigurationException,
+			SAXException, IOException, JAXBException {
+		loadInitialSolution(resourceEnvExtension, usageModelExtension, null,
+				null);
+	}
+
+	/**
+	 * Load initial solution. The aim of this method is to load the initial
+	 * solution from file.
+	 * 
+	 * @param resourceEnvExtension
+	 *            the extension file
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws JAXBException
+	 */
+	public void loadInitialSolution(File resourceEnvExtension,
+			File usageModelExtension, File generatedInitialSolution,
+			File generatedInitialMce) throws ParserConfigurationException,
+			SAXException, IOException, JAXBException {
+		// initialSolution = new Solution();
+		this.initialSolution = new SolutionMulti();
+
+		// parse the extension file
+		ResourceEnvironmentExtensionParser resourceEnvParser = new ResourceEnvironmentExtentionLoader(
 				resourceEnvExtension);
 		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(
 				usageModelExtension);
@@ -668,28 +929,27 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// Since we are working on a single cloud solution a hourly solution
 		// is just an instance (no multi cloud, no load balancer, non
 		// exposed component)
-		
+
 		// create a tier for each resource container
 		EList<ResourceContainer> resourceContainers = pcm
 				.getResourceEnvironment()
 				.getResourceContainer_ResourceEnvironment();
-		
+
 		// we need to create a Solution object for each one of the providers!
-        ArrayList<String> providers = new ArrayList<String>();
-        for (String s : resourceEnvParser.getProviders().values()) {
-            if (!providers.contains(s))
-                providers.add(s);
-        }
+		ArrayList<String> providers = new ArrayList<String>();
+		for (String s : resourceEnvParser.getProviders().values()) {
+			if (!providers.contains(s))
+				providers.add(s);
+		}
 
-        for (String provider : providers) {
-        	
-        	Solution initialSolution = new Solution();
+		for (String provider : providers) {
 
-            initialSolution.buildFolderStructure(provider);
+			Solution initialSolution = new Solution();
 
+			initialSolution.buildFolderStructure(provider);
 
-            // set the region
-            initialSolution.setRegion(resourceEnvParser.getRegion(provider));
+			// set the region
+			initialSolution.setRegion(resourceEnvParser.getRegion(provider));
 
 			for (int i = 0; i < 24; i++) {
 				logger.info("Initializing hour " + i);
@@ -697,108 +957,117 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				initialSolution.addApplication(application);
 				File[] models = Paths
 						.get(c.ABSOLUTE_WORKING_DIRECTORY,
-								c.PERFORMANCE_RESULTS_FOLDER, provider, c.FOLDER_PREFIX + i)
-								.toFile().listFiles(new FilenameFilter() {
-									@Override
-									public boolean accept(File dir, String name) {
-										// TODO Auto-generated method stub
-										return name.endsWith(".xml");
-									}
-								});
+								c.PERFORMANCE_RESULTS_FOLDER, provider,
+								c.FOLDER_PREFIX + i).toFile()
+						.listFiles(new FilenameFilter() {
+							@Override
+							public boolean accept(File dir, String name) {
+								// TODO Auto-generated method stub
+								return name.endsWith(".xml");
+							}
+						});
 				// suppose there is just 1 model
 				Path lqnModelPath = models[0].toPath();
 				application.initLqnHandler(lqnModelPath);
-		
+
 				// add population and think time from usage model extension
 				int population = -1;
 				double thinktime = -1;
 				if (usageModelParser.getPopulations().size() == 1)
 					population = usageModelParser.getPopulations().values()
-					.iterator().next()[i];
+							.iterator().next()[i];
 				if (usageModelParser.getThinkTimes().size() == 1)
 					thinktime = usageModelParser.getThinkTimes().values()
-					.iterator().next()[i];
-				
-				double percentage = (double)1 / providers.size();
+							.iterator().next()[i];
 
-                population = (int)Math.ceil(population * percentage);
+				double percentage = (double) 1 / providers.size();
 
-                for (int hour = 0; hour < 24; ++hour)
-                    initialSolution.setPercentageWorkload(hour, percentage);
-				
+				population = (int) Math.ceil(population * percentage);
+
+				for (int hour = 0; hour < 24; ++hour)
+					initialSolution.setPercentageWorkload(hour, percentage);
+
 				application.getLqnHandler().setPopulation(population);
 				application.getLqnHandler().setThinktime(thinktime);
 				application.getLqnHandler().saveToFile();
 				application.setWorkload(population);
-		
-		//			// create a tier for each resource container
-		//			EList<ResourceContainer> resourceContainers = pcm
-		//					.getResourceEnvironment()
-		//					.getResourceContainer_ResourceEnvironment();
-		
+
+				// // create a tier for each resource container
+				// EList<ResourceContainer> resourceContainers = pcm
+				// .getResourceEnvironment()
+				// .getResourceContainer_ResourceEnvironment();
+
 				// STEP 1: load the resource environment
 				for (ResourceContainer c : resourceContainers) {
-		
+
 					CloudService service = null;
 					// switch over the type of cloud service
-//					String cloudProvider = resourceEnvParser.getProviders().get(
-//							c.getId()); // provider
-					
+					// String cloudProvider =
+					// resourceEnvParser.getProviders().get(
+					// c.getId()); // provider
+
 					// associated
 					// to
 					// the
 					// resource
-					String serviceType = resourceEnvParser.getServiceType().get(
-							c.getId() + provider); // Service
-					String resourceSize = resourceEnvParser.getInstanceSize().get(
-							c.getId() + provider);
-					String serviceName = resourceEnvParser.getServiceName().get(
-							c.getId() + provider);
+					String serviceType = resourceEnvParser.getServiceType()
+							.get(c.getId() + provider); // Service
+					String resourceSize = resourceEnvParser.getInstanceSize()
+							.get(c.getId() + provider);
+					String serviceName = resourceEnvParser.getServiceName()
+							.get(c.getId() + provider);
 					int replicas = resourceEnvParser.getInstanceReplicas().get(
 							c.getId() + provider)[i];
-		
-//					// pick a cloud provider if not specified by the extension
-//					if (cloudProvider == null)
-//						cloudProvider = dataHandler.getCloudProviders().iterator()
-//						.next();
-		
+
+					// // pick a cloud provider if not specified by the
+					// extension
+					// if (cloudProvider == null)
+					// cloudProvider =
+					// dataHandler.getCloudProviders().iterator()
+					// .next();
+
 					// pick a service if not specified by the extension
-                    if (serviceName == null)
-                        serviceName = dataHandler.getServices(provider, //cloudProvider,
-                                serviceType).get(0);
-                    // if the resource size has not been decided pick one
-                    if (resourceSize == null)
-                        resourceSize = dataHandler
-                                .getCloudResourceSizes(provider,/* cloudProvider,*/ serviceName)
-                                .iterator().next();
+					if (serviceName == null)
+						serviceName = dataHandler.getServices(provider, // cloudProvider,
+								serviceType).get(0);
+					// if the resource size has not been decided pick one
+					if (resourceSize == null)
+						resourceSize = dataHandler
+								.getCloudResourceSizes(provider,/*
+																 * cloudProvider,
+																 */serviceName)
+								.iterator().next();
 
-                    double speed = dataHandler.getProcessingRate(provider, //cloudProvider,
-                            serviceName, resourceSize);
+					double speed = dataHandler.getProcessingRate(provider, // cloudProvider,
+							serviceName, resourceSize);
 
-                    int ram = dataHandler.getAmountMemory(provider, //cloudProvider,
-                            serviceName, resourceSize);
+					int ram = dataHandler.getAmountMemory(provider, // cloudProvider,
+							serviceName, resourceSize);
 
-                    int numberOfCores = dataHandler.getNumberOfReplicas(
-                            provider, /*cloudProvider,*/ serviceName, resourceSize);
-		
+					int numberOfCores = dataHandler.getNumberOfReplicas(
+							provider, /* cloudProvider, */serviceName,
+							resourceSize);
+
 					/*
-					 * each tier has a certain kind of cloud resource and a number
-					 * of replicas of that resource
+					 * each tier has a certain kind of cloud resource and a
+					 * number of replicas of that resource
 					 */
 					Tier t = new Tier();
-		
+
 					/* creation of a Compute type resource */
 					service = new Compute(c.getEntityName() + "_CPU_Processor",
-							c.getId(), provider, /*cloudProvider,*/ serviceType, serviceName,
-							resourceSize, replicas, numberOfCores, speed, ram);
-		
+							c.getId(), provider, /* cloudProvider, */
+							serviceType, serviceName, resourceSize, replicas,
+							numberOfCores, speed, ram);
+
 					t.setService(service);
-		
+
 					application.addTier(t);
-		
+
 				}
-		
-				// STEP 2: parse the usage model to get the reference between calls
+
+				// STEP 2: parse the usage model to get the reference between
+				// calls
 				// and seffs in components
 				HashMap<String, String> systemCalls2Signatures = new HashMap<>();
 				ScenarioBehaviour scenarioBehaviour = pcm.getUsageModel()
@@ -806,7 +1075,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 						.getScenarioBehaviour_UsageScenario();
 				findSeffsInScenarioBehavior(scenarioBehaviour,
 						systemCalls2Signatures);
-		
+
 				// STEP 3: load components from the allocation
 				EList<AllocationContext> allocations = pcm.getAllocation()
 						.getAllocationContexts_Allocation();
@@ -817,15 +1086,16 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					RepositoryComponent repositoryComp = context
 							.getAssemblyContext_AllocationContext()
 							.getEncapsulatedComponent__AssemblyContext();
-		
+
 					// create the component
 					Component comp = new Component(repositoryComp.getId());
-		
+
 					// add the functionalities (from SEFFs)
 					EList<ServiceEffectSpecification> seffs = ((BasicComponent) repositoryComp)
 							.getServiceEffectSpecifications__BasicComponent();
 					for (ServiceEffectSpecification s : seffs) {
-						String signatureID = s.getDescribedService__SEFF().getId();
+						String signatureID = s.getDescribedService__SEFF()
+								.getId();
 						Functionality function = new Functionality(s
 								.getDescribedService__SEFF().getEntityName(),
 								((ResourceDemandingSEFF) s).getId(),
@@ -844,24 +1114,25 @@ public class OptEngine extends SwingWorker<Void, Void> {
 										+ "_" + sig.getEntityName(), null);
 							}
 						}
-						functionalities.put(((Entity) s.getDescribedService__SEFF()
-								.eContainer()).getEntityName()
-								+ "_"
-								+ s.getDescribedService__SEFF().getEntityName(),
-								function);
+						functionalities.put(
+								((Entity) s.getDescribedService__SEFF()
+										.eContainer()).getEntityName()
+										+ "_"
+										+ s.getDescribedService__SEFF()
+												.getEntityName(), function);
 						comp.addFunctionality(function);
 					}
-		
+
 					// add the component to the cloud resource
 					for (Tier t : application.getTiersByResourceName().values()) {
 						if (t.getCloudService().getId().equals(containerId))
 							t.addComponent(comp);
 					}
 				}
-		
+
 				// concurrent modification, use a temporary list
 				// link the functionalities toghether using their ids
-		
+
 				for (Functionality f : functionalities.values()) {
 					HashMap<String, Functionality> tempCalls = new HashMap<>();
 					// fill the temporary hashmap
@@ -870,24 +1141,26 @@ public class OptEngine extends SwingWorker<Void, Void> {
 								functionalities.get(s));
 					// clear the ids in the hashmap of the functionality
 					f.getExternalCalls().clear();
-		
+
 					// add the mappings of the temporary hashmap
 					f.getExternalCalls().putAll(tempCalls);
 				}
-		
+
 				// initialize the constrinable hashmap
 				application.initConstrainableResources();
-		
-				// use the initial evaluation to initialize parser and structures
+
+				// use the initial evaluation to initialize parser and
+				// structures
 				evalProxy.evaluateInstance(application, c.SOLVER);
 				// initialSolution.showStatus();
 			}
-			
+
 			this.initialSolution.add(initialSolution);
-        }
-        
-        this.initialSolution.setFrom(generatedInitialSolution, generatedInitialMce);
-        logger.info(this.initialSolution.showStatus());
+		}
+
+		this.initialSolution.setFrom(generatedInitialSolution,
+				generatedInitialMce);
+		logger.info(this.initialSolution.showStatus());
 	}
 
 	public void loadInitialSolutionObject(File file) {
@@ -952,7 +1225,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			evalProxy.EvaluateSolution(sol);
 			numberOfFeasibilityIterations += 1;
 		}
-//		optimLogger.trace(sol.showStatus());
+		// optimLogger.trace(sol.showStatus());
 		if (sol.isFeasible())
 			logger.info("\n\t Solution made feasible");
 		else
@@ -960,12 +1233,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	/**
-	 * This is the bulk of the optimization process in case of a single provider problem.
+	 * This is the bulk of the optimization process in case of a single provider
+	 * problem.
 	 * 
 	 * @return the integer -1 an error has happened.
 	 */
 	public Integer optimize() {
-		
+
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
 			return -1;
@@ -976,7 +1250,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// solution
 		// initialSolution.showStatus();
 		// Debugging constraintHandler
-		
+
 		bestSolution = initialSolution.clone();
 		seriesHandler = costLogImage.newSeries("Best solution");
 		costLogImage.addPoint2Series(seriesHandler,
@@ -994,10 +1268,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// a stopping criterion. Mich
 		while (!isMaxNumberOfIterations()) {
 			setProgress(numberOfIterations);
-			optimLogger.info("Iteration: " + numberOfIterations + "solution: "+ currentSolution.showStatus());
-			
+			optimLogger.info("Iteration: " + numberOfIterations + "solution: "
+					+ currentSolution.showStatus());
+
 			// 2: Internal Optimization process
-			
+
 			InternalOptimization(currentSolution);
 
 			// 3: check whether the best solution has changed
@@ -1026,30 +1301,32 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			logger.error("Unable to create charts", e);
 		}
 
-
 		logger.info(bestSolution.showStatus());
 		bestSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY + "solution.xml");
 		bestSolution.exportCSV(c.ABSOLUTE_WORKING_DIRECTORY + "results.csv");
 		evalProxy.showStatistics();
 		evalProxy.terminateServer();
-		
-		//////
-//      evalProxy.showStatistics();
-//      System.out.println("End!");
-//
-//      try {
-//          Files.copy(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "generated-solution.xml") , Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "solution.xml"));
-//      } catch (IOException e) {
-//          e.printStackTrace();
-//      }
-        //////
+
+		// ////
+		// evalProxy.showStatistics();
+		// System.out.println("End!");
+		//
+		// try {
+		// Files.copy(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
+		// "generated-solution.xml") , Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
+		// "solution.xml"));
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// ////
 
 		return -1;
 
 	}
-	
+
 	/**
-	 * This is the bulk of the optimization process in case of a multi-provider problem.
+	 * This is the bulk of the optimization process in case of a multi-provider
+	 * problem.
 	 * 
 	 * @return the integer -1 an error has happened.
 	 */
@@ -1123,17 +1400,19 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		bestSolution.exportCSV(c.ABSOLUTE_WORKING_DIRECTORY + "results.csv");
 		evalProxy.showStatistics();
 		evalProxy.terminateServer();
-		
-//		//////
-//      evalProxy.showStatistics();
-//      System.out.println("End!");
-//
-//      try {
-//          Files.copy(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "generated-solution.xml") , Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "solution.xml"));
-//      } catch (IOException e) {
-//          e.printStackTrace();
-//      }
-//        //////
+
+		// //////
+		// evalProxy.showStatistics();
+		// System.out.println("End!");
+		//
+		// try {
+		// Files.copy(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
+		// "generated-solution.xml") , Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
+		// "solution.xml"));
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// //////
 
 		return -1;
 
@@ -1143,247 +1422,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		this.numIterNoImprov = 0;
 	}
-	
-    /**
-     * This method should allow the change of workload at runtime!
-     *
-     * @param sol the current solution that is going to be modified by the method.
-     * @param rate the rate by which we'll multiply the actual workload, taken from the usage model extension file.
-     */
-    protected void changeWorkload(Solution sol, double rate) {
-        System.out.printf("The hourly values of the workload are: ");
-        for (Instance i : sol.getApplications())
-            System.out.printf("%d ", i.getWorkload());
-        System.out.printf("\nTrying the change them using a rate of %f...", rate);
-
-        MoveChangeWorkload move = new MoveChangeWorkload(sol);
-
-        try {
-            move.modifyWorkload(new File(c.USAGE_MODEL_EXT_FILE), rate);
-            System.out.printf("done!\nThe new values are: ");
-            for (Instance i : sol.getApplications())
-                System.out.printf("%d ", i.getWorkload());
-            System.out.println();
-
-        } catch (ParserConfigurationException | SAXException | IOException
-                | JAXBException e) {
-            System.out.printf("error!\n");
-            e.printStackTrace();
-            logger.error("Error performing the change of the workload.\n" + e.getMessage());
-            return;
-        }
-
-        InternalOptimization(currentSolution);
-
-//      System.out.printf("We now proceed to select the least powerful machine for the tiers...\n");
-//
-//      List<Tier> tierList = sol.getApplication(0).getTiers();
-//
-//      MoveTypeVM moveVM = new MoveTypeVM(sol); /* the move */
-//
-//      for (Tier selectedTier : tierList) {
-//          boolean done = false;
-//          int memoryHit = 0;
-//          while (!done) {
-//              CloudService origRes = selectedTier.getCloudService();
-//              List<IaaS> resList = dataHandler.getSameServiceResource(origRes,
-//                      sol.getRegion());
-//              constraintHandler.filterResources(resList, origRes);
-//              if (resList.size() == 0) {
-//                  done = true;
-//                  System.out.printf("Error!\n");
-//                  logger.warn("No resource found!");
-//              }
-//              CloudService newRes = resList.get(random.nextInt(resList.size()));
-//
-//              if (!Memory.containsKey(origRes.getId() + newRes.getId())) {
-//                  Memory.put(origRes.getId() + newRes.getResourceName(), "MOVE");
-//                  moveVM.changeMachine(origRes.getId(), (Compute) newRes);
-//                  evalProxy.EvaluateSolution(sol);
-//                  done = true;
-//                  memoryHit++;
-//                  System.out.printf("Done!\n");
-//              }
-//              if (memoryHit >= 200) {
-//                  done = true;
-//                  logger.warn("memory hitted 200 times, skipping move");
-//                  System.out.printf("Error!\n");
-//              }
-//          }
-//      }
-    }
-	
-	protected void changeWorkload(SolutionMulti sols) {
-        if (sols.size() < 2)
-            return;
-
-        HashMap<String, Double> processingRatesMap = new HashMap<String, Double>();
-        HashMap<String, Integer> memoriesMap = new HashMap<String, Integer>();
-        HashMap<String, double[]> ratesMap = new HashMap<String, double[]>();
-        HashMap<String, ArrayList<Tier>> tierMap = new HashMap<String, ArrayList<Tier>>();
-
-        for (Solution sol : sols.getAll()) {
-            System.out.printf("The hourly values of the workload for " + sol.getProvider() + " are: ");
-            for (Instance i : sol.getApplications())
-                System.out.printf("%d ", i.getWorkload());
-            System.out.println();
-
-            List<Tier> tierList = sol.getApplication(0).getTiers();
-            String provider = sol.getProvider();
-
-            for (Tier tier : tierList) {
-                String id = tier.getId();
-
-                ArrayList<Tier> tierByIdList = tierMap.get(id);
-                if (tierByIdList == null)
-                    tierByIdList = new ArrayList<Tier>();
-
-                tierByIdList.add(tier);
-                tierMap.put(id, tierByIdList);
-
-                CloudService origRes = tier.getCloudService();
-
-                double processingRate = dataHandler.getProcessingRate(origRes.getProvider(), origRes.getServiceName(), origRes.getResourceName());
-                int memory = dataHandler.getAmountMemory(origRes.getProvider(), origRes.getServiceName(), origRes.getResourceName());
-
-                processingRatesMap.put(id + provider, processingRate);
-                memoriesMap.put(id + provider, memory);
-            }
-
-            double[] rates = new double[24];
-            for (int i = 0; i < 24; ++i)
-                rates[i] = sol.getPercentageWorkload(i);
-
-            ratesMap.put(provider, rates);
-        }
-
-        for (int i = 0; i < 24; ++i) {
-
-            for (String id : tierMap.keySet()) {
-                System.out.printf("Hour: %d, Tier ID: %s\n", i, id);
-
-                ArrayList<Tier> tierByIdList = tierMap.get(id);
-                double processingRates[] = new double[tierByIdList.size()];
-                int memories[] = new int[tierByIdList.size()];
-
-                int x = 0;
-                for (Tier tier : tierByIdList) {
-                    IaaS service = (IaaS) tier.getCloudService();
-                    String provider = service.getProvider();
-                    processingRates[x] = service.getReplicas() * processingRatesMap.get(id + provider);
-                    memories[x] = service.getReplicas() * memoriesMap.get(id + provider);
-                    x++;
-                }
-
-                int idMaxProcs = 0, idMaxMemory = 0;
-
-                for (int j = 1; j < processingRates.length; ++j) {
-                    if (processingRates[j] > processingRates[idMaxProcs])
-                        idMaxProcs = j;
-                    if (memories[j] > memories[idMaxMemory])
-                        idMaxMemory = j;
-                }
-
-                String providerMaxProcs = tierByIdList.get(idMaxProcs).getCloudService().getProvider();
-                String providerMaxMemory = tierByIdList.get(idMaxMemory).getCloudService().getProvider();
-                String providerRandom = tierByIdList.get((int)Math.floor(Math.random() * sols.size())).getCloudService().getProvider();
-                boolean doRandom = (Math.random() > 0.4);
-
-                for (Solution sol : sols.getAll()) {
-                    double[] rates = ratesMap.get(sol.getProvider());
-
-                    if (sol.getProvider().equals(providerMaxProcs)) {
-                        rates[i] = rates[i] + 0.05 * (sols.size() - 1);
-                    } else {
-                        rates[i] = rates[i] - 0.05;
-                    }
-
-                    if (sol.getProvider().equals(providerMaxMemory)) {
-                        rates[i] = rates[i] + 0.05 * (sols.size() - 1);
-                    } else {
-                        rates[i] = rates[i] - 0.05;
-                    }
-
-                    if (doRandom) {
-                        if (sol.getProvider().equals(providerRandom)) {
-                            rates[i] = rates[i] + 0.03 * (sols.size() - 1);
-                        } else {
-                            rates[i] = rates[i] - 0.03;
-                        }
-                    }
-
-                    System.out.print("\t" + sol.getProvider() + ": ");
-                    for (double rate : rates) {
-                        System.out.print((int)(rate*100) + " ");
-                    }
-                    System.out.println();
-
-                    ratesMap.put(sol.getProvider(), rates);
-                }
-
-                int bad = 0;
-                for (Solution sol : sols.getAll()) {
-//              for (int k = 0; k < sols.size(); ++k) {
-//                  Solution sol = sols.get(k);
-                    double[] rates = ratesMap.get(sol.getProvider());
-
-                    if (rates[i] < 0.1) {
-                        double diff = (0.1 - rates[i])/(sols.size() - ++bad);
-                        rates[i] = 0.1;
-//                      for (Solution sol2 : sols.getAll()) {
-                        for (int l = 0; l < sols.size(); ++l) {
-                            Solution sol2 = sols.get(l);
-                            if (!sol.getProvider().equals(sol2.getProvider())) {
-                                double[] rates2 = ratesMap.get(sol2.getProvider());
-                                rates2[i] -= diff;
-
-                                if (rates2[i] < 0.1) {
-                                    diff += (0.1 - rates[i])/(sols.size() - ++bad);
-                                    rates2[i] = 0.1;
-                                    l = 0;
-                                }
-
-                                ratesMap.put(sol2.getProvider(), rates2);
-                            }
-                        }
-
-                        System.out.print("Fixed: " + sol.getProvider() + ": ");
-                        for (double rate : rates) {
-                            System.out.print((int)(rate*100) + " ");
-                        }
-                        System.out.println();
-
-                        ratesMap.put(sol.getProvider(), rates);
-                    }
-                }
-
-            }
-
-        }
-
-        for (Solution sol : sols.getAll()) {
-            MoveChangeWorkload move = new MoveChangeWorkload(sol);
-
-            try {
-                move.modifyWorkload(new File(c.USAGE_MODEL_EXT_FILE), ratesMap.get(sol.getProvider()));
-                System.out.printf("Done! The new values for " + sol.getProvider() + " are: ");
-                for (Instance i : sol.getApplications())
-                    System.out.printf("%d ", i.getWorkload());
-                System.out.println();
-
-            } catch (ParserConfigurationException | SAXException | IOException
-                    | JAXBException e) {
-                System.out.printf("error!\n");
-                e.printStackTrace();
-                logger.error("Error performing the change of the workload.\n" + e.getMessage());
-//              return;
-            }
-        }
-
-        evalProxy.EvaluateSolution(sols);
-        updateBestSolution(sols);
-
-    }
 
 	/**
 	 * Scramble. the aim of this method is to change some the type of some VM,
@@ -1440,11 +1478,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		}
 
 	}
-	
+
 	protected void scramble(SolutionMulti sol) {
-        for (Solution s : sol.getAll())
-            scramble(s);
-    }
+		for (Solution s : sol.getAll())
+			scramble(s);
+	}
 
 	public void SerializeInitialSolution(File file) {
 		logger.info("Serializing: " + initialSolution);
@@ -1518,11 +1556,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	/**
 	 * 
 	 */
-	protected void updateBestSolution(Solution sol) {		
+	protected void updateBestSolution(Solution sol) {
 		if (sol.greaterThan(bestSolution)) {
 
 			// updating the best solution
-//			bestSolution = sol.clone();
+			// bestSolution = sol.clone();
 			bestSolution.add(sol.clone());
 			this.numIterNoImprov = 0;
 			this.numTotImpr += 1;
@@ -1532,17 +1570,17 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			costLogImage.addPoint2Series(seriesHandler,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					bestSolution.getCost());
-			logger.info("updated best solution"+sol.showStatus());
+			logger.info("updated best solution" + sol.showStatus());
 
 		} else {
 			this.numIterNoImprov += 1;
 		}
 
 	}
-	
+
 	protected void updateBestSolution(SolutionMulti sol) {
-        for (Solution s : sol.getAll())
-            updateBestSolution(s);
-    }
+		for (Solution s : sol.getAll())
+			updateBestSolution(s);
+	}
 
 }

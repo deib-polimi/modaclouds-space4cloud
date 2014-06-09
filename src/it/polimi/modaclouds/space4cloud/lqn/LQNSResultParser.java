@@ -43,38 +43,79 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -1523765717223255130L;
+	public static double convertStringToDouble(String toConvert)
+			throws ParseException {
+		double ret;
+
+		toConvert = toConvert.replaceAll("e", "E");
+		toConvert = toConvert.replaceAll("\\+", "");
+		DecimalFormat format = new DecimalFormat("0.0E000",
+				DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+		ret = format.parse(toConvert).doubleValue();
+
+		return ret;
+	}
 	private transient Path filePath;
 	private String filePathSerialization;
 	private DocumentBuilderFactory dbFactory;
 	private DocumentBuilder dBuilder;
-	private transient Document resultDOM;	
+	private transient Document resultDOM;
 	private Map<String, Double> utilizations = new HashMap<>();
+
 	private Map<String, Double> responseTimes = new HashMap<>();
 
-	//since Path s not serializable we put it into a string 
-	private void writeObject(ObjectOutputStream out) throws IOException
-	{
-		filePathSerialization = filePath.toString();
-		out.defaultWriteObject(); 
-	}
-	//reconstruct the Path from the string
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException, SAXException
-	{		
-		in.defaultReadObject();
-		filePath = Paths.get(filePathSerialization);	
+	public LQNSResultParser(Path path) {
+
+		this.filePath = path;
 		initDom();
+
+		parse();
 	}
 
+	@Override
+	protected void finalize() throws Throwable {
+		if (filePath.toFile().exists())
+			filePath.toFile().delete();
+		super.finalize();
+	}
 
-	private void initDom(){
+	@Override
+	public double getResponseTime(String resourceID) {
+		if (responseTimes.get(resourceID) != null)
+			return responseTimes.get(resourceID);
+		return -1;
+	}
+
+	@Override
+	public Map<String, Double> getResponseTimes() {
+		// TODO Auto-generated method stub
+		return responseTimes;
+	}
+
+	@Override
+	public double getUtilization(String resourceID) {
+		if (utilizations.get(resourceID) != null)
+			return utilizations.get(resourceID);
+		return -1;
+
+	}
+
+	@Override
+	public Map<String, Double> getUtilizations() {
+		// TODO Auto-generated method stub
+		return utilizations;
+	}
+
+	private void initDom() {
 		dbFactory = DocumentBuilderFactory.newInstance();
 		try {
 			dBuilder = dbFactory.newDocumentBuilder();
-			
-			// TODO: sometimes the temporary file has a name ending with a tilde (why is that?)
+
+			// TODO: sometimes the temporary file has a name ending with a tilde
+			// (why is that?)
 			if (!filePath.toFile().exists())
 				filePath = Paths.get(filePath.toString() + "~");
-			
+
 			resultDOM = dBuilder.parse(filePath.toFile());
 			resultDOM.getDocumentElement().normalize();
 		} catch (ParserConfigurationException e) {
@@ -90,106 +131,62 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 	}
 
-	public LQNSResultParser(Path path) {
-
-		this.filePath=path;
-		initDom();
-
-		parse();
-	}
-
 	private void parse() {
-		//parse Processors
+		// parse Processors
 		NodeList processors = resultDOM.getElementsByTagName("processor");
-		for(int i=0; i< processors.getLength();i++){						
+		for (int i = 0; i < processors.getLength(); i++) {
 
-			//search for the result element						
+			// search for the result element
 			Element processor = (Element) processors.item(i);
 			String id = processor.getAttribute("name");
 			int cores = 1;
-			if(!processor.getAttribute("multiplicity").isEmpty())
-				cores = Integer.parseInt(processor.getAttribute("multiplicity"));
+			if (!processor.getAttribute("multiplicity").isEmpty())
+				cores = Integer
+						.parseInt(processor.getAttribute("multiplicity"));
 
-
-			//there should be exactly one
-			Element resultProcessor = (Element)processors.item(i).getFirstChild().getNextSibling();
-			double utilization = Double.parseDouble(resultProcessor.getAttribute("utilization"))/cores;
-			//LQNS uses values from 0 to 100 we use from 0 to 1
+			// there should be exactly one
+			Element resultProcessor = (Element) processors.item(i)
+					.getFirstChild().getNextSibling();
+			double utilization = Double.parseDouble(resultProcessor
+					.getAttribute("utilization")) / cores;
+			// LQNS uses values from 0 to 100 we use from 0 to 1
 			utilization /= 100;
 
-			//add the processor utilization to the hashmap
-			//System.out.println("proc id: "+id+ " utilization: "+utilization);
+			// add the processor utilization to the hashmap
+			// System.out.println("proc id: "+id+ " utilization: "+utilization);
 			utilizations.put(id, utilization);
 
-			String seffID=id.split("_")[2];
-			NodeList resultActivities = processor.getElementsByTagName("result-activity");
+			String seffID = id.split("_")[2];
+			NodeList resultActivities = processor
+					.getElementsByTagName("result-activity");
 			double serviceTime = 0;
-			for(int j=0; j<resultActivities.getLength(); j++)
-				serviceTime += Double.parseDouble(resultActivities.item(j).getAttributes().getNamedItem("service-time").getTextContent());
+			for (int j = 0; j < resultActivities.getLength(); j++)
+				serviceTime += Double.parseDouble(resultActivities.item(j)
+						.getAttributes().getNamedItem("service-time")
+						.getTextContent());
 			responseTimes.put(seffID, serviceTime);
-
 
 		}
 
-
-		//TODO: parse other stuff
-		dbFactory=null;
+		// TODO: parse other stuff
+		dbFactory = null;
 		dBuilder = null;
 		resultDOM = null;
 
 	}
 
-
-
-
-
-
-	@Override
-	public double getResponseTime(String resourceID) {
-		if(responseTimes.get(resourceID)!=null)
-			return responseTimes.get(resourceID);
-		return -1;
+	// reconstruct the Path from the string
+	private void readObject(ObjectInputStream in) throws IOException,
+			ClassNotFoundException, SAXException {
+		in.defaultReadObject();
+		filePath = Paths.get(filePathSerialization);
+		initDom();
 	}
 
-	@Override
-	public double getUtilization(String resourceID) {
-		if(utilizations.get(resourceID)!=null)
-			return utilizations.get(resourceID);
-		return -1;
-
+	// since Path s not serializable we put it into a string
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		filePathSerialization = filePath.toString();
+		out.defaultWriteObject();
 	}
-
-
-	public static double convertStringToDouble(String toConvert) throws ParseException {
-		double ret;
-
-		toConvert = toConvert.replaceAll("e", "E");
-		toConvert = toConvert.replaceAll("\\+", "");
-		DecimalFormat format = new DecimalFormat("0.0E000",
-				DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		ret = format.parse(toConvert).doubleValue();
-
-		return ret;
-	}
-
-	@Override
-	public Map<String, Double> getUtilizations() {
-		// TODO Auto-generated method stub
-		return utilizations;
-	}
-
-	@Override
-	public Map<String, Double> getResponseTimes() {
-		// TODO Auto-generated method stub
-		return responseTimes;
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		if(filePath.toFile().exists())
-			filePath.toFile().delete();
-		super.finalize();
-	}
-
 
 }

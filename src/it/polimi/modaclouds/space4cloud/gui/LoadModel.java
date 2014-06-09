@@ -52,8 +52,9 @@ import org.slf4j.Logger;
  * 
  */
 public class LoadModel extends OperationCompletedClass {
-	
-	private static final Logger programLogger = LoggerHelper.getLogger(LoadModel.class);
+
+	private static final Logger programLogger = LoggerHelper
+			.getLogger(LoadModel.class);
 
 	public static List<File> explore(File root, final String ext) {
 		return explore(root, ext, Integer.MIN_VALUE);
@@ -73,7 +74,7 @@ public class LoadModel extends OperationCompletedClass {
 	public static List<File> explore(File root, final String ext, int depth) {
 
 		List<File> lf = new ArrayList<File>();
-		if(depth > 2)
+		if (depth > 2)
 			return lf;
 
 		if (root.isFile() && root.getName().endsWith(ext)) {
@@ -90,19 +91,19 @@ public class LoadModel extends OperationCompletedClass {
 			}
 		});
 
-
 		if (list == null)
 			return lf;
 		for (File f : list) {
-			lf.addAll(explore(f, ext, depth+1));
+			lf.addAll(explore(f, ext, depth + 1));
 		}
 		return lf;
 	}
 
 	/**
 	 * Launch the application.
-	 *
-	 * @param args the arguments
+	 * 
+	 * @param args
+	 *            the arguments
 	 * @wbp.parser.entryPoint
 	 */
 	public static void main(String[] args) {
@@ -123,7 +124,7 @@ public class LoadModel extends OperationCompletedClass {
 	/** The list. */
 	private JList list;
 
-	/** true is the user performed a choiche*/
+	/** true is the user performed a choiche */
 	private boolean chosen = false;
 
 	/** The output. */
@@ -154,8 +155,8 @@ public class LoadModel extends OperationCompletedClass {
 	 * @param ext
 	 *            is the extension of the model file to search.
 	 */
-	public LoadModel(	OperationCompletedListener listener, String modelName,String ext) 
-	{
+	public LoadModel(OperationCompletedListener listener, String modelName,
+			String ext) {
 		if (listener != null)
 			addMyEventListener(listener);
 		oplist = listener;
@@ -165,7 +166,7 @@ public class LoadModel extends OperationCompletedClass {
 		try {
 			initialize();
 		} catch (InterruptedException e) {
-			programLogger.error("Error in loading projects",e);
+			programLogger.error("Error in loading projects", e);
 		}
 	}
 
@@ -196,11 +197,11 @@ public class LoadModel extends OperationCompletedClass {
 
 	/**
 	 * Initialize the contents of the frame.
-	 *
-	 * @throws InterruptedException the interrupted exception
+	 * 
+	 * @throws InterruptedException
+	 *             the interrupted exception
 	 */
 	private void initialize() throws InterruptedException {
-
 
 		// Frame creation and initialization
 		frmLoadModel = new JFrame();
@@ -212,7 +213,7 @@ public class LoadModel extends OperationCompletedClass {
 		frmLoadModel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
 		// questa cosa dovrebbe dipendere da come gestisce java gli eventi
-		// passiamo un listener que creamo e gli diciamo come attuare quando 
+		// passiamo un listener que creamo e gli diciamo come attuare quando
 		// succede un evento
 		frmLoadModel.addWindowListener(new WindowListener() {
 
@@ -257,16 +258,15 @@ public class LoadModel extends OperationCompletedClass {
 			}
 		});
 
-		//Panel Creation
+		// Panel Creation
 		JPanel panel = new JPanel();
 		frmLoadModel.getContentPane().add(panel, BorderLayout.SOUTH);
 
-		//Button creation and its associate listener and handler functions
+		// Button creation and its associate listener and handler functions
 		JButton btnLoad = new JButton("Load");
 		btnLoad.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) 
-			{
-				//Remember that output is a File. 
+			public void actionPerformed(ActionEvent e) {
+				// Remember that output is a File.
 				output = models.get(list.getSelectedIndex());
 				chosen = true;
 
@@ -275,7 +275,8 @@ public class LoadModel extends OperationCompletedClass {
 						lock.notify();
 					}
 				else
-					LoadModel.this.fireMyEvent(new OperationCompletedEvent(output));
+					LoadModel.this.fireMyEvent(new OperationCompletedEvent(
+							output));
 
 				frmLoadModel.dispose(); // close the window
 			}
@@ -292,30 +293,27 @@ public class LoadModel extends OperationCompletedClass {
 					}
 				else
 					LoadModel.this.fireMyEvent(null);
-				frmLoadModel.dispose(); //close the window
+				frmLoadModel.dispose(); // close the window
 			}
 		});
 		panel.add(btnCancel);
 
 		String workspaceDir = "";
-		try 
-		{
+		try {
 			// workspace directory
-			workspaceDir = 	ResourcesPlugin
-					.getWorkspace()
-					.getRoot()
-					.getLocation()
-					.toOSString();
-			programLogger.debug("Workspace dir:"+workspaceDir);
-		} catch (Exception e) 
-		{
+			workspaceDir = ResourcesPlugin.getWorkspace().getRoot()
+					.getLocation().toOSString();
+			programLogger.debug("Workspace dir:" + workspaceDir);
+		} catch (Exception e) {
 			workspaceDir = System.getProperty("user.dir");
-			workspaceDir = workspaceDir.substring(0,workspaceDir.lastIndexOf("\\"));
-			programLogger.debug("Workspace dir:"+workspaceDir,e);
+			workspaceDir = workspaceDir.substring(0,
+					workspaceDir.lastIndexOf("\\"));
+			programLogger.debug("Workspace dir:" + workspaceDir, e);
 		}
 
-		// retrieving all the files with a certain extension in the workspace directory
-		models = explore(new File(workspaceDir), extension,0);
+		// retrieving all the files with a certain extension in the workspace
+		// directory
+		models = explore(new File(workspaceDir), extension, 0);
 
 		List<String> ls = new ArrayList<String>();
 		for (File f : models)
@@ -324,37 +322,25 @@ public class LoadModel extends OperationCompletedClass {
 		// JList is a list where the elements cannot be added or removed.
 		// It is only possible to add element through the constructor
 		list = new JList(ls.toArray(new String[0]));
-		list.addListSelectionListener(new ListSelectionListener() 
-		{
+		list.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 			}
-		}); // 
+		}); //
 
+		list.setBorder(new TitledBorder(null, modelName, TitledBorder.LEADING,
+				TitledBorder.TOP, null, null));
 
-		list.setBorder(new TitledBorder(null, 
-				modelName, 
-				TitledBorder.LEADING,
-				TitledBorder.TOP, 
-				null, 
-				null));
-
-		frmLoadModel
-		.getContentPane()
-		.add(new JScrollPane(list),
+		frmLoadModel.getContentPane().add(new JScrollPane(list),
 				BorderLayout.CENTER);
 
-
-		if (list.getModel().getSize() == 0) 
-		{
-			list.setListData(new String[] { "", 
-					"ERROR", 
-					"",
+		if (list.getModel().getSize() == 0) {
+			list.setListData(new String[] { "", "ERROR", "",
 					"There isn't any " + modelName + " in the project!" });
 			list.setEnabled(false);
 			btnLoad.setEnabled(false);
-		} 
-		else
-			list.setSelectedIndex(0); // selection of the first element of the list
+		} else
+			list.setSelectedIndex(0); // selection of the first element of the
+										// list
 
 		center(frmLoadModel);
 		frmLoadModel.setVisible(true); // set visible the frame
@@ -363,7 +349,6 @@ public class LoadModel extends OperationCompletedClass {
 				lock.wait();
 			}
 	}
-
 
 	public boolean isChosen() {
 		return chosen;

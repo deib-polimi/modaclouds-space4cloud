@@ -18,10 +18,13 @@ package it.polimi.modaclouds.space4cloud.lqn;
 import java.util.Map;
 
 public interface LqnResultParser {
-	
+
 	double getResponseTime(String resourceID);
-	double getUtilization(String resourceID);
-	Map<String, Double> getUtilizations();
+
 	Map<String, Double> getResponseTimes();
+
+	double getUtilization(String resourceID);
+
+	Map<String, Double> getUtilizations();
 
 }

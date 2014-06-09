@@ -49,6 +49,17 @@ public class EMF {
 	}
 
 	/**
+	 * Returns the Cloud Factory needed to instantiate new EMF objects belonging
+	 * to the Cloud Meta-Model.
+	 * 
+	 * @return a CloudFactory instance.
+	 * @see CloudFactory
+	 */
+	public CloudFactory getCloudFactory() {
+		return cloudFactory;
+	}
+
+	/**
 	 * Serialize the EMF object in a File created within the specified path,
 	 * with the specified name.
 	 * 
@@ -76,16 +87,5 @@ public class EMF {
 			e.printStackTrace();
 			return false;
 		}
-	}
-
-	/**
-	 * Returns the Cloud Factory needed to instantiate new EMF objects belonging
-	 * to the Cloud Meta-Model.
-	 * 
-	 * @return a CloudFactory instance.
-	 * @see CloudFactory
-	 */
-	public CloudFactory getCloudFactory() {
-		return cloudFactory;
 	}
 }

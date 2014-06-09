@@ -5,7 +5,6 @@
 // Generated on: 2014.06.09 at 08:30:05 AM CEST 
 //
 
-
 package it.polimi.modaclouds.space4cloud.line;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -14,6 +13,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
 import org.jvnet.jaxb2_commons.lang.CopyStrategy;
 import org.jvnet.jaxb2_commons.lang.CopyTo;
 import org.jvnet.jaxb2_commons.lang.Equals;
@@ -32,11 +32,13 @@ import org.jvnet.jaxb2_commons.lang.ToStringStrategy;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 
-
 /**
- * <p>Java class for anonymous complex type.
+ * <p>
+ * Java class for anonymous complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType>
@@ -54,210 +56,232 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "")
 @XmlRootElement(name = "station")
-public class Station
-    implements Cloneable, CopyTo, Equals, HashCode, MergeFrom, ToString
-{
+public class Station implements Cloneable, CopyTo, Equals, HashCode, MergeFrom,
+		ToString {
 
-    @XmlAttribute(name = "name")
-    @XmlSchemaType(name = "anySimpleType")
-    protected String name;
-    @XmlAttribute(name = "responseTime")
-    protected Double responseTime;
+	@XmlAttribute(name = "name")
+	@XmlSchemaType(name = "anySimpleType")
+	protected String name;
+	@XmlAttribute(name = "responseTime")
+	protected Double responseTime;
 
-    /**
-     * Gets the value of the name property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getName() {
-        return name;
-    }
+	public StringBuilder append(ObjectLocator locator, StringBuilder buffer,
+			ToStringStrategy strategy) {
+		strategy.appendStart(locator, this, buffer);
+		appendFields(locator, buffer, strategy);
+		strategy.appendEnd(locator, this, buffer);
+		return buffer;
+	}
 
-    /**
-     * Sets the value of the name property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setName(String value) {
-        this.name = value;
-    }
+	public StringBuilder appendFields(ObjectLocator locator,
+			StringBuilder buffer, ToStringStrategy strategy) {
+		{
+			String theName;
+			theName = this.getName();
+			strategy.appendField(locator, this, "name", buffer, theName);
+		}
+		{
+			Double theResponseTime;
+			theResponseTime = this.getResponseTime();
+			strategy.appendField(locator, this, "responseTime", buffer,
+					theResponseTime);
+		}
+		return buffer;
+	}
 
-    /**
-     * Gets the value of the responseTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Double }
-     *     
-     */
-    public Double getResponseTime() {
-        return responseTime;
-    }
+	public Object clone() {
+		return copyTo(createNewInstance());
+	}
 
-    /**
-     * Sets the value of the responseTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Double }
-     *     
-     */
-    public void setResponseTime(Double value) {
-        this.responseTime = value;
-    }
+	public Object copyTo(Object target) {
+		final CopyStrategy strategy = JAXBCopyStrategy.INSTANCE;
+		return copyTo(null, target, strategy);
+	}
 
-    public String toString() {
-        final ToStringStrategy strategy = JAXBToStringStrategy.INSTANCE;
-        final StringBuilder buffer = new StringBuilder();
-        append(null, buffer, strategy);
-        return buffer.toString();
-    }
+	public Object copyTo(ObjectLocator locator, Object target,
+			CopyStrategy strategy) {
+		final Object draftCopy = ((target == null) ? createNewInstance()
+				: target);
+		if (draftCopy instanceof Station) {
+			final Station copy = ((Station) draftCopy);
+			if (this.name != null) {
+				String sourceName;
+				sourceName = this.getName();
+				String copyName = ((String) strategy.copy(
+						LocatorUtils.property(locator, "name", sourceName),
+						sourceName));
+				copy.setName(copyName);
+			} else {
+				copy.name = null;
+			}
+			if (this.responseTime != null) {
+				Double sourceResponseTime;
+				sourceResponseTime = this.getResponseTime();
+				Double copyResponseTime = ((Double) strategy.copy(LocatorUtils
+						.property(locator, "responseTime", sourceResponseTime),
+						sourceResponseTime));
+				copy.setResponseTime(copyResponseTime);
+			} else {
+				copy.responseTime = null;
+			}
+		}
+		return draftCopy;
+	}
 
-    public StringBuilder append(ObjectLocator locator, StringBuilder buffer, ToStringStrategy strategy) {
-        strategy.appendStart(locator, this, buffer);
-        appendFields(locator, buffer, strategy);
-        strategy.appendEnd(locator, this, buffer);
-        return buffer;
-    }
+	public Object createNewInstance() {
+		return new Station();
+	}
 
-    public StringBuilder appendFields(ObjectLocator locator, StringBuilder buffer, ToStringStrategy strategy) {
-        {
-            String theName;
-            theName = this.getName();
-            strategy.appendField(locator, this, "name", buffer, theName);
-        }
-        {
-            Double theResponseTime;
-            theResponseTime = this.getResponseTime();
-            strategy.appendField(locator, this, "responseTime", buffer, theResponseTime);
-        }
-        return buffer;
-    }
+	public boolean equals(Object object) {
+		final EqualsStrategy strategy = JAXBEqualsStrategy.INSTANCE;
+		return equals(null, null, object, strategy);
+	}
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
-        if (!(object instanceof Station)) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        final Station that = ((Station) object);
-        {
-            String lhsName;
-            lhsName = this.getName();
-            String rhsName;
-            rhsName = that.getName();
-            if (!strategy.equals(LocatorUtils.property(thisLocator, "name", lhsName), LocatorUtils.property(thatLocator, "name", rhsName), lhsName, rhsName)) {
-                return false;
-            }
-        }
-        {
-            Double lhsResponseTime;
-            lhsResponseTime = this.getResponseTime();
-            Double rhsResponseTime;
-            rhsResponseTime = that.getResponseTime();
-            if (!strategy.equals(LocatorUtils.property(thisLocator, "responseTime", lhsResponseTime), LocatorUtils.property(thatLocator, "responseTime", rhsResponseTime), lhsResponseTime, rhsResponseTime)) {
-                return false;
-            }
-        }
-        return true;
-    }
+	public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator,
+			Object object, EqualsStrategy strategy) {
+		if (!(object instanceof Station)) {
+			return false;
+		}
+		if (this == object) {
+			return true;
+		}
+		final Station that = ((Station) object);
+		{
+			String lhsName;
+			lhsName = this.getName();
+			String rhsName;
+			rhsName = that.getName();
+			if (!strategy.equals(
+					LocatorUtils.property(thisLocator, "name", lhsName),
+					LocatorUtils.property(thatLocator, "name", rhsName),
+					lhsName, rhsName)) {
+				return false;
+			}
+		}
+		{
+			Double lhsResponseTime;
+			lhsResponseTime = this.getResponseTime();
+			Double rhsResponseTime;
+			rhsResponseTime = that.getResponseTime();
+			if (!strategy.equals(LocatorUtils.property(thisLocator,
+					"responseTime", lhsResponseTime), LocatorUtils.property(
+					thatLocator, "responseTime", rhsResponseTime),
+					lhsResponseTime, rhsResponseTime)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-    public boolean equals(Object object) {
-        final EqualsStrategy strategy = JAXBEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
-    }
+	/**
+	 * Gets the value of the name property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getName() {
+		return name;
+	}
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = 1;
-        {
-            String theName;
-            theName = this.getName();
-            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "name", theName), currentHashCode, theName);
-        }
-        {
-            Double theResponseTime;
-            theResponseTime = this.getResponseTime();
-            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "responseTime", theResponseTime), currentHashCode, theResponseTime);
-        }
-        return currentHashCode;
-    }
+	/**
+	 * Gets the value of the responseTime property.
+	 * 
+	 * @return possible object is {@link Double }
+	 * 
+	 */
+	public Double getResponseTime() {
+		return responseTime;
+	}
 
-    public int hashCode() {
-        final HashCodeStrategy strategy = JAXBHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
-    }
+	public int hashCode() {
+		final HashCodeStrategy strategy = JAXBHashCodeStrategy.INSTANCE;
+		return this.hashCode(null, strategy);
+	}
 
-    public Object clone() {
-        return copyTo(createNewInstance());
-    }
+	public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
+		int currentHashCode = 1;
+		{
+			String theName;
+			theName = this.getName();
+			currentHashCode = strategy.hashCode(
+					LocatorUtils.property(locator, "name", theName),
+					currentHashCode, theName);
+		}
+		{
+			Double theResponseTime;
+			theResponseTime = this.getResponseTime();
+			currentHashCode = strategy.hashCode(LocatorUtils.property(locator,
+					"responseTime", theResponseTime), currentHashCode,
+					theResponseTime);
+		}
+		return currentHashCode;
+	}
 
-    public Object copyTo(Object target) {
-        final CopyStrategy strategy = JAXBCopyStrategy.INSTANCE;
-        return copyTo(null, target, strategy);
-    }
+	public void mergeFrom(Object left, Object right) {
+		final MergeStrategy strategy = JAXBMergeStrategy.INSTANCE;
+		mergeFrom(null, null, left, right, strategy);
+	}
 
-    public Object copyTo(ObjectLocator locator, Object target, CopyStrategy strategy) {
-        final Object draftCopy = ((target == null)?createNewInstance():target);
-        if (draftCopy instanceof Station) {
-            final Station copy = ((Station) draftCopy);
-            if (this.name!= null) {
-                String sourceName;
-                sourceName = this.getName();
-                String copyName = ((String) strategy.copy(LocatorUtils.property(locator, "name", sourceName), sourceName));
-                copy.setName(copyName);
-            } else {
-                copy.name = null;
-            }
-            if (this.responseTime!= null) {
-                Double sourceResponseTime;
-                sourceResponseTime = this.getResponseTime();
-                Double copyResponseTime = ((Double) strategy.copy(LocatorUtils.property(locator, "responseTime", sourceResponseTime), sourceResponseTime));
-                copy.setResponseTime(copyResponseTime);
-            } else {
-                copy.responseTime = null;
-            }
-        }
-        return draftCopy;
-    }
+	public void mergeFrom(ObjectLocator leftLocator,
+			ObjectLocator rightLocator, Object left, Object right,
+			MergeStrategy strategy) {
+		if (right instanceof Station) {
+			final Station target = this;
+			final Station leftObject = ((Station) left);
+			final Station rightObject = ((Station) right);
+			{
+				String lhsName;
+				lhsName = leftObject.getName();
+				String rhsName;
+				rhsName = rightObject.getName();
+				String mergedName = ((String) strategy.merge(
+						LocatorUtils.property(leftLocator, "name", lhsName),
+						LocatorUtils.property(rightLocator, "name", rhsName),
+						lhsName, rhsName));
+				target.setName(mergedName);
+			}
+			{
+				Double lhsResponseTime;
+				lhsResponseTime = leftObject.getResponseTime();
+				Double rhsResponseTime;
+				rhsResponseTime = rightObject.getResponseTime();
+				Double mergedResponseTime = ((Double) strategy.merge(
+						LocatorUtils.property(leftLocator, "responseTime",
+								lhsResponseTime), LocatorUtils.property(
+								rightLocator, "responseTime", rhsResponseTime),
+						lhsResponseTime, rhsResponseTime));
+				target.setResponseTime(mergedResponseTime);
+			}
+		}
+	}
 
-    public Object createNewInstance() {
-        return new Station();
-    }
+	/**
+	 * Sets the value of the name property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setName(String value) {
+		this.name = value;
+	}
 
-    public void mergeFrom(Object left, Object right) {
-        final MergeStrategy strategy = JAXBMergeStrategy.INSTANCE;
-        mergeFrom(null, null, left, right, strategy);
-    }
+	/**
+	 * Sets the value of the responseTime property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link Double }
+	 * 
+	 */
+	public void setResponseTime(Double value) {
+		this.responseTime = value;
+	}
 
-    public void mergeFrom(ObjectLocator leftLocator, ObjectLocator rightLocator, Object left, Object right, MergeStrategy strategy) {
-        if (right instanceof Station) {
-            final Station target = this;
-            final Station leftObject = ((Station) left);
-            final Station rightObject = ((Station) right);
-            {
-                String lhsName;
-                lhsName = leftObject.getName();
-                String rhsName;
-                rhsName = rightObject.getName();
-                String mergedName = ((String) strategy.merge(LocatorUtils.property(leftLocator, "name", lhsName), LocatorUtils.property(rightLocator, "name", rhsName), lhsName, rhsName));
-                target.setName(mergedName);
-            }
-            {
-                Double lhsResponseTime;
-                lhsResponseTime = leftObject.getResponseTime();
-                Double rhsResponseTime;
-                rhsResponseTime = rightObject.getResponseTime();
-                Double mergedResponseTime = ((Double) strategy.merge(LocatorUtils.property(leftLocator, "responseTime", lhsResponseTime), LocatorUtils.property(rightLocator, "responseTime", rhsResponseTime), lhsResponseTime, rhsResponseTime));
-                target.setResponseTime(mergedResponseTime);
-            }
-        }
-    }
+	public String toString() {
+		final ToStringStrategy strategy = JAXBToStringStrategy.INSTANCE;
+		final StringBuilder buffer = new StringBuilder();
+		append(null, buffer, strategy);
+		return buffer.toString();
+	}
 
 }

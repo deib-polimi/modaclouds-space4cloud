@@ -40,54 +40,55 @@ import org.w3c.dom.NodeList;
  */
 public class ResourceEnvironment {
 
+	/**
+	 * The main method.
+	 * 
+	 * @param args
+	 *            the arguments
+	 */
+	public static void main(String[] args) {
+		ResourceEnvironment re = new ResourceEnvironment(new File(
+				System.getProperty("user.dir")
+						+ "\\Palladio\\MyRE.resourceenvironment"));
+		System.out.println(re.toString());
+		ProcessingResource cpu = new ProcessingResource(
+				ProcessingResourceT.CPU, SchedulingT.PS, 10000, 4, 10000, 2000);
+		ProcessingResource hdd = new ProcessingResource(
+				ProcessingResourceT.HDD, SchedulingT.FCFS, 100000000, 1,
+				10000000, 2000);
+		ResourceContainer rc1 = new ResourceContainer("AppServer");
+		rc1.addProcessingResource(cpu);
+		ResourceContainer rc2 = new ResourceContainer("DBServer");
+		rc2.addProcessingResource(hdd);
+		ResourceContainer rc3 = new ResourceContainer("XXX");
+		// LinkingResource lr = new LinkingResource("LAN", LinkT.LAN,
+		// 1000000000,
+		// 0.002, 0.000001, rc1, rc2);
+		re = new ResourceEnvironment();
+		re = new ResourceEnvironment();
+		// re.addLinkingResource(lr);
+		re.addResourceContainer(rc1);
+		re.addResourceContainer(rc2);
+		re.addResourceContainer(rc3);
+		System.out.println(re.toString());
+		re.serialize(new File(System.getProperty("user.dir")
+				+ "\\Palladio\\xxx.resourceenvironment"));
+	}
+
 	/** The resource environment element. */
 	private Element resourceEnvironmentElement;
-	
+
 	/** The resource containers. */
 	private List<ResourceContainer> resourceContainers;
-	
+
 	/** The linking resources. */
 	private List<LinkingResource> linkingResources;
-	
+
 	/** The model. */
 	private File model = null;
-	
+
 	/** The doc. */
 	private Document doc;
-
-	/**
-	 * Instantiates a new resource environment.
-	 *
-	 * @param inputModel the input model
-	 */
-	public ResourceEnvironment(File inputModel) 
-	{
-		try {
-			model = inputModel; // in the object there is the pointer to the File inputModel
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			doc = dBuilder.parse(inputModel);
-			
-			
-			initialize(doc.getDocumentElement()); 
-			// filling some information as the list of linking Resources and list of resourceContainers
-			
-		} catch (Exception exc) {
-			exc.printStackTrace();
-		}
-	}
-
-	/**
-	 * Instantiates a new resource environment.
-	 *
-	 * @param e the e
-	 */
-	public ResourceEnvironment(Element e) {
-		doc = DOM.getDocument();
-		Element x = (Element) doc.importNode(e, true);
-		doc.appendChild(x);
-		initialize(x);
-	}
 
 	/**
 	 * Instantiates a new resource environment.
@@ -109,45 +110,73 @@ public class ResourceEnvironment {
 	}
 
 	/**
-	 * Initialize.
-	 *
-	 * @param e the e
+	 * Instantiates a new resource environment.
+	 * 
+	 * @param e
+	 *            the e
 	 */
-	private void initialize(Element e) {
-		resourceEnvironmentElement = e;
-		linkingResources = new ArrayList<LinkingResource>();
-		resourceContainers = new ArrayList<ResourceContainer>();
- 		NodeList rc = resourceEnvironmentElement.getElementsByTagName("resourceContainer_ResourceEnvironment");
-		
-		// Resource container charging 
-		if (rc != null)
-			for (int i = 0; i < rc.getLength(); i++)
-				resourceContainers.add(new ResourceContainer((Element) rc.item(i)));
-		
-		rc = resourceEnvironmentElement.getElementsByTagName("linkingResources__ResourceEnvironment");
-		if (rc != null)
-			for (int i = 0; i < rc.getLength(); i++)
-				linkingResources.add(new LinkingResource((Element) rc.item(i)));
+	public ResourceEnvironment(Element e) {
+		doc = DOM.getDocument();
+		Element x = (Element) doc.importNode(e, true);
+		doc.appendChild(x);
+		initialize(x);
 	}
 
 	/**
-	 * Gets the link by id.
-	 *
-	 * @param ID the id
-	 * @return the link by id
+	 * Instantiates a new resource environment.
+	 * 
+	 * @param inputModel
+	 *            the input model
 	 */
-	private Node getLinkByID(String ID) {
-		NodeList nl = resourceEnvironmentElement.getElementsByTagName("linkingResources__ResourceEnvironment");
-		for (int i = 0; i < nl.getLength(); i++)
-			if (((Element) nl.item(i)).getAttribute("id").equals(ID))
-				return nl.item(i);
-		return null;
+	public ResourceEnvironment(File inputModel) {
+		try {
+			model = inputModel; // in the object there is the pointer to the
+								// File inputModel
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+					.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			doc = dBuilder.parse(inputModel);
+
+			initialize(doc.getDocumentElement());
+			// filling some information as the list of linking Resources and
+			// list of resourceContainers
+
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}
+	}
+
+	/**
+	 * Adds the linking resource.
+	 * 
+	 * @param lr
+	 *            the lr
+	 */
+	public void addLinkingResource(LinkingResource lr) {
+		linkingResources.add(lr);
+		Element x = (Element) doc.importNode(lr.getLinkingResourceElement(),
+				true);
+		resourceEnvironmentElement.appendChild(x);
+	}
+
+	/**
+	 * Adds the resource container.
+	 * 
+	 * @param rc
+	 *            the rc
+	 */
+	public void addResourceContainer(ResourceContainer rc) {
+		resourceContainers.add(rc);
+		Element x = (Element) doc.importNode(rc.getResourceContainerElement(),
+				true);
+		resourceEnvironmentElement.appendChild(x);
 	}
 
 	/**
 	 * Gets the container by id.
-	 *
-	 * @param ID the id
+	 * 
+	 * @param ID
+	 *            the id
 	 * @return the container by id
 	 */
 	private Node getContainerByID(String ID) {
@@ -160,50 +189,24 @@ public class ResourceEnvironment {
 	}
 
 	/**
-	 * Gets the resource environment element.
-	 *
-	 * @return the resource environment element
+	 * Gets the link by id.
+	 * 
+	 * @param ID
+	 *            the id
+	 * @return the link by id
 	 */
-	public Element getResourceEnvironmentElement() {
-		return resourceEnvironmentElement;
-	}
-
-	/**
-	 * Sets the resource environment element.
-	 *
-	 * @param resourceEnvironmentElement the new resource environment element
-	 */
-	public void setResourceEnvironmentElement(Element resourceEnvironmentElement) {
-		initialize(resourceEnvironmentElement);
-	}
-
-	/**
-	 * Gets the resource containers.
-	 *
-	 * @return the resource containers
-	 */
-	public List<ResourceContainer> getResourceContainers() {
-		return resourceContainers;
-	}
-
-	/**
-	 * Sets the resource containers.
-	 *
-	 * @param resourceContainers the new resource containers
-	 */
-	public void setResourceContainers(List<ResourceContainer> resourceContainers) {
-		this.resourceContainers = new ArrayList<ResourceContainer>();
+	private Node getLinkByID(String ID) {
 		NodeList nl = resourceEnvironmentElement
-				.getElementsByTagName("resourceContainer_ResourceEnvironment");
+				.getElementsByTagName("linkingResources__ResourceEnvironment");
 		for (int i = 0; i < nl.getLength(); i++)
-			resourceEnvironmentElement.removeChild(nl.item(i));
-		for (ResourceContainer rc : resourceContainers)
-			addResourceContainer(rc);
+			if (((Element) nl.item(i)).getAttribute("id").equals(ID))
+				return nl.item(i);
+		return null;
 	}
 
 	/**
 	 * Gets the linking resources.
-	 *
+	 * 
 	 * @return the linking resources
 	 */
 	public List<LinkingResource> getLinkingResources() {
@@ -211,71 +214,56 @@ public class ResourceEnvironment {
 	}
 
 	/**
-	 * Sets the linking resources.
-	 *
-	 * @param linkingResources the new linking resources
+	 * Gets the resource containers.
+	 * 
+	 * @return the resource containers
 	 */
-	public void setLinkingResources(List<LinkingResource> linkingResources) {
-		this.linkingResources = new ArrayList<LinkingResource>();
-		NodeList nl = resourceEnvironmentElement
+	public List<ResourceContainer> getResourceContainers() {
+		return resourceContainers;
+	}
+
+	/**
+	 * Gets the resource environment element.
+	 * 
+	 * @return the resource environment element
+	 */
+	public Element getResourceEnvironmentElement() {
+		return resourceEnvironmentElement;
+	}
+
+	/**
+	 * Initialize.
+	 * 
+	 * @param e
+	 *            the e
+	 */
+	private void initialize(Element e) {
+		resourceEnvironmentElement = e;
+		linkingResources = new ArrayList<LinkingResource>();
+		resourceContainers = new ArrayList<ResourceContainer>();
+		NodeList rc = resourceEnvironmentElement
+				.getElementsByTagName("resourceContainer_ResourceEnvironment");
+
+		// Resource container charging
+		if (rc != null)
+			for (int i = 0; i < rc.getLength(); i++)
+				resourceContainers.add(new ResourceContainer((Element) rc
+						.item(i)));
+
+		rc = resourceEnvironmentElement
 				.getElementsByTagName("linkingResources__ResourceEnvironment");
-		for (int i = 0; i < nl.getLength(); i++)
-			resourceEnvironmentElement.removeChild(nl.item(i));
-		for (LinkingResource lr : linkingResources)
-			addLinkingResource(lr);
-	}
-
-	/**
-	 * Adds the resource container.
-	 *
-	 * @param rc the rc
-	 */
-	public void addResourceContainer(ResourceContainer rc) {
-		resourceContainers.add(rc);
-		Element x = (Element) doc.importNode(rc.getResourceContainerElement(),
-				true);
-		resourceEnvironmentElement.appendChild(x);
-	}
-
-	/**
-	 * Replace resource container.
-	 *
-	 * @param oldC the old c
-	 * @param newC the new c
-	 */
-	public void replaceResourceContainer(ResourceContainer oldC,
-			ResourceContainer newC) {
-		Node el = getContainerByID(oldC.getId());
-		if (el != null) {
-			List<LinkingResource> newlinks = new ArrayList<LinkingResource>();
-			for (LinkingResource lr : linkingResources) {
-				lr.substitueConnection(oldC.getId(), newC.getId());
-				newlinks.add(lr);
-			}
-			Element x = (Element) doc.importNode(newC.getResourceContainerElement(), true);
-			resourceEnvironmentElement.replaceChild(x, el);
-			initialize(resourceEnvironmentElement);
-			setLinkingResources(newlinks);
-		}
-	}
-
-	/**
-	 * Adds the linking resource.
-	 *
-	 * @param lr the lr
-	 */
-	public void addLinkingResource(LinkingResource lr) {
-		linkingResources.add(lr);
-		Element x = (Element) doc.importNode(lr.getLinkingResourceElement(),
-				true);
-		resourceEnvironmentElement.appendChild(x);
+		if (rc != null)
+			for (int i = 0; i < rc.getLength(); i++)
+				linkingResources.add(new LinkingResource((Element) rc.item(i)));
 	}
 
 	/**
 	 * Replace linking resource.
-	 *
-	 * @param oldC the old c
-	 * @param newC the new c
+	 * 
+	 * @param oldC
+	 *            the old c
+	 * @param newC
+	 *            the new c
 	 */
 	public void replaceLinkingResource(LinkingResource oldC,
 			LinkingResource newC) {
@@ -288,6 +276,31 @@ public class ResourceEnvironment {
 	}
 
 	/**
+	 * Replace resource container.
+	 * 
+	 * @param oldC
+	 *            the old c
+	 * @param newC
+	 *            the new c
+	 */
+	public void replaceResourceContainer(ResourceContainer oldC,
+			ResourceContainer newC) {
+		Node el = getContainerByID(oldC.getId());
+		if (el != null) {
+			List<LinkingResource> newlinks = new ArrayList<LinkingResource>();
+			for (LinkingResource lr : linkingResources) {
+				lr.substitueConnection(oldC.getId(), newC.getId());
+				newlinks.add(lr);
+			}
+			Element x = (Element) doc.importNode(
+					newC.getResourceContainerElement(), true);
+			resourceEnvironmentElement.replaceChild(x, el);
+			initialize(resourceEnvironmentElement);
+			setLinkingResources(newlinks);
+		}
+	}
+
+	/**
 	 * Serialize.
 	 */
 	public void serialize() {
@@ -296,8 +309,9 @@ public class ResourceEnvironment {
 
 	/**
 	 * Serialize.
-	 *
-	 * @param f the f
+	 * 
+	 * @param f
+	 *            the f
 	 */
 	public void serialize(File f) {
 		try {
@@ -311,39 +325,50 @@ public class ResourceEnvironment {
 	}
 
 	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
+	 * Sets the linking resources.
+	 * 
+	 * @param linkingResources
+	 *            the new linking resources
 	 */
-	public static void main(String[] args) {
-		ResourceEnvironment re = new ResourceEnvironment(new File(
-				System.getProperty("user.dir")
-						+ "\\Palladio\\MyRE.resourceenvironment"));
-		System.out.println(re.toString());
-		ProcessingResource cpu = new ProcessingResource(
-				ProcessingResourceT.CPU, SchedulingT.PS, 10000, 4, 10000, 2000);
-		ProcessingResource hdd = new ProcessingResource(
-				ProcessingResourceT.HDD, SchedulingT.FCFS, 100000000, 1,
-				10000000, 2000);
-		ResourceContainer rc1 = new ResourceContainer("AppServer");
-		rc1.addProcessingResource(cpu);
-		ResourceContainer rc2 = new ResourceContainer("DBServer");
-		rc2.addProcessingResource(hdd);
-		ResourceContainer rc3 = new ResourceContainer("XXX");
-	//	LinkingResource lr = new LinkingResource("LAN", LinkT.LAN, 1000000000,
-	//			0.002, 0.000001, rc1, rc2);
-		re = new ResourceEnvironment();
-		re = new ResourceEnvironment();
-	//	re.addLinkingResource(lr);
-		re.addResourceContainer(rc1);
-		re.addResourceContainer(rc2);
-		re.addResourceContainer(rc3);
-		System.out.println(re.toString());
-		re.serialize(new File(System.getProperty("user.dir")
-				+ "\\Palladio\\xxx.resourceenvironment"));
+	public void setLinkingResources(List<LinkingResource> linkingResources) {
+		this.linkingResources = new ArrayList<LinkingResource>();
+		NodeList nl = resourceEnvironmentElement
+				.getElementsByTagName("linkingResources__ResourceEnvironment");
+		for (int i = 0; i < nl.getLength(); i++)
+			resourceEnvironmentElement.removeChild(nl.item(i));
+		for (LinkingResource lr : linkingResources)
+			addLinkingResource(lr);
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Sets the resource containers.
+	 * 
+	 * @param resourceContainers
+	 *            the new resource containers
+	 */
+	public void setResourceContainers(List<ResourceContainer> resourceContainers) {
+		this.resourceContainers = new ArrayList<ResourceContainer>();
+		NodeList nl = resourceEnvironmentElement
+				.getElementsByTagName("resourceContainer_ResourceEnvironment");
+		for (int i = 0; i < nl.getLength(); i++)
+			resourceEnvironmentElement.removeChild(nl.item(i));
+		for (ResourceContainer rc : resourceContainers)
+			addResourceContainer(rc);
+	}
+
+	/**
+	 * Sets the resource environment element.
+	 * 
+	 * @param resourceEnvironmentElement
+	 *            the new resource environment element
+	 */
+	public void setResourceEnvironmentElement(Element resourceEnvironmentElement) {
+		initialize(resourceEnvironmentElement);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

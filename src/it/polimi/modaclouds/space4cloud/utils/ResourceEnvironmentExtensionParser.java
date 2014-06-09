@@ -52,116 +52,17 @@ public class ResourceEnvironmentExtensionParser {
 	DocumentBuilder dBuilder;
 	Document doc;
 
+	public ResourceEnvironmentExtensionParser(File extensionFile)
+			throws ParserConfigurationException, SAXException, IOException {
+		this(extensionFile, true);
+	}
 
-	public ResourceEnvironmentExtensionParser(File extensionFile,boolean parse)
+	public ResourceEnvironmentExtensionParser(File extensionFile, boolean parse)
 			throws ParserConfigurationException, SAXException, IOException {
 
 		this.extension = extensionFile;
-		if(parse)
+		if (parse)
 			parse();
-	}
-
-	public ResourceEnvironmentExtensionParser(File extensionFile) throws ParserConfigurationException, SAXException, IOException{
-		this(extensionFile,true);
-	}
-
-	private void parse() throws ParserConfigurationException, SAXException, IOException {
-		dbFactory = DocumentBuilderFactory.newInstance();
-		dBuilder = dbFactory.newDocumentBuilder();
-		doc = dBuilder.parse(extension);
-		doc.getDocumentElement().normalize();
-		// parse resource containers
-		NodeList list = doc.getElementsByTagName("resourceContainer");
-		for (int i = 0; i < list.getLength(); i++) {
-			Node n = list.item(i);
-			Element n_elem = (Element) n;
-
-			// get the resource ID
-			String resourceId = n_elem.getAttribute("id");
-
-			// get the provider
-			String provider = null;
-			if (n_elem.hasAttribute("provider"))
-				provider = n_elem.getAttribute("provider");
-
-			// get the service type
-			String type = null;
-			String serviceName = null;
-			if (n_elem.getElementsByTagName("cloudResource").getLength() == 1) {
-				Element cloudResourceElement = (Element) n_elem
-						.getElementsByTagName("cloudResource").item(0);
-				type = cloudResourceElement.getAttributes()
-						.getNamedItem("serviceType").getNodeValue();
-				if (cloudResourceElement.hasAttribute("serviceName")) {
-					serviceName = cloudResourceElement.getAttributes()
-							.getNamedItem("serviceName").getNodeValue();
-				}
-				// get the location if provided
-				if (cloudResourceElement.hasChildNodes()) {
-					NodeList resourceElementChilds = cloudResourceElement
-							.getChildNodes();
-					for (int j = 0; j < resourceElementChilds.getLength(); j++)
-						if (resourceElementChilds.item(j).getNodeName()
-								.equals("location"))
-							serviceLocations.put(
-									resourceId,
-									resourceElementChilds.item(j)
-									.getAttributes()
-									.getNamedItem("region")
-									.getNodeValue());
-				}
-
-			} else {
-				Node cloudPlatformElement = n_elem.getElementsByTagName(
-						"cloudPlatform").item(0);
-				type = cloudPlatformElement.getAttributes()
-						.getNamedItem("serviceType").getNodeValue();
-				serviceName = cloudPlatformElement.getAttributes()
-						.getNamedItem("serviceName").getNodeValue();
-			}
-
-			// get the instance size
-			String size = null;
-			if (n_elem.getElementsByTagName("resourceSizeID").getLength() == 1)
-				size = n_elem.getElementsByTagName("resourceSizeID").item(0)
-				.getTextContent();
-
-			// get the number of replicas if specified
-			int[] replicas = new int[HOURS];
-			for (int j = 0; j < HOURS; j++)
-				replicas[j] = 1;
-
-			if (n_elem.getElementsByTagName("replicas").getLength() == HOURS) {
-				NodeList replicaNodes = ((Element) n_elem.getElementsByTagName(
-						"replicas").item(0)).getElementsByTagName("replica");
-				for (int j = 0; j < replicaNodes.getLength(); j++) {
-					int hour = Integer.parseInt(replicaNodes.item(j)
-							.getAttributes().getNamedItem("hour")
-							.getTextContent());
-					int value = Integer.parseInt(replicaNodes.item(j)
-							.getAttributes().getNamedItem("value")
-							.getTextContent());
-					replicas[hour - 1] = value;
-				}
-			}
-			instanceReplicas.put(resourceId, replicas);
-			providers.put(resourceId, provider);
-			serviceTypes.put(resourceId, type);
-			serviceNames.put(resourceId, serviceName);
-			instanceSizes.put(resourceId, size);
-		}
-	}
-
-	public Map<String, String> getServiceType() {
-		return serviceTypes;
-	}
-
-	public Map<String, String> getProviders() {
-		return providers;
-	}
-
-	public Map<String, String> getInstanceSize() {
-		return instanceSizes;
 	}
 
 	public void addResourceContainer(String id, String ServiceType,
@@ -217,12 +118,16 @@ public class ResourceEnvironmentExtensionParser {
 		}
 	}
 
-	public Map<String, String> getServiceName() {
-		return serviceNames;
-	}
-
 	public Map<String, int[]> getInstanceReplicas() {
 		return instanceReplicas;
+	}
+
+	public Map<String, String> getInstanceSize() {
+		return instanceSizes;
+	}
+
+	public Map<String, String> getProviders() {
+		return providers;
 	}
 
 	public String getRegion() {
@@ -230,31 +135,127 @@ public class ResourceEnvironmentExtensionParser {
 			return null;
 
 		String location = serviceLocations.values().iterator().next();
-		
+
 		for (Iterator<String> locationsIter = serviceLocations.values()
 				.iterator(); locationsIter.hasNext();)
 			if (!location.equals(locationsIter.next())) {
 				System.err
-				.println("Multiple regions specified in the resource container extension!");
+						.println("Multiple regions specified in the resource container extension!");
 				return null;
 			}
 		return location;
 	}
-	
-	public String getRegion(String provider) {
-        String value = serviceLocations.get(provider);
-        if (value != null && value.equals("not-valid"))
-            return null;
-        return value;
-    }
 
-    public void setRegion(String provider, String value) {
-//        String old = serviceLocations.get(provider);
-//        if (old != null && !old.equals(value))
-//            serviceLocations.put(provider, "us-east");
-////          serviceLocations.put(provider, "not-valid");
-//        else
-            serviceLocations.put(provider,  value);
-    }
+	public String getRegion(String provider) {
+		String value = serviceLocations.get(provider);
+		if (value != null && value.equals("not-valid"))
+			return null;
+		return value;
+	}
+
+	public Map<String, String> getServiceName() {
+		return serviceNames;
+	}
+
+	public Map<String, String> getServiceType() {
+		return serviceTypes;
+	}
+
+	private void parse() throws ParserConfigurationException, SAXException,
+			IOException {
+		dbFactory = DocumentBuilderFactory.newInstance();
+		dBuilder = dbFactory.newDocumentBuilder();
+		doc = dBuilder.parse(extension);
+		doc.getDocumentElement().normalize();
+		// parse resource containers
+		NodeList list = doc.getElementsByTagName("resourceContainer");
+		for (int i = 0; i < list.getLength(); i++) {
+			Node n = list.item(i);
+			Element n_elem = (Element) n;
+
+			// get the resource ID
+			String resourceId = n_elem.getAttribute("id");
+
+			// get the provider
+			String provider = null;
+			if (n_elem.hasAttribute("provider"))
+				provider = n_elem.getAttribute("provider");
+
+			// get the service type
+			String type = null;
+			String serviceName = null;
+			if (n_elem.getElementsByTagName("cloudResource").getLength() == 1) {
+				Element cloudResourceElement = (Element) n_elem
+						.getElementsByTagName("cloudResource").item(0);
+				type = cloudResourceElement.getAttributes()
+						.getNamedItem("serviceType").getNodeValue();
+				if (cloudResourceElement.hasAttribute("serviceName")) {
+					serviceName = cloudResourceElement.getAttributes()
+							.getNamedItem("serviceName").getNodeValue();
+				}
+				// get the location if provided
+				if (cloudResourceElement.hasChildNodes()) {
+					NodeList resourceElementChilds = cloudResourceElement
+							.getChildNodes();
+					for (int j = 0; j < resourceElementChilds.getLength(); j++)
+						if (resourceElementChilds.item(j).getNodeName()
+								.equals("location"))
+							serviceLocations.put(
+									resourceId,
+									resourceElementChilds.item(j)
+											.getAttributes()
+											.getNamedItem("region")
+											.getNodeValue());
+				}
+
+			} else {
+				Node cloudPlatformElement = n_elem.getElementsByTagName(
+						"cloudPlatform").item(0);
+				type = cloudPlatformElement.getAttributes()
+						.getNamedItem("serviceType").getNodeValue();
+				serviceName = cloudPlatformElement.getAttributes()
+						.getNamedItem("serviceName").getNodeValue();
+			}
+
+			// get the instance size
+			String size = null;
+			if (n_elem.getElementsByTagName("resourceSizeID").getLength() == 1)
+				size = n_elem.getElementsByTagName("resourceSizeID").item(0)
+						.getTextContent();
+
+			// get the number of replicas if specified
+			int[] replicas = new int[HOURS];
+			for (int j = 0; j < HOURS; j++)
+				replicas[j] = 1;
+
+			if (n_elem.getElementsByTagName("replicas").getLength() == HOURS) {
+				NodeList replicaNodes = ((Element) n_elem.getElementsByTagName(
+						"replicas").item(0)).getElementsByTagName("replica");
+				for (int j = 0; j < replicaNodes.getLength(); j++) {
+					int hour = Integer.parseInt(replicaNodes.item(j)
+							.getAttributes().getNamedItem("hour")
+							.getTextContent());
+					int value = Integer.parseInt(replicaNodes.item(j)
+							.getAttributes().getNamedItem("value")
+							.getTextContent());
+					replicas[hour - 1] = value;
+				}
+			}
+			instanceReplicas.put(resourceId, replicas);
+			providers.put(resourceId, provider);
+			serviceTypes.put(resourceId, type);
+			serviceNames.put(resourceId, serviceName);
+			instanceSizes.put(resourceId, size);
+		}
+	}
+
+	public void setRegion(String provider, String value) {
+		// String old = serviceLocations.get(provider);
+		// if (old != null && !old.equals(value))
+		// serviceLocations.put(provider, "us-east");
+		// // serviceLocations.put(provider, "not-valid");
+		// else
+		serviceLocations.put(provider, value);
+	}
 
 }

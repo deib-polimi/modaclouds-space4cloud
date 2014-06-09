@@ -57,7 +57,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	private static final long serialVersionUID = -1456536857995387200L;
 	private static final String SCHEMA_LOCATION = "http://www.modaclouds.eu/xsd/2013/6/lineResult lineResult.xsd";
 	private static final String NAMESPACE = "http://www.modaclouds.eu/xsd/2013/6/lineResult";
-	
+
 	private static final Logger logger = LoggerHelper
 			.getLogger(LINEResultParser.class);
 
@@ -88,6 +88,42 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 		parse();
 	}
 
+	private void fixSchemaReference(File solutionFile) {
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder;
+		Document doc = null;
+		try {
+			dBuilder = dbFactory.newDocumentBuilder();
+			doc = dBuilder.parse(solutionFile);
+
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			e.printStackTrace();
+		}
+		doc.getDocumentElement().normalize();
+		Element root = (Element) doc.getElementsByTagName("cmcqn-model")
+				.item(0);
+		root.setAttribute("xsi:schemaLocation", SCHEMA_LOCATION);
+		root.setAttribute("xmlns", NAMESPACE);
+
+		TransformerFactory transformerFactory = TransformerFactory
+				.newInstance();
+		javax.xml.transform.Transformer transformer = null;
+		try {
+			transformer = transformerFactory.newTransformer();
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		DOMSource source = new DOMSource(doc);
+		StreamResult result = new StreamResult(solutionFile);
+		try {
+			transformer.transform(source, result);
+		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public double getResponseTime(String resourceID) {
 		if (responseTimes.get(resourceID) != null)
@@ -110,26 +146,27 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	public HashMap<String, Double> getUtilizations() {
 		return utilizations;
 	}
-	
-	private void loadXML(){
+
+	private void loadXML() {
 		try {
 			result = XMLHelper.deserialize(filePath.toUri().toURL(),
-					CmcqnModel.class);			
+					CmcqnModel.class);
 		} catch (MalformedURLException | JAXBException e) {
-			
+
 			if (e instanceof UnmarshalException) {
 				fixSchemaReference(filePath.toFile());
-				logger.warn("Fixed xml index in file: "+filePath.toString());
+				logger.warn("Fixed xml index in file: " + filePath.toString());
 				loadXML();
-			}else{
-				logger.error("Unable to parse LINE results of mofel: "+filePath.toString(), e);
+			} else {
+				logger.error("Unable to parse LINE results of mofel: "
+						+ filePath.toString(), e);
 			}
 		}
 
 	}
 
 	private void parse() {
-		
+
 		loadXML();
 
 		for (Processor p : result.getProcessor())
@@ -157,39 +194,5 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		filePathSerialization = filePath.toString();
 		out.defaultWriteObject();
-	}
-
-	private void fixSchemaReference(File solutionFile){
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder;
-		Document doc = null;
-		try {
-			dBuilder = dbFactory.newDocumentBuilder();
-			doc = dBuilder.parse(solutionFile);
-
-		} catch (ParserConfigurationException | SAXException | IOException e) {
-			e.printStackTrace();
-		}
-		doc.getDocumentElement().normalize();
-		Element root = (Element) doc.getElementsByTagName("cmcqn-model").item(0);
-		root.setAttribute("xsi:schemaLocation", SCHEMA_LOCATION);
-		root.setAttribute("xmlns", NAMESPACE);
-
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		javax.xml.transform.Transformer transformer = null;
-		try {
-			transformer = transformerFactory.newTransformer();
-		} catch (TransformerConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		DOMSource source = new DOMSource(doc);
-		StreamResult result = new StreamResult(solutionFile);
-		try {
-			transformer.transform(source, result);
-		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }

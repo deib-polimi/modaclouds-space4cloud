@@ -28,14 +28,6 @@ import org.apache.commons.jxpath.JXPathContext;
 
 public class XMLHelper {
 
-	public static <T> T getElementByID(Collection<T> elements, String id) {
-		for (T element : elements) {
-			if (JXPathContext.newContext(element).getValue("id").equals(id))
-				return element;
-		}
-		return null;
-	}
-
 	public static <T> boolean containsId(Collection<T> elements, String id) {
 		return getElementByID(elements, id) != null;
 	}
@@ -48,8 +40,16 @@ public class XMLHelper {
 		return object;
 	}
 
-	public static <T> void serialize(T object, Class<T> sourceClass, OutputStream resultStream)
-			throws JAXBException {
+	public static <T> T getElementByID(Collection<T> elements, String id) {
+		for (T element : elements) {
+			if (JXPathContext.newContext(element).getValue("id").equals(id))
+				return element;
+		}
+		return null;
+	}
+
+	public static <T> void serialize(T object, Class<T> sourceClass,
+			OutputStream resultStream) throws JAXBException {
 		JAXBContext jaxbContext = JAXBContext.newInstance(sourceClass);
 		Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 		jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);

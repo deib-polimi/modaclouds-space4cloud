@@ -35,8 +35,7 @@ import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
 
 public class SolutionEvaluator implements Runnable {
 
-
-	//Should this part go into a helper class?
+	// Should this part go into a helper class?
 	// Return values of lqns
 	/** The Constant LQNS_RETURN_SUCCESS. */
 	private static final int LQNS_RETURN_SUCCESS = 0;
@@ -52,13 +51,12 @@ public class SolutionEvaluator implements Runnable {
 
 	private LineServerHandler handler;
 
-
-	String filePath; 
+	String filePath;
 	String resultfilePath;
 	Instance instance;
 	String solver;
 	LqnHandler lqnHandler;
-	LqnResultParser resultParser;	
+	LqnResultParser resultParser;
 	Solution solution;
 	ArrayList<ActionListener> listeners = new ArrayList<>();
 
@@ -67,16 +65,11 @@ public class SolutionEvaluator implements Runnable {
 		this.instance = instance;
 		this.lqnHandler = instance.getLqnHandler();
 		filePath = lqnHandler.getLqnFilePath().toAbsolutePath().toString();
-		this.solution = sol;		
+		this.solution = sol;
 	}
 
-	public void setLineServerHandler(LineServerHandler handler){
-		this.handler=handler;
-	}
-
-
-	public void addListener(ActionListener listener){
-		listeners.add(listener);		
+	public void addListener(ActionListener listener) {
+		listeners.add(listener);
 	}
 
 	public String getFilePath() {
@@ -87,14 +80,30 @@ public class SolutionEvaluator implements Runnable {
 		return solution;
 	}
 
-	private void readStream(InputStream is,boolean show) {
+	public void parseResults() {
+		if (solver.equals(MessageStrings.LQNS_SOLVER)) {
+			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
+					+ ".lqxo";
+			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
+		} else {
+			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
+					+ "_res.xml";
+			resultParser = new LINEResultParser(Paths.get(resultfilePath));
+		}
+
+		instance.updateResults(resultParser);
+		for (ActionListener l : listeners)
+			l.actionPerformed(new ActionEvent(this, 0, "ResultsUpdated"));
+	}
+
+	private void readStream(InputStream is, boolean show) {
 		try {
 			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);
 			String line = null;
-			while ((line = br.readLine()) != null){
-				if(show)
-					System.out.println("Pb: "+line);
+			while ((line = br.readLine()) != null) {
+				if (show)
+					System.out.println("Pb: " + line);
 			}
 
 		} catch (IOException ioe) {
@@ -102,53 +111,38 @@ public class SolutionEvaluator implements Runnable {
 		}
 	}
 
-	public void removeListener(ActionListener listener){
-		listeners.remove(listener);		
+	public void removeListener(ActionListener listener) {
+		listeners.remove(listener);
 	}
 
 	@Override
 	public void run() {
-		//Update and write the lqn model
-		instance.updateLqn();		
+		// Update and write the lqn model
+		instance.updateLqn();
 		lqnHandler.saveToFile();
 
-		//run the evaluator
-		if(solver.equals(MessageStrings.LQNS_SOLVER))
-			runWithLQNS();		
-		//Evaluate with LINE
+		// run the evaluator
+		if (solver.equals(MessageStrings.LQNS_SOLVER))
+			runWithLQNS();
+		// Evaluate with LINE
 		else
 			runWithLINE();
 
 		instance.setEvaluated(true);
 		parseResults();
-		for(ActionListener l:listeners)
+		for (ActionListener l : listeners)
 			l.actionPerformed(new ActionEvent(this, 0, null));
 	}
 
-	public void parseResults(){		
-		if(solver.equals(MessageStrings.LQNS_SOLVER)){
-			resultfilePath = filePath.substring(0,filePath.lastIndexOf('.'))+".lqxo";
-			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
-		}
-		else{
-			resultfilePath = filePath.substring(0,filePath.lastIndexOf('.'))+"_res.xml";
-			resultParser = new LINEResultParser(Paths.get(resultfilePath));
-		}
-
-		instance.updateResults(resultParser);
-		for(ActionListener l:listeners)
-			l.actionPerformed(new ActionEvent(this, 0, "ResultsUpdated"));
-	}
-
-	private void runWithLINE(){
-		if(handler==null){
+	private void runWithLINE() {
+		if (handler == null) {
 			System.err.println("LINE server handle not initialized");
 			return;
 		}
 
 		handler.solve(filePath, null);
-		//wait for the model to be solved
-		while(!handler.isSolved(filePath))
+		// wait for the model to be solved
+		while (!handler.isSolved(filePath))
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -156,33 +150,36 @@ public class SolutionEvaluator implements Runnable {
 				e.printStackTrace();
 			}
 
-
 	}
 
-
-	private void runWithLQNS(){
+	private void runWithLQNS() {
 		try {
 			String solverProgram = "lqns";
 
-			String command = solverProgram+" "+filePath+" -f"; //using the fast option
-			//String command = solverProgram+" "+filePath; //without using the fast option
+			String command = solverProgram + " " + filePath + " -f"; // using
+																		// the
+																		// fast
+																		// option
+			// String command = solverProgram+" "+filePath; //without using the
+			// fast option
 
 			ProcessBuilder pb = new ProcessBuilder(splitToCommandArray(command));
 			Process proc = pb.start();
-			readStream(proc.getInputStream(),false);
-			readStream(proc.getErrorStream(),true);
+			readStream(proc.getInputStream(), false);
+			readStream(proc.getErrorStream(), true);
 			int exitVal = proc.waitFor();
 			proc.destroy();
-
 
 			if (exitVal == LQNS_RETURN_SUCCESS) {
 				instance.setEvaluated(true);
 			} else if (exitVal == LQNS_RETURN_MODEL_FAILED_TO_CONVERGE) {
-				System.err.println(MessageStrings.LQNS_SOLVER
-						+ " exited with "
-						+ exitVal
-						+ ": The model failed to converge. Results are most likely inaccurate. ");
-				System.err.println("Analysis Result has been written to: " + resultfilePath);
+				System.err
+						.println(MessageStrings.LQNS_SOLVER
+								+ " exited with "
+								+ exitVal
+								+ ": The model failed to converge. Results are most likely inaccurate. ");
+				System.err.println("Analysis Result has been written to: "
+						+ resultfilePath);
 				instance.setEvaluated(false);
 			} else {
 				String message = "";
@@ -200,13 +197,16 @@ public class SolutionEvaluator implements Runnable {
 				}
 				System.err.println(message);
 				instance.setEvaluated(false);
-			}			
+			}
 		} catch (IOException | InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	public void setLineServerHandler(LineServerHandler handler) {
+		this.handler = handler;
+	}
 
 	private String[] splitToCommandArray(String command) {
 		return command.split("\\s");

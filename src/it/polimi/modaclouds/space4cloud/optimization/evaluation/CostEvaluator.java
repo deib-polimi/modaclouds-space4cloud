@@ -44,101 +44,108 @@ public class CostEvaluator {
 
 	DataHandler dataHandler = DataHandlerFactory.getHandler();
 
-	public double deriveCosts(Instance application, int hour){
+	public double deriveCosts(Instance application, int hour) {
 		double cost = 0;
-		//sum up costs for each tier  
-		for(Tier t:application.getTiers()){
-			CloudService service = t.getCloudService();			
-			if(service instanceof IaaS){
+		// sum up costs for each tier
+		for (Tier t : application.getTiers()) {
+			CloudService service = t.getCloudService();
+			if (service instanceof IaaS) {
 				IaaS iaasResource = (IaaS) service;
-				it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler.getCloudResource(iaasResource.getProvider(), iaasResource.getServiceName(), iaasResource.getResourceName());
+				it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler
+						.getCloudResource(iaasResource.getProvider(),
+								iaasResource.getServiceName(),
+								iaasResource.getResourceName());
 
 				if (cloudResource == null) {
 					System.out.println("ERROR: The found resource is null!");
 					cost += 100;
 					continue;
 				}
-				
+
 				List<Cost> lc = cloudResource.getHasCost();
 				List<Cost> onDemandLc = new ArrayList<Cost>();
-				
-				//filter only on-demand
-				for(Cost c:lc)
-					if(!c.getDescription().contains("Reserved"))
+
+				// filter only on-demand
+				for (Cost c : lc)
+					if (!c.getDescription().contains("Reserved"))
 						onDemandLc.add(c);
-						
+
 				lc.clear();
-				//filter by region
-				for(Cost c:onDemandLc)
-					if (c.getRegion() == null || c.getRegion() == "" || application.getRegion() == null || c.getRegion().equals(application.getRegion()))
+				// filter by region
+				for (Cost c : onDemandLc)
+					if (c.getRegion() == null || c.getRegion() == ""
+							|| application.getRegion() == null
+							|| c.getRegion().equals(application.getRegion()))
 						lc.add(c);
 
 				CostProfile cp = cloudResource.getHasCostProfile();
 				cost += deriveCosts(lc, cp, iaasResource.getReplicas(), hour);
 			}
-			//TODO Add Platform costs
+			// TODO Add Platform costs
 		}
-		return cost;	
+		return cost;
 	}
-//	/**
-//	 * Derives the system costs analyzing the mapping between Extended Resource
-//	 * Containers and Cloud Elements. Information about costs is saved within
-//	 * the cost model serialized within the "costs.xml" file. Cloud Platforms
-//	 * and Cloud Resources are automatically recognized and separately treated.
-//	 * 
-//	 * @param map
-//	 *            is the Map object containing key-value elements, where the key
-//	 *            is an ExtendedResourceContainer object, while the value is a
-//	 *            CloudElement object.
-//	 * @see CloudElement
-//	 * @see ExtendedResourceContainer
-//	 * @see #deriveCostsForCloudPlatform(ExtendedResourceContainer,
-//	 *      CloudPlatform)
-//	 * @see #deriveCostsForCloudResource(ExtendedResourceContainer,
-//	 *      CloudService)
-//	 */
-//	public void derive(Map<ExtendedResourceContainer, CloudElement> map) {
-//		for (Map.Entry<ExtendedResourceContainer, CloudElement> e : map
-//				.entrySet())
-//			if (e.getValue() instanceof CloudService)
-//				deriveCostsForCloudResource(e.getKey(),
-//						(CloudService) e.getValue());
-//			else if (e.getValue() instanceof CloudPlatform)
-//				deriveCostsForCloudPlatform(e.getKey(),
-//						(CloudPlatform) e.getValue());
-//	}
 
+	// /**
+	// * Derives the system costs analyzing the mapping between Extended
+	// Resource
+	// * Containers and Cloud Elements. Information about costs is saved within
+	// * the cost model serialized within the "costs.xml" file. Cloud Platforms
+	// * and Cloud Resources are automatically recognized and separately
+	// treated.
+	// *
+	// * @param map
+	// * is the Map object containing key-value elements, where the key
+	// * is an ExtendedResourceContainer object, while the value is a
+	// * CloudElement object.
+	// * @see CloudElement
+	// * @see ExtendedResourceContainer
+	// * @see #deriveCostsForCloudPlatform(ExtendedResourceContainer,
+	// * CloudPlatform)
+	// * @see #deriveCostsForCloudResource(ExtendedResourceContainer,
+	// * CloudService)
+	// */
+	// public void derive(Map<ExtendedResourceContainer, CloudElement> map) {
+	// for (Map.Entry<ExtendedResourceContainer, CloudElement> e : map
+	// .entrySet())
+	// if (e.getValue() instanceof CloudService)
+	// deriveCostsForCloudResource(e.getKey(),
+	// (CloudService) e.getValue());
+	// else if (e.getValue() instanceof CloudPlatform)
+	// deriveCostsForCloudPlatform(e.getKey(),
+	// (CloudPlatform) e.getValue());
+	// }
 
-//	/**
-//	 * Derives costs from the mapping between an Extended Resource Container and
-//	 * a Cloud Platform.
-//	 * 
-//	 * @param erc
-//	 *            is the ExtendedResourceContainer object derived from the
-//	 *            CloudPlatform.
-//	 * @param cp
-//	 *            is the CloudPlatform object.
-//	 * @see ExtendedResourceContainer
-//	 * @see CloudPlatform
-//	 */
-//	private void deriveCostsForCloudPlatform(ExtendedResourceContainer erc,
-//			CloudPlatform cp) {
-//		List<Cost> lc = cp.getHasCost();
-//		CostProfile costp = cp.getHasCostProfile();
-//		List<CloudService> lcr = cp.getRunsOnCloudResource();
-//		double cost = deriveCosts(lc, costp, costList, as);
-//		if (lcr != null)
-//			for (CloudService cr : lcr) {
-//				List<Cost> lc1 = cr.getHasCost();
-//				CostProfile cp1 = cr.getHasCostProfile();
-//				Element costList1 = doc.createElement("Cost_List");
-//				double temp = deriveCosts(lc1, cp1, costList1, as);
-//				// Update the total system cost
-//				cost += temp;
-//			}
-//		totalCost += cost;		
-//	}
-
+	// /**
+	// * Derives costs from the mapping between an Extended Resource Container
+	// and
+	// * a Cloud Platform.
+	// *
+	// * @param erc
+	// * is the ExtendedResourceContainer object derived from the
+	// * CloudPlatform.
+	// * @param cp
+	// * is the CloudPlatform object.
+	// * @see ExtendedResourceContainer
+	// * @see CloudPlatform
+	// */
+	// private void deriveCostsForCloudPlatform(ExtendedResourceContainer erc,
+	// CloudPlatform cp) {
+	// List<Cost> lc = cp.getHasCost();
+	// CostProfile costp = cp.getHasCostProfile();
+	// List<CloudService> lcr = cp.getRunsOnCloudResource();
+	// double cost = deriveCosts(lc, costp, costList, as);
+	// if (lcr != null)
+	// for (CloudService cr : lcr) {
+	// List<Cost> lc1 = cr.getHasCost();
+	// CostProfile cp1 = cr.getHasCostProfile();
+	// Element costList1 = doc.createElement("Cost_List");
+	// double temp = deriveCosts(lc1, cp1, costList1, as);
+	// // Update the total system cost
+	// cost += temp;
+	// }
+	// totalCost += cost;
+	// }
 
 	/**
 	 * Helper method used to derive costs starting from a list of Costs, a Cost
@@ -158,13 +165,16 @@ public class CostEvaluator {
 	 * @see CostProfile
 	 * @see AllocationProfile
 	 */
-	private double deriveCosts(List<Cost> lc, CostProfile cp, int replicas, int hour) {
+	private double deriveCosts(List<Cost> lc, CostProfile cp, int replicas,
+			int hour) {
 		double cost = 0.0, temp;
 
 		// Consider the costs which do not belong to a cost profile.
-		if (lc != null && cp == null)			
+		if (lc != null && cp == null)
 			for (Cost c : lc) {
-				//if the resource has a cost for each hour skip those that are different the "hour", if it has only 1 cost (for the whole day) use it
+				// if the resource has a cost for each hour skip those that are
+				// different the "hour", if it has only 1 cost (for the whole
+				// day) use it
 				temp = 0.0;
 				switch (c.getUnit()) {
 
@@ -173,15 +183,15 @@ public class CostEvaluator {
 					// Instances (VM) scale according to the Allocation Profile,
 					// so for each hour we consider the allocation size and we
 					// multiply it for the cost value.
-					temp += c.getValue() * replicas;									
+					temp += c.getValue() * replicas;
 					break;
 
-					// Storage systems (storage/DB) have per GB-month costs
+				// Storage systems (storage/DB) have per GB-month costs
 				case PER_GBMONTH:
 					// Storage resources do not scale, so we don't have to take
 					// into account allocation when deriving costs! We must
 					// consider the hourly cost, so we multiply the cost for the
-					// size in GB, divide by (365*24)/12=730 hours/month and				
+					// size in GB, divide by (365*24)/12=730 hours/month and
 					VirtualHWResource v = c.getDefinedOn();
 					int size;
 					if (v != null)
@@ -203,7 +213,7 @@ public class CostEvaluator {
 						}
 					break;
 
-					// Future works
+				// Future works
 				case PER_MILLION_IO:
 				default:
 					break;
@@ -218,7 +228,7 @@ public class CostEvaluator {
 			lc = cp.getComposedOf();
 			if (lc != null)
 				for (Cost c : lc) {
-					if(lc.size()>1 && lc.indexOf(c) != hour)
+					if (lc.size() > 1 && lc.indexOf(c) != hour)
 						continue;
 					temp = 0.0;
 					switch (c.getUnit()) {
@@ -228,11 +238,11 @@ public class CostEvaluator {
 						// Instances (VM) scale according to the Allocation
 						// Profile, so we have to take into account the
 						// allocation size corresponding to the actual cost
-						// reference period.						
+						// reference period.
 						temp = c.getValue() * replicas;
 						break;
 
-						// Storage systems (storage/DB) have per GB-month costs
+					// Storage systems (storage/DB) have per GB-month costs
 					case PER_GBMONTH:
 						// Storage resources do not scale, so we don't have to
 						// take into account allocation when deriving costs! We

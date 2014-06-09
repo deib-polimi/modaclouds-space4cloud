@@ -5,7 +5,6 @@
 // Generated on: 2014.06.09 at 08:30:05 AM CEST 
 //
 
-
 package it.polimi.modaclouds.space4cloud.line;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -14,6 +13,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
 import org.jvnet.jaxb2_commons.lang.CopyStrategy;
 import org.jvnet.jaxb2_commons.lang.CopyTo;
 import org.jvnet.jaxb2_commons.lang.Equals;
@@ -32,11 +32,13 @@ import org.jvnet.jaxb2_commons.lang.ToStringStrategy;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 
-
 /**
- * <p>Java class for anonymous complex type.
+ * <p>
+ * Java class for anonymous complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType>
@@ -54,210 +56,230 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "")
 @XmlRootElement(name = "processor")
-public class Processor
-    implements Cloneable, CopyTo, Equals, HashCode, MergeFrom, ToString
-{
+public class Processor implements Cloneable, CopyTo, Equals, HashCode,
+		MergeFrom, ToString {
 
-    @XmlAttribute(name = "name")
-    @XmlSchemaType(name = "anySimpleType")
-    protected String name;
-    @XmlAttribute(name = "util")
-    protected Double util;
+	@XmlAttribute(name = "name")
+	@XmlSchemaType(name = "anySimpleType")
+	protected String name;
+	@XmlAttribute(name = "util")
+	protected Double util;
 
-    /**
-     * Gets the value of the name property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getName() {
-        return name;
-    }
+	public StringBuilder append(ObjectLocator locator, StringBuilder buffer,
+			ToStringStrategy strategy) {
+		strategy.appendStart(locator, this, buffer);
+		appendFields(locator, buffer, strategy);
+		strategy.appendEnd(locator, this, buffer);
+		return buffer;
+	}
 
-    /**
-     * Sets the value of the name property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setName(String value) {
-        this.name = value;
-    }
+	public StringBuilder appendFields(ObjectLocator locator,
+			StringBuilder buffer, ToStringStrategy strategy) {
+		{
+			String theName;
+			theName = this.getName();
+			strategy.appendField(locator, this, "name", buffer, theName);
+		}
+		{
+			Double theUtil;
+			theUtil = this.getUtil();
+			strategy.appendField(locator, this, "util", buffer, theUtil);
+		}
+		return buffer;
+	}
 
-    /**
-     * Gets the value of the util property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Double }
-     *     
-     */
-    public Double getUtil() {
-        return util;
-    }
+	public Object clone() {
+		return copyTo(createNewInstance());
+	}
 
-    /**
-     * Sets the value of the util property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Double }
-     *     
-     */
-    public void setUtil(Double value) {
-        this.util = value;
-    }
+	public Object copyTo(Object target) {
+		final CopyStrategy strategy = JAXBCopyStrategy.INSTANCE;
+		return copyTo(null, target, strategy);
+	}
 
-    public String toString() {
-        final ToStringStrategy strategy = JAXBToStringStrategy.INSTANCE;
-        final StringBuilder buffer = new StringBuilder();
-        append(null, buffer, strategy);
-        return buffer.toString();
-    }
+	public Object copyTo(ObjectLocator locator, Object target,
+			CopyStrategy strategy) {
+		final Object draftCopy = ((target == null) ? createNewInstance()
+				: target);
+		if (draftCopy instanceof Processor) {
+			final Processor copy = ((Processor) draftCopy);
+			if (this.name != null) {
+				String sourceName;
+				sourceName = this.getName();
+				String copyName = ((String) strategy.copy(
+						LocatorUtils.property(locator, "name", sourceName),
+						sourceName));
+				copy.setName(copyName);
+			} else {
+				copy.name = null;
+			}
+			if (this.util != null) {
+				Double sourceUtil;
+				sourceUtil = this.getUtil();
+				Double copyUtil = ((Double) strategy.copy(
+						LocatorUtils.property(locator, "util", sourceUtil),
+						sourceUtil));
+				copy.setUtil(copyUtil);
+			} else {
+				copy.util = null;
+			}
+		}
+		return draftCopy;
+	}
 
-    public StringBuilder append(ObjectLocator locator, StringBuilder buffer, ToStringStrategy strategy) {
-        strategy.appendStart(locator, this, buffer);
-        appendFields(locator, buffer, strategy);
-        strategy.appendEnd(locator, this, buffer);
-        return buffer;
-    }
+	public Object createNewInstance() {
+		return new Processor();
+	}
 
-    public StringBuilder appendFields(ObjectLocator locator, StringBuilder buffer, ToStringStrategy strategy) {
-        {
-            String theName;
-            theName = this.getName();
-            strategy.appendField(locator, this, "name", buffer, theName);
-        }
-        {
-            Double theUtil;
-            theUtil = this.getUtil();
-            strategy.appendField(locator, this, "util", buffer, theUtil);
-        }
-        return buffer;
-    }
+	public boolean equals(Object object) {
+		final EqualsStrategy strategy = JAXBEqualsStrategy.INSTANCE;
+		return equals(null, null, object, strategy);
+	}
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
-        if (!(object instanceof Processor)) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        final Processor that = ((Processor) object);
-        {
-            String lhsName;
-            lhsName = this.getName();
-            String rhsName;
-            rhsName = that.getName();
-            if (!strategy.equals(LocatorUtils.property(thisLocator, "name", lhsName), LocatorUtils.property(thatLocator, "name", rhsName), lhsName, rhsName)) {
-                return false;
-            }
-        }
-        {
-            Double lhsUtil;
-            lhsUtil = this.getUtil();
-            Double rhsUtil;
-            rhsUtil = that.getUtil();
-            if (!strategy.equals(LocatorUtils.property(thisLocator, "util", lhsUtil), LocatorUtils.property(thatLocator, "util", rhsUtil), lhsUtil, rhsUtil)) {
-                return false;
-            }
-        }
-        return true;
-    }
+	public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator,
+			Object object, EqualsStrategy strategy) {
+		if (!(object instanceof Processor)) {
+			return false;
+		}
+		if (this == object) {
+			return true;
+		}
+		final Processor that = ((Processor) object);
+		{
+			String lhsName;
+			lhsName = this.getName();
+			String rhsName;
+			rhsName = that.getName();
+			if (!strategy.equals(
+					LocatorUtils.property(thisLocator, "name", lhsName),
+					LocatorUtils.property(thatLocator, "name", rhsName),
+					lhsName, rhsName)) {
+				return false;
+			}
+		}
+		{
+			Double lhsUtil;
+			lhsUtil = this.getUtil();
+			Double rhsUtil;
+			rhsUtil = that.getUtil();
+			if (!strategy.equals(
+					LocatorUtils.property(thisLocator, "util", lhsUtil),
+					LocatorUtils.property(thatLocator, "util", rhsUtil),
+					lhsUtil, rhsUtil)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-    public boolean equals(Object object) {
-        final EqualsStrategy strategy = JAXBEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
-    }
+	/**
+	 * Gets the value of the name property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getName() {
+		return name;
+	}
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = 1;
-        {
-            String theName;
-            theName = this.getName();
-            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "name", theName), currentHashCode, theName);
-        }
-        {
-            Double theUtil;
-            theUtil = this.getUtil();
-            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "util", theUtil), currentHashCode, theUtil);
-        }
-        return currentHashCode;
-    }
+	/**
+	 * Gets the value of the util property.
+	 * 
+	 * @return possible object is {@link Double }
+	 * 
+	 */
+	public Double getUtil() {
+		return util;
+	}
 
-    public int hashCode() {
-        final HashCodeStrategy strategy = JAXBHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
-    }
+	public int hashCode() {
+		final HashCodeStrategy strategy = JAXBHashCodeStrategy.INSTANCE;
+		return this.hashCode(null, strategy);
+	}
 
-    public Object clone() {
-        return copyTo(createNewInstance());
-    }
+	public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
+		int currentHashCode = 1;
+		{
+			String theName;
+			theName = this.getName();
+			currentHashCode = strategy.hashCode(
+					LocatorUtils.property(locator, "name", theName),
+					currentHashCode, theName);
+		}
+		{
+			Double theUtil;
+			theUtil = this.getUtil();
+			currentHashCode = strategy.hashCode(
+					LocatorUtils.property(locator, "util", theUtil),
+					currentHashCode, theUtil);
+		}
+		return currentHashCode;
+	}
 
-    public Object copyTo(Object target) {
-        final CopyStrategy strategy = JAXBCopyStrategy.INSTANCE;
-        return copyTo(null, target, strategy);
-    }
+	public void mergeFrom(Object left, Object right) {
+		final MergeStrategy strategy = JAXBMergeStrategy.INSTANCE;
+		mergeFrom(null, null, left, right, strategy);
+	}
 
-    public Object copyTo(ObjectLocator locator, Object target, CopyStrategy strategy) {
-        final Object draftCopy = ((target == null)?createNewInstance():target);
-        if (draftCopy instanceof Processor) {
-            final Processor copy = ((Processor) draftCopy);
-            if (this.name!= null) {
-                String sourceName;
-                sourceName = this.getName();
-                String copyName = ((String) strategy.copy(LocatorUtils.property(locator, "name", sourceName), sourceName));
-                copy.setName(copyName);
-            } else {
-                copy.name = null;
-            }
-            if (this.util!= null) {
-                Double sourceUtil;
-                sourceUtil = this.getUtil();
-                Double copyUtil = ((Double) strategy.copy(LocatorUtils.property(locator, "util", sourceUtil), sourceUtil));
-                copy.setUtil(copyUtil);
-            } else {
-                copy.util = null;
-            }
-        }
-        return draftCopy;
-    }
+	public void mergeFrom(ObjectLocator leftLocator,
+			ObjectLocator rightLocator, Object left, Object right,
+			MergeStrategy strategy) {
+		if (right instanceof Processor) {
+			final Processor target = this;
+			final Processor leftObject = ((Processor) left);
+			final Processor rightObject = ((Processor) right);
+			{
+				String lhsName;
+				lhsName = leftObject.getName();
+				String rhsName;
+				rhsName = rightObject.getName();
+				String mergedName = ((String) strategy.merge(
+						LocatorUtils.property(leftLocator, "name", lhsName),
+						LocatorUtils.property(rightLocator, "name", rhsName),
+						lhsName, rhsName));
+				target.setName(mergedName);
+			}
+			{
+				Double lhsUtil;
+				lhsUtil = leftObject.getUtil();
+				Double rhsUtil;
+				rhsUtil = rightObject.getUtil();
+				Double mergedUtil = ((Double) strategy.merge(
+						LocatorUtils.property(leftLocator, "util", lhsUtil),
+						LocatorUtils.property(rightLocator, "util", rhsUtil),
+						lhsUtil, rhsUtil));
+				target.setUtil(mergedUtil);
+			}
+		}
+	}
 
-    public Object createNewInstance() {
-        return new Processor();
-    }
+	/**
+	 * Sets the value of the name property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setName(String value) {
+		this.name = value;
+	}
 
-    public void mergeFrom(Object left, Object right) {
-        final MergeStrategy strategy = JAXBMergeStrategy.INSTANCE;
-        mergeFrom(null, null, left, right, strategy);
-    }
+	/**
+	 * Sets the value of the util property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link Double }
+	 * 
+	 */
+	public void setUtil(Double value) {
+		this.util = value;
+	}
 
-    public void mergeFrom(ObjectLocator leftLocator, ObjectLocator rightLocator, Object left, Object right, MergeStrategy strategy) {
-        if (right instanceof Processor) {
-            final Processor target = this;
-            final Processor leftObject = ((Processor) left);
-            final Processor rightObject = ((Processor) right);
-            {
-                String lhsName;
-                lhsName = leftObject.getName();
-                String rhsName;
-                rhsName = rightObject.getName();
-                String mergedName = ((String) strategy.merge(LocatorUtils.property(leftLocator, "name", lhsName), LocatorUtils.property(rightLocator, "name", rhsName), lhsName, rhsName));
-                target.setName(mergedName);
-            }
-            {
-                Double lhsUtil;
-                lhsUtil = leftObject.getUtil();
-                Double rhsUtil;
-                rhsUtil = rightObject.getUtil();
-                Double mergedUtil = ((Double) strategy.merge(LocatorUtils.property(leftLocator, "util", lhsUtil), LocatorUtils.property(rightLocator, "util", rhsUtil), lhsUtil, rhsUtil));
-                target.setUtil(mergedUtil);
-            }
-        }
-    }
+	public String toString() {
+		final ToStringStrategy strategy = JAXBToStringStrategy.INSTANCE;
+		final StringBuilder buffer = new StringBuilder();
+		append(null, buffer, strategy);
+		return buffer.toString();
+	}
 
 }

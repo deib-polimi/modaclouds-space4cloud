@@ -38,25 +38,58 @@ import org.w3c.dom.NodeList;
  */
 public class ResourceContainer {
 
+	/**
+	 * The main method.
+	 * 
+	 * @param args
+	 *            the arguments
+	 */
+	public static void main(String[] args) {
+		ResourceEnvironment resenv = new ResourceEnvironment();
+		ResourceContainer rc = new ResourceContainer("AppServer");
+		ProcessingResource cpu = new ProcessingResource(
+				ProcessingResourceT.CPU, SchedulingT.PS, 1000, 4, 100000, 2000);
+		ProcessingResource cpu1 = new ProcessingResource(
+				ProcessingResourceT.CPU, SchedulingT.PS, 10000, 6, 100000, 2000);
+		ProcessingResource hdd = new ProcessingResource(
+				ProcessingResourceT.HDD, SchedulingT.FCFS, 1000, 1, 100000,
+				2000);
+		ProcessingResource hdd1 = new ProcessingResource(
+				ProcessingResourceT.HDD, SchedulingT.FCFS, 1000000, 1, 100000,
+				2000);
+		ProcessingResource delay = new ProcessingResource(
+				ProcessingResourceT.DELAY, SchedulingT.DELAY, 1000, 1, 100000,
+				2000);
+		rc.addProcessingResource(cpu);
+		rc.addProcessingResource(hdd);
+		rc.addProcessingResource(delay);
+		rc.replaceProcessingResource(cpu, cpu1);
+		rc.replaceProcessingResource(hdd, hdd1);
+		resenv.addResourceContainer(rc);
+		resenv.serialize(new File(System.getProperty("user.dir")
+				+ "\\Palladio\\slh.xml"));
+	}
+
 	/** The resource container element. */
 	private Element resourceContainerElement;
-	
+
 	/** The name. */
 	private String name;
-	
+
 	/** The id. */
 	private String id;
-	
+
 	/** The processing resources. */
 	private List<ProcessingResource> processingResources;
-	
+
 	/** The doc. */
 	private Document doc;
 
 	/**
 	 * Instantiates a new resource container.
-	 *
-	 * @param e the e
+	 * 
+	 * @param e
+	 *            the e
 	 */
 	public ResourceContainer(Element e) {
 		doc = DOM.getDocument();
@@ -67,8 +100,9 @@ public class ResourceContainer {
 
 	/**
 	 * Instantiates a new resource container.
-	 *
-	 * @param name the name
+	 * 
+	 * @param name
+	 *            the name
 	 */
 	public ResourceContainer(String name) {
 		this(name, null);
@@ -76,9 +110,11 @@ public class ResourceContainer {
 
 	/**
 	 * Instantiates a new resource container.
-	 *
-	 * @param name the name
-	 * @param procRes the proc res
+	 * 
+	 * @param name
+	 *            the name
+	 * @param procRes
+	 *            the proc res
 	 */
 	public ResourceContainer(String name, List<ProcessingResource> procRes) {
 		try {
@@ -97,9 +133,84 @@ public class ResourceContainer {
 	}
 
 	/**
+	 * Adds the processing resource.
+	 * 
+	 * @param res
+	 *            the res
+	 */
+	public void addProcessingResource(ProcessingResource res) {
+		processingResources.add(res);
+		Element x = (Element) doc.importNode(
+				res.getProcessingResourceElement(), true);
+		resourceContainerElement.appendChild(x);
+	}
+
+	/**
+	 * Gets the document.
+	 * 
+	 * @return the document
+	 */
+	public Document getDocument() {
+		return doc;
+	}
+
+	/**
+	 * Gets the id.
+	 * 
+	 * @return the id
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
+	 * Gets the name.
+	 * 
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Gets the processing resource node by id.
+	 * 
+	 * @param ID
+	 *            the id
+	 * @return the processing resource node by id
+	 */
+	private Node getProcessingResourceNodeByID(String ID) {
+		NodeList nl = resourceContainerElement
+				.getElementsByTagName("activeResourceSpecifications_ResourceContainer");
+		for (int i = 0; i < nl.getLength(); i++)
+			if (((Element) nl.item(i)).getAttribute("id").equals(ID))
+				return nl.item(i);
+		return null;
+	}
+
+	/**
+	 * Gets the processing resources.
+	 * 
+	 * @return the processing resources
+	 */
+	public List<ProcessingResource> getProcessingResources() {
+		return processingResources;
+	}
+
+	/**
+	 * Gets the resource container element.
+	 * 
+	 * @return the resource container element
+	 */
+	public Element getResourceContainerElement() {
+		return resourceContainerElement;
+	}
+
+	/**
 	 * Initialize.
-	 *
-	 * @param e the e
+	 * 
+	 * @param e
+	 *            the e
 	 */
 	private void initialize(Element e) {
 		try {
@@ -118,50 +229,29 @@ public class ResourceContainer {
 	}
 
 	/**
-	 * Gets the processing resource node by id.
-	 *
-	 * @param ID the id
-	 * @return the processing resource node by id
+	 * Replace processing resource.
+	 * 
+	 * @param oldC
+	 *            the old c
+	 * @param newC
+	 *            the new c
 	 */
-	private Node getProcessingResourceNodeByID(String ID){
-		NodeList nl = resourceContainerElement.getElementsByTagName("activeResourceSpecifications_ResourceContainer");
-		for(int i=0; i<nl.getLength();i++)
-			if(((Element)nl.item(i)).getAttribute("id").equals(ID))
-				return nl.item(i);
-		return null;
-	}
-	
-	/**
-	 * Gets the resource container element.
-	 *
-	 * @return the resource container element
-	 */
-	public Element getResourceContainerElement() {
-		return resourceContainerElement;
-	}
-
-	/**
-	 * Sets the resource container element.
-	 *
-	 * @param resourceContainerElement the new resource container element
-	 */
-	public void setResourceContainerElement(Element resourceContainerElement) {
-		initialize(resourceContainerElement);
-	}
-
-	/**
-	 * Gets the name.
-	 *
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
+	public void replaceProcessingResource(ProcessingResource oldC,
+			ProcessingResource newC) {
+		Node el = getProcessingResourceNodeByID(oldC.getId());
+		if (el != null) {
+			Element x = (Element) doc.importNode(
+					newC.getProcessingResourceElement(), true);
+			resourceContainerElement.replaceChild(x, el);
+			initialize(resourceContainerElement);
+		}
 	}
 
 	/**
 	 * Sets the name.
-	 *
-	 * @param name the new name
+	 * 
+	 * @param name
+	 *            the new name
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -169,22 +259,15 @@ public class ResourceContainer {
 	}
 
 	/**
-	 * Gets the processing resources.
-	 *
-	 * @return the processing resources
-	 */
-	public List<ProcessingResource> getProcessingResources() {
-		return processingResources;
-	}
-
-	/**
 	 * Sets the proc res.
-	 *
-	 * @param procRes the new proc res
+	 * 
+	 * @param procRes
+	 *            the new proc res
 	 */
 	public void setProcRes(List<ProcessingResource> procRes) {
 		this.processingResources = new ArrayList<ProcessingResource>();
-		NodeList nl = resourceContainerElement.getElementsByTagName("activeResourceSpecifications_ResourceContainer");
+		NodeList nl = resourceContainerElement
+				.getElementsByTagName("activeResourceSpecifications_ResourceContainer");
 		for (int i = 0; i < nl.getLength(); i++)
 			resourceContainerElement.removeChild(nl.item(i));
 		for (ProcessingResource x : procRes)
@@ -192,83 +275,22 @@ public class ResourceContainer {
 	}
 
 	/**
-	 * Adds the processing resource.
-	 *
-	 * @param res the res
+	 * Sets the resource container element.
+	 * 
+	 * @param resourceContainerElement
+	 *            the new resource container element
 	 */
-	public void addProcessingResource(ProcessingResource res) {
-		processingResources.add(res);
-		Element x = (Element) doc.importNode(
-				res.getProcessingResourceElement(), true);
-		resourceContainerElement.appendChild(x);
+	public void setResourceContainerElement(Element resourceContainerElement) {
+		initialize(resourceContainerElement);
 	}
 
-	/**
-	 * Replace processing resource.
-	 *
-	 * @param oldC the old c
-	 * @param newC the new c
-	 */
-	public void replaceProcessingResource(ProcessingResource oldC,
-			ProcessingResource newC) {
-		Node el = getProcessingResourceNodeByID(oldC.getId());
-		if(el!=null){
-			Element x = (Element) doc.importNode(newC.getProcessingResourceElement(), true);
-			resourceContainerElement.replaceChild(x, el);
-			initialize(resourceContainerElement);
-		}
-	}
-
-	/**
-	 * Gets the id.
-	 *
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
-
-	/**
-	 * Gets the document.
-	 *
-	 * @return the document
-	 */
-	public Document getDocument() {
-		return doc;
-	}
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return getName() + " [" + getId() + "]";
-	}
-
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 */
-	public static void main(String[] args) {
-		ResourceEnvironment resenv = new ResourceEnvironment();
-		ResourceContainer rc = new ResourceContainer("AppServer");
-		ProcessingResource cpu = new ProcessingResource(ProcessingResourceT.CPU,
-				SchedulingT.PS, 1000, 4, 100000, 2000);
-		ProcessingResource cpu1 = new ProcessingResource(ProcessingResourceT.CPU,
-				SchedulingT.PS, 10000, 6, 100000, 2000);
-		ProcessingResource hdd = new ProcessingResource(ProcessingResourceT.HDD,
-				SchedulingT.FCFS, 1000, 1, 100000, 2000);
-		ProcessingResource hdd1 = new ProcessingResource(ProcessingResourceT.HDD,
-				SchedulingT.FCFS, 1000000, 1, 100000, 2000);
-		ProcessingResource delay = new ProcessingResource(ProcessingResourceT.DELAY,
-				SchedulingT.DELAY, 1000, 1, 100000, 2000);
-		rc.addProcessingResource(cpu);
-		rc.addProcessingResource(hdd);
-		rc.addProcessingResource(delay);
-		rc.replaceProcessingResource(cpu, cpu1);
-		rc.replaceProcessingResource(hdd, hdd1);
-		resenv.addResourceContainer(rc);
-		resenv.serialize(new File(System.getProperty("user.dir")+"\\Palladio\\slh.xml"));
 	}
 }

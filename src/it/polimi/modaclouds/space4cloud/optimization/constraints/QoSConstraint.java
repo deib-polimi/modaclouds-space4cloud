@@ -18,10 +18,9 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
-
 /**
  * @author Michele Ciavotta
- *
+ * 
  */
 public abstract class QoSConstraint extends Constraint {
 
@@ -31,19 +30,17 @@ public abstract class QoSConstraint extends Constraint {
 	 * @param priority
 	 * @param unit
 	 */
-	public QoSConstraint(it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
+	public QoSConstraint(
+			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
 	}
-	
-	public double getMin(){
-		return range.getHasMinValue();
-	}
-	
 
-	public double getMax(){
+	public double getMax() {
 		return range.getHasMaxValue();
 	}
-	
 
-	
+	public double getMin() {
+		return range.getHasMinValue();
+	}
+
 }

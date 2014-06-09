@@ -16,14 +16,18 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 /**
- * @author GiovanniPaolo
- * Loads the extension of the Palladio resource environment model as defined in "resource_model_extension.xsd" under https://github.com/deib-polimi/modaclouds-qos-models, s4cextension branch  
+ * @author GiovanniPaolo Loads the extension of the Palladio resource
+ *         environment model as defined in "resource_model_extension.xsd" under
+ *         https://github.com/deib-polimi/modaclouds-qos-models, s4cextension
+ *         branch
  */
-public class ResourceEnvironmentExtentionLoader extends ResourceEnvironmentExtensionParser {
+public class ResourceEnvironmentExtentionLoader extends
+		ResourceEnvironmentExtensionParser {
 
 	/**
 	 * 
-	 * @param extensionFile xml file containing the extension of the model 
+	 * @param extensionFile
+	 *            xml file containing the extension of the model
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
@@ -32,17 +36,17 @@ public class ResourceEnvironmentExtentionLoader extends ResourceEnvironmentExten
 	public ResourceEnvironmentExtentionLoader(File extensionFile)
 			throws ParserConfigurationException, SAXException, IOException,
 			JAXBException {
-		//build structures
+		// build structures
 		super(extensionFile, false);
 
-		//load the model 
+		// load the model
 		ResourceModelExtension loadedExtension = XMLHelper.deserialize(
 				extension.toURI().toURL(), ResourceModelExtension.class);
-		
-		//fill structures
+
+		// fill structures
 		for (ResourceContainer container : loadedExtension
 				.getResourceContainer()) {
-//			String id = container.getId();
+			// String id = container.getId();
 			String id = container.getId() + container.getProvider();
 			providers.put(id, container.getProvider());
 			if (container.getCloudResource() != null) {
@@ -50,22 +54,22 @@ public class ResourceEnvironmentExtentionLoader extends ResourceEnvironmentExten
 				serviceTypes.put(id, resource.getServiceType());
 				serviceNames.put(id, resource.getServiceName());
 				instanceSizes.put(id, resource.getResourceSizeID());
-				
+
 				if (resource.getLocation() != null) {
-                    String location = resource.getLocation().getRegion();
-                    if(resource.getLocation().getZone() != null)
-                        location += resource.getLocation().getZone();
-                    setRegion(container.getProvider(), location);
-                }
-				
-//				String location = resource.getLocation().getRegion();
-//				if(resource.getLocation().getZone() != null){
-//					location += resource.getLocation().getZone();
-//				}
-//				serviceLocations.put(id, location);
-				
+					String location = resource.getLocation().getRegion();
+					if (resource.getLocation().getZone() != null)
+						location += resource.getLocation().getZone();
+					setRegion(container.getProvider(), location);
+				}
+
+				// String location = resource.getLocation().getRegion();
+				// if(resource.getLocation().getZone() != null){
+				// location += resource.getLocation().getZone();
+				// }
+				// serviceLocations.put(id, location);
+
 				int[] replicas = new int[HOURS];
-				for (int i = 0; i<HOURS;i++) {
+				for (int i = 0; i < HOURS; i++) {
 					replicas[i] = 1;
 				}
 				if (resource.getReplicas() != null) {

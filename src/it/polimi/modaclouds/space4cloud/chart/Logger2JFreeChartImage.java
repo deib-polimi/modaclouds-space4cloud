@@ -52,8 +52,9 @@ public class Logger2JFreeChartImage {
 
 	private int height = 300;
 	final ChartCreator chartCreator = new ChartCreator("");
-	
-	private static final Logger logger = LoggerHelper.getLogger(Logger2JFreeChartImage.class);
+
+	private static final Logger logger = LoggerHelper
+			.getLogger(Logger2JFreeChartImage.class);
 
 	private List<XYSeries> seriesList = new ArrayList<XYSeries>();
 
@@ -140,18 +141,20 @@ public class Logger2JFreeChartImage {
 		chartCreator.removeAllSeries();
 		for (XYSeries s : seriesList)
 			chartCreator.addSeries(s);
-		try{
-		
-//		Path path = Paths.get(path2save);
-		Path path = Paths.get(Constants.getInstance().ABSOLUTE_WORKING_DIRECTORY, path2save);
-		if (Files.notExists(path.getParent()))
-			Files.createDirectory(path.getParent());
-//		Files.deleteIfExists(path);
-		
-		ChartUtilities.saveChartAsPNG(path.toFile(), //new File(path2save),
-				chartCreator.getChart(), width, height);
-		}catch(IOException e){
-			logger.error("Could not create cost image",e);
+		try {
+
+			// Path path = Paths.get(path2save);
+			Path path = Paths.get(
+					Constants.getInstance().ABSOLUTE_WORKING_DIRECTORY,
+					path2save);
+			if (Files.notExists(path.getParent()))
+				Files.createDirectory(path.getParent());
+			// Files.deleteIfExists(path);
+
+			ChartUtilities.saveChartAsPNG(path.toFile(), // new File(path2save),
+					chartCreator.getChart(), width, height);
+		} catch (IOException e) {
+			logger.error("Could not create cost image", e);
 			throw e;
 		}
 

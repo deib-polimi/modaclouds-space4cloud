@@ -46,18 +46,6 @@ public class OperationCompletedClass {
 	}
 
 	/**
-	 * Removes the specified listener from the list of all listeners.
-	 * 
-	 * @param listener
-	 *            is the Object extending the OperationCompletedListener
-	 *            interface to remove from the listeners list.
-	 * @see OperationCompletedListener
-	 */
-	public void removeMyEventListener(OperationCompletedListener listener) {
-		listenerList.remove(OperationCompletedListener.class, listener);
-	}
-
-	/**
 	 * Fires the OperationCompletedEvent.
 	 * 
 	 * @param evt
@@ -72,5 +60,17 @@ public class OperationCompletedClass {
 						.operationCompletedEventOccurred(evt);
 			}
 		}
+	}
+
+	/**
+	 * Removes the specified listener from the list of all listeners.
+	 * 
+	 * @param listener
+	 *            is the Object extending the OperationCompletedListener
+	 *            interface to remove from the listeners list.
+	 * @see OperationCompletedListener
+	 */
+	public void removeMyEventListener(OperationCompletedListener listener) {
+		listenerList.remove(OperationCompletedListener.class, listener);
 	}
 }

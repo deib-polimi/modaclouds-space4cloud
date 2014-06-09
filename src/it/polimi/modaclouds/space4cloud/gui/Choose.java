@@ -52,22 +52,22 @@ public class Choose extends JDialog {
 
 	/** The solver. */
 	private String solver;
-	
-	/** True if the user choose what to do*/
+
+	/** True if the user choose what to do */
 	private boolean chosen;
-	
-
-
 
 	/**
 	 * Create the dialog.
-	 *
-	 * @param title the title
-	 * @param text the text
-	 * @param yesDefault the yes default
+	 * 
+	 * @param title
+	 *            the title
+	 * @param text
+	 *            the text
+	 * @param yesDefault
+	 *            the yes default
 	 */
-	public Choose(String title, String text) {		
-		setAlwaysOnTop(true);		
+	public Choose(String title, String text) {
+		setAlwaysOnTop(true);
 		setModal(true);
 		setResizable(false);
 		setType(Type.UTILITY);
@@ -80,11 +80,9 @@ public class Choose extends JDialog {
 
 		JTextPane txtpnDoYouWant = new JTextPane();
 		txtpnDoYouWant.setFont(new Font("Tahoma", Font.BOLD, 13));
-		txtpnDoYouWant
-		.setBackground(UIManager.getColor("Panel.background"));
+		txtpnDoYouWant.setBackground(UIManager.getColor("Panel.background"));
 		txtpnDoYouWant.setText(text);
 		contentPanel.add(txtpnDoYouWant, BorderLayout.CENTER);
-
 
 		JPanel buttonPane = new JPanel();
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
@@ -130,14 +128,18 @@ public class Choose extends JDialog {
 
 	/**
 	 * Create the dialog.
-	 *
-	 * @param title the title
-	 * @param text the text
-	 * @param yesDefault the yes default
+	 * 
+	 * @param title
+	 *            the title
+	 * @param text
+	 *            the text
+	 * @param yesDefault
+	 *            the yes default
 	 */
-	public Choose(String title, String text, String button1Text, String button2Text, boolean yesDefault) {
+	public Choose(String title, String text, String button1Text,
+			String button2Text, boolean yesDefault) {
 		setAlwaysOnTop(true);
-		yes = yesDefault;		
+		yes = yesDefault;
 		setResizable(false);
 		setModal(true);
 		setType(Type.UTILITY);
@@ -150,11 +152,9 @@ public class Choose extends JDialog {
 
 		JTextPane txtpnDoYouWant = new JTextPane();
 		txtpnDoYouWant.setFont(new Font("Tahoma", Font.BOLD, 13));
-		txtpnDoYouWant
-		.setBackground(UIManager.getColor("Panel.background"));
+		txtpnDoYouWant.setBackground(UIManager.getColor("Panel.background"));
 		txtpnDoYouWant.setText(text);
 		contentPanel.add(txtpnDoYouWant, BorderLayout.CENTER);
-
 
 		JPanel buttonPane = new JPanel();
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
@@ -183,7 +183,6 @@ public class Choose extends JDialog {
 		cancelButton.setActionCommand("Cancel");
 		buttonPane.add(cancelButton);
 
-
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		center();
 		setVisible(true);
@@ -191,7 +190,7 @@ public class Choose extends JDialog {
 
 	/**
 	 * Centers the specified frame.
-	 *
+	 * 
 	 */
 	private void center() {
 		Toolkit tk = Toolkit.getDefaultToolkit();
@@ -213,7 +212,7 @@ public class Choose extends JDialog {
 
 	/**
 	 * Checks if is yes.
-	 *
+	 * 
 	 * @return true, if is yes
 	 */
 	public boolean isTrue() {

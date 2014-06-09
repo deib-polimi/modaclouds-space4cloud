@@ -43,12 +43,6 @@ import java.util.List;
 public class StorageAndDatabaseSizeUpdater {
 
 	/**
-	 * Instantiates a new storage and database size updater.
-	 */
-	private StorageAndDatabaseSizeUpdater() {
-	}
-
-	/**
 	 * Updates the size of the V_Storage Virtual Hardware Resources associated
 	 * to Cloud Resources or Cloud Platforms. It recognizes automatically
 	 * whether the Cloud Element is a Cloud Resource or a Cloud Platform.
@@ -175,5 +169,11 @@ public class StorageAndDatabaseSizeUpdater {
 			for (VirtualHWResource v : lvhr)
 				if (v.getType().equals(VirtualHWResourceType.STORAGE))
 					((V_Storage) v).setSize(size);
+	}
+
+	/**
+	 * Instantiates a new storage and database size updater.
+	 */
+	private StorageAndDatabaseSizeUpdater() {
 	}
 }

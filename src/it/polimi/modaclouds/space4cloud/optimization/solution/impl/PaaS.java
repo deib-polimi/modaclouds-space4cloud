@@ -17,17 +17,17 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 
-public abstract class PaaS extends CloudService implements IResponseTimeConstrainable {
-
+public abstract class PaaS extends CloudService implements
+		IResponseTimeConstrainable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -8088032094520247525L;
 
-	public PaaS(String name, String id, String provider,  String serviceType,String serviceName, String resourceName) {
-		super(name,  id, provider,serviceType,serviceName, resourceName);
+	public PaaS(String name, String id, String provider, String serviceType,
+			String serviceName, String resourceName) {
+		super(name, id, provider, serviceType, serviceName, resourceName);
 	}
-	
 
 }

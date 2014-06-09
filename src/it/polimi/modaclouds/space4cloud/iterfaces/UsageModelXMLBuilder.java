@@ -34,19 +34,6 @@ public interface UsageModelXMLBuilder {
 	 * 
 	 * @param usageScenario
 	 *            is the scenario to which has to be associated the workload.
-	 * @param interarrivalTime
-	 *            is the interarrival time of the requests.
-	 * @return the Element representing the generated workload if the operation
-	 *         succeeds, null otherwise.
-	 */
-	public Element addOpenWorkload(Element usageScenario,
-			double interarrivalTime);
-
-	/**
-	 * Adds an Open Workload to the Usage Model.
-	 * 
-	 * @param usageScenario
-	 *            is the scenario to which has to be associated the workload.
 	 * @param population
 	 *            is the population of the closed workload.
 	 * @param thinkTime
@@ -58,11 +45,17 @@ public interface UsageModelXMLBuilder {
 			double thinkTime);
 
 	/**
-	 * Retrieves the list of all the usage scenarios within the Usage Model.
+	 * Adds an Open Workload to the Usage Model.
 	 * 
-	 * @return a list of Element representing usage scenarios.
+	 * @param usageScenario
+	 *            is the scenario to which has to be associated the workload.
+	 * @param interarrivalTime
+	 *            is the interarrival time of the requests.
+	 * @return the Element representing the generated workload if the operation
+	 *         succeeds, null otherwise.
 	 */
-	public List<Element> getUsageScenarios();
+	public Element addOpenWorkload(Element usageScenario,
+			double interarrivalTime);
 
 	/**
 	 * Change the href attribute referencing the System and Repository Models.
@@ -71,6 +64,13 @@ public interface UsageModelXMLBuilder {
 	 *            is the String representing the new path to set.
 	 */
 	public void changeSystemAndRepositoryModelsPath(String newPath);
+
+	/**
+	 * Retrieves the list of all the usage scenarios within the Usage Model.
+	 * 
+	 * @return a list of Element representing usage scenarios.
+	 */
+	public List<Element> getUsageScenarios();
 
 	/**
 	 * Loads an existent Usage Model.
