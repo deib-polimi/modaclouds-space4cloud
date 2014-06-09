@@ -15,10 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Metric;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 

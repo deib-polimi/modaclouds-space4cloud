@@ -711,4 +711,11 @@ public class Solution implements Cloneable, Serializable {
 		return percentageWorkload[hour];
 	}
 
+	public void copyApplication(Instance application, int i) {		
+		hourApplication.set(i, application.clone());
+		hourApplication.get(i).setRegion(getRegion());
+		hourApplication.get(i).setFather(this);
+		hourApplication.get(i).setEvaluated(false);		
+	}
+
 }

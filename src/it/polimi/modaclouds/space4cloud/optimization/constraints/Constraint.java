@@ -18,6 +18,9 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 import it.polimi.modaclouds.qos_models.schema.AggregateFunction;
 import it.polimi.modaclouds.qos_models.schema.Range;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public abstract class Constraint {
 
@@ -28,33 +31,7 @@ public abstract class Constraint {
 	protected AggregateFunction metricAcggregationFunction;
 	protected int priority;
 	protected Range range;
-	private Range getRange() {
-		return range;
-	}
-
-
-	private String getId() {
-		return id;
-	}
-
-
-
-	private String getName() {
-		return name;
-	}
-
-
-
-	private String getResourceId() {
-		return resourceId;
-	}
-
-
-
-	private AggregateFunction getMetricAcggregationFunction() {
-		return metricAcggregationFunction;
-	}
-
+	private static final Logger logger = LoggerFactory.getLogger(Constraint.class);
 
 
 	public Constraint(String id, String name, String resourceId, Metric metric, int priority) {
@@ -90,8 +67,16 @@ public abstract class Constraint {
 
 	
 	//Positive distance if the constraint has not been fulfilled.	
-	public double checkConstraintDistance(Object measurement) {				
-		double value = (Double) measurement;
+	public double checkConstraintDistance(Object measurement) {		
+		double value = 0;
+		if(measurement instanceof Double)
+		value = (Double) measurement;
+		else if(measurement instanceof Integer)
+		value = ((Integer)measurement).doubleValue();
+		else if(measurement instanceof Float)
+		value = ((Float)measurement).doubleValue();
+		else 
+			logger.error("Error in casting the value to check");
 		if(range.getHasMaxValue() != null)
 			return value - range.getHasMaxValue();
 		else
