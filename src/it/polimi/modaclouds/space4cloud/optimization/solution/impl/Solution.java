@@ -209,6 +209,7 @@ public class Solution implements Cloneable, Serializable {
 	 * 
 	 * @see java.lang.Object#clone()
 	 */
+	@Override
 	public Solution clone() {
 
 		Solution cloneSolution;
@@ -707,6 +708,7 @@ public class Solution implements Cloneable, Serializable {
 		return result;
 	}
 
+	@Override
 	public String toString() {
 		String result = "Solution@" + Integer.toHexString(super.hashCode());
 		result += "[Cost: " + cost;

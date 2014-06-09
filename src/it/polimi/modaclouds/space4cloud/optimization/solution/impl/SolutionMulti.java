@@ -137,6 +137,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	}
 
+	@Override
 	public SolutionMulti clone() {
 		SolutionMulti clone;
 		try {
@@ -559,7 +560,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 						}
 
 						propertyNames.add("workload");
-						propertyValues.add((int) Math.ceil(((double) app
+						propertyValues.add((int) Math.ceil((app
 								.getWorkload() / s.getPercentageWorkload(wp
 								.getHour()))
 								* value / 100));
@@ -592,7 +593,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 									propertyNames2.add("workload");
 									propertyValues2
-											.add((int) Math.ceil(((double) app2
+											.add((int) Math.ceil((app2
 													.getWorkload() / s2
 													.getPercentageWorkload(wp2
 															.getHour()))
@@ -647,6 +648,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return solutions.size();
 	}
 
+	@Override
 	public String toString() {
 		String result = "SolutionMulti@"
 				+ Integer.toHexString(super.hashCode());

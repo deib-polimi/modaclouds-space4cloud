@@ -47,6 +47,7 @@ public class Tier implements Cloneable, IResponseTimeConstrainable,
 		component.setContainer(this);
 	}
 
+	@Override
 	public Tier clone() {
 
 		Tier t;

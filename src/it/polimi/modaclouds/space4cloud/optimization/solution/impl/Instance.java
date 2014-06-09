@@ -117,6 +117,7 @@ public class Instance implements Cloneable, Serializable {
 		return true;
 	}
 
+	@Override
 	public Instance clone() {
 
 		// skip cloning the result parser since if the instance changes and is

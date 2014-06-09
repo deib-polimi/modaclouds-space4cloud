@@ -40,6 +40,7 @@ public class OptimizationConfigurationFrame extends JFrame implements
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					OptimizationConfigurationFrame frame = new OptimizationConfigurationFrame();
@@ -199,6 +200,7 @@ public class OptimizationConfigurationFrame extends JFrame implements
 		btnSave.addActionListener(this);
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent e) {
 
 		JButton button = (JButton) e.getSource();

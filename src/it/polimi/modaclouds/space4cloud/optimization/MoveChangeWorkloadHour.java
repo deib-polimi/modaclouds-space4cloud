@@ -23,6 +23,7 @@ public class MoveChangeWorkloadHour extends AbsMoveHour {
 		setHour(i);
 	}
 
+	@Override
 	public Solution apply() {
 		application.changeValues(null, this.propertyNames, this.propertyValues);
 		if (rate > 0.0) {

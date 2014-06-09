@@ -38,6 +38,7 @@ public class Storage extends IaaS {
 	 * it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService
 	 * #clone()
 	 */
+	@Override
 	public Storage clone() {
 		Storage st = new Storage(new String(this.getName()), new String(
 				this.getId()), new String(this.getProvider()), new String(

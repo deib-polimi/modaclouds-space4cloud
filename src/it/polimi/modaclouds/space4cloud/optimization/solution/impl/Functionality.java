@@ -46,6 +46,7 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable,
 		externalCalls.put(id, fun);
 	}
 
+	@Override
 	public Functionality clone() {
 		Functionality f;
 		try {
@@ -96,6 +97,7 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable,
 		return calls;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}

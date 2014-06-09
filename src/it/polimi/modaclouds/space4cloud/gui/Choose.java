@@ -31,6 +31,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
@@ -93,6 +94,7 @@ public class Choose extends JDialog {
 		JButton SimucomEngineButton = new JButton("Simucom");
 
 		LQNSButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				solver = MessageStrings.LQNS_SOLVER;
 				chosen = true;
@@ -101,6 +103,7 @@ public class Choose extends JDialog {
 		});
 
 		PerfEngineButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				solver = MessageStrings.PERFENGINE_SOLVER;
 				chosen = true;
@@ -109,6 +112,7 @@ public class Choose extends JDialog {
 		});
 
 		SimucomEngineButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				solver = "Simucom";
 				chosen = true;
@@ -121,7 +125,7 @@ public class Choose extends JDialog {
 		buttonPane.add(SimucomEngineButton);
 		getRootPane().setDefaultButton(LQNSButton);
 
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		center();
 		setVisible(true);
 	}
@@ -162,6 +166,7 @@ public class Choose extends JDialog {
 
 		JButton okButton = new JButton(button1Text);
 		okButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				yes = true;
 				chosen = true;
@@ -174,6 +179,7 @@ public class Choose extends JDialog {
 
 		JButton cancelButton = new JButton(button2Text);
 		cancelButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				yes = false;
 				chosen = true;
@@ -183,7 +189,7 @@ public class Choose extends JDialog {
 		cancelButton.setActionCommand("Cancel");
 		buttonPane.add(cancelButton);
 
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		center();
 		setVisible(true);
 	}

@@ -48,6 +48,7 @@ public abstract class CloudService implements Cloneable, IConstrainable,
 		this.resourceName = resourceName;
 	}
 
+	@Override
 	public CloudService clone() throws CloneNotSupportedException {
 		CloudService s = (CloudService) super.clone();
 		// copy mutable strings
@@ -60,6 +61,7 @@ public abstract class CloudService implements Cloneable, IConstrainable,
 		return s;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}

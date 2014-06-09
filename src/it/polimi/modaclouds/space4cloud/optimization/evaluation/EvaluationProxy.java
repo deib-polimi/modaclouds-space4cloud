@@ -42,6 +42,7 @@ public class EvaluationProxy extends EvaluationServer {
 		super(solver);
 	}
 
+	@Override
 	public void EvaluateSolution(Solution sol) {
 		this.ProxyIn(sol);
 		super.EvaluateSolution(sol);

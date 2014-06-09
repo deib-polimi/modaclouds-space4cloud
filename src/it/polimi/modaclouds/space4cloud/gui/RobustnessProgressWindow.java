@@ -174,7 +174,7 @@ public class RobustnessProgressWindow {
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 			rangeAxis.setTickLabelFont(font);
 
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot
+			CategoryItemRenderer renderer2 = plot
 					.getRenderer();
 			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
 					"{2}", new DecimalFormat("0") {
@@ -184,6 +184,7 @@ public class RobustnessProgressWindow {
                  */
 						private static final long serialVersionUID = 1L;
 
+						@Override
 						public StringBuffer format(double number,
 								StringBuffer result, FieldPosition fieldPosition) {
 							result = new StringBuffer("" + (float) number);
@@ -680,7 +681,7 @@ public class RobustnessProgressWindow {
 			categoryAxis.setUpperMargin(0.02);
 			categoryAxis.setTickLabelFont(font);
 
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot
+			CategoryItemRenderer renderer2 = plot
 					.getRenderer();
 			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
 					"{2}", new DecimalFormat("0"));
@@ -726,7 +727,7 @@ public class RobustnessProgressWindow {
 			categoryAxis.setUpperMargin(0.02);
 			categoryAxis.setTickLabelFont(font);
 
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot
+			CategoryItemRenderer renderer2 = plot
 					.getRenderer();
 			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
 					"{2}", new DecimalFormat("0") {
@@ -736,6 +737,7 @@ public class RobustnessProgressWindow {
                  */
 						private static final long serialVersionUID = 1L;
 
+						@Override
 						public StringBuffer format(double number,
 								StringBuffer result, FieldPosition fieldPosition) {
 							// result = new
@@ -789,7 +791,7 @@ public class RobustnessProgressWindow {
 			categoryAxis.setUpperMargin(0.02);
 			categoryAxis.setTickLabelFont(font);
 
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot
+			CategoryItemRenderer renderer2 = plot
 					.getRenderer();
 			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
 					"{2}", new DecimalFormat("0") {
@@ -799,6 +801,7 @@ public class RobustnessProgressWindow {
                  */
 						private static final long serialVersionUID = 1L;
 
+						@Override
 						public StringBuffer format(double number,
 								StringBuffer result, FieldPosition fieldPosition) {
 							// result = new
@@ -833,7 +836,7 @@ public class RobustnessProgressWindow {
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 			rangeAxis.setTickLabelFont(font);
 
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot
+			CategoryItemRenderer renderer2 = plot
 					.getRenderer();
 			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
 					"{2}", new DecimalFormat("0") {
@@ -843,6 +846,7 @@ public class RobustnessProgressWindow {
                  */
 						private static final long serialVersionUID = 1L;
 
+						@Override
 						public StringBuffer format(double number,
 								StringBuffer result, FieldPosition fieldPosition) {
 							result = new StringBuffer("" + number);
@@ -875,7 +879,7 @@ public class RobustnessProgressWindow {
 			categoryAxis.setUpperMargin(0.02);
 			categoryAxis.setTickLabelFont(font);
 
-			CategoryItemRenderer renderer2 = (CategoryItemRenderer) plot
+			CategoryItemRenderer renderer2 = plot
 					.getRenderer();
 			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
 					"{2}", new DecimalFormat("0") {
@@ -885,6 +889,7 @@ public class RobustnessProgressWindow {
                  */
 						private static final long serialVersionUID = 1L;
 
+						@Override
 						public StringBuffer format(double number,
 								StringBuffer result, FieldPosition fieldPosition) {
 							result = new StringBuffer(number == 1 ? "true"

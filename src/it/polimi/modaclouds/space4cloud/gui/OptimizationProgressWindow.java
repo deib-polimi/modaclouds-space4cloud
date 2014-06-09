@@ -30,6 +30,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.WindowConstants;
 import javax.swing.border.TitledBorder;
 
 public class OptimizationProgressWindow implements PropertyChangeListener {
@@ -69,7 +70,7 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 		frmOptimizationProgress.setTitle("Solution Cost");
 		frmOptimizationProgress.setBounds(100, 100, 450, 300);
 		frmOptimizationProgress
-				.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frmOptimizationProgress.getContentPane().setLayout(
 				new BorderLayout(0, 0));
 

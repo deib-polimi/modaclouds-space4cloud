@@ -48,6 +48,7 @@ public class MainHandler extends AbstractHandler {
 	 * @throws ExecutionException
 	 *             the execution exception
 	 */
+	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		//
 		// IWorkbenchWindow window =

@@ -59,6 +59,7 @@ public class NOSQL extends Database {
 	 * it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService
 	 * #clone()
 	 */
+	@Override
 	public NOSQL clone() {
 
 		NOSQL nosql = new NOSQL(new String(this.getName()), new String(

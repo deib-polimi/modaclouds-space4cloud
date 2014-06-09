@@ -77,6 +77,7 @@ public class CmcqnModel implements Cloneable, CopyTo, Equals, HashCode,
 	@XmlSchemaType(name = "anySimpleType")
 	protected String name;
 
+	@Override
 	public StringBuilder append(ObjectLocator locator, StringBuilder buffer,
 			ToStringStrategy strategy) {
 		strategy.appendStart(locator, this, buffer);
@@ -85,6 +86,7 @@ public class CmcqnModel implements Cloneable, CopyTo, Equals, HashCode,
 		return buffer;
 	}
 
+	@Override
 	public StringBuilder appendFields(ObjectLocator locator,
 			StringBuilder buffer, ToStringStrategy strategy) {
 		{
@@ -114,15 +116,18 @@ public class CmcqnModel implements Cloneable, CopyTo, Equals, HashCode,
 		return buffer;
 	}
 
+	@Override
 	public Object clone() {
 		return copyTo(createNewInstance());
 	}
 
+	@Override
 	public Object copyTo(Object target) {
 		final CopyStrategy strategy = JAXBCopyStrategy.INSTANCE;
 		return copyTo(null, target, strategy);
 	}
 
+	@Override
 	public Object copyTo(ObjectLocator locator, Object target,
 			CopyStrategy strategy) {
 		final Object draftCopy = ((target == null) ? createNewInstance()
@@ -191,15 +196,18 @@ public class CmcqnModel implements Cloneable, CopyTo, Equals, HashCode,
 		return draftCopy;
 	}
 
+	@Override
 	public Object createNewInstance() {
 		return new CmcqnModel();
 	}
 
+	@Override
 	public boolean equals(Object object) {
 		final EqualsStrategy strategy = JAXBEqualsStrategy.INSTANCE;
 		return equals(null, null, object, strategy);
 	}
 
+	@Override
 	public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator,
 			Object object, EqualsStrategy strategy) {
 		if (!(object instanceof CmcqnModel)) {
@@ -364,11 +372,13 @@ public class CmcqnModel implements Cloneable, CopyTo, Equals, HashCode,
 		return this.workload;
 	}
 
+	@Override
 	public int hashCode() {
 		final HashCodeStrategy strategy = JAXBHashCodeStrategy.INSTANCE;
 		return this.hashCode(null, strategy);
 	}
 
+	@Override
 	public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
 		int currentHashCode = 1;
 		{
@@ -405,11 +415,13 @@ public class CmcqnModel implements Cloneable, CopyTo, Equals, HashCode,
 		return currentHashCode;
 	}
 
+	@Override
 	public void mergeFrom(Object left, Object right) {
 		final MergeStrategy strategy = JAXBMergeStrategy.INSTANCE;
 		mergeFrom(null, null, left, right, strategy);
 	}
 
+	@Override
 	public void mergeFrom(ObjectLocator leftLocator,
 			ObjectLocator rightLocator, Object left, Object right,
 			MergeStrategy strategy) {
@@ -495,6 +507,7 @@ public class CmcqnModel implements Cloneable, CopyTo, Equals, HashCode,
 		this.name = value;
 	}
 
+	@Override
 	public String toString() {
 		final ToStringStrategy strategy = JAXBToStringStrategy.INSTANCE;
 		final StringBuilder buffer = new StringBuilder();

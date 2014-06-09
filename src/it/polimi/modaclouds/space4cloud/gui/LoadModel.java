@@ -37,6 +37,7 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.WindowConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -210,7 +211,7 @@ public class LoadModel extends OperationCompletedClass {
 		frmLoadModel.setTitle("Load");
 		frmLoadModel.setResizable(false);
 		frmLoadModel.setBounds(100, 100, 300, 300);
-		frmLoadModel.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		frmLoadModel.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
 		// questa cosa dovrebbe dipendere da come gestisce java gli eventi
 		// passiamo un listener que creamo e gli diciamo come attuare quando
@@ -265,6 +266,7 @@ public class LoadModel extends OperationCompletedClass {
 		// Button creation and its associate listener and handler functions
 		JButton btnLoad = new JButton("Load");
 		btnLoad.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				// Remember that output is a File.
 				output = models.get(list.getSelectedIndex());
@@ -285,6 +287,7 @@ public class LoadModel extends OperationCompletedClass {
 
 		JButton btnCancel = new JButton("Cancel");
 		btnCancel.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				output = null;
 				if (LoadModel.this.oplist == null)
@@ -323,6 +326,7 @@ public class LoadModel extends OperationCompletedClass {
 		// It is only possible to add element through the constructor
 		list = new JList(ls.toArray(new String[0]));
 		list.addListSelectionListener(new ListSelectionListener() {
+			@Override
 			public void valueChanged(ListSelectionEvent e) {
 			}
 		}); //

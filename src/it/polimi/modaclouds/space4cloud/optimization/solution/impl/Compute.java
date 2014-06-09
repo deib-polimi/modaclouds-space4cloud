@@ -97,6 +97,7 @@ public class Compute extends IaaS {
 	 * it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService
 	 * #clone()
 	 */
+	@Override
 	public Compute clone() {
 
 		Compute compute;
@@ -115,6 +116,7 @@ public class Compute extends IaaS {
 		return compute;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == null)
 			return false;
@@ -172,10 +174,12 @@ public class Compute extends IaaS {
 	 * @see it.polimi.modaclouds.space4cloud.optimization.solution.
 	 * IUtilizationConstrainable#getUtilization()
 	 */
+	@Override
 	public double getUtilization() {
 		return utilization;
 	}
 
+	@Override
 	public int hashCode() {
 		return new HashCodeBuilder(17, 31)
 				. // two randomly chosen prime numbers
@@ -232,6 +236,7 @@ public class Compute extends IaaS {
 	 * it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService
 	 * #showStatus(java.lang.String)
 	 */
+	@Override
 	public String showStatus(String prefix) {
 		// super.showStatus(prefix);
 		return prefix + "replicas: " + getReplicas() + " type: "

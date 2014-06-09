@@ -1451,7 +1451,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		boolean done = false;
 		int memoryHit = 0;
 		while (!done) {
-			Tier selectedTier = (Tier) tierList.get(random.nextInt(tierList
+			Tier selectedTier = tierList.get(random.nextInt(tierList
 					.size()));
 			CloudService origRes = selectedTier.getCloudService();
 			List<IaaS> resList = dataHandler.getSameServiceResource(origRes,

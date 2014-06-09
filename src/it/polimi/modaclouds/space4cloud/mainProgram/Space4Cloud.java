@@ -1044,7 +1044,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			}
 		}
 
-		double x = (double) testFrom, basex = x;
+		double x = testFrom, basex = x;
 
 		usageModelExtFile = generateModifiedUsageModelExt(usageModelExtFile, x
 				/ highestPeak);

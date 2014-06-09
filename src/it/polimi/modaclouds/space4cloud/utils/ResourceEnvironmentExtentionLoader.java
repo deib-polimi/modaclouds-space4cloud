@@ -75,7 +75,7 @@ public class ResourceEnvironmentExtentionLoader extends
 				if (resource.getReplicas() != null) {
 					for (ReplicaElement element : resource.getReplicas()
 							.getReplicaElement()) {
-						replicas[(int) element.getHour()] = element.getValue();
+						replicas[element.getHour()] = element.getValue();
 					}
 				}
 				instanceReplicas.put(id, replicas);

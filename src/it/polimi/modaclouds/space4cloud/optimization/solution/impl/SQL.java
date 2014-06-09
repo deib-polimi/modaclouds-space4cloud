@@ -57,6 +57,7 @@ public class SQL extends Database {
 	 * it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService
 	 * #clone()
 	 */
+	@Override
 	public SQL clone() {
 
 		SQL sql = new SQL(new String(this.getName()), new String(this.getId()),

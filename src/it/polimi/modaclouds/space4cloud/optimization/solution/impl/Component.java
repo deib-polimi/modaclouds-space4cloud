@@ -52,6 +52,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable,
 		functionalities.add(functionality);
 	}
 
+	@Override
 	public Component clone() {
 
 		Component c;
@@ -94,6 +95,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable,
 		return functionalities;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}

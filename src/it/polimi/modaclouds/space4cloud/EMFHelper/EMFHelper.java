@@ -199,7 +199,7 @@ public class EMFHelper {
 		// Demand load resource for this file.
 		resource = resourceSet.getResource(uri, true);
 
-		EObject eObject = (EObject) resource.getContents().iterator().next();
+		EObject eObject = resource.getContents().iterator().next();
 		return EcoreUtil.getRootContainer(eObject);
 	}
 

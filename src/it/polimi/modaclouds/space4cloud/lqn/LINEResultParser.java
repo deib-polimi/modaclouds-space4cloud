@@ -131,6 +131,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 		return -1;
 	}
 
+	@Override
 	public HashMap<String, Double> getResponseTimes() {
 		return responseTimes;
 	}
@@ -143,6 +144,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 
 	}
 
+	@Override
 	public HashMap<String, Double> getUtilizations() {
 		return utilizations;
 	}
