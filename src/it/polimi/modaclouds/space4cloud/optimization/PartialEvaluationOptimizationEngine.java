@@ -85,11 +85,12 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 		double[] factors = new double[24];
 		for (int i = 0; i < 24; i++)
 			factors[i] = DEFAULT_SCALE_IN_FACTOR;
-		boolean noScaleIn = true;
+		
 		//TODO: check if the number of iterstions without improvment could be used alone. 
 		//if the evaluation of a reverted solution is very quick a high value of numIterNoImprove should be sufficient condition
 		//if this is the case then wee a dependency between the factors and this number and remove the max number of iterations
 		for (int iterations = 0; iterations < MAX_NUMBER_OF_ITERATIONS && numIterNoImprov < MAX_NUMBER_OF_ITERATIONS_NO_IMPR; iterations++) {
+			boolean noScaleIn = true;	
 			String scalingFactors = "";
 			for (int i = 0; i < 24; i++)
 				scalingFactors += " h: " + i + " val: " + factors[i];
@@ -125,7 +126,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			// number of iterations with no improvement and exit
 			if (noScaleIn) {
 				numIterNoImprov++;
-				return false;
+				continue;
 			}
 
 			// evaluate the solution

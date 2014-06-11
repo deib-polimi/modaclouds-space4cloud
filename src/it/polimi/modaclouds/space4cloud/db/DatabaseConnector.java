@@ -50,10 +50,10 @@ public class DatabaseConnector {
 	 * @throws InstantiationException
 	 */
 	public DatabaseConnector() throws SQLException {
-		// String url = "jdbc:mysql://localhost:3306/";
-		// String dbName = "cloud";
-		String url = "jdbc:mysql://109.231.122.191:3306/";
-		String dbName = "cloud";
+		 String url = "jdbc:mysql://localhost:3306/";
+		 String dbName = "cloud";
+//		String url = "jdbc:mysql://109.231.122.191:3306/";
+//		String dbName = "cloud";
 		String driver = "com.mysql.jdbc.Driver";
 		String userName = "moda";
 		String password = "modaclouds";

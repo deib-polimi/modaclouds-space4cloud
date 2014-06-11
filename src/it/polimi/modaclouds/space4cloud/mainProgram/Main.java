@@ -64,13 +64,13 @@ public class Main {
 	public static void main(String[] args) {
 		// RobustnessProgressWindow.main(null);
 		// System.out.println("space");
-		// Space4Cloud instance = new Space4Cloud();
-		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\test\\";
-		Space4Cloud instance = new Space4Cloud(
-				Space4Cloud.Operations.Optimization, basePath, new File(
-						basePath + "usage_model_extensionOfBiz.xml"), new File(
-						basePath + "resource_model_extension_OfBiz.xml"),
-				new File(basePath + "OfBiz-Constraint.xml"), 100, 10000, 300);
+		 Space4Cloud instance = new Space4Cloud();
+//		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\test\\";
+//		Space4Cloud instance = new Space4Cloud(
+//				Space4Cloud.Operations.Optimization, basePath, new File(
+//						basePath + "usage_model_extensionOfBiz.xml"), new File(
+//						basePath + "resource_model_extension_OfBiz.xml"),
+//				new File(basePath + "OfBiz-Constraint.xml"), 100, 10000, 300);
 		// instance.setProvidersInitialSolution("Amazon", "Microsoft");
 		// instance.setProvidersInitialSolution("Flexiscale");
 		// instance.setRobustnessAttempts(1);

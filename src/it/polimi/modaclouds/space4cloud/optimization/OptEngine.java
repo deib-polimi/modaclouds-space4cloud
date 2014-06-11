@@ -1535,8 +1535,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			// updating the best solution
 			// bestSolution = sol.clone();
 			bestTmpSolIndex++;
-			String filename = bestTmpSol + bestTmpSolIndex+".xml";
-			sol.exportLight(filename);
+//			String filename = bestTmpSol + bestTmpSolIndex+".xml";			
+//			sol.exportLight(filename);
 			bestSolution.add(sol.clone());
 			this.numIterNoImprov = 0;
 			this.numTotImpr += 1;
