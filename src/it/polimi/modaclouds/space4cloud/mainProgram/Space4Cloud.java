@@ -45,6 +45,8 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.ConfigurationHandler;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
+import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
 import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
 import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
 
@@ -171,8 +173,8 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	private boolean batch;
 	private Operations functionality;
 	private File resourceEnvironmentFile, usageFile, allocationFile,
-			repositoryFile, lineConfFile, usageModelExtFile,
-			resourceEnvExtFile, constraintFile;
+	repositoryFile, lineConfFile, usageModelExtFile,
+	resourceEnvExtFile, constraintFile;
 
 	private String resFolder;
 
@@ -222,9 +224,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		this(true, operation, Paths
 				.get(basePath, "default.resourceenvironment").toFile(),
 				"space4cloud", Paths.get(basePath, "default.usagemodel")
-						.toFile(), Paths.get(basePath, "default.allocation")
-						.toFile(), Paths.get(basePath, "default.repository")
-						.toFile(), "LQNS (Layered Queueing Network Solver)",
+				.toFile(), Paths.get(basePath, "default.allocation")
+				.toFile(), Paths.get(basePath, "default.repository")
+				.toFile(), "LQNS (Layered Queueing Network Solver)",
 				new File("LINE.properties"), usageModelExtFile,
 				resourceEnvExtFile, constraintFile, testFrom, testTo, step);
 	}
@@ -235,9 +237,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		this(true, operation, Paths
 				.get(basePath, "default.resourceenvironment").toFile(),
 				"space4cloud", Paths.get(basePath, "default.usagemodel")
-						.toFile(), Paths.get(basePath, "default.allocation")
-						.toFile(), Paths.get(basePath, "default.repository")
-						.toFile(), "LQNS (Layered Queueing Network Solver)",
+				.toFile(), Paths.get(basePath, "default.allocation")
+				.toFile(), Paths.get(basePath, "default.repository")
+				.toFile(), "LQNS (Layered Queueing Network Solver)",
 				new File("LINE.properties"), usageModelExtFile, null,
 				constraintFile, testFrom, testTo, step);
 	}
@@ -390,7 +392,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	@Override
 	protected Object doInBackground() throws CoreException,
-			InitalFolderCreationException {
+	InitalFolderCreationException {
 
 		LoadModel lm;
 		if (!batch) {
@@ -575,7 +577,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// if the palladio run has not produced a lqn model exit
 		if (modelFiles.length != 1 || resultFiles.length != 1) {
 			programLogger
-					.error("The first initialization run has encounter some problem during the generation of the first solution");
+			.error("The first initialization run has encounter some problem during the generation of the first solution");
 			programLogger.error("SPACE4CLOUD will now exit.");
 			cleanExit();
 			return null;
@@ -622,7 +624,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 					&& usageModelExtFile == null);
 			if (usageModelExtSelector.isCanceled()) {
 				programLogger
-						.info("No usage model extension selected. Quitting SPACE4CLOUD");
+				.info("No usage model extension selected. Quitting SPACE4CLOUD");
 				cleanExit();
 				return null;
 			}
@@ -649,6 +651,17 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			programLogger.error("Error in loading constraints", e);
 		}
 
+		//load the extension file
+		if(!batch){
+			try {
+
+				resourceEnvExtFile = askResourceEnvironmentExtensionFile();
+			} catch (MalformedURLException e) {
+				programLogger.error(
+						"Error in loading the resource environment", e);
+			}
+		}
+
 		int n = 1; // 0 = generate the solution by default, 1 otherwise
 		if (!batch && functionality != Operations.Assessment) {
 			/*
@@ -669,41 +682,42 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 			programLogger.debug("Initial Solution generation: " + n);
 		}
-		if (n == 1 && !batch) {
+		if (n == 0 && !batch && functionality == Operations.Robustness) {			
 			try {
-				resourceEnvExtFile = askResourceEnvironmentExtensionFile();
-			} catch (MalformedURLException e) {
-				programLogger.error(
-						"Error in loading the resource environment", e);
+				getProvidersFromExtension();
+			} catch (ParserConfigurationException | SAXException | IOException
+					| JAXBException e) {
+				programLogger.error("Error in loading the selected providers from the resource environemnt extension file",e);				
 			}
-		} else if ((n == 0 && !batch && functionality == Operations.Robustness)
-				|| (functionality == Operations.Robustness && batch && resourceEnvExtFile == null)) {
+			if (providersInitialSolution.size() == 0)
+				askProvidersForInitialSolution();
+			
+			//override any other value specified with the ones obtained by the initial optimization
 			resourceEnvExtFile = new File("none");
 			initialSolution = new File("none");
-			if (!batch)
-				askProvidersForInitialSolution();
 
-		} else if (n == 0 || resourceEnvExtFile == null) {
-			if (!batch)
+		} else if (n == 0) {
+			try {
+				getProvidersFromExtension();
+			} catch (ParserConfigurationException | SAXException | IOException
+					| JAXBException e) {
+				programLogger.error("Error in loading the selected providers from the resource environemnt extension file",e);
+			}
+			if (providersInitialSolution.size() == 0)
 				askProvidersForInitialSolution();
 			performGenerateInitialSolution();
 		}
 
 		if (resourceEnvExtFile == null) {
 			programLogger
-					.warn("No resource model extension selected. Quitting SPACE4CLOUD");
+			.warn("No resource model extension selected. Quitting SPACE4CLOUD");
 			cleanExit();
 			return null;
 		}
 
+		//put the provided or generated extension in the constants 
 		c.RESOURCE_ENV_EXT_FILE = resourceEnvExtFile.getAbsolutePath();
 
-		/*
-		 * Load the Extension file XMLFileSelection extensionSelector = new
-		 * XMLFileSelection("Load Extension"); File extensionFile =
-		 * extensionSelector.getFile(); if(extensionFile == null) return null;
-		 * c.EXTENSION_FILE = extensionFile.getAbsolutePath();
-		 */
 
 		switch (functionality) {
 		case Assessment:
@@ -744,13 +758,23 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		return null;
 	}
 
+	private void getProvidersFromExtension() throws ParserConfigurationException, SAXException, IOException, JAXBException {
+		// parse the extension file
+				ResourceEnvironmentExtensionParser resourceEnvParser = new ResourceEnvironmentExtentionLoader(
+						resourceEnvExtFile);
+				providersInitialSolution = new ArrayList<String>();
+				for(String s:resourceEnvParser.getProviders().values()){
+					if(!providersInitialSolution.contains(s))
+						providersInitialSolution.add(s);
+				}
+	}
 	@Override
 	protected void done() {
 		try {
 			get();
 		} catch (ExecutionException e) {
 			programLogger
-					.error("Execution error while running space4cloud ", e);
+			.error("Execution error while running space4cloud ", e);
 		} catch (InterruptedException e) {
 			programLogger.error("Interrupted execution of space4cloud ", e);
 		}
@@ -876,11 +900,12 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			re.eval();
 		} catch (Exception e) {
 			programLogger
-					.error("Error! It's impossible to generate the solution! Are you connected?");
+			.error("Error! It's impossible to generate the solution! Are you connected?");
 			e.printStackTrace();
 			return;
 		}
 
+		//override values provided with those generated by the initial solution
 		resourceEnvExtFile = re.getResourceEnvExt();
 		initialSolution = re.getSolution();
 		initialMce = re.getMultiCloudExt();
@@ -910,12 +935,12 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	 * @throws IOException
 	 */
 	private void performOptimization() throws ParserConfigurationException,
-			SAXException, IOException {
+	SAXException, IOException {
 
 		// Build a new Optimization Engine engine and an empty initial
 		// solution
 		programLogger
-				.info("Loading the optimization enging and perparing the solver");
+		.info("Loading the optimization enging and perparing the solver");
 
 		OptEngine engine = new PartialEvaluationOptimizationEngine(
 				constraintHandler, batch);
@@ -1221,9 +1246,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			duration += res + " s";
 		}
 		programLogger
-				.info("Starting the robustness test, considering each problem "
-						+ attempts + " times (it could take up to " + duration
-						+ ")...");
+		.info("Starting the robustness test, considering each problem "
+				+ attempts + " times (it could take up to " + duration
+				+ ")...");
 
 		StopWatch timer = new StopWatch();
 		timer.start();
@@ -1255,10 +1280,10 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				Space4Cloud s4c = new Space4Cloud(true,
 						Operations.Optimization, resourceEnvironmentFile,
 						resFolder + File.separator + testValue + File.separator
-								+ attempt, usageFile, allocationFile,
+						+ attempt, usageFile, allocationFile,
 						repositoryFile, solver, lineConfFile, f,
 						initialSolution != null ? null : resourceEnvExtFile,
-						constraintFile, testFrom, testTo, step);
+								constraintFile, testFrom, testTo, step);
 				// if initialSolution isn't null, it was because we generated
 				// it! so we must keep generating them!
 
@@ -1411,11 +1436,11 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private void refreshProject() throws CoreException {
 		ResourcesPlugin
-				.getWorkspace()
-				.getRoot()
-				.getProject(c.PROJECT_NAME)
-				.refreshLocal(IResource.DEPTH_INFINITE,
-						new NullProgressMonitor());
+		.getWorkspace()
+		.getRoot()
+		.getProject(c.PROJECT_NAME)
+		.refreshLocal(IResource.DEPTH_INFINITE,
+				new NullProgressMonitor());
 
 	}
 
