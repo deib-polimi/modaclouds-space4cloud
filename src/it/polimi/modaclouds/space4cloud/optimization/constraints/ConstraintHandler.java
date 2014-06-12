@@ -67,6 +67,11 @@ public class ConstraintHandler {
 			Metric metric = Metric.getMetricFromTag(cons.getMetric());			
 			//then create the appropriate constraint
 			Constraint constraint = null;	
+			if(metric == null){
+			logger.warn("Metric: "+cons.getMetric()+" on constraint "+cons.getName()+" id: "+cons.getId()+" not available."
+					+ " Supported metrics are: "+Metric.getSupportedMetricNames());
+				continue;
+			}
 			switch (metric) {
 			case RESPONSETIME:
 				constraint = new ResponseTimeConstraint(cons);
@@ -79,7 +84,7 @@ public class ConstraintHandler {
 				break;
 				//add other constraints
 			default:
-				logger.error("Type of constraint: "+metric+" not defined");
+				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
 			}
 			addConstraint(constraint);
 		}

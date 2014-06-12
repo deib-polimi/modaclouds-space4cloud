@@ -319,7 +319,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 							clazz);
 			} catch (JAXBException e) {
 				programLogger.error("The resource Model extension file specified ("
-						+ resourceEnvExtFile + ") is not valid ", e);
+						+ resourceEnvExtFile + ") is not valid ");
 				providedFile = null;
 			}
 		} while (!extensionSelector.isCanceled() && providedFile == null);
@@ -580,7 +580,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 								UsageModelExtensions.class);
 				} catch (JAXBException e) {
 					programLogger.warn("The usage Model extension file specified ("
-							+ usageModelExtFile + ") is not valid ", e);
+							+ usageModelExtFile + ") is not valid ");
 					usageModelExtFile = null;
 				} catch (MalformedURLException e) {
 					programLogger.error("Error in parsing the usage model Extension",e);
