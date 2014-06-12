@@ -6,6 +6,9 @@ The System PerformAnce and Cost Evaluation on CLOUD (SPACE4CLOUD) tool is develo
 
 The tool takes as input a Palladio Component Model (PCM) that describes the application, an extension file that specify the set of cloud resources used to run the application and a set of constraints. It then solves by mean of an heuristic an optimization problem in order to find a solution that fulfill the constraints and minimizes the costs. 
 
+The user manual with information about the installation and usage of the tool can be found
+here: ftp://home.dei.polimi.it/outgoing/Giovanni.Paolo.Gibilisco/space4cloudExample/SPACE4Cloud%20User%20Manual.pdf
+
 #Installation
 
 To install the latest release of SPACE4CLOUD an installation of Palladio 3.5 is needed. You can obtain it [here](http://www.palladio-simulator.com/tools/download/).
@@ -35,6 +38,6 @@ To run the SPACE4CLOUD plugin launch the Eclipse Application run configuration t
 In order to retrieve information about cloud resources SPACE4CLOUD interacts with a database that hosts the resource model. In this preliminary version the database is hosted on [Flexiscale](http://www.flexiscale.com/) and can be used only for testing purposes. The accuracy and update frequency of the information stored in the database is not guaranteed. 
 
 #Examples
-Example projects can be found in the SpecWeb.rar archive under the Palladio folder. The example cam be imported in the new instance of Eclipse, evaluated using LINE or LQNS or used for the optimization performed by SPACE4CLOUD. 
+An example project can be found here: ftp://home.dei.polimi.it/outgoing/Giovanni.Paolo.Gibilisco/space4cloudExample. The example cam be imported in the new instance of Eclipse, evaluated using LINE or LQNS or used for the optimization performed by SPACE4CLOUD. 
 
 The example model also contains some examples of constraints and extension that are used to drive the solution generation. 
