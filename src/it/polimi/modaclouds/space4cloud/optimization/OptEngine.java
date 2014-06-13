@@ -677,8 +677,15 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// we need to create a Solution object for each one of the providers!
         ArrayList<String> providers = new ArrayList<String>();
         for (String s : resourceEnvParser.getProviders().values()) {
-            if (!providers.contains(s))
+            if (s!= null && !providers.contains(s))
                 providers.add(s);
+        }
+        
+        //if no provider has been selected pick one form the database
+        boolean defaultProvider = false;
+        if(providers.size() == 0){
+        	defaultProvider = true;
+        	providers.add(dataHandler.getCloudProviders().iterator().next());
         }
 
         for (String provider : providers) {
@@ -688,7 +695,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
             initialSolution.buildFolderStructure(provider);
 
 
-            // set the region
+            // set the region            
             initialSolution.setRegion(resourceEnvParser.getRegion(provider));
 
 			for (int i = 0; i < 24; i++) {
@@ -749,13 +756,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					// the
 					// resource
 					String serviceType = resourceEnvParser.getServiceType().get(
-							c.getId() + provider); // Service
+							c.getId() + (defaultProvider?"":provider)); // Service
 					String resourceSize = resourceEnvParser.getInstanceSize().get(
-							c.getId() + provider);
+							c.getId() + (defaultProvider?"":provider));
 					String serviceName = resourceEnvParser.getServiceName().get(
-							c.getId() + provider);
+							c.getId() + (defaultProvider?"":provider));
 					int replicas = resourceEnvParser.getInstanceReplicas().get(
-							c.getId() + provider)[i];
+							c.getId() + (defaultProvider?"":provider))[i];
 		
 //					// pick a cloud provider if not specified by the extension
 //					if (cloudProvider == null)
