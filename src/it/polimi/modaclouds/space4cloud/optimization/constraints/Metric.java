@@ -57,4 +57,12 @@ public enum Metric {
 	public String getXmlTag() {
 		return xmlTag;
 	}
+	
+		public static String getSupportedMetricNames() {
+		String value="";
+		for(Metric m:Metric.values()){
+			value 	+= m.getXmlTag()+" ";
+		}
+		return value;
+	}
 }

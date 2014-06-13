@@ -57,6 +57,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -74,6 +75,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.swt.program.Program;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -856,10 +858,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	public void loadInitialSolution(File resourceEnvExtension,
 			File usageModelExtension) throws ParserConfigurationException,
 			SAXException, IOException, JAXBException {
-		loadInitialSolution(resourceEnvExtension, usageModelExtension, null,
-				null);
-	}
-
 	/**
 	 * Load initial solution. The aim of this method is to load the initial
 	 * solution from file.
@@ -904,11 +902,30 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				.getResourceContainer_ResourceEnvironment();
 
 		// we need to create a Solution object for each one of the providers!
-		ArrayList<String> providers = new ArrayList<String>();
-		for (String s : resourceEnvParser.getProviders().values()) {
-			if (!providers.contains(s))
-				providers.add(s);
-		}
+        ArrayList<String> providers = new ArrayList<String>();
+        for (String s : resourceEnvParser.getProviders().values()) {
+            if (s!= null && !providers.contains(s))
+                providers.add(s);
+        }
+        
+        //if no provider has been selected pick one form the database
+        boolean defaultProvider = false;
+        if(providers.size() == 0){
+        	defaultProvider = true;
+        	String defaultProviderName=null;
+        	Iterator<String> iter = dataHandler.getCloudProviders().iterator();
+        	
+        	do{
+        		defaultProviderName = iter.next();
+        		//skip the generic provider whose data might not be relevant and those that do not offer Compute services.
+        		if(defaultProviderName.equals("Generic") || dataHandler.getServices(defaultProviderName, "Compute").size()==0)
+        			defaultProviderName=null;
+        	}while(defaultProviderName==null && iter.hasNext());
+        	if(defaultProviderName == null)
+        		logger.error("No provider with services of type Compute has been found");
+        	providers.add(defaultProviderName);
+        	logger.info("No provider specified in the extension, defaulting on "+defaultProviderName);
+        }
 
 		for (String provider : providers) {
 
@@ -978,14 +995,14 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					// to
 					// the
 					// resource
-					String serviceType = resourceEnvParser.getServiceType()
-							.get(c.getId() + provider); // Service
-					String resourceSize = resourceEnvParser.getInstanceSize()
-							.get(c.getId() + provider);
-					String serviceName = resourceEnvParser.getServiceName()
-							.get(c.getId() + provider);
+					String serviceType = resourceEnvParser.getServiceType().get(
+							c.getId() + (defaultProvider?"":provider)); // Service
+					String resourceSize = resourceEnvParser.getInstanceSize().get(
+							c.getId() + (defaultProvider?"":provider));
+					String serviceName = resourceEnvParser.getServiceName().get(
+							c.getId() + (defaultProvider?"":provider));
 					int replicas = resourceEnvParser.getInstanceReplicas().get(
-							c.getId() + provider)[i];
+							c.getId() + (defaultProvider?"":provider))[i];
 
 					// // pick a cloud provider if not specified by the
 					// extension
@@ -995,16 +1012,19 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					// .next();
 
 					// pick a service if not specified by the extension
-					if (serviceName == null)
-						serviceName = dataHandler.getServices(provider, // cloudProvider,
-								serviceType).get(0);
-					// if the resource size has not been decided pick one
-					if (resourceSize == null)
-						resourceSize = dataHandler
-								.getCloudResourceSizes(provider,/*
-																 * cloudProvider,
-																 */serviceName)
-								.iterator().next();
+                    if (serviceName == null)
+                    	logger.info("provider: "+provider+" default: "+defaultProvider);
+                    	logger.info("serviceType: "+serviceType);
+                    	for(String st:dataHandler.getServices(provider, //cloudProvider,
+                                serviceType))
+                    		logger.info("\tService Type: "+st);
+                        serviceName = dataHandler.getServices(provider, //cloudProvider,
+                                serviceType).get(0);
+                    // if the resource size has not been decided pick one
+                    if (resourceSize == null)
+                        resourceSize = dataHandler
+                                .getCloudResourceSizes(provider,/* cloudProvider,*/ serviceName)
+                                .iterator().next();
 
 					double speed = dataHandler.getProcessingRate(provider, // cloudProvider,
 							serviceName, resourceSize);

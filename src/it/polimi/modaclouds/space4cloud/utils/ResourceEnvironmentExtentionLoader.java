@@ -47,8 +47,9 @@ public class ResourceEnvironmentExtentionLoader extends
 		for (ResourceContainer container : loadedExtension
 				.getResourceContainer()) {
 			// String id = container.getId();
-			String id = container.getId() + container.getProvider();
-			providers.put(id, container.getProvider());
+			String provider = container.getProvider();
+			String id = container.getId() + (provider!=null?provider:"");
+			providers.put(id, provider);
 			if (container.getCloudResource() != null) {
 				IaasService resource = container.getCloudResource();
 				serviceTypes.put(id, resource.getServiceType());

@@ -50,10 +50,10 @@ public class DatabaseConnector {
 	 * @throws InstantiationException
 	 */
 	public DatabaseConnector() throws SQLException {
-		 String url = "jdbc:mysql://localhost:3306/";
-		 String dbName = "cloud";
-//		String url = "jdbc:mysql://109.231.122.191:3306/";
+//		String url = "jdbc:mysql://localhost:3306/";
 //		String dbName = "cloud";
+		String url = "jdbc:mysql://109.231.122.191:3306/";
+		String dbName = "cloud";
 		String driver = "com.mysql.jdbc.Driver";
 		String userName = "moda";
 		String password = "modaclouds";
@@ -65,6 +65,10 @@ public class DatabaseConnector {
 			logger.error("Unable to find the JDBC driver", e);
 		}
 		conn = DriverManager.getConnection(url + dbName, userName, password);
+		if(conn != null)
+			logger.info("Connection with the database established");
+		else
+			logger.error("Error in connecting to the database");
 	}
 
 	/**

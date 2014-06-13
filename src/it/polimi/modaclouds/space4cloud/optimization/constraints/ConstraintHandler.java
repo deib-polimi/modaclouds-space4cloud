@@ -52,6 +52,63 @@ public class ConstraintHandler {
 
 	public void addConstraint(Constraint constraint) {
 		constraints.add(constraint);
+<<<<<<< HEAD
+=======
+	}	
+
+
+	public void loadConstraints(File selectedFile)
+			throws ParserConfigurationException, SAXException, IOException, JAXBException {
+		constraintFile = selectedFile;
+		//load from the XML
+		Constraints  loadedConstraints = XMLHelper.deserialize(
+				constraintFile.toURI().toURL(), Constraints.class);
+		for(it.polimi.modaclouds.qos_models.schema.Constraint cons:loadedConstraints.getConstraints()){
+			//first get the metric
+			Metric metric = Metric.getMetricFromTag(cons.getMetric());			
+			//then create the appropriate constraint
+			Constraint constraint = null;	
+			if(metric == null){
+			logger.warn("Metric: "+cons.getMetric()+" on constraint "+cons.getName()+" id: "+cons.getId()+" not available."
+					+ " Supported metrics are: "+Metric.getSupportedMetricNames());
+				continue;
+			}
+			switch (metric) {
+			case RESPONSETIME:
+				constraint = new ResponseTimeConstraint(cons);
+				break;
+			case CPU:
+				constraint = new UsageConstraint(cons);					
+				break;
+			case RAM:
+				constraint = new RamConstraint(cons);
+				break;
+				//add other constraints
+			default:
+				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
+			}
+			addConstraint(constraint);
+		}
+
+		//debug
+		for(Constraint c:constraints){
+
+			logger.info("Constraint:");
+			logger.info("\tResource: "+c.getResourceID());
+			logger.info("\tpriority: "+c.getPriority());
+
+			logger.info("\tmetric: "+c.getMetric());
+			if(c instanceof ResponseTimeConstraint){
+				logger.info("\tmax: "+((ResponseTimeConstraint)c).getMax());			
+			}else if(c instanceof UsageConstraint){
+				logger.info("\tmax: "+((UsageConstraint)c).getMax());			
+			}else if(c instanceof RamConstraint){
+				logger.info("\tmin: "+((RamConstraint)c).getMin());			
+			}
+
+		}
+		
+>>>>>>> refs/heads/master
 	}
 
 	public HashMap<Constraint, Double> evaluateApplication(Instance app) {
