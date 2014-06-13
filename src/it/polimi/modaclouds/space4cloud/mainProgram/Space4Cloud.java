@@ -93,63 +93,63 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private Operations functionality;
 	private File resourceEnvironmentFile, usageFile, allocationFile,
-			repositoryFile, lineConfFile, usageModelExtFile,
-			resourceEnvExtFile, constraintFile;
+	repositoryFile, lineConfFile, usageModelExtFile,
+	resourceEnvExtFile, constraintFile;
 	private String resFolder;
 	private String solver;
 	private ConstraintHandler constraintHandler;
-	
+
 	private int testFrom, testTo, step;
 
 	public Space4Cloud() {
-        this(false, null, null, "space4cloud", null, null, null, null, null, null, null, null, 100, 10000, 300);
-    }
-	
-	public Space4Cloud(Operations operation, String basePath,
-            File usageModelExtFile, File resourceEnvExtFile, File constraintFile, int testFrom, int testTo, int step) {
-        this(true, operation,
-                Paths.get(basePath, "default.resourceenvironment").toFile(),
-                "space4cloud",
-                Paths.get(basePath, "default.usagemodel").toFile(),
-                Paths.get(basePath, "default.allocation").toFile(),
-                Paths.get(basePath, "default.repository").toFile(),
-                "LQNS (Layered Queueing Network Solver)", new File("LINE.properties"),
-            usageModelExtFile, resourceEnvExtFile, constraintFile, testFrom, testTo, step);
-    }
+		this(false, null, null, "space4cloud", null, null, null, null, null, null, null, null, 100, 10000, 300);
+	}
 
-    public Space4Cloud(Operations operation, String basePath,
-            File usageModelExtFile, File constraintFile, int testFrom, int testTo, int step) {
-        this(true, operation,
-                Paths.get(basePath, "default.resourceenvironment").toFile(),
-                "space4cloud",
-                Paths.get(basePath, "default.usagemodel").toFile(),
-                Paths.get(basePath, "default.allocation").toFile(),
-                Paths.get(basePath, "default.repository").toFile(),
-                "LQNS (Layered Queueing Network Solver)", new File("LINE.properties"),
-            usageModelExtFile, null, constraintFile, testFrom, testTo, step);
-    }
+	public Space4Cloud(Operations operation, String basePath,
+			File usageModelExtFile, File resourceEnvExtFile, File constraintFile, int testFrom, int testTo, int step) {
+		this(true, operation,
+				Paths.get(basePath, "default.resourceenvironment").toFile(),
+				"space4cloud",
+				Paths.get(basePath, "default.usagemodel").toFile(),
+				Paths.get(basePath, "default.allocation").toFile(),
+				Paths.get(basePath, "default.repository").toFile(),
+				"LQNS (Layered Queueing Network Solver)", new File("LINE.properties"),
+				usageModelExtFile, resourceEnvExtFile, constraintFile, testFrom, testTo, step);
+	}
+
+	public Space4Cloud(Operations operation, String basePath,
+			File usageModelExtFile, File constraintFile, int testFrom, int testTo, int step) {
+		this(true, operation,
+				Paths.get(basePath, "default.resourceenvironment").toFile(),
+				"space4cloud",
+				Paths.get(basePath, "default.usagemodel").toFile(),
+				Paths.get(basePath, "default.allocation").toFile(),
+				Paths.get(basePath, "default.repository").toFile(),
+				"LQNS (Layered Queueing Network Solver)", new File("LINE.properties"),
+				usageModelExtFile, null, constraintFile, testFrom, testTo, step);
+	}
 
 	public Space4Cloud(boolean batch, Operations functionality, File resourceEnvironmentFile, String resFolder,
-            File usageFile, File allocationFile, File repositoryFile, String solver, File lineConfFile,
-            File usageModelExtFile, File resourceEnvExtFile, File constraintFile, int testFrom, int testTo, int step) {
-        this.batch = batch;
-        this.resFolder = resFolder;
-        if (batch) {
-            this.functionality = functionality;
-            this.resourceEnvironmentFile = resourceEnvironmentFile;
-            this.usageFile = usageFile;
-            this.allocationFile = allocationFile;
-            this.repositoryFile = repositoryFile;
-            this.solver = solver;
-            this.lineConfFile = lineConfFile;
-            this.usageModelExtFile = usageModelExtFile;
-            this.resourceEnvExtFile = resourceEnvExtFile;
-            this.constraintFile = constraintFile;
-            this.testFrom = testFrom;
-            this.testTo = testTo;
-            this.step = step;
-        }
-    }
+			File usageFile, File allocationFile, File repositoryFile, String solver, File lineConfFile,
+			File usageModelExtFile, File resourceEnvExtFile, File constraintFile, int testFrom, int testTo, int step) {
+		this.batch = batch;
+		this.resFolder = resFolder;
+		if (batch) {
+			this.functionality = functionality;
+			this.resourceEnvironmentFile = resourceEnvironmentFile;
+			this.usageFile = usageFile;
+			this.allocationFile = allocationFile;
+			this.repositoryFile = repositoryFile;
+			this.solver = solver;
+			this.lineConfFile = lineConfFile;
+			this.usageModelExtFile = usageModelExtFile;
+			this.resourceEnvExtFile = resourceEnvExtFile;
+			this.constraintFile = constraintFile;
+			this.testFrom = testFrom;
+			this.testTo = testTo;
+			this.step = step;
+		}
+	}
 
 
 
@@ -159,33 +159,33 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	 * 0 -> Assesment 1 -> Optimization 2 -> Robustness 3 -> Exit /
 	 */
 	private void askForFunctionality() {
-//		Object[] options = { Constants.ASSESSMENT, Constants.OPTIMIZATION,
-//				Constants.ROBUSTNESS, Constants.CANCEL };
-		
+		//		Object[] options = { Constants.ASSESSMENT, Constants.OPTIMIZATION,
+		//				Constants.ROBUSTNESS, Constants.CANCEL };
+
 		Object[] options = new Object[Operations.size()];
-		
+
 		int i = 0;
 		for (Operations o : Operations.values())
 			options[i++] = o.toString();
-		
+
 		int id = JOptionPane.showOptionDialog(null,
 				"Choose the desired functionality", "Functionality selection",
 				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
 				null, options, options[options.length - 1]);
-		
+
 		functionality = Operations.getById(id);
 	}
-	
+
 	private void askForSolver() {
-//		Choose choice = new Choose("Choose the Solver",
-//				"Which Solver do you want to use?");
-//		if (!choice.isChosen()){
-//			cleanExit();
-//			return null;
-//		}
-//		solver = choice.getSolver();
-		
-		
+		//		Choose choice = new Choose("Choose the Solver",
+		//				"Which Solver do you want to use?");
+		//		if (!choice.isChosen()){
+		//			cleanExit();
+		//			return null;
+		//		}
+		//		solver = choice.getSolver();
+
+
 		Object[] options = { "LQNS", "LINE", "Simucom", "Cancel" };
 		int idSolver = JOptionPane.showOptionDialog(null,
 				"Which Solver do you want to use?", "Choose the Solver",
@@ -208,17 +208,17 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			solver = null;
 		}
 	}
-	
+
 	private File initialSolution = null, initialMce = null;
 	private List<String> providersInitialSolution = new ArrayList<String>();
-	
+
 	public void setProvidersInitialSolution(String... providers) {
 		providersInitialSolution.clear();
-		
+
 		for (String s : providers)
 			providersInitialSolution.add(s);
 	}
-	
+
 	public String[] getProvidersInitialSolution() {
 		String[] res = new String[providersInitialSolution.size()];
 		int i = 0;
@@ -226,78 +226,84 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			res[i++] = s;
 		return res;
 	}
-	
+
 	private void askProvidersForInitialSolution() {
 		DataHandler db = DataHandlerFactory.getHandler();
-    	Set<String> providers = db.getCloudProviders();
-    	
-    	Object[] possibilities = new Object[providers.size() + 1];
-    	possibilities[0] = "None";
-    	int i = 1;
-    	for (String provider : providers)
-    		possibilities[i++] = provider;
-    	
-    	String s = (String)possibilities[0];
-    	do {
-        	s = (String)JOptionPane.showInputDialog(
-        	                    null,
-        	                    "Select a provider if you want to restrict the search, or none to continue:",
-        	                    "Initial Solution",
-        	                    JOptionPane.PLAIN_MESSAGE,
-        	                    null,
-        	                    possibilities,
-        	                    possibilities[0]);
-        	
-        	if (!s.equals(possibilities[0]) && !providersInitialSolution.contains(s))
-        		providersInitialSolution.add(s);
-        	
-    	} while (!s.equals(possibilities[0]));
+		Set<String> providers = db.getCloudProviders();
+
+		Object[] possibilities = new Object[providers.size() + 1];
+		possibilities[0] = "None";
+		int i = 1;
+		for (String provider : providers)
+			possibilities[i++] = provider;
+
+		String s = (String)possibilities[0];
+		do {
+			s = (String)JOptionPane.showInputDialog(
+					null,
+					"Select a provider if you want to restrict the search, or none to continue:",
+					"Initial Solution",
+					JOptionPane.PLAIN_MESSAGE,
+					null,
+					possibilities,
+					possibilities[0]);
+
+			if (!s.equals(possibilities[0]) && !providersInitialSolution.contains(s))
+				providersInitialSolution.add(s);
+
+		} while (!s.equals(possibilities[0]));
 	}
-	
+
 	private void performGenerateInitialSolution() {
-//		resourceEnvExtFile = null;
-//		programLogger.warn("Generation of the first solution disabled at the moment!");
-		
+		//		resourceEnvExtFile = null;
+		//		programLogger.warn("Generation of the first solution disabled at the moment!");
+
 		/////////////////////////////
 		RussianEvaluator re = new RussianEvaluator(usageModelExtFile, constraintFile);
-		
+
 		if (providersInitialSolution.size() > 0)
-        	re.setProviders(getProvidersInitialSolution());
+			re.setProviders(getProvidersInitialSolution());
 
-        try {
-            re.eval();
-        } catch (Exception e) {
-            programLogger.error("Error! It's impossible to generate the solution! Are you connected?");
-            e.printStackTrace();
-            return;
-        }
+		try {
+			re.eval();
+		} catch (Exception e) {
+			programLogger.error("Error! It's impossible to generate the solution! Are you connected?");
+			e.printStackTrace();
+			return;
+		}
 
-        resourceEnvExtFile = re.getResourceEnvExt();
-        initialSolution = re.getSolution();
-        initialMce = re.getMultiCloudExt();
+		resourceEnvExtFile = re.getResourceEnvExt();
+		initialSolution = re.getSolution();
+		initialMce = re.getMultiCloudExt();
 
-        programLogger.info("Generated resource model extension: " + resourceEnvExtFile.getAbsolutePath());
-        programLogger.info("Generated solution: " + initialSolution.getAbsolutePath());
-        programLogger.info("Generated multi cloud extension: " + initialMce.getAbsolutePath());
-        programLogger.info("Cost: " + re.getCost() + ", computed in: " + re.getEvaluationTime() + " ms");
-        
-        if (SolutionMulti.isEmpty(initialSolution)) {
-        	resourceEnvExtFile = null;
-        	programLogger.error("The generated solution is empty!");
-        }
-        
-    }
+		programLogger.info("Generated resource model extension: " + resourceEnvExtFile.getAbsolutePath());
+		programLogger.info("Generated solution: " + initialSolution.getAbsolutePath());
+		programLogger.info("Generated multi cloud extension: " + initialMce.getAbsolutePath());
+		programLogger.info("Cost: " + re.getCost() + ", computed in: " + re.getEvaluationTime() + " ms");
+
+		if (SolutionMulti.isEmpty(initialSolution)) {
+			resourceEnvExtFile = null;
+			programLogger.error("The generated solution is empty!");
+		}
+
+	}
 
 	private File askResourceEnvironmentExtensionFile()
 			throws MalformedURLException {
 		return askFile("Load Resource Environment Extension",ResourceModelExtension.class);
 	}
-	
+
+
+	private File askUsageModelExtensionFile()
+			throws MalformedURLException {
+		return askFile("Load Usage Model Extension",UsageModelExtensions.class);
+	}
+
 	private File askConstraintFile()
 			throws MalformedURLException {
 		return askFile("Load Constraints", Constraints.class);
 	}
-	
+
 	private <T> File askFile(String message, Class<T> clazz )
 			throws MalformedURLException {
 		File providedFile;		
@@ -310,16 +316,17 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				cleanExit();
 				return null;
 			}
-				
-			
+
+
 			providedFile = extensionSelector.getFile();
 			try {
 				if (providedFile != null)
 					XMLHelper.deserialize(providedFile.toURI().toURL(),
 							clazz);
-			} catch (JAXBException e) {
-				programLogger.error("The resource Model extension file specified ("
-						+ resourceEnvExtFile + ") is not valid ");
+			} catch (JAXBException | SAXException e) {
+				programLogger.error("The specified file ("
+						+ providedFile + ") is not valid ",e);
+				e.printStackTrace();
 				providedFile = null;
 			}
 		} while (!extensionSelector.isCanceled() && providedFile == null);
@@ -328,28 +335,28 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 		return providedFile;
 	}
-	
 
-	
+
+
 
 
 	private void buildFolderStructure(Path lqnModelPath, Path resultModelPath)
 			throws IOException {
 		return;
-		
-//		for (int i = 0; i < 24; i++) {
-//			Path tmpFolderPath = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
-//					c.PERFORMANCE_RESULTS_FOLDER, c.FOLDER_PREFIX + i);
-//			Files.createDirectory(tmpFolderPath);
-//			Path tmpLqnPath = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
-//					c.PERFORMANCE_RESULTS_FOLDER, c.FOLDER_PREFIX + i,
-//					lqnModelPath.getFileName().toString());
-//			Files.copy(lqnModelPath, tmpLqnPath);
-//			Path tmpResultPath = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
-//					c.PERFORMANCE_RESULTS_FOLDER, c.FOLDER_PREFIX + i,
-//					resultModelPath.getFileName().toString());
-//			Files.copy(resultModelPath, tmpResultPath);
-//		}
+
+		//		for (int i = 0; i < 24; i++) {
+		//			Path tmpFolderPath = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
+		//					c.PERFORMANCE_RESULTS_FOLDER, c.FOLDER_PREFIX + i);
+		//			Files.createDirectory(tmpFolderPath);
+		//			Path tmpLqnPath = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
+		//					c.PERFORMANCE_RESULTS_FOLDER, c.FOLDER_PREFIX + i,
+		//					lqnModelPath.getFileName().toString());
+		//			Files.copy(lqnModelPath, tmpLqnPath);
+		//			Path tmpResultPath = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
+		//					c.PERFORMANCE_RESULTS_FOLDER, c.FOLDER_PREFIX + i,
+		//					resultModelPath.getFileName().toString());
+		//			Files.copy(resultModelPath, tmpResultPath);
+		//		}
 	}
 
 	private void cleanExit() {
@@ -477,12 +484,12 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 				// load the solver
 				askForSolver();
-				
+
 				if (solver == null) {
 					cleanExit();
 					return null;
 				}
-				
+
 
 				// if the solver is LINE it needs the path to its configuration
 				// file
@@ -515,7 +522,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			refreshProject();
 
 		}
-		
+
 		// refresh the project in the workspace
 		refreshProject();
 
@@ -565,37 +572,22 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		refreshProject();
 
 		if (!batch) {
-			/* File */usageModelExtFile = null;
-			XMLFileSelection usageModelExtSelector = new XMLFileSelection(
-					"Load Usage Model Extension");
-			// keep asking the file until a valid file is provided or the user
-			// pressed cancel
-			do {
-				usageModelExtSelector.askFile();
-				usageModelExtFile = usageModelExtSelector.getFile();
-				try {
-					if (usageModelExtFile != null)
-						XMLHelper.deserialize(
-								usageModelExtFile.toURI().toURL(),
-								UsageModelExtensions.class);
-				} catch (JAXBException e) {
-					programLogger.warn("The usage Model extension file specified ("
-							+ usageModelExtFile + ") is not valid ");
-					usageModelExtFile = null;
-				} catch (MalformedURLException e) {
-					programLogger.error("Error in parsing the usage model Extension",e);
-				}
-			} while (!usageModelExtSelector.isCanceled()
-					&& usageModelExtFile == null);
-			if (usageModelExtSelector.isCanceled()) {
-				programLogger.info("No usage model extension selected. Quitting SPACE4CLOUD");
-				cleanExit();
-				return null;
-			}
+
+			/* File */try {
+				usageModelExtFile = askUsageModelExtensionFile();
+			} catch (MalformedURLException e) {
+				programLogger.error("Error in loading the usage model extension",e);
+			}				
+
 		}
-//		c.RESOURCE_ENV_EXT_FILE = usageModelExtFile.getAbsolutePath();
+		if (usageModelExtFile == null) {
+			programLogger.info("No usage model extension selected. Quitting SPACE4CLOUD");
+			cleanExit();
+			return null;
+		}
+		//		c.RESOURCE_ENV_EXT_FILE = usageModelExtFile.getAbsolutePath();
 		c.USAGE_MODEL_EXT_FILE = usageModelExtFile.getAbsolutePath();
-		
+
 		/* Load the Constraint file */
 		if (!batch) {
 			try {
@@ -603,7 +595,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			} catch (MalformedURLException e) {
 				programLogger.error("Error in loading the constraint file",e);				
 			}
-			
+
 		}
 
 		// Parse the constraints and initialize the handler
@@ -613,7 +605,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		} catch (ParserConfigurationException | SAXException | IOException | JAXBException e) {
 			programLogger.error("Error in loading constraints",e);
 		}
-		
+
 		int n = 1; // 0 = generate the solution by default, 1 otherwise
 		if (!batch && functionality != Operations.Assessment) {
 			/*
@@ -646,13 +638,13 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			initialSolution = new File("none");
 			if (!batch)
 				askProvidersForInitialSolution();
-			
+
 		} else if (n == 0 || resourceEnvExtFile == null) {
 			if (!batch)
 				askProvidersForInitialSolution();
 			performGenerateInitialSolution();
 		}
-		
+
 		if (resourceEnvExtFile == null) {
 			programLogger.warn("No resource model extension selected. Quitting SPACE4CLOUD");
 			cleanExit();
@@ -719,7 +711,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	}
 
 	private static File generateModifiedUsageModelExt(File f, double deltaRatio)
-			throws JAXBException, IOException {
+			throws JAXBException, IOException, SAXException {
 		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
 				UsageModelExtensions.class);
 
@@ -748,41 +740,41 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	}
 
-    public static int getMaxPopulation(File usageModelExtension) {
-        UsageModelExtensions umes = null;
-        try {
-            umes = XMLHelper.deserialize(usageModelExtension.toURI().toURL(),
-                    UsageModelExtensions.class);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1;
-        }
+	public static int getMaxPopulation(File usageModelExtension) {
+		UsageModelExtensions umes = null;
+		try {
+			umes = XMLHelper.deserialize(usageModelExtension.toURI().toURL(),
+					UsageModelExtensions.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return -1;
+		}
 
-        int maxPopulation = -1;
+		int maxPopulation = -1;
 
-        ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
-        if (cw != null) {
-            for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
-                if (maxPopulation < we.getPopulation())
-                    maxPopulation = we.getPopulation();
-            }
-        }
-        else {
+		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+		if (cw != null) {
+			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+				if (maxPopulation < we.getPopulation())
+					maxPopulation = we.getPopulation();
+			}
+		}
+		else {
 
-            OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
-            if (ow != null) {
-                for (OpenWorkloadElement we : ow.getWorkloadElement()) {
-                    if (maxPopulation < we.getPopulation())
-                        maxPopulation = we.getPopulation();
-                }
-            }
-            else {
-                return -1;
-            }
-        }
+			OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+			if (ow != null) {
+				for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+					if (maxPopulation < we.getPopulation())
+						maxPopulation = we.getPopulation();
+				}
+			}
+			else {
+				return -1;
+			}
+		}
 
-        return maxPopulation;
-    }
+		return maxPopulation;
+	}
 
 	/**
 	 * Performs the assessment of a solution evaluating utilization and response
@@ -819,8 +811,8 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// print the results
 		SolutionMulti providedSolutions = engine.getInitialSolution();
 		Solution providedSolution = providedSolutions.get(0);
-		// TODO: we should consider the multi-provider solution here!
-		
+
+
 		assesmentWindow = new AssesmentWindow();
 		// plotting the number of VMs
 		Logger2JFreeChartImage vmLogger = new Logger2JFreeChartImage(
@@ -891,7 +883,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	 * @throws IOException
 	 */
 	private void performOptimization() throws ParserConfigurationException,
-			SAXException, IOException {
+	SAXException, IOException {
 
 		// Build a new Optimization Engine engine and an empty initial
 		// solution
@@ -924,10 +916,10 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		programLogger.info("Starting the optimization");
 		engine.execute();
 
-		// TODO Auto-generated method stub
+
 
 	}
-	
+
 	private int attempts = 5;
 	public void setRobustnessAttempts(int attempts) {
 		this.attempts = attempts;
@@ -946,9 +938,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	private void performRobustnessAnalysis()
 			throws ParserConfigurationException, SAXException, IOException,
 			JAXBException {
-		
+
 		// if we want to check the robustness of the solution, a number of
-        // modifications of the usage model file must be created.
+		// modifications of the usage model file must be created.
 		ArrayList<File> usageModelExtFiles = new ArrayList<File>();
 
 		String tmp = null;
@@ -1008,7 +1000,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 					error = true;
 				}
 			}
-			
+
 			error = true;
 			while (error) {
 				tmp = (String) JOptionPane.showInputDialog(null, "Attempts?",
@@ -1037,7 +1029,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			usageModelExtFiles.add(generateModifiedUsageModelExt(
 					usageModelExtFile, x / basex));
 		}
-		
+
 		// We're checking the robustness of the solution here!
 
 		// We use a pool of executors for checking a number of modification
@@ -1048,135 +1040,135 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		RobustnessProgressWindow rpw = new RobustnessProgressWindow(
 				usageModelExtFiles.size() + 1);
 
-		
+
 		///////////////////////////////
-//		// Build a new Optimization Engine engine and an empty initial
-//		// solution
-//		programLogger.info("Loading the optimization engine and preparing the solver");
-//
-//		OptEngine engine = new PartialEvaluationOptimizationEngine(
-//				constraintHandler, batch);
-//
-//		// load the initial solution from the PCM specified in the
-//		// configuration and the extension
-//		programLogger.info("Parsing The Solution");
-//		try {
-//			engine.loadInitialSolution(resourceEnvExtFile, usageModelExtFile, initialSolution, initialMce);
-//		} catch (JAXBException e) {
-//			programLogger.error("Error in loading the initial solution", e);
-//		}
-//
-//		// start the optimization
-//		programLogger.info("Starting the optimization");
-//		executor.execute(engine);
-//
-//		List<File> solutions = new ArrayList<File>();
-//		int terminated = 0;
-//		{
-//			File f = Paths.get(c.PROJECT_PATH, resFolder, "solution.xml").toFile();
-//			solutions.add(f);
-//
-//			boolean found = false;
-//			while (!found) {
-//				if (f.exists()) {
-//					terminated++;
-//					found = true;
-//
-//					// to save space on hd I remove the results as soon as i get
-//					// the solution.xml file, because that's all I need
-//					ConfigurationHandler.cleanFolders(f.getParent()
-//							+ File.separator + "performance_results");
-//				}
-//
-//				if (!found) {
-//					try {
-//						Thread.sleep(1000);
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//		}
-//
-//		rpw.add(usageModelExtFile, solutions.get(0));
-//		rpw.setValue(terminated);
-//		rpw.save2png(solutions.get(0).getParent());
-//		
-//		int testValue = testFrom;
-//
-//        Path p = Paths.get(solutions.get(0).getParent(), "results");
-//        System.out.println(p.toString());
-//        int i = 0;
-//        while (Files.exists(p)) {
-//            p = Paths.get(solutions.get(0).getParent(), "results-" + i);
-//            ++i;
-//        }
-//        Files.createDirectory(p);
-//
-//        try {
-//            Files.copy(Paths.get(usageModelExtFile.getAbsolutePath()), Paths.get(p.toString(), "ume-" + testValue + ".xml"));
-//            Files.copy(Paths.get(solutions.get(0).getAbsolutePath()), Paths.get(p.toString(), "solution-" + testValue + ".xml"));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        testValue += step;
-//
-//        int el = 0;
-//        for (File f : usageModelExtFiles) {
-//            Space4Cloud s4c = new Space4Cloud(true, Operations.Optimization, resourceEnvironmentFile, resFolder + File.separator + el,
-//                    usageFile, allocationFile, repositoryFile, solver, lineConfFile,
-//                    f, initialSolution != null ? null : resourceEnvExtFile, constraintFile, testFrom, testTo, step);
-//            // if initialSolution isn't null, it was because we generated it! so we must keep generating them!
-//
-//            Future<?> fut = executor.submit(s4c);
-//            try {
-//                fut.get();
-//            } catch (InterruptedException | ExecutionException e) {
-//                e.printStackTrace();
-//            }
-//            
-//            {
-//                File g = Paths.get(c.PROJECT_PATH, resFolder, "" + el, "solution.xml").toFile();
-//                solutions.add(g);
-//
-//                boolean found = false;
-//                    while (!found) {
-//                    if (g.exists()) {
-//                        terminated++;
-//                        found = true;
-//
-//                        // to save space on hd I remove the results as soon as i get the solution.xml file, because that's all I need
-//                        ConfigurationHandler.cleanFolders(g.getParent() + File.separator + "performance_results");
-//
-//                        try {
-//                            Files.copy(Paths.get(f.getAbsolutePath()), Paths.get(p.toString(), "ume-" + testValue + ".xml"));
-//                            Files.copy(Paths.get(g.getAbsolutePath()), Paths.get(p.toString(), "solution-" + testValue + ".xml"));
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                        testValue += step;
-//                    }
-//
-//                    if (!found) {
-//                        try {
-//                            Thread.sleep(1000);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            }
-//
-//            rpw.add(usageModelExtFiles.get(el), solutions.get(el+1));
-//            rpw.setValue(terminated);
-//            rpw.save2png(solutions.get(0).getParent());
-//
-//            el++;
-//        }
+		//		// Build a new Optimization Engine engine and an empty initial
+		//		// solution
+		//		programLogger.info("Loading the optimization engine and preparing the solver");
+		//
+		//		OptEngine engine = new PartialEvaluationOptimizationEngine(
+		//				constraintHandler, batch);
+		//
+		//		// load the initial solution from the PCM specified in the
+		//		// configuration and the extension
+		//		programLogger.info("Parsing The Solution");
+		//		try {
+		//			engine.loadInitialSolution(resourceEnvExtFile, usageModelExtFile, initialSolution, initialMce);
+		//		} catch (JAXBException e) {
+		//			programLogger.error("Error in loading the initial solution", e);
+		//		}
+		//
+		//		// start the optimization
+		//		programLogger.info("Starting the optimization");
+		//		executor.execute(engine);
+		//
+		//		List<File> solutions = new ArrayList<File>();
+		//		int terminated = 0;
+		//		{
+		//			File f = Paths.get(c.PROJECT_PATH, resFolder, "solution.xml").toFile();
+		//			solutions.add(f);
+		//
+		//			boolean found = false;
+		//			while (!found) {
+		//				if (f.exists()) {
+		//					terminated++;
+		//					found = true;
+		//
+		//					// to save space on hd I remove the results as soon as i get
+		//					// the solution.xml file, because that's all I need
+		//					ConfigurationHandler.cleanFolders(f.getParent()
+		//							+ File.separator + "performance_results");
+		//				}
+		//
+		//				if (!found) {
+		//					try {
+		//						Thread.sleep(1000);
+		//					} catch (Exception e) {
+		//						e.printStackTrace();
+		//					}
+		//				}
+		//			}
+		//		}
+		//
+		//		rpw.add(usageModelExtFile, solutions.get(0));
+		//		rpw.setValue(terminated);
+		//		rpw.save2png(solutions.get(0).getParent());
+		//		
+		//		int testValue = testFrom;
+		//
+		//        Path p = Paths.get(solutions.get(0).getParent(), "results");
+		//        System.out.println(p.toString());
+		//        int i = 0;
+		//        while (Files.exists(p)) {
+		//            p = Paths.get(solutions.get(0).getParent(), "results-" + i);
+		//            ++i;
+		//        }
+		//        Files.createDirectory(p);
+		//
+		//        try {
+		//            Files.copy(Paths.get(usageModelExtFile.getAbsolutePath()), Paths.get(p.toString(), "ume-" + testValue + ".xml"));
+		//            Files.copy(Paths.get(solutions.get(0).getAbsolutePath()), Paths.get(p.toString(), "solution-" + testValue + ".xml"));
+		//        } catch (Exception e) {
+		//            e.printStackTrace();
+		//        }
+		//
+		//        testValue += step;
+		//
+		//        int el = 0;
+		//        for (File f : usageModelExtFiles) {
+		//            Space4Cloud s4c = new Space4Cloud(true, Operations.Optimization, resourceEnvironmentFile, resFolder + File.separator + el,
+		//                    usageFile, allocationFile, repositoryFile, solver, lineConfFile,
+		//                    f, initialSolution != null ? null : resourceEnvExtFile, constraintFile, testFrom, testTo, step);
+		//            // if initialSolution isn't null, it was because we generated it! so we must keep generating them!
+		//
+		//            Future<?> fut = executor.submit(s4c);
+		//            try {
+		//                fut.get();
+		//            } catch (InterruptedException | ExecutionException e) {
+		//                e.printStackTrace();
+		//            }
+		//            
+		//            {
+		//                File g = Paths.get(c.PROJECT_PATH, resFolder, "" + el, "solution.xml").toFile();
+		//                solutions.add(g);
+		//
+		//                boolean found = false;
+		//                    while (!found) {
+		//                    if (g.exists()) {
+		//                        terminated++;
+		//                        found = true;
+		//
+		//                        // to save space on hd I remove the results as soon as i get the solution.xml file, because that's all I need
+		//                        ConfigurationHandler.cleanFolders(g.getParent() + File.separator + "performance_results");
+		//
+		//                        try {
+		//                            Files.copy(Paths.get(f.getAbsolutePath()), Paths.get(p.toString(), "ume-" + testValue + ".xml"));
+		//                            Files.copy(Paths.get(g.getAbsolutePath()), Paths.get(p.toString(), "solution-" + testValue + ".xml"));
+		//                        } catch (Exception e) {
+		//                            e.printStackTrace();
+		//                        }
+		//
+		//                        testValue += step;
+		//                    }
+		//
+		//                    if (!found) {
+		//                        try {
+		//                            Thread.sleep(1000);
+		//                        } catch (Exception e) {
+		//                            e.printStackTrace();
+		//                        }
+		//                    }
+		//                }
+		//            }
+		//
+		//            rpw.add(usageModelExtFiles.get(el), solutions.get(el+1));
+		//            rpw.setValue(terminated);
+		//            rpw.save2png(solutions.get(0).getParent());
+		//
+		//            el++;
+		//        }
 		///////////////////////////////
-		
+
 		String duration = "";
 		{
 			// an average of 2 minutes per attempt... maybe it's too little, but whatever...
@@ -1192,107 +1184,107 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			duration += res + " s";
 		}
 		programLogger.info("Starting the robustness test, considering each problem " + attempts + " times (it could take up to " + duration + ")...");
-		
+
 		StopWatch timer = new StopWatch();
 		timer.start();
 		timer.split();
-		
+
 		usageModelExtFiles.add(0, usageModelExtFile);
 
 		List<File> solutions = new ArrayList<File>();
-		
+
 		int testValue = testFrom;
 		int terminated = 0;
 
-        Path p = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "results");
-        System.out.println(p.toString());
-        int i = 0;
-        while (Files.exists(p)) {
-            p = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "results-" + i);
-            ++i;
-        }
-        Files.createDirectory(p);
+		Path p = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "results");
+		System.out.println(p.toString());
+		int i = 0;
+		while (Files.exists(p)) {
+			p = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "results-" + i);
+			++i;
+		}
+		Files.createDirectory(p);
 
-        int el = 0;
-        for (File f : usageModelExtFiles) {
-        	
-        	File bestSolution = null;
-        	int bestCost = Integer.MAX_VALUE;
-        	
-        	for (int attempt = 1; attempt <= attempts; ++attempt) {
-	            Space4Cloud s4c = new Space4Cloud(true, Operations.Optimization, resourceEnvironmentFile, resFolder + File.separator + testValue + File.separator + attempt,
-	                    usageFile, allocationFile, repositoryFile, solver, lineConfFile,
-	                    f, initialSolution != null ? null : resourceEnvExtFile, constraintFile, testFrom, testTo, step);
-	            // if initialSolution isn't null, it was because we generated it! so we must keep generating them!
-	
-	            s4c.setProvidersInitialSolution(getProvidersInitialSolution());
-	            
-	            Future<?> fut = executor.submit(s4c);
-	            try {
-	                fut.get();
-	            } catch (InterruptedException | ExecutionException e) {
-	                e.printStackTrace();
-	            }
-	            
-	            {
-	                File g = Paths.get(c.PROJECT_PATH, resFolder, "" + testValue + File.separator + attempt, "solution.xml").toFile();
-	                
-	                boolean found = false;
-	                    while (!found) {
-	                    if (g.exists()) {
-	                        found = true;
+		int el = 0;
+		for (File f : usageModelExtFiles) {
 
-	                        // to save space on hd I remove the results as soon as i get the solution.xml file, because that's all I need
-	                        ConfigurationHandler.cleanFolders(g.getParent() + File.separator + "performance_results");
-	                        
-	                        int cost = SolutionMulti.getCost(g);
-	                        if (bestSolution == null || cost < bestCost) {
-//	                        	System.out.println("DEBUG: Best cost from " + bestCost + " to " + cost);
-	                        	bestCost = cost;
-	                        	bestSolution = g;
-	                        }
-	                    }
+			File bestSolution = null;
+			int bestCost = Integer.MAX_VALUE;
 
-	                    if (!found) {
-	                        try {
-	                            Thread.sleep(1000);
-	                        } catch (Exception e) {
-	                            e.printStackTrace();
-	                        }
-	                    }
-	                }
-	            }
-        	}
-        	
-        	try {
-                Files.copy(Paths.get(f.getAbsolutePath()), Paths.get(p.toString(), "ume-" + testValue + ".xml"));
-                Files.copy(Paths.get(bestSolution.getAbsolutePath()), Paths.get(p.toString(), "solution-" + testValue + ".xml"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+			for (int attempt = 1; attempt <= attempts; ++attempt) {
+				Space4Cloud s4c = new Space4Cloud(true, Operations.Optimization, resourceEnvironmentFile, resFolder + File.separator + testValue + File.separator + attempt,
+						usageFile, allocationFile, repositoryFile, solver, lineConfFile,
+						f, initialSolution != null ? null : resourceEnvExtFile, constraintFile, testFrom, testTo, step);
+				// if initialSolution isn't null, it was because we generated it! so we must keep generating them!
 
-            terminated++;
-            solutions.add(bestSolution);
+				s4c.setProvidersInitialSolution(getProvidersInitialSolution());
 
-            rpw.add(usageModelExtFiles.get(el), solutions.get(el));
-            rpw.setValue(terminated);
-            rpw.save2png(c.ABSOLUTE_WORKING_DIRECTORY);
+				Future<?> fut = executor.submit(s4c);
+				try {
+					fut.get();
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
 
-            el++;
-            
-            ConfigurationHandler.cleanFolders(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, testValue + "").toString());
-            testValue += step;
-            
-        }
-		
-		
-		
+				{
+					File g = Paths.get(c.PROJECT_PATH, resFolder, "" + testValue + File.separator + attempt, "solution.xml").toFile();
 
-        executor.shutdown();
-        timer.stop();
-        
+					boolean found = false;
+					while (!found) {
+						if (g.exists()) {
+							found = true;
+
+							// to save space on hd I remove the results as soon as i get the solution.xml file, because that's all I need
+							ConfigurationHandler.cleanFolders(g.getParent() + File.separator + "performance_results");
+
+							int cost = SolutionMulti.getCost(g);
+							if (bestSolution == null || cost < bestCost) {
+								//	                        	System.out.println("DEBUG: Best cost from " + bestCost + " to " + cost);
+								bestCost = cost;
+								bestSolution = g;
+							}
+						}
+
+						if (!found) {
+							try {
+								Thread.sleep(1000);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			}
+
+			try {
+				Files.copy(Paths.get(f.getAbsolutePath()), Paths.get(p.toString(), "ume-" + testValue + ".xml"));
+				Files.copy(Paths.get(bestSolution.getAbsolutePath()), Paths.get(p.toString(), "solution-" + testValue + ".xml"));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			terminated++;
+			solutions.add(bestSolution);
+
+			rpw.add(usageModelExtFiles.get(el), solutions.get(el));
+			rpw.setValue(terminated);
+			rpw.save2png(c.ABSOLUTE_WORKING_DIRECTORY);
+
+			el++;
+
+			ConfigurationHandler.cleanFolders(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, testValue + "").toString());
+			testValue += step;
+
+		}
+
+
+
+
+		executor.shutdown();
+		timer.stop();
+
 		programLogger.info("Check ended!");
-		
+
 		String actualDuration = "";
 		{
 			int res = (int)timer.getTime() / 1000;
@@ -1306,7 +1298,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			}
 			actualDuration += res + " s";
 		}
-		
+
 		programLogger.info("Expected time of execution: " + duration + ", actual time of execution: " + actualDuration);
 
 		executor.shutdown();
@@ -1365,20 +1357,20 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private void refreshProject() throws CoreException {
 		ResourcesPlugin
-				.getWorkspace()
-				.getRoot()
-				.getProject(c.PROJECT_NAME)
-				.refreshLocal(IResource.DEPTH_INFINITE,
-						new NullProgressMonitor());
+		.getWorkspace()
+		.getRoot()
+		.getProject(c.PROJECT_NAME)
+		.refreshLocal(IResource.DEPTH_INFINITE,
+				new NullProgressMonitor());
 
 	}
-	
+
 	public static enum Operations {
 		Assessment,
 		Optimization,
 		Robustness,
 		Exit;
-		
+
 		public static Operations getById(int id) {
 			Operations[] values = Operations.values();
 			if (id < 0)
@@ -1387,7 +1379,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				id = values.length - 1;
 			return values[id];
 		}
-		
+
 		public static int size() {
 			return Operations.values().length;
 		}
