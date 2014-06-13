@@ -28,6 +28,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,12 +36,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
+import org.slf4j.Logger;
 
 /**
  * @author Michele Ciavotta the aim of this class is to provide an object able
  *         to retrieve the data related to a certain provider and service
  */
 public class DataHandler {
+	private static final Logger logger = LoggerHelper.getLogger(DataHandler.class);
 
 	private final CloudProvidersDictionary cloudProviders;
 
@@ -273,6 +276,10 @@ public class DataHandler {
 		}
 		List<IaaS_Service> iaasServices = cloudProviders
 				.getProviderDBConnectors().get(provider).getIaaSServices();
+		logger.trace("getting services of type "+serviceType+" from "+provider);
+		logger.trace("found "+iaasServices.size()+" services");
+		for (IaaS_Service service : iaasServices) 
+			logger.trace("service: "+service.getName()+" class: "+service.getClass());
 		List<String> filteredServices = new ArrayList<String>();
 		for (IaaS_Service service : iaasServices) {
 			List<CloudResource> resources = service.getComposedOf();
@@ -280,9 +287,17 @@ public class DataHandler {
 			// one add the service to the list of filtered services
 			// (we assume here that each service provide resources of the same
 			// type
+			logger.trace("Empty resources: "+resources.isEmpty());
+			if (!resources.isEmpty()){
+				logger.trace("fisrt element class: "+resources.get(0).getClass());
+				logger.trace("Expected Class: "+expectedResource.getClass());
+				logger.trace("is assignable: "+resources.get(0).getClass()
+						.isAssignableFrom(expectedResource.getClass()));
+			}
 			if (!resources.isEmpty()
 					&& resources.get(0).getClass()
-							.isAssignableFrom(expectedResource.getClass())) {
+					.isAssignableFrom(expectedResource.getClass())) {
+				logger.trace("adding service: "+service.getName());
 				filteredServices.add(service.getName());
 			}
 		}

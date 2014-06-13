@@ -65,6 +65,10 @@ public class DatabaseConnector {
 		}
 		conn = DriverManager
 				.getConnection(url + dbName, userName, password);
+		if(conn != null)
+			logger.info("Connection with the database established");
+		else
+			logger.error("Error in connecting to the database");
 	}
 
 	/**
