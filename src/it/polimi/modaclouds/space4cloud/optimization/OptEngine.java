@@ -845,19 +845,22 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	/**
-	 * Load initial solution. The aim of this method is to load the initial
-	 * solution from file.
-	 * 
-	 * @param resourceEnvExtension
-	 *            the extension file
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws JAXBException
-	 */
-	public void loadInitialSolution(File resourceEnvExtension,
-			File usageModelExtension) throws ParserConfigurationException,
-			SAXException, IOException, JAXBException {
+     * Load initial solution. The aim of this method is to load the initial
+     * solution from file.
+     *
+     * @param resourceEnvExtension
+     *            the extension file
+     * @throws IOException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     * @throws JAXBException
+     */
+    public void loadInitialSolution(File resourceEnvExtension,
+            File usageModelExtension) throws ParserConfigurationException,
+            SAXException, IOException, JAXBException {
+        loadInitialSolution(resourceEnvExtension, usageModelExtension, null, null);
+    }
+	
 	/**
 	 * Load initial solution. The aim of this method is to load the initial
 	 * solution from file.

@@ -368,91 +368,107 @@ public class RobustnessProgressWindow {
 	public RobustnessProgressWindow(int total) {
 		this.total = total;
 
-    public void add(File usageModelExtension, File solution) throws MalformedURLException, JAXBException, SAXException {
-        UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension.toURI().toURL(),
-                UsageModelExtensions.class);
+		updateGraph();
 
-        int maxPopulation = -1, maxHour = -1;
-        String name = "Var " + Space4Cloud.getMaxPopulation(usageModelExtension);
+		initialize();
+	}
 
-        ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
-        if (cw != null) {
-            for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
-                if (maxPopulation < we.getPopulation()) {
-                    maxPopulation = we.getPopulation();
-                    maxHour = we.getHour();
-                }
-                populations.addValue(we.getPopulation(), name, "" + we.getHour());
-            }
-        }
-        else {
+	public void add(File usageModelExtension, File solution)
+			throws MalformedURLException, JAXBException, SAXException {
+		UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension
+				.toURI().toURL(), UsageModelExtensions.class);
 
-            OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
-            if (ow != null) {
-                for (OpenWorkloadElement we : ow.getWorkloadElement()) {
-                    if (maxPopulation < we.getPopulation()) {
-                        maxPopulation = we.getPopulation();
-                        maxHour = we.getHour();
-                    }
-                    populations.addValue(we.getPopulation(), name, "" + we.getHour());
-                }
-            }
-            else {
-                return;
-            }
-        }
+		int maxPopulation = -1, maxHour = -1;
+		String name = "Var "
+				+ Space4Cloud.getMaxPopulation(usageModelExtension);
 
-        Document doc = DOM.getDocument(solution);
+		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+		if (cw != null) {
+			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+				if (maxPopulation < we.getPopulation()) {
+					maxPopulation = we.getPopulation();
+					maxHour = we.getHour();
+				}
+				populations.addValue(we.getPopulation(), name,
+						"" + we.getHour());
+			}
+		} else {
 
-        NodeList nl = doc.getElementsByTagName("Tier");
+			OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+			if (ow != null) {
+				for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+					if (maxPopulation < we.getPopulation()) {
+						maxPopulation = we.getPopulation();
+						maxHour = we.getHour();
+					}
+					populations.addValue(we.getPopulation(), name,
+							"" + we.getHour());
+				}
+			} else {
+				return;
+			}
+		}
 
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node tier = nl.item(i);
+		Document doc = DOM.getDocument(solution);
 
-            String size = tier.getAttributes().getNamedItem("resourceName").getNodeValue();
+		NodeList nl = doc.getElementsByTagName("Tier");
 
-            Size s = Size.parse(size);
+		for (int i = 0; i < nl.getLength(); i++) {
+			Node tier = nl.item(i);
 
-            tiers.addValue(s.ordinal(), "Tier " + i, "" + maxPopulation);
-            tiersBasic.addValue(s.basicId, "Tier " + i, "" + maxPopulation);
+			String size = tier.getAttributes().getNamedItem("resourceName")
+					.getNodeValue();
 
-            Element tierEl = (Element) tier;
-            NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+			Size s = Size.parse(size);
 
-            for (int j = 0; j < hours.getLength(); j++) {
-                Node hour = hours.item(j);
-                int valHour = Integer.valueOf(hour.getAttributes().getNamedItem("hour").getNodeValue()) + 1;
+			tiers.addValue(s.ordinal(), "Tier " + i, "" + maxPopulation);
+			tiersBasic.addValue(s.basicId, "Tier " + i, "" + maxPopulation);
 
-                if (valHour == maxHour) {
-                    solutions.addValue(Integer.valueOf(hour.getAttributes().getNamedItem("allocation").getNodeValue()), "Tier " + i, "" + maxPopulation);
-                }
+			Element tierEl = (Element) tier;
+			NodeList hours = tierEl.getElementsByTagName("HourAllocation");
 
-            }
-        }
+			for (int j = 0; j < hours.getLength(); j++) {
+				Node hour = hours.item(j);
+				int valHour = Integer.valueOf(hour.getAttributes()
+						.getNamedItem("hour").getNodeValue()) + 1;
 
-        nl = doc.getElementsByTagName("SolutionResult");
+				if (valHour == maxHour) {
+					solutions
+							.addValue(
+									Integer.valueOf(hour.getAttributes()
+											.getNamedItem("allocation")
+											.getNodeValue()), "Tier " + i, ""
+											+ maxPopulation);
+				}
 
-        if (nl.getLength() == 0)
-            nl = doc.getElementsByTagName("SolutionMultiResult");
+			}
+		}
 
-        if (nl.getLength() == 1) {
-            Node solutionResult = nl.item(0);
+		nl = doc.getElementsByTagName("SolutionResult");
 
-            double cost = Double.parseDouble(solutionResult.getAttributes().getNamedItem("cost").getNodeValue());
-            boolean feasibility = Boolean.parseBoolean(solutionResult.getAttributes().getNamedItem("feasibility").getNodeValue());
+		if (nl.getLength() == 0)
+			nl = doc.getElementsByTagName("SolutionMultiResult");
 
-            costs.addValue(cost, "Solution"/*name*/, "" + "" + maxPopulation);
-            feasibilities.addValue(feasibility ? 1 : 0, "Solution"/*name*/, "" + "" + maxPopulation);
-        }
+		if (nl.getLength() == 1) {
+			Node solutionResult = nl.item(0);
 
-        sortDataset(solutions);
-        sortDataset(tiers);
-        sortDataset(costs);
-        sortDataset(feasibilities);
+			double cost = Double.parseDouble(solutionResult.getAttributes()
+					.getNamedItem("cost").getNodeValue());
+			boolean feasibility = Boolean
+					.parseBoolean(solutionResult.getAttributes()
+							.getNamedItem("feasibility").getNodeValue());
 
-        updateGraph();
-        updateImages();
-    }ateGraph();
+			costs.addValue(cost, "Solution"/* name */, "" + "" + maxPopulation);
+			feasibilities.addValue(feasibility ? 1 : 0, "Solution"/* name */, ""
+					+ "" + maxPopulation);
+		}
+
+		sortDataset(solutions);
+		sortDataset(tiers);
+		sortDataset(costs);
+		sortDataset(feasibilities);
+
+		updateGraph();
 		updateImages();
 	}
 
