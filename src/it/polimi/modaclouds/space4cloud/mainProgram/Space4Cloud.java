@@ -304,28 +304,23 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		return askFile("Load Constraints", Constraints.class);
 	}
 
-	private <T> File askFile(String message, Class<T> clazz )
+	private <T> File askFile(String message, Class<T> clazz)
 			throws MalformedURLException {
-		File providedFile;		
+		File providedFile;
 		XMLFileSelection extensionSelector = new XMLFileSelection(message);
 		// keep asking the file until a valid file is provided or the user
 		// pressed cancel
 		do {
 			extensionSelector.askFile();
-			if(extensionSelector.isCanceled()){
-				cleanExit();
-				return null;
-			}
 
 
 			providedFile = extensionSelector.getFile();
 			try {
 				if (providedFile != null)
-					XMLHelper.deserialize(providedFile.toURI().toURL(),
-							clazz);
+					XMLHelper.deserialize(providedFile.toURI().toURL(), clazz);
 			} catch (JAXBException | SAXException e) {
-				programLogger.error("The specified file ("
-						+ providedFile + ") is not valid ",e);
+				programLogger.error("The specified file (" + providedFile
+						+ ") is not valid ", e);
 				e.printStackTrace();
 				providedFile = null;
 			}

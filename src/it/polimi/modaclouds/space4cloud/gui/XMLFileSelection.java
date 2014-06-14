@@ -52,7 +52,7 @@ public class XMLFileSelection {
 	public  XMLFileSelection(String title) 
 	{		
 		c = Constants.getInstance();
-		 fileChooser = new JFileChooser(c.ABSOLUTE_WORKING_DIRECTORY);
+		fileChooser = new JFileChooser(c.ABSOLUTE_WORKING_DIRECTORY);
 		FileNameExtensionFilter filter = new FileNameExtensionFilter("XML files", "xml");
 		fileChooser.setFileFilter(filter);
 		fileChooser.setDialogTitle(title);		
@@ -71,6 +71,10 @@ public class XMLFileSelection {
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			file = fileChooser.getSelectedFile();
 			canceled = false;
+		}
+		else if(returnVal == JFileChooser.CANCEL_OPTION){
+			file= null;
+			canceled = true;
 		}
 
 	}
