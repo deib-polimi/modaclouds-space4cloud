@@ -260,10 +260,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// pressed cancel
 		do {
 			extensionSelector.askFile();
-			if (extensionSelector.isCanceled()) {
-				cleanExit();
-				return null;
-			}
+
 
 			providedFile = extensionSelector.getFile();
 			try {

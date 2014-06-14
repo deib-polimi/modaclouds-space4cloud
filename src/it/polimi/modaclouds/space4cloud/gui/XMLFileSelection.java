@@ -65,6 +65,10 @@ public class XMLFileSelection {
 			file = fileChooser.getSelectedFile();
 			canceled = false;
 		}
+		else if(returnVal == JFileChooser.CANCEL_OPTION){
+			file= null;
+			canceled = true;
+		}
 
 	}
 
