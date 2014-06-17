@@ -47,8 +47,8 @@ Bundle-ClassPath: .,
  icons.jar,
  target/dependency/jsch-0.1.51.jar,
  target/dependency/resourcemodel-0.0.1-SNAPSHOT.jar,
- target/dependency/qos-models-2.0.2.jar,
- target/dependency/milp-0.0.1-SNAPSHOT.jar
+ target/dependency/milp-0.0.1-SNAPSHOT.jar,
+ target/dependency/qos-models-2.0.3.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.db,
  it.polimi.modaclouds.space4cloud.gui,

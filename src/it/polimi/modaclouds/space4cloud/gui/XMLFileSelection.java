@@ -53,8 +53,7 @@ public class XMLFileSelection {
 	public XMLFileSelection(String title) {
 		c = Constants.getInstance();
 		fileChooser = new JFileChooser(c.ABSOLUTE_WORKING_DIRECTORY);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter(
-				"XML files", "xml");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("XML files", "xml");
 		fileChooser.setFileFilter(filter);
 		fileChooser.setDialogTitle(title);
 	}
