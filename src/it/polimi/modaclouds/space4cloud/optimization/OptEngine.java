@@ -791,7 +791,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
                     	logger.info("serviceType: "+serviceType);
                     	for(String st:dataHandler.getServices(provider, //cloudProvider,
                                 serviceType))
-                    		logger.info("\tService Type: "+st);
+                    		logger.info("\tService Name: "+st);
                         serviceName = dataHandler.getServices(provider, //cloudProvider,
                                 serviceType).get(0);
                     // if the resource size has not been decided pick one

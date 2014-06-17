@@ -50,9 +50,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
 import it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector;
 import it.polimi.modaclouds.space4cloud.utils.EMF;
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -61,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -70,9 +69,6 @@ import org.slf4j.Logger;
  * 
  */
 public class ProviderDBConnector implements GenericDBConnector {
-
-	/** The db connection. */
-	private final Connection dbConnection;
 
 	/** The provider. */
 	private final CloudProvider provider;
@@ -92,7 +88,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 	/** The paas dictionary**/
 	private Map<String, PaaS_Service> paasMap;
 	
-	private static final Logger logger = LoggerHelper.getLogger(ProviderDBConnector.class);
+//	private static final Logger logger = LoggerHelper.getLogger(ProviderDBConnector.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProviderDBConnector.class);
 
 
 	/**
@@ -102,7 +99,6 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 * @throws SQLException 
 	 */
 	public ProviderDBConnector(CloudProvider cp) throws SQLException {
-		dbConnection = DatabaseConnector.getConnection();
 		provider = cp;
 		emf = new EMF();
 	}
@@ -168,7 +164,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 * @throws SQLException the sQL exception
 	 */
 	private  void createIaasSets() throws SQLException  {
-		ResultSet rs = dbConnection.createStatement().executeQuery(
+		ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 				"select * from iaas_service where CloudProvider_id="
 						+ provider.getId() + " order by name");
 		CloudFactory cf = emf.getCloudFactory();
@@ -213,7 +209,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 * @throws SQLException
 	 */
 	private void createPaasSets() throws SQLException {
-		ResultSet rs = dbConnection.createStatement().executeQuery(
+		ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 				"select * from paas_service where CloudProvider_id="
 						+ provider.getId() + " order by name");
 		CloudFactory cf = emf.getCloudFactory();
@@ -257,7 +253,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	@Override
 	public List<CloudPlatform> getCloudPlatforms(PaaS_Service paas) {
 		try {
-			ResultSet rs = dbConnection.createStatement().executeQuery(
+			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from paas_service_composedof P, cloudplatform CP where P.PaaS_id="
 							+ paas.getId() + " and P.CloudPlatform_id=CP.id order by name");
 			CloudFactory cf = emf.getCloudFactory();
@@ -308,7 +304,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 				if (rs.getObject(9) != null)
 					i.setHasCostProfile(getCostProfile(i, rs.getInt(9)));
 				defineCosts(i);
-				ResultSet rs1 = dbConnection.createStatement().executeQuery(
+				ResultSet rs1 = DatabaseConnector.getConnection().createStatement().executeQuery(
 						"select * from runon R, cloudresource CR where R.CloudPlatform_id="
 								+ rs.getInt(3)
 								+ " and R.CloudResource_id=CR.id");
@@ -394,12 +390,12 @@ public class ProviderDBConnector implements GenericDBConnector {
 				s = "cloudplatform";
 			else
 				throw new Exception("Undefined Cloud Element.");
-			ResultSet rs = dbConnection.createStatement().executeQuery(
+			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from " + s + "_costprofile CP where CP.id=" + id);
 			CloudFactory cf = emf.getCloudFactory();
 			CostProfile cp = cf.createCostProfile();
 			while (rs.next()) {
-				ResultSet rs1 = dbConnection
+				ResultSet rs1 = DatabaseConnector.getConnection()
 						.createStatement()
 						.executeQuery(
 								"select * from "
@@ -469,7 +465,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			} else
 				throw new Exception("Udefined Cloud Element.");
 			List<Cost> list = new ArrayList<Cost>();
-			ResultSet rs = dbConnection.createStatement().executeQuery(
+			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from cost C, " + s + "_cost X where X." + s1
 					+ "_id=" + ce.getId() + " and X.Cost_id=C.id");
 			CloudFactory cf = emf.getCloudFactory();
@@ -520,7 +516,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 */
 	private List<VirtualHWResource> getVHRs(CloudElement ce) {
 		try {
-			ResultSet rs = dbConnection
+			ResultSet rs = DatabaseConnector.getConnection()
 					.createStatement()
 					.executeQuery(
 							"select * from cloudresource_allocation CA, virtualhwresource VHR where CA.CloudResource_id="
@@ -577,7 +573,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 */
 	private VirtualHWResource getVHRByID(int id) {
 		try {
-			ResultSet rs = dbConnection.createStatement().executeQuery(
+			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from virtualhwresource where id=" + id);
 			CloudFactory cf = emf.getCloudFactory();
 			VirtualHWResource v = null;
@@ -687,7 +683,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 
 			/*TODO: Non capisco questo codice, perchè accedere di nuovo al db? abbiamo già caricato le 
 			 * risorse cloud quando abbiamo caricato i servizi anche se effettivamente non ne abbiamo definito il tipo*/
-			ResultSet rs = dbConnection.createStatement().executeQuery(
+			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from iaas_service_composedof I, cloudresource CR where I.IaaS_id="
 							+ iaas.getId() + " and I.CloudResource_id=CR.id order by name");
 

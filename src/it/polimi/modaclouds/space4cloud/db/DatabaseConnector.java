@@ -18,8 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -28,6 +26,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -41,37 +40,38 @@ public class DatabaseConnector {
 
 	/** The connection */
 	private static Connection conn=null;
-	protected static final Logger logger = LoggerHelper.getLogger(DatabaseConnector.class);
+//	protected static final Logger logger = LoggerHelper.getLogger(DatabaseConnector.class);
+	protected static final Logger logger = LoggerFactory.getLogger(DatabaseConnector.class);
 
-	
-	
+
+
 	public static void initConnection(InputStream confFileStream) throws SQLException, IOException{
 
 		//default values overritten by the ones in the configuration file
-//		String url = "jdbc:mysql://localhost:3306/";
-//		String dbName = "cloud";
+//				String url = "jdbc:mysql://localhost:3306/";
+		//		String dbName = "cloud";
 		String url = "jdbc:mysql://109.231.122.191:3306/";		
 		String dbName = "cloud";
 		String driver = "com.mysql.jdbc.Driver";
 		String userName = "moda";
 		String password = "modaclouds";
-		
-		
-		
-		Properties properties = new Properties();
-		properties.load(confFileStream);		
-		url=properties.getProperty("URL");
-		dbName=properties.getProperty("DBNAME");
-		driver=properties.getProperty("DRIVER");
-		userName=properties.getProperty("USERNAME");
-		password=properties.getProperty("PASSWORD");
-		
-		logger.debug("Data base connestion settings:");
+
+
+		if(confFileStream!=null){
+			Properties properties = new Properties();
+			properties.load(confFileStream);		
+			url=properties.getProperty("URL");
+			dbName=properties.getProperty("DBNAME");
+			driver=properties.getProperty("DRIVER");
+			userName=properties.getProperty("USERNAME");
+			password=properties.getProperty("PASSWORD");
+		}
+		logger.debug("Data base connection settings:");
 		logger.debug("\turl:"+url);
 		logger.debug("\tname:"+dbName);
 		logger.debug("\tuser:"+userName);
 		logger.debug("\tpass:"+password);
-		
+
 
 		try {
 			Class.forName(driver).newInstance();

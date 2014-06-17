@@ -15,19 +15,16 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.db;
 
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
-
 import java.sql.SQLException;
 
-import org.antlr.v4.parse.ANTLRParser.throwsSpec_return;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataHandlerFactory {
 
 	private static DataHandler instance = null;;
 
-	private static final Logger logger = LoggerHelper
-			.getLogger(DataHandlerFactory.class);
+	private static final Logger logger = LoggerFactory.getLogger(DataHandlerFactory.class);
 
 	public static DataHandler getHandler() throws DatabaseConnectionFailureExteption{
 		if (instance == null) {

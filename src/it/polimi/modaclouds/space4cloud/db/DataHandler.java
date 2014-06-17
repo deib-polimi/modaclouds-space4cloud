@@ -30,6 +30,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +38,16 @@ import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michele Ciavotta the aim of this class is to provide an object able
  *         to retrieve the data related to a certain provider and service
  */
 public class DataHandler {
-	private static final Logger logger = LoggerHelper.getLogger(DataHandler.class);
-
+//	private static final Logger logger = LoggerHelper.getLogger(DataHandler.class);
+	
+	private static final Logger logger=LoggerFactory.getLogger(DataHandler.class);
 	private final CloudProvidersDictionary cloudProviders;
 
 	/**
@@ -55,13 +58,34 @@ public class DataHandler {
 	 * @throws SQLException
 	 */
 	public DataHandler() throws SQLException {
-		/**
-		 * This initialization loads all the info about the providers from the
-		 * database
-		 */
+		//connect to the database
 		cloudProviders = new CloudProvidersDictionary();
 	}
+	public static void main(String[] args) {
+		DataHandler handler = null; 
+		
+		try {
+			DatabaseConnector.initConnection(null);
+			handler = DataHandlerFactory.getHandler();
+		} catch (DatabaseConnectionFailureExteption | SQLException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//String provider="Amazon";
+		Set<String> providers = handler.getCloudProviders();
+		for(String provider:providers){
+			System.out.println("Provider: "+provider);
+			List<String> services = handler.getServices(provider, "Compute");
+			for(String service:services){
+				System.out.println("\t"+service);
+			}
+		}
+		
+		System.out.println("End");
+		
 
+	}
 	/**
 	 * Gets the amount of memory of the the cloud resource.
 	 * 
