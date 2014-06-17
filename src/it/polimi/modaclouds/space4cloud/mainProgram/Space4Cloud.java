@@ -27,6 +27,8 @@ import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.exceptions.InitalFolderCreationException;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.LoadModel;
@@ -49,13 +51,16 @@ import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
 import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +71,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.xml.bind.JAXBException;
@@ -99,6 +105,8 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	private String solver;
 	private ConstraintHandler constraintHandler;
 
+	private static final String defaultDbConfigurationFile = "/config/DBConnection.properties";
+	private static String dbConfigurationFile = null;
 	private int testFrom, testTo, step;
 
 	public Space4Cloud() {
@@ -228,7 +236,13 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	}
 
 	private void askProvidersForInitialSolution() {
-		DataHandler db = DataHandlerFactory.getHandler();
+		DataHandler db = null;
+		try {
+			db = DataHandlerFactory.getHandler();
+		} catch (DatabaseConnectionFailureExteption e) {
+			programLogger.error("Error in connecting to the database",e);
+			cleanExit();
+		}
 		Set<String> providers = db.getCloudProviders();
 
 		Object[] possibilities = new Object[providers.size() + 1];
@@ -290,21 +304,21 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private File askResourceEnvironmentExtensionFile()
 			throws MalformedURLException {
-		return askFile("Load Resource Environment Extension",ResourceModelExtension.class);
+		return loadExtensionFile("Load Resource Environment Extension",ResourceModelExtension.class);
 	}
 
 
 	private File askUsageModelExtensionFile()
 			throws MalformedURLException {
-		return askFile("Load Usage Model Extension",UsageModelExtensions.class);
+		return loadExtensionFile("Load Usage Model Extension",UsageModelExtensions.class);
 	}
 
 	private File askConstraintFile()
 			throws MalformedURLException {
-		return askFile("Load Constraints", Constraints.class);
+		return loadExtensionFile("Load Constraints", Constraints.class);
 	}
 
-	private <T> File askFile(String message, Class<T> clazz)
+	private <T> File loadExtensionFile(String message, Class<T> clazz)
 			throws MalformedURLException {
 		File providedFile;
 		XMLFileSelection extensionSelector = new XMLFileSelection(message);
@@ -362,6 +376,8 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	@Override
 	protected Object doInBackground() throws CoreException, InitalFolderCreationException {
+
+
 
 		LoadModel lm;
 		if (!batch) {
@@ -445,6 +461,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			repositoryFile = new File(c.REPOSITORY_MODEL);
 			solver = c.SOLVER;
 			lineConfFile = new File(c.LINE_PROPERTIES_FILE);
+			dbConfigurationFile = c.DB_CONNECTION_SETTINGS;
 
 		} else {
 			// if there is no configuration file then generate a valid
@@ -506,6 +523,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				c.LINE_PROPERTIES_FILE = lineConfFile.getAbsolutePath();
 			}
 
+			//loads the database connection file
+			dbConfigurationFile = askDatabaseConnectionFile();
+
 			// save the configuration, it will be run later in the optimization
 			// process
 			try {
@@ -516,6 +536,24 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			// refresh the project in the workspace
 			refreshProject();
 
+		}
+
+		//initialize the connection to the database
+		try {
+			InputStream dbConfigurationStream = null;
+			//load the configuration file if specified 
+			if(dbConfigurationFile != null && Paths.get(dbConfigurationFile).toFile().exists())
+				dbConfigurationStream = new FileInputStream(Paths.get(dbConfigurationFile).toFile());
+			//if the file file has not been specified or it does not exist use the one with default values embedded in the plugin
+			else
+				dbConfigurationStream = this.getClass().getResourceAsStream(defaultDbConfigurationFile);
+			DatabaseConnector.initConnection(dbConfigurationStream);
+			dbConfigurationStream.close();
+		} catch (SQLException e1) {
+			programLogger.error("Could not initialize database connection",e1);
+			cleanExit();
+		} catch (IOException e1) {
+			programLogger.error("Could not load the Database configuration, will use the default one");
 		}
 
 		// refresh the project in the workspace
@@ -694,6 +732,21 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		return null;
 	}
 
+	private String askDatabaseConnectionFile() {
+		JFileChooser fileChooser = new JFileChooser(c.ABSOLUTE_WORKING_DIRECTORY);
+		fileChooser.setDialogTitle("Load Database Connection Settings");
+		int returnVal = fileChooser.showOpenDialog(null);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			c.DB_CONNECTION_SETTINGS = fileChooser.getSelectedFile().getAbsolutePath();
+			return c.DB_CONNECTION_SETTINGS;
+		}
+		else if(returnVal == JFileChooser.CANCEL_OPTION){
+			programLogger.info("No database connection file has been chosen, default settings will be used");
+			return null;
+		}
+		return null;
+	}
+
 	@Override
 	protected void done() { 
 		try {
@@ -787,8 +840,14 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			ParserConfigurationException, SAXException {
 
 
-		OptEngine engine = new PartialEvaluationOptimizationEngine(
-				constraintHandler, true);
+		OptEngine engine = null;
+		try {
+			engine = new PartialEvaluationOptimizationEngine(
+					constraintHandler, true);
+		} catch (DatabaseConnectionFailureExteption e) {
+			programLogger.error("Error in connecting to the database",e);
+			cleanExit();
+		}
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension
@@ -797,6 +856,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			engine.loadInitialSolution(resourceEnvExtFile, usageModelExtFile);
 		} catch (JAXBException e) {
 			programLogger.error("Error in loading the initial solution", e);
+			cleanExit();
 		}
 
 		// evaluate the solution
@@ -884,8 +944,14 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// solution
 		programLogger.info("Loading the optimization enging and perparing the solver");
 
-		OptEngine engine = new PartialEvaluationOptimizationEngine(
-				constraintHandler, batch);
+		OptEngine engine = null;
+		try {
+			engine = new PartialEvaluationOptimizationEngine(
+					constraintHandler, batch);
+		} catch (DatabaseConnectionFailureExteption e) {
+			programLogger.error("Error in connecting to the database",e);
+			cleanExit();
+		}
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension

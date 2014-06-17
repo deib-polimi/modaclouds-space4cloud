@@ -55,7 +55,7 @@ public class CloudProvidersList {
 	public CloudProvidersList() throws SQLException {
 		List<ProviderDBConnector> list = new ArrayList<ProviderDBConnector>();
 
-		Connection db = new DatabaseConnector().getConnection();
+		Connection db = DatabaseConnector.getConnection();
 		ResultSet rs = db.createStatement().executeQuery(
 				"select * from cloudprovider");
 		CloudFactory cf = new EMF().getCloudFactory();

@@ -53,7 +53,7 @@ public class CloudProvidersDictionary {
 		/* dictionary creation */
 		Map<String, ProviderDBConnector> dict = new HashMap<>();
 
-		Connection db = new DatabaseConnector().getConnection();
+		Connection db = DatabaseConnector.getConnection();
 		ResultSet rs = db.createStatement().executeQuery(
 				"select * from cloudprovider");
 		CloudFactory cf = new EMF().getCloudFactory();

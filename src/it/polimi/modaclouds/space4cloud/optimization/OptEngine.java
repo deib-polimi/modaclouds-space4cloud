@@ -22,6 +22,7 @@ import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationConfigurationFrame;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
@@ -155,7 +156,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraints;
 	
-	public OptEngine(ConstraintHandler handler) {
+	public OptEngine(ConstraintHandler handler) throws DatabaseConnectionFailureExteption {
 		this(handler, false);
 	}
 	
@@ -164,8 +165,9 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * 
 	 * @param handler
 	 *            : the constraint handler
+	 * @throws DatabaseConnectionFailureExteption 
 	 */
-	public OptEngine(ConstraintHandler handler, boolean batch) {
+	public OptEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
 
 		try {
 			costLogImage = new Logger2JFreeChartImage();

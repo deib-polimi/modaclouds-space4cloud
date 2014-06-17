@@ -102,7 +102,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 * @throws SQLException 
 	 */
 	public ProviderDBConnector(CloudProvider cp) throws SQLException {
-		dbConnection = new DatabaseConnector().getConnection();
+		dbConnection = DatabaseConnector.getConnection();
 		provider = cp;
 		emf = new EMF();
 	}

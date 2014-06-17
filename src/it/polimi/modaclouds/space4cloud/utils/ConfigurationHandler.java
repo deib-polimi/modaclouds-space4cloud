@@ -55,6 +55,7 @@ public class ConfigurationHandler {
 		conf.setProperty("LINE_PROPERTIES", c.LINE_PROPERTIES_FILE);
 		conf.setProperty("REPOSITORY_MODEL", c.REPOSITORY_MODEL);
 		conf.setProperty("USAGE_MODEL", c.USAGE_MODEL);
+		conf.setProperty("DB_CONF_FILE", c.DB_CONNECTION_SETTINGS);
 
 		File confFile = confFilePath.toFile();
 		Path workingDir = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY);
@@ -86,6 +87,7 @@ public class ConfigurationHandler {
 		c.SOLVER= conf.getProperty("SOLVER");
 		c.LINE_PROPERTIES_FILE= conf.getProperty("LINE_PROPERTIES");
 		c.REPOSITORY_MODEL = conf.getProperty("REPOSITORY_MODEL");
+		c.DB_CONNECTION_SETTINGS = conf.getProperty("DB_CONF_FILE");
 
 
 	}

@@ -24,6 +24,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
@@ -42,7 +43,10 @@ import java.util.List;
  */
 public class CostEvaluator {
 
-	DataHandler dataHandler = DataHandlerFactory.getHandler();
+	DataHandler dataHandler = null;
+	public CostEvaluator() throws DatabaseConnectionFailureExteption {
+		dataHandler = DataHandlerFactory.getHandler();
+	}
 
 	public double deriveCosts(Instance application, int hour){
 		double cost = 0;
@@ -58,15 +62,15 @@ public class CostEvaluator {
 					cost += 100;
 					continue;
 				}
-				
+
 				List<Cost> lc = cloudResource.getHasCost();
 				List<Cost> onDemandLc = new ArrayList<Cost>();
-				
+
 				//filter only on-demand
 				for(Cost c:lc)
 					if(!c.getDescription().contains("Reserved"))
 						onDemandLc.add(c);
-						
+
 				lc.clear();
 				//filter by region
 				for(Cost c:onDemandLc)
@@ -80,64 +84,64 @@ public class CostEvaluator {
 		}
 		return cost;	
 	}
-//	/**
-//	 * Derives the system costs analyzing the mapping between Extended Resource
-//	 * Containers and Cloud Elements. Information about costs is saved within
-//	 * the cost model serialized within the "costs.xml" file. Cloud Platforms
-//	 * and Cloud Resources are automatically recognized and separately treated.
-//	 * 
-//	 * @param map
-//	 *            is the Map object containing key-value elements, where the key
-//	 *            is an ExtendedResourceContainer object, while the value is a
-//	 *            CloudElement object.
-//	 * @see CloudElement
-//	 * @see ExtendedResourceContainer
-//	 * @see #deriveCostsForCloudPlatform(ExtendedResourceContainer,
-//	 *      CloudPlatform)
-//	 * @see #deriveCostsForCloudResource(ExtendedResourceContainer,
-//	 *      CloudService)
-//	 */
-//	public void derive(Map<ExtendedResourceContainer, CloudElement> map) {
-//		for (Map.Entry<ExtendedResourceContainer, CloudElement> e : map
-//				.entrySet())
-//			if (e.getValue() instanceof CloudService)
-//				deriveCostsForCloudResource(e.getKey(),
-//						(CloudService) e.getValue());
-//			else if (e.getValue() instanceof CloudPlatform)
-//				deriveCostsForCloudPlatform(e.getKey(),
-//						(CloudPlatform) e.getValue());
-//	}
+	//	/**
+	//	 * Derives the system costs analyzing the mapping between Extended Resource
+	//	 * Containers and Cloud Elements. Information about costs is saved within
+	//	 * the cost model serialized within the "costs.xml" file. Cloud Platforms
+	//	 * and Cloud Resources are automatically recognized and separately treated.
+	//	 * 
+	//	 * @param map
+	//	 *            is the Map object containing key-value elements, where the key
+	//	 *            is an ExtendedResourceContainer object, while the value is a
+	//	 *            CloudElement object.
+	//	 * @see CloudElement
+	//	 * @see ExtendedResourceContainer
+	//	 * @see #deriveCostsForCloudPlatform(ExtendedResourceContainer,
+	//	 *      CloudPlatform)
+	//	 * @see #deriveCostsForCloudResource(ExtendedResourceContainer,
+	//	 *      CloudService)
+	//	 */
+	//	public void derive(Map<ExtendedResourceContainer, CloudElement> map) {
+	//		for (Map.Entry<ExtendedResourceContainer, CloudElement> e : map
+	//				.entrySet())
+	//			if (e.getValue() instanceof CloudService)
+	//				deriveCostsForCloudResource(e.getKey(),
+	//						(CloudService) e.getValue());
+	//			else if (e.getValue() instanceof CloudPlatform)
+	//				deriveCostsForCloudPlatform(e.getKey(),
+	//						(CloudPlatform) e.getValue());
+	//	}
 
 
-//	/**
-//	 * Derives costs from the mapping between an Extended Resource Container and
-//	 * a Cloud Platform.
-//	 * 
-//	 * @param erc
-//	 *            is the ExtendedResourceContainer object derived from the
-//	 *            CloudPlatform.
-//	 * @param cp
-//	 *            is the CloudPlatform object.
-//	 * @see ExtendedResourceContainer
-//	 * @see CloudPlatform
-//	 */
-//	private void deriveCostsForCloudPlatform(ExtendedResourceContainer erc,
-//			CloudPlatform cp) {
-//		List<Cost> lc = cp.getHasCost();
-//		CostProfile costp = cp.getHasCostProfile();
-//		List<CloudService> lcr = cp.getRunsOnCloudResource();
-//		double cost = deriveCosts(lc, costp, costList, as);
-//		if (lcr != null)
-//			for (CloudService cr : lcr) {
-//				List<Cost> lc1 = cr.getHasCost();
-//				CostProfile cp1 = cr.getHasCostProfile();
-//				Element costList1 = doc.createElement("Cost_List");
-//				double temp = deriveCosts(lc1, cp1, costList1, as);
-//				// Update the total system cost
-//				cost += temp;
-//			}
-//		totalCost += cost;		
-//	}
+	//	/**
+	//	 * Derives costs from the mapping between an Extended Resource Container and
+	//	 * a Cloud Platform.
+	//	 * 
+	//	 * @param erc
+	//	 *            is the ExtendedResourceContainer object derived from the
+	//	 *            CloudPlatform.
+	//	 * @param cp
+	//	 *            is the CloudPlatform object.
+	//	 * @see ExtendedResourceContainer
+	//	 * @see CloudPlatform
+	//	 */
+	//	private void deriveCostsForCloudPlatform(ExtendedResourceContainer erc,
+	//			CloudPlatform cp) {
+	//		List<Cost> lc = cp.getHasCost();
+	//		CostProfile costp = cp.getHasCostProfile();
+	//		List<CloudService> lcr = cp.getRunsOnCloudResource();
+	//		double cost = deriveCosts(lc, costp, costList, as);
+	//		if (lcr != null)
+	//			for (CloudService cr : lcr) {
+	//				List<Cost> lc1 = cr.getHasCost();
+	//				CostProfile cp1 = cr.getHasCostProfile();
+	//				Element costList1 = doc.createElement("Cost_List");
+	//				double temp = deriveCosts(lc1, cp1, costList1, as);
+	//				// Update the total system cost
+	//				cost += temp;
+	//			}
+	//		totalCost += cost;		
+	//	}
 
 
 	/**

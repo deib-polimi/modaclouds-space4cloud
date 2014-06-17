@@ -19,6 +19,7 @@ import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.sql.SQLException;
 
+import org.antlr.v4.parse.ANTLRParser.throwsSpec_return;
 import org.slf4j.Logger;
 
 public class DataHandlerFactory {
@@ -28,12 +29,13 @@ public class DataHandlerFactory {
 	private static final Logger logger = LoggerHelper
 			.getLogger(DataHandlerFactory.class);
 
-	public static DataHandler getHandler() {
+	public static DataHandler getHandler() throws DatabaseConnectionFailureExteption{
 		if (instance == null) {
 			try {
 				instance = new DataHandler();
 			} catch (SQLException e) {
-				logger.error("Error building the data handler", e);
+				logger.error("Error building the data handler");				
+				throw new DatabaseConnectionFailureExteption("Error building the data handler", e);
 			}
 		}
 		return instance;
