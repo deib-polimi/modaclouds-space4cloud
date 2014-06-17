@@ -250,32 +250,6 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 
 
-	private <T> File askFile(String message, Class<T> clazz)
-			throws MalformedURLException {
-		File providedFile;
-		XMLFileSelection extensionSelector = new XMLFileSelection(message);
-		// keep asking the file until a valid file is provided or the user
-		// pressed cancel
-		do {
-			extensionSelector.askFile();
-
-
-			providedFile = extensionSelector.getFile();
-			try {
-				if (providedFile != null)
-					XMLHelper.deserialize(providedFile.toURI().toURL(), clazz);
-			} catch (JAXBException | SAXException e) {
-				programLogger.error("The specified file (" + providedFile
-						+ ") is not valid ", e);
-				e.printStackTrace();
-				providedFile = null;
-			}
-		} while (!extensionSelector.isCanceled() && providedFile == null);
-		if (extensionSelector.isCanceled()) {
-			cleanExit();
-		}
-		return providedFile;
-	}
 
 	/**
 	 * Asks the user to choose the desired functionality
@@ -367,8 +341,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	private File askUsageModelExtensionFile() throws MalformedURLException {
 		return askFile("Load Usage Model Extension", UsageModelExtensions.class);
 	}
-<<<<<<< HEAD
-=======
+
 
 	private File askConstraintFile()
 			throws MalformedURLException {
@@ -405,7 +378,6 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 
 
->>>>>>> refs/heads/master
 
 	private void buildFolderStructure(Path lqnModelPath, Path resultModelPath)
 			throws IOException {
