@@ -18,6 +18,7 @@ package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
 import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -50,7 +51,7 @@ public class EvaluationServer implements ActionListener {
 	protected BlockingQueue<Runnable> queue = new SynchronousQueue<>();
 	protected int nMaxThreads = 24 * 100; // 24*100
 	protected HashMap<Solution, Integer> counters = new HashMap<>();
-	protected CostEvaluator costEvaulator = new CostEvaluator();
+	protected CostEvaluator costEvaulator;
 	protected ConstraintHandler constraintHandler;
 	protected int totalNumberOfEvaluations = 0;
 	protected PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -75,10 +76,12 @@ public class EvaluationServer implements ActionListener {
 	private boolean instanceEvaluationTerminated = false;
 
 	/**
+	 * @throws DatabaseConnectionFailureExteption 
 	 * 
 	 */
-	public EvaluationServer(String solver) {
+	public EvaluationServer(String solver) throws DatabaseConnectionFailureExteption {
 		// set min to 24
+		costEvaulator = new CostEvaluator();
 		executor = new ThreadPoolExecutor(24, nMaxThreads, 200,
 				TimeUnit.MILLISECONDS, queue);
 		if (solver.equals(MessageStrings.PERFENGINE_SOLVER)) {

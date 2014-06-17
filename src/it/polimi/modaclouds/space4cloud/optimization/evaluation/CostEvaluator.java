@@ -24,6 +24,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
@@ -42,7 +43,10 @@ import java.util.List;
  */
 public class CostEvaluator {
 
-	DataHandler dataHandler = DataHandlerFactory.getHandler();
+	DataHandler dataHandler = null;
+	public CostEvaluator() throws DatabaseConnectionFailureExteption {
+		dataHandler = DataHandlerFactory.getHandler();
+	}
 
 	public double deriveCosts(Instance application, int hour) {
 		double cost = 0;

@@ -129,6 +129,8 @@ public class Constants {
 	public String USAGE_MODEL_EXT_FILE = "usagemodel.xml";
 
 	public String LINE_PROPERTIES_FILE = "LINE.properties";
+	
+	public	String DB_CONNECTION_SETTINGS= "DBConfiguration.properties";
 
 	public static String LOG4J_PROP_FILE;
 

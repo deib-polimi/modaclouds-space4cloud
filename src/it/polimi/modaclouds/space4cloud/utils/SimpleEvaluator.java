@@ -19,6 +19,7 @@ import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LQNSResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
@@ -54,7 +55,8 @@ public class SimpleEvaluator {
 	protected static final Logger logger = LoggerHelper
 			.getLogger(SimpleEvaluator.class);
 
-	public SimpleEvaluator() {
+	public SimpleEvaluator() throws DatabaseConnectionFailureExteption {
+		dataHandler = DataHandlerFactory.getHandler();	
 
 	}
 

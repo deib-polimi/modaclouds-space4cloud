@@ -15,6 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -38,7 +39,7 @@ public class EvaluationProxy extends EvaluationServer {
 	// each and every solution requested. Useful!
 	private boolean enabled = true;
 
-	public EvaluationProxy(String solver) {
+	public EvaluationProxy(String solver) throws DatabaseConnectionFailureExteption {
 		super(solver);
 	}
 

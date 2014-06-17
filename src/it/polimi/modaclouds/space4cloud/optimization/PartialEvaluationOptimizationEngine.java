@@ -15,6 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -32,12 +33,14 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	private static final Logger logger = LoggerFactory
 			.getLogger(PartialEvaluationOptimizationEngine.class);
 
-	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) {
+	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) throws DatabaseConnectionFailureExteption {
 		super(handler);
 	}
 
-	public PartialEvaluationOptimizationEngine(ConstraintHandler handler,
-			boolean batch) {
+
+	
+	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
+
 		super(handler, batch);
 	}
 

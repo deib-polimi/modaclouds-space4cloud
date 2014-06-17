@@ -20,9 +20,12 @@ package it.polimi.modaclouds.space4cloud.db;
 
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 
@@ -35,36 +38,49 @@ import org.slf4j.Logger;
  */
 public class DatabaseConnector {
 
+
 	/** The connection */
-	private Connection conn;
+	private static Connection conn=null;
+	protected static final Logger logger = LoggerHelper.getLogger(DatabaseConnector.class);
 
-	protected static final Logger logger = LoggerHelper
-			.getLogger(DatabaseConnector.class);
+	
+	
+	public static void initConnection(InputStream confFileStream) throws SQLException, IOException{
 
-	/**
-	 * Creates a new Database Connector instance.
-	 * 
-	 * @throws SQLException
-	 * @throws ClassNotFoundException
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 */
-	public DatabaseConnector() throws SQLException {
+		//default values overritten by the ones in the configuration file
 //		String url = "jdbc:mysql://localhost:3306/";
 //		String dbName = "cloud";
-		String url = "jdbc:mysql://109.231.122.191:3306/";
+		String url = "jdbc:mysql://109.231.122.191:3306/";		
 		String dbName = "cloud";
 		String driver = "com.mysql.jdbc.Driver";
 		String userName = "moda";
 		String password = "modaclouds";
+		
+		
+		
+		Properties properties = new Properties();
+		properties.load(confFileStream);		
+		url=properties.getProperty("URL");
+		dbName=properties.getProperty("DBNAME");
+		driver=properties.getProperty("DRIVER");
+		userName=properties.getProperty("USERNAME");
+		password=properties.getProperty("PASSWORD");
+		
+		logger.debug("Data base connestion settings:");
+		logger.debug("\turl:"+url);
+		logger.debug("\tname:"+dbName);
+		logger.debug("\tuser:"+userName);
+		logger.debug("\tpass:"+password);
+		
 
 		try {
 			Class.forName(driver).newInstance();
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException e) {
-			logger.error("Unable to find the JDBC driver", e);
+			logger.error("Unable to find the JDBC driver",e);
 		}
-		conn = DriverManager.getConnection(url + dbName, userName, password);
+		conn = DriverManager
+				.getConnection(url + dbName, userName, password);
 		if(conn != null)
 			logger.info("Connection with the database established");
 		else
@@ -75,8 +91,10 @@ public class DatabaseConnector {
 	 * Returns the Connection to the MySQL database.
 	 * 
 	 * @return the Connection instance.
+	 * @throws SQLException 
 	 */
-	public Connection getConnection() {
+	public static Connection getConnection(){
 		return conn;
 	}
 }
+
