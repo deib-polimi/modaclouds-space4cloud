@@ -548,6 +548,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			else
 				dbConfigurationStream = this.getClass().getResourceAsStream(defaultDbConfigurationFile);
 			DatabaseConnector.initConnection(dbConfigurationStream);
+			RussianEvaluator.setDatabaseInformation(dbConfigurationStream);
 			dbConfigurationStream.close();
 		} catch (SQLException e1) {
 			programLogger.error("Could not initialize database connection",e1);
