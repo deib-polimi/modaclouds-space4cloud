@@ -1,6 +1,43 @@
+Index: META-INF/MANIFEST.MF
+===================================================================
+--- META-INF/MANIFEST.MF	(revision 22049)
++++ META-INF/MANIFEST.MF	(working copy)
+@@ -2,7 +2,7 @@
+ Bundle-ManifestVersion: 2
+ Bundle-Name: PCM Solver Plug-in
+ Bundle-SymbolicName: de.uka.ipd.sdq.pcmsolver;singleton:=true
+-Bundle-Version: 3.0.0.qualifier
++Bundle-Version: 3.0.1
+ Bundle-Activator: de.uka.ipd.sdq.pcmsolver.Activator
+ Require-Bundle: org.eclipse.ui,
+  org.eclipse.core.runtime,
+@@ -40,7 +40,10 @@
+  de.uka.ipd.sdq.pcmsolver.models,
+  de.uka.ipd.sdq.pcmsolver.runconfig,
+  de.uka.ipd.sdq.pcmsolver.tests,
++ de.uka.ipd.sdq.pcmsolver.tests.MediaStore,
++ de.uka.ipd.sdq.pcmsolver.tests.MediaStore2,
+  de.uka.ipd.sdq.pcmsolver.transformations,
++ de.uka.ipd.sdq.pcmsolver.transformations.pcm2capra,
+  de.uka.ipd.sdq.pcmsolver.transformations.pcm2lqn,
+  de.uka.ipd.sdq.pcmsolver.transformations.pcm2regex,
+  de.uka.ipd.sdq.pcmsolver.visitors,
+Index: build.properties
+===================================================================
+--- build.properties	(revision 22049)
++++ build.properties	(working copy)
+@@ -2,5 +2,7 @@
+ bin.includes = plugin.xml,\
+                META-INF/,\
+                icons/,\
+-               .
++               .,\
++               resources/
+ source.. = src/
++src.includes = resources/
 Index: src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(revision 21016)
+--- src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(revision 22049)
 +++ src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(working copy)
 @@ -67,7 +67,7 @@
  					"Invoked reliability analysis using wrong job class!");
@@ -13,7 +50,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java
  				.equals(MessageStrings.LQSIM_SOLVER)) {
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(revision 21016)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(revision 22049)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(working copy)
 @@ -1,8 +1,12 @@
 +/*
@@ -1131,7 +1168,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(revision 21016)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(revision 22049)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(working copy)
 @@ -1,68 +1,153 @@
 +/*
@@ -1289,7 +1326,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(revision 21016)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(revision 22049)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(working copy)
 @@ -1,3 +1,6 @@
 +/*
@@ -1349,7 +1386,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigB
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(revision 21016)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(revision 22049)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(working copy)
 @@ -1,466 +1,1048 @@
 +/*
@@ -2473,7 +2510,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 ===================================================================
 --- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.java	(revision 0)
 +++ src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.java	(revision 0)
-@@ -0,0 +1,201 @@
+@@ -0,0 +1,217 @@
 +package de.uka.ipd.sdq.pcmsolver.transformations.pcm2lqn;
 +
 +import java.io.BufferedReader;
@@ -2498,6 +2535,8 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +	private BufferedReader processIn = null;
 +	private BufferedReader socketIn = null;
 +	private String linePropFilePath;
++	private int maxIter=-1;
++	private int maxJobSize=-1;
 +	private Logger processLog;
 +	private Logger socketLog;
 +	private boolean localInstance = false;
@@ -2516,7 +2555,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +	public void connectToLINEServer(String host, int port){				
 +
 +		Properties lineProperties = new Properties();
-+		
++		boolean defaultValues = false;
 +		URL linePropFileURL = null;		
 +		File linePropFile = null;
 +		try {
@@ -2527,19 +2566,33 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +			linePropFile = new File(linePropFilePath);
 +		} catch (IOException e2) {
 +			// TODO Auto-generated catch block
-+			e2.printStackTrace();
++			System.out.println("Could not load line property file, will use default values");
++			defaultValues=true;
 +		}
-+		 
++
++		if(linePropFile==null)
++			defaultValues = true;
 +		File directory = null;
 +		try{
 +
-+			FileInputStream propInput = new FileInputStream(linePropFile);
-+			lineProperties.load(propInput);
-+			propInput.close();
++			if(!defaultValues){
++				FileInputStream propInput = new FileInputStream(linePropFile);
++				lineProperties.load(propInput);
++				propInput.close();
++			}else{
++				host = "localhost";
++				port = 5463;
++				maxIter = 1000;
++				maxJobSize = 24;
++			}
 +			if(host == null)
 +				host = lineProperties.getProperty("host", "localhost");
 +			if (port == -1)
-+				port = Integer.parseInt(lineProperties.getProperty("port", "5463"));			
++				port = Integer.parseInt(lineProperties.getProperty("port", "5463"));	
++			if(maxIter==-1)
++				maxIter = Integer.parseInt(lineProperties.getProperty("maxIter", "1000"));
++			if(maxJobSize==-1)
++				maxIter = Integer.parseInt(lineProperties.getProperty("maxJobSize", "24"));
 +			directory = new File(lineProperties.getProperty("directory",null));			
 +
 +			//try to connect
@@ -2572,7 +2625,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +
 +	private void initLINEConnection(String host, int port) throws IOException{
 +		lineSocket = new Socket(host, port); 
-+		
++
 +		out = new PrintWriter(lineSocket.getOutputStream());
 +		if(socketIn==null)
 +			socketIn = new BufferedReader(new InputStreamReader(lineSocket.getInputStream()));
@@ -2580,7 +2633,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +			socketLog = new Logger(socketIn,"socket");
 +			(new Thread(socketLog)).start();
 +		}
-+		
++
 +		while(!socketLog.isConnected())
 +			try {				
 +				Thread.sleep(100);
@@ -2604,7 +2657,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +			(new Thread(processLog)).start();
 +			while(!processLog.isRunning()) Thread.sleep(100);;
 +			localInstance = true;
-+			
++
 +			//the startup has ended
 +			return true;
 +		} catch (IOException e) {
@@ -2656,7 +2709,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +	}
 +
 +	public void solve(String modelFilePath, String REfilePath) {
-+		
++
 +		modelFilePath = modelFilePath.replace('\\', '/');
 +		if(REfilePath != null)
 +			REfilePath = REfilePath.replace('\\', '/');
@@ -2670,7 +2723,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +		return;
 +
 +	}
-+	
++
 +	public boolean isSolved(String modelFile){
 +		return socketLog.isModelEvaluated(modelFile);
 +	}
@@ -2724,7 +2777,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Logger.java
 +				Thread.sleep(100);
 +				if(in.ready()){
 +					String line = in.readLine();
-+					//System.out.println("LINE "+prefix+": "+line);
++					System.out.println("LINE "+prefix+": "+line);
 +
 +					//set the starting
 +					if(line.contains("Listening on port"))
@@ -2780,7 +2833,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Logger.java
 +}
 Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(revision 21016)
+--- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(revision 22049)
 +++ src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(working copy)
 @@ -1,13 +1,21 @@
 +/*

@@ -573,7 +573,8 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			}
 
 			//loads the database connection file
-			dbConfigurationFile = askDatabaseConnectionFile();
+			if(!batch)
+				dbConfigurationFile = askDatabaseConnectionFile();
 
 			// save the configuration, it will be run later in the optimization
 			// process
