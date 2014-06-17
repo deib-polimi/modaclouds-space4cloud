@@ -107,14 +107,6 @@ public class ProviderDBConnector implements GenericDBConnector {
 		emf = new EMF();
 	}
 
-	/**
-	 * Return the database connection.
-	 * 
-	 * @return a Connection element.
-	 */
-	public Connection getDbConnection() {
-		return dbConnection;
-	}
 
 	/**
 	 * Return the Cloud Provider.
