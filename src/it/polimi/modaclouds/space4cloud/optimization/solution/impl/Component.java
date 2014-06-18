@@ -97,13 +97,21 @@ public class Component implements Cloneable, IResponseTimeConstrainable, Seriali
 		return id;
 	}
 
+	/* (non-Javadoc)
+	 * @see it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable#getResponseTime()
+	 * Considers only those functionalities that have been evaluated
+	 */
 	@Override
 	public double getResponseTime(){
 		double avg = 0;
+		int evaluatedFunctionalities=0;
 		for(Functionality f:functionalities){
-			avg +=f.getResponseTime();
+			if(f.isEvaluated()){
+				avg +=f.getResponseTime();
+				evaluatedFunctionalities++;
+			}
 		}
-		return avg/functionalities.size();
+		return avg/evaluatedFunctionalities;
 	}
 	
 	public void setContainer(Tier tier) {

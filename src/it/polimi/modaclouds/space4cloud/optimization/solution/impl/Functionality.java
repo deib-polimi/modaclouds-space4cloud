@@ -28,6 +28,7 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 	 * 
 	 */
 	private static final long serialVersionUID = -5621349760322110134L;
+	private boolean evaluated = true;
 	private String name;
 	private String id;
 	private String entryLevelCallID=null;
@@ -67,7 +68,7 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 		return id;
 	}
 	public void show(String prefix) {
-		System.out.println(prefix+"Functionality name: "+getName()+" id: "+getId()+" callId: "+getEntryLevelCallID()+" response time: "+getResponseTime());
+		System.out.println(prefix+"Functionality name: "+getName()+" id: "+getId()+" callId: "+getEntryLevelCallID()+" evaluated: "+isEvaluated()+" response time: "+getResponseTime());
 	}
 	public String getEntryLevelCallID() {
 		return entryLevelCallID;
@@ -84,14 +85,22 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 	}
 	@Override
 	public void update(LqnResultParser parser) {
-		if(parser.getResponseTime(name)> 0)
+		if(parser.getResponseTime(name)> 0){
 			responseTime = parser.getResponseTime(name);
-		else
+			evaluated = true;
+		}
+		else{
 			responseTime = -1;
+			evaluated = false;
 			//System.err.println("Functionality "+getName()+" not found in the results");
+		}
+
 		
 	}
 	
+	public boolean isEvaluated() {
+		return evaluated;
+	}
 	public void setContainer(Component comp){
 		this.container = comp;
 	}

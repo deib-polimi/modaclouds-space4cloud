@@ -303,7 +303,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			else if (policy  == SelectionPolicies.LONGEST) {
 				selectedFun = functionalityChain.get(0);
 				for (Functionality f : functionalityChain)
-					if (f.getResponseTime() > selectedFun.getResponseTime())
+					if (f.isEvaluated() && f.getResponseTime() > selectedFun.getResponseTime())
 						selectedFun = f;
 			}
 
