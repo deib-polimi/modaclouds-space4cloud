@@ -598,6 +598,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			else
 				dbConfigurationStream = this.getClass().getResourceAsStream(defaultDbConfigurationFile);
 			DatabaseConnector.initConnection(dbConfigurationStream);
+			RussianEvaluator.setDatabaseInformation(dbConfigurationStream);
 			dbConfigurationStream.close();
 		} catch (SQLException e1) {
 			programLogger.error("Could not initialize database connection",e1);
@@ -928,10 +929,12 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			for (Tier t : providedSolution.getApplication(i)
 					.getTiersByResourceName().values())
 				for (Component c : t.getComponents())
-					for (Functionality f : c.getFunctionalities())
-						rtLogger.addPoint2Series(
-								rtSeriesHandlers.get(f.getName()), i,
-								f.getResponseTime());
+					for (Functionality f : c.getFunctionalities()){
+						if(f.isEvaluated())
+							rtLogger.addPoint2Series(
+									rtSeriesHandlers.get(f.getName()), i,
+									f.getResponseTime());
+					}
 		assesmentWindow.setResponseTimeLogger(rtLogger);
 
 		// plotting the utilization

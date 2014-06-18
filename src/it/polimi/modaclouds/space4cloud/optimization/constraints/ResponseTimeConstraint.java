@@ -20,6 +20,11 @@ public class ResponseTimeConstraint extends QoSConstraint {
 	public ResponseTimeConstraint(
 			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
+		//transform constraints on milliseconds to seconds
+		if(range.getHasMaxValue() != null)
+			range.setHasMaxValue(range.getHasMaxValue()/1000);
+		if(range.getHasMinValue() != null)
+			range.setHasMinValue(range.getHasMinValue()/1000);
 	}
 
 }

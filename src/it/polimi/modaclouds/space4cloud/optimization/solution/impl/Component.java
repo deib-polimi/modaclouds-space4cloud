@@ -28,6 +28,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
+
+
+
 /**
  * @author MODAClouds The class that defines a Component
  */
@@ -100,13 +103,21 @@ public class Component implements Cloneable, IResponseTimeConstrainable,
 		return id;
 	}
 
+	/* (non-Javadoc)
+	 * @see it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable#getResponseTime()
+	 * Considers only those functionalities that have been evaluated
+	 */
 	@Override
 	public double getResponseTime() {
 		double avg = 0;
-		for (Functionality f : functionalities) {
-			avg += f.getResponseTime();
+		int evaluatedFunctionalities=0;
+		for(Functionality f:functionalities){
+			if(f.isEvaluated()){
+				avg +=f.getResponseTime();
+				evaluatedFunctionalities++;
+			}
 		}
-		return avg / functionalities.size();
+		return avg/evaluatedFunctionalities;
 	}
 
 	public void setContainer(Tier tier) {

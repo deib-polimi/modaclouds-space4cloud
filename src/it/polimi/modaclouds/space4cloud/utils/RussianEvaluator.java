@@ -3,7 +3,10 @@ package it.polimi.modaclouds.space4cloud.utils;
 import it.polimi.modaclouds.space4clouds.milp.Solver;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,18 +30,34 @@ public class RussianEvaluator {
 
 	protected long evaluationTime = -1L;
 
+	private static String url = "jdbc:mysql://localhost:3306/";
+	private static String dbName = "cloud_full";
+	private static String driver = "com.mysql.jdbc.Driver";
+	private static String userName = "moda";
+	private static String password = "modaclouds";
+	
 	public RussianEvaluator(File usageModelExtFile, File constraintFile) {
-		s = new Solver(c.PROJECT_PATH, c.WORKING_DIRECTORY, c.RESOURCE_MODEL,
-				c.USAGE_MODEL, c.ALLOCATION_MODEL, c.REPOSITORY_MODEL,
-				Paths.get(Paths.get(c.RESOURCE_MODEL).getParent().toString(),
-						"default.system").toString(),
-				constraintFile.getAbsolutePath(),
-				usageModelExtFile.getAbsolutePath());
-
-		s.getOptions().SqlDBUrl = "jdbc:mysql://localhost:3306/";
-		s.getOptions().DBName = "cloud_full";
-		s.getOptions().DBUserName = "moda";
-		s.getOptions().DBPassword = "modaclouds";
+		s = new Solver(c.PROJECT_PATH, c.WORKING_DIRECTORY,
+				c.RESOURCE_MODEL, c.USAGE_MODEL, c.ALLOCATION_MODEL, c.REPOSITORY_MODEL,
+				Paths.get(Paths.get(c.RESOURCE_MODEL).getParent().toString(), "default.system").toString(),
+				constraintFile.getAbsolutePath(), usageModelExtFile.getAbsolutePath());
+		
+		s.getOptions().SqlDBUrl = url;
+		s.getOptions().DBName = dbName;
+		s.getOptions().DBDriver = driver;
+		s.getOptions().DBUserName = userName;
+		s.getOptions().DBPassword = password;
+	}
+	
+	public static void setDatabaseInformation(InputStream confFileStream) throws IOException {
+		Properties properties = new Properties();
+		
+		properties.load(confFileStream);
+		url = properties.getProperty("URL");
+		dbName = properties.getProperty("DBNAME");
+		driver = properties.getProperty("DRIVER");
+		userName = properties.getProperty("USERNAME");
+		password = properties.getProperty("PASSWORD");
 	}
 
 	public void eval() throws Exception {

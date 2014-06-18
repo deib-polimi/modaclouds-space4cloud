@@ -73,7 +73,7 @@ public class ConstraintHandler {
 				continue;
 			}
 			switch (metric) {
-			case RESPONSETIME:
+			case RESPONSETIME:				
 				constraint = new ResponseTimeConstraint(cons);
 				break;
 			case CPU:
@@ -130,6 +130,9 @@ public class ConstraintHandler {
 				//we also check the type of constraint here at the same level but we could also discriminate between numerical and set. 
 				if(resource instanceof IResponseTimeConstrainable && c instanceof ResponseTimeConstraint)
 					result.put(c, c.checkConstraintDistance(((IResponseTimeConstrainable)resource).getResponseTime()));
+				//TODO: if the responsetime constrainable resource is a funcitonality and it has not been evaluated 
+				//(because it is not present in the result output of the evaluation tool) we should warn the user that we will not consider the constraint. 
+				// by default response time of those functionalities are lower than zero so the constraint will aslways be true. Neveretheless, a warning should be raised.
 				else if(resource instanceof IUtilizationConstrainable && c instanceof UsageConstraint)
 					result.put(c, c.checkConstraintDistance(((IUtilizationConstrainable)resource).getUtilization()));
 				//System.out.println("utilization: "+)

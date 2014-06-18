@@ -32,8 +32,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -63,6 +66,8 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	private Map<String, Double> utilizations = new HashMap<>();
 
 	private Map<String, Double> responseTimes = new HashMap<>();
+
+	private static final Logger logger = LoggerFactory.getLogger(LQNSResultParser.class);
 
 	public LQNSResultParser(Path path) {
 
@@ -112,7 +117,6 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			dBuilder = dbFactory.newDocumentBuilder();
 
 			// TODO: sometimes the temporary file has a name ending with a tilde
-			// (why is that?)
 			if (!filePath.toFile().exists())
 				filePath = Paths.get(filePath.toString() + "~");
 
@@ -150,20 +154,28 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			double utilization = Double.parseDouble(resultProcessor
 					.getAttribute("utilization")) / cores;
 			// LQNS uses values from 0 to 100 we use from 0 to 1
+			//TODO:Check if is this true
 			utilization /= 100;
 
 			// add the processor utilization to the hashmap
 			// System.out.println("proc id: "+id+ " utilization: "+utilization);
 			utilizations.put(id, utilization);
 
-			String seffID = id.split("_")[2];
-			NodeList resultActivities = processor
-					.getElementsByTagName("result-activity");
+			String seffID=id.split("_")[2];
+			NodeList resultActivities = null;
+			resultActivities = processor.getElementsByTagName("result-activity");
+			if(resultActivities.getLength() == 0)
+				resultActivities = processor.getElementsByTagName("resultActivity");
+
 			double serviceTime = 0;
-			for (int j = 0; j < resultActivities.getLength(); j++)
-				serviceTime += Double.parseDouble(resultActivities.item(j)
-						.getAttributes().getNamedItem("service-time")
-						.getTextContent());
+			for(int j=0; j<resultActivities.getLength(); j++){
+				
+				Node serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("service-time");
+				if(serviceTimeNode == null)
+					serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("serviceTime");	
+				if(serviceTimeNode!=null)
+					serviceTime += Double.parseDouble(serviceTimeNode.getTextContent());
+			}
 			responseTimes.put(seffID, serviceTime);
 
 		}
