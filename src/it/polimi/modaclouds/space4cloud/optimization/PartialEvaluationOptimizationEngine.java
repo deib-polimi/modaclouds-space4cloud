@@ -16,6 +16,7 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.gui.PartialEvaluationConfiguration;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -27,9 +28,9 @@ import org.slf4j.LoggerFactory;
 
 public class PartialEvaluationOptimizationEngine extends OptEngine {
 
-	private static final double DEFAULT_SCALE_IN_FACTOR = 2;
-	private static final double MAX_NUMBER_OF_ITERATIONS = 25;
-	private static final double MAX_NUMBER_OF_ITERATIONS_NO_IMPR = 10;
+	private static double DEFAULT_SCALE_IN_FACTOR = 2;
+	private static double MAX_SCALE_IN_ITERATIONS = 25;
+	private static double MAX_SCALE_IN_CONV_ITERATIONS = 7;
 	private static final Logger logger = LoggerFactory
 			.getLogger(PartialEvaluationOptimizationEngine.class);
 
@@ -45,29 +46,29 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	}
 
 	@Override
+	protected void showConfiguration() {
+		super.showConfiguration();
+		logger.info("Default Scale in Factor: "+DEFAULT_SCALE_IN_FACTOR);
+		logger.info("Max Scale In Iterations: "+MAX_SCALE_IN_ITERATIONS);
+		logger.info("Max Scale In Convergence Iterations: "+MAX_SCALE_IN_CONV_ITERATIONS);
+	};
+	@Override
 	protected void IteratedRandomScaleInLS(Solution sol) {
 		logger.info("initializing scale in phase");
 		optimLogger.trace("scaleIn phase");
 
-		/* first phase: overall descent optimization */
-		// logger.warn("Descent Optimization first phase - start");
-		// logger.warn(sol.isFeasible()+","+sol.numberOfUnfeasibleHours());
-		// for(Instance i:sol.getApplications())
-		// if(!i.isFeasible())
-		// logger.warn("\thour: "+sol.getApplications().indexOf(i)+" violated constraints: "+i.getNumerOfViolatedConstraints());
-
-		logger.info(sol.showStatus());
+	//	logger.info(sol.showStatus());
 		resetNoImprovementCounter();
 		Solution restartSol = sol.clone();
 
-		while (this.numIterNoImprov < MAX_NUMBER_OF_ITERATIONS_NO_IMPR) {
+		while (this.numIterNoImprov < MAX_SCALE_IN_CONV_ITERATIONS) {
 			boolean scaled = noImprovementPhase(sol);
 			if (!scaled)
 				sol = restartSol;
-			logger.debug("No improvement iterations: " + numIterNoImprov);
+		//	logger.debug("No improvement iterations: " + numIterNoImprov);
 		}
 
-		logger.info("scale in ended");// while number of iterations
+	//	logger.info("scale in ended");// while number of iterations
 
 	}
 
@@ -92,7 +93,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 		//TODO: check if the number of iterstions without improvment could be used alone. 
 		//if the evaluation of a reverted solution is very quick a high value of numIterNoImprove should be sufficient condition
 		//if this is the case then wee a dependency between the factors and this number and remove the max number of iterations
-		for (int iterations = 0; iterations < MAX_NUMBER_OF_ITERATIONS && numIterNoImprov < MAX_NUMBER_OF_ITERATIONS_NO_IMPR; iterations++) {
+		for (int iterations = 0; iterations < MAX_SCALE_IN_ITERATIONS && numIterNoImprov < MAX_SCALE_IN_CONV_ITERATIONS; iterations++) {
 			boolean noScaleIn = true;	
 			String scalingFactors = "";
 			for (int i = 0; i < 24; i++)
@@ -148,7 +149,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 				if (!sol.getApplication(i).isFeasible()) {
 					sol.copyApplication(previousSol.getApplication(i), i);
 					factors[i] = DEFAULT_SCALE_IN_FACTOR
-							- ((iterations + 1) / MAX_NUMBER_OF_ITERATIONS)
+							- ((iterations + 1) / MAX_SCALE_IN_ITERATIONS)
 							* (DEFAULT_SCALE_IN_FACTOR - 1);
 					reverted = true;
 				}
@@ -162,6 +163,32 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 		}
 		return true;
+
+	}
+	@Override
+	protected void loadConfiguration(boolean batch) {
+
+		PartialEvaluationConfiguration optLoader = new PartialEvaluationConfiguration();
+		// set the default configuration file
+		optLoader.setPreferenceFile("/config/OptEngine.properties");
+
+		if (!batch) {
+			// show the frame and ask let the user interact
+			optLoader.setVisible(true);
+			while (!optLoader.isSaved())
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					logger.error("Error in loading the configuration", e);
+				}
+		}
+		MAXMEMORYSIZE = optLoader.getMaxMemorySize();
+		MAXITERATIONS = optLoader.getMaxIterations();
+		MAXFEASIBILITYITERATIONS = optLoader.getMaxFeasIter();
+		SELECTION_POLICY = optLoader.getPolicy();
+		DEFAULT_SCALE_IN_FACTOR = optLoader.getDefaultScaleInFact();
+		MAX_SCALE_IN_ITERATIONS = optLoader.getMaxScaleInIters();
+		MAX_SCALE_IN_CONV_ITERATIONS = optLoader.getMaxScaleInConvIters();
 
 	}
 

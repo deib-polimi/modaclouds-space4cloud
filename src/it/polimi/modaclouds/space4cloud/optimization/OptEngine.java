@@ -76,7 +76,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.swt.program.Program;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -184,11 +183,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		loadConfiguration(batch); // false = show gui, true = batch mode
 
-		logger.info("Running the optimization with parameters:");
-		logger.info("Max Memory Size: " + MAXMEMORYSIZE);
-		logger.info("Max Iterations: " + MAXITERATIONS);
-		logger.info("Max Feasibility Iterations: " + MAXFEASIBILITYITERATIONS);
-		logger.info("Selection Policy: " + SELECTION_POLICY);
+		showConfiguration();
+		
 		Memory = new Cache<>(MAXMEMORYSIZE);
 		constraintHandler = handler;
 
@@ -204,6 +200,14 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		this.evalProxy.setTimer(timer);
 
 		// this.evalProxy.setEnabled(false);
+	}
+
+	protected void showConfiguration() {
+		logger.info("Running the optimization with parameters:");
+		logger.info("Max Memory Size: " + MAXMEMORYSIZE);
+		logger.info("Max Scrumble Iterations: " + MAXITERATIONS);
+		logger.info("Max Feasibility Iterations: " + MAXFEASIBILITYITERATIONS);
+		logger.info("Selection Policy: " + SELECTION_POLICY);
 	}
 
 	/**
@@ -689,7 +693,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		/*
 		 * 
 		 * Innanzitutto dobbiamo implementare almeno 2 spazi di ricerca. Ogni
-		 * spazio è definito da una mossa specifica la mossa 1 consiste
+		 * spazio ï¿½ definito da una mossa specifica la mossa 1 consiste
 		 * nell'aumentare o diminuire in numero di repliche di una certa risorsa
 		 * cloud (tipicamente saranno VM) la mossa 2 consiste nel ribilanciare
 		 * gli arrival rates tra i vari provider.
@@ -697,16 +701,16 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		 * Dobbiamo chiederci quindi: 1) con quale forza applichiamo una certa
 		 * mossa. (es. di quanto aumentiamo o diminuiamo il numero di VM) 2) in
 		 * che ordine eseguiamo le mosse 1 e 2. (potremmo per esempio
-		 * implementare una roulette e assegnare una certa proprietà p ad una
-		 * mossa e una proprietà 1-p all'altra)
+		 * implementare una roulette e assegnare una certa proprietï¿½ p ad una
+		 * mossa e una proprietï¿½ 1-p all'altra)
 		 * 
 		 * -Si potrebbe cercare di stimare l'impatto delle mosse e decidere
-		 * quale attuare. -Si deve cercare di capire dove attuare quando c'è un
-		 * vincolo che non è soddisfatto.
+		 * quale attuare. -Si deve cercare di capire dove attuare quando c'ï¿½ un
+		 * vincolo che non ï¿½ soddisfatto.
 		 * 
 		 * - ragionando alla lavagna con gibbo ci siamo resi conto che una mossa
 		 * di bilanciamento ha gli stessi effetti di una di variazione. per
-		 * questo non è necessario far seguire ad una mossa di bilanciamento una
+		 * questo non ï¿½ necessario far seguire ad una mossa di bilanciamento una
 		 * serie di mosse di variazione per far assestare i risultati.
 		 */
 
@@ -823,7 +827,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	}
 
-	private void loadConfiguration(boolean batch) {
+	protected void loadConfiguration(boolean batch) {
 
 		OptimizationConfigurationFrame optLoader = new OptimizationConfigurationFrame();
 		// set the default configuration file
@@ -1206,7 +1210,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 				// now we will scaleout the resources
 				double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
-						* numberOfFeasibilityIterations / MAXITERATIONS;
+						* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
 				if (resMemory.size() > 0) {
 					MoveOnVM moveVM_i = new MoveOnVM(sol, i);
 					for (IaaS res : resMemory)
@@ -1261,9 +1265,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// this is one possibility, I however prefer using the execution time as
 		// a stopping criterion. Mich
 		while (!isMaxNumberOfIterations()) {
-			setProgress(numberOfIterations);
-			optimLogger.info("Iteration: " + numberOfIterations + "solution: "
-					+ currentSolution.showStatus());
+			
+			
+			optimLogger.info("Iteration: " + numberOfIterations);
+			optimLogger.trace( currentSolution.showStatus());
 
 			// 2: Internal Optimization process
 
@@ -1276,12 +1281,12 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 			// 3b: clone the best solution to start the scruble from it
 			currentSolution = bestSolution.clone();
-			// ogSolution(bestSolution); // a dire la verità questo è un po'
+			// ogSolution(bestSolution); // a dire la veritï¿½ questo ï¿½ un po'
 			// restrittivo.
 
 			// 4 Scrambling the current solution.
 			scramble(currentSolution);
-
+			setProgress(numberOfIterations);
 			// increment the number of iterations
 			numberOfIterations += 1;
 
@@ -1355,7 +1360,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// this is one possibility, I however prefer using the execution time as
 		// a stopping criterion. Mich
 		while (!isMaxNumberOfIterations()) {
-			setProgress(numberOfIterations);
+			
 			logger.info("Iteration: " + numberOfIterations + "cost: "
 					+ currentSolution.getCost());
 			// 2: Internal Optimization process
@@ -1369,12 +1374,12 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 			// 3b: clone the best solution to start the scruble from it
 			currentSolution = bestSolution.clone();
-			// ogSolution(bestSolution); // a dire la verità questo è un po'
+			// ogSolution(bestSolution); // a dire la veritï¿½ questo ï¿½ un po'
 			// restrittivo.
 
 			// 4 Scrambling the current solution.
 			scramble(currentSolution);
-
+			setProgress(numberOfIterations);
 			// increment the number of iterations
 			numberOfIterations += 1;
 

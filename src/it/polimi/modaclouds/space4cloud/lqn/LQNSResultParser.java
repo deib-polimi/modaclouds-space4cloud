@@ -64,10 +64,11 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	private DocumentBuilder dBuilder;
 	private transient Document resultDOM;
 	private Map<String, Double> utilizations = new HashMap<>();
+	private final Logger logger = LoggerFactory.getLogger(LQNSResultParser.class);
 
 	private Map<String, Double> responseTimes = new HashMap<>();
 
-	private static final Logger logger = LoggerFactory.getLogger(LQNSResultParser.class);
+	
 
 	public LQNSResultParser(Path path) {
 
@@ -138,6 +139,8 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	private void parse() {
 		// parse Processors
 		NodeList processors = resultDOM.getElementsByTagName("processor");
+		utilizations.clear();
+		responseTimes.clear();
 		for (int i = 0; i < processors.getLength(); i++) {
 
 			// search for the result element
@@ -154,11 +157,14 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			double utilization = Double.parseDouble(resultProcessor
 					.getAttribute("utilization")) / cores;
 			// LQNS uses values from 0 to 100 we use from 0 to 1
-			//TODO:Check if is this true
-			utilization /= 100;
 
 			// add the processor utilization to the hashmap
 			// System.out.println("proc id: "+id+ " utilization: "+utilization);
+			if(utilization > 1){
+				logger.debug("Utilization greater than one!");
+				logger.debug("file: "+filePath+" utilization: "+utilization+" id: "+id);
+				utilization=1;
+			}
 			utilizations.put(id, utilization);
 
 			String seffID=id.split("_")[2];
