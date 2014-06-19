@@ -5,6 +5,22 @@
 	<artifactId>space4cloud</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<properties>
+		<github.global.server>github</github.global.server>
+		<github.repository.name>modaclouds-space4cloud</github.repository.name>
+		<github.user.name>deib-polimi</github.user.name>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
 	<repositories>
 		<repository>
 			<id>deib-polimi-releases</id>
@@ -26,6 +42,10 @@
 			</resource>
 		</resources>
 		<plugins>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.1</version>
+			</plugin>
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
 				<version>2.9</version>
@@ -80,7 +100,7 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
-						<plugin>
+			<plugin>
 				<groupId>org.jvnet.jaxb2.maven2</groupId>
 				<artifactId>maven-jaxb2-plugin</artifactId>
 				<executions>
@@ -105,13 +125,13 @@
 								</plugin>
 							</plugins>
 							<extension>true</extension>
-							<schemaDirectory>${project.basedir}/schema</schemaDirectory>						
+							<schemaDirectory>${project.basedir}/schema</schemaDirectory>
 							<generatePackage>it.polimi.modaclouds.space4cloud.line</generatePackage>
 							<generateDirectory>${project.basedir}/src</generateDirectory>
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>			
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -173,6 +193,101 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<groupId>com.github.github</groupId>
+					<artifactId>site-maven-plugin</artifactId>
+					<version>0.9</version>
+					<configuration>
+						<merge>true</merge> <!-- deploy without removing existing artifacts on the repo -->
+						<message>Maven artifacts for ${project.artifactId}
+							${project.version}</message>  <!-- git commit message -->
+						<noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
+						<outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> <!-- matches distribution management repository url above -->
+						<branch>refs/heads/master</branch>                       <!-- remote branch name -->
+						<includes>
+							<include>**/*</include>
+						</includes>
+						<repositoryName>deib-polimi-mvn-repo</repositoryName>      <!-- github repo name -->
+						<repositoryOwner>deib-polimi</repositoryOwner>    <!-- github username -->
+					</configuration>
+					<executions>
+						<!-- run site-maven-plugin's 'site' target as part of the build's normal 
+							'deploy' phase -->
+						<execution>
+							<goals>
+								<goal>site</goal>
+							</goals>
+							<phase>deploy</phase>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version>
+				<configuration>
+					<javadocExecutable>${java.home}/../bin/javadoc</javadocExecutable>
+					<aggregate>true</aggregate>
+					<show>public</show>
+					<nohelp>true</nohelp>
+					<header>${project.artifactId}, ${project.version}</header>
+					<footer>${project.artifactId}, ${project.version}</footer>
+					<doctitle>${project.artifactId}, ${project.version}</doctitle>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-scm-publish-plugin</artifactId>
+				<version>1.0-beta-2</version>
+				<configuration>
+					<checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
+					<checkinComment>Publishing javadoc for
+						${project.artifactId}:${project.version}</checkinComment>
+					<content>${project.reporting.outputDirectory}/apidocs</content>
+					<skipDeletedFiles>true</skipDeletedFiles>
+					<pubScmUrl>scm:git:git@github.com:${github.user.name}/${github.repository.name}.git</pubScmUrl>
+					<scmBranch>gh-pages</scmBranch> <!-- branch with static site -->
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<header>${project.basedir}/APACHE-2-header.txt</header>
+					<properties>
+						<organization>deib-polimi</organization>
+						<year>${project.inceptionYear}</year>
+						<owner>deib-polimi</owner>
+						<email>giovannipaolo.gibilisco@polimi.it</email>
+						<artid>${project.artifactId}</artid>
+					</properties>
+					<excludes>
+						<exclude>**/README</exclude>
+						<exclude>*.log</exclude>
+						<exclude>src/test/resources/**</exclude>
+						<exclude>src/main/resources/**</exclude>
+						<exclude>LICENSE.txt</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>check-headers</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -215,17 +330,7 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>it.polimi.modaclouds.resourcemodel</groupId>
-			<artifactId>resourcemodel</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>it.polimi.modaclouds.space4cloud</groupId>
-			<artifactId>milp</artifactId>
-			<version>0.0.3-SNAPSHOT</version>
-		</dependency>
+
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
@@ -235,6 +340,16 @@
 			<groupId>it.polimi.modaclouds.qos-models</groupId>
 			<artifactId>qos-models</artifactId>
 			<version>2.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>it.polimi.modaclouds</groupId>
+			<artifactId>resourcemodel</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>it.polimi.modaclouds.space4cloud</groupId>
+			<artifactId>milp</artifactId>
+			<version>0.0.4</version>
 		</dependency>
 	</dependencies>
 </project>

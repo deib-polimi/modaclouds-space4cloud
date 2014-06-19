@@ -14,7 +14,6 @@ Require-Bundle: org.eclipse.ui,
  de.uka.ipd.sdq.pcmsolver;bundle-version="3.0.1",
  org.apache.commons.lang;bundle-version="2.6.0",
  org.eclipse.emf.ecore;bundle-version="2.9.2",
- it.polimi.modaclouds.resourcemodel,
  org.junit,
  org.eclipse.ui.console;bundle-version="3.5.200"
 Bundle-ActivationPolicy: lazy
@@ -46,9 +45,9 @@ Bundle-ClassPath: .,
  target/dependency/jcommon-1.0.21.jar,
  icons.jar,
  target/dependency/jsch-0.1.51.jar,
- target/dependency/resourcemodel-0.0.1-SNAPSHOT.jar,
  target/dependency/qos-models-2.0.3.jar,
- target/dependency/milp-0.0.3-SNAPSHOT.jar
+ target/dependency/milp-0.0.3-SNAPSHOT.jar,
+ target/dependency/resourcemodel-1.0.0.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.db,
  it.polimi.modaclouds.space4cloud.gui,
