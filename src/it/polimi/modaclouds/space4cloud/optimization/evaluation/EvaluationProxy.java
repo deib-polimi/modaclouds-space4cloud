@@ -32,12 +32,17 @@ public class EvaluationProxy extends EvaluationServer {
 
 	private final Map<String, LqnResultParser> map = new HashMap<String, LqnResultParser>();
 
-	int proxiedSolutions = 0;
+	int hit = 0;
 
 	// This enable or disable the proxy! If set to "false", the proxy won't act
 	// as a proxy, evaluating
 	// each and every solution requested. Useful!
 	private boolean enabled = true;
+	private int miss = 0;
+
+	private int getMiss() {
+		return miss;
+	}
 
 	public EvaluationProxy(String solver) throws DatabaseConnectionFailureExteption {
 		super(solver);
@@ -56,8 +61,8 @@ public class EvaluationProxy extends EvaluationServer {
 		sol.updateEvaluation();
 	}
 
-	public int getProxiedSolutions() {
-		return proxiedSolutions;
+	public int getHit() {
+		return hit;
 	}
 
 	public void ProxyIn(Solution sol) {
@@ -68,7 +73,7 @@ public class EvaluationProxy extends EvaluationServer {
 			if (!instance.isEvaluated()) {
 				String str = instance.getHashString();
 				if (map.containsKey(str)) {
-					proxiedSolutions++;
+					hit++;
 					LqnResultParser results = map.get(str);
 					instance.updateResults(results);
 					instance.setEvaluated(true);
@@ -82,10 +87,8 @@ public class EvaluationProxy extends EvaluationServer {
 			return sol;
 
 		for (Instance instance : sol.getApplications()) {
-			String hashStr = instance.getHashString();
-			if (!map.containsKey(hashStr))
-				if (instance.getResultParser() == null)
-					System.out.println();
+			miss++;
+			String hashStr = instance.getHashString();			
 			map.put(hashStr, instance.getResultParser());
 		}
 		return sol;
@@ -98,8 +101,10 @@ public class EvaluationProxy extends EvaluationServer {
 	@Override
 	public void showStatistics() {
 		super.showStatistics();
-		System.out.println("Number of proxied solutions "
-				+ getProxiedSolutions());
+		logger.debug("Proxy statistics:");
+		logger.debug("Hit count: "+getHit());
+		logger.debug("Miss count: "+getMiss());
+		
 	}
 
 }

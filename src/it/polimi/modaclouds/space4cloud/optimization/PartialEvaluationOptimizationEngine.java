@@ -21,6 +21,7 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandl
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
@@ -36,9 +37,12 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) throws DatabaseConnectionFailureExteption {
 		super(handler);
+	}	
+	
+	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, File configurationFile, boolean batch) throws DatabaseConnectionFailureExteption {
+		super(handler, configurationFile,batch);		
 	}
-
-
+	
 	
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
 
@@ -166,11 +170,14 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 	}
 	@Override
-	protected void loadConfiguration(boolean batch) {
+	protected void loadConfiguration(File configurationFile, boolean batch) {
 
 		PartialEvaluationConfiguration optLoader = new PartialEvaluationConfiguration();
 		// set the default configuration file
-		optLoader.setPreferenceFile("/config/OptEngine.properties");
+		if(configurationFile!= null)
+			optLoader.setPreferenceFile(configurationFile.getAbsolutePath());
+		else
+			optLoader.setPreferenceFile("/config/OptEngine.properties");
 
 		if (!batch) {
 			// show the frame and ask let the user interact

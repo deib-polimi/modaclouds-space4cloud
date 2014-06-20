@@ -184,6 +184,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	private File resourceEnvironmentFile, usageFile, allocationFile,
 			repositoryFile, lineConfFile, usageModelExtFile,
 			resourceEnvExtFile, constraintFile;
+	private File optimizationConfigurationFile;
 
 	private String resFolder;
 
@@ -192,7 +193,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	private ConstraintHandler constraintHandler;
 
 	private static final String defaultDbConfigurationFile = "/config/DBConnection.properties";
-	private static String dbConfigurationFile = null;
+	private String dbConfigurationFile = null;
 	private int testFrom, testTo, step;
 
 	private File initialSolution = null, initialMce = null;
@@ -201,16 +202,17 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private int attempts = 5;
 
+
 	public Space4Cloud() {
 		this(false, null, null, "space4cloud", null, null, null, null, null,
-				null, null, null, 100, 10000, 300);
+				null, null, null, 100, 10000, 300, null, null);
 	}
 
 	public Space4Cloud(boolean batch, Operations functionality,
 			File resourceEnvironmentFile, String resFolder, File usageFile,
 			File allocationFile, File repositoryFile, String solver,
 			File lineConfFile, File usageModelExtFile, File resourceEnvExtFile,
-			File constraintFile, int testFrom, int testTo, int step) {
+			File constraintFile, int testFrom, int testTo, int step, String databaseConnectionProperties, File optimizationConfigurationFile) {
 		this.batch = batch;
 		this.resFolder = resFolder;
 		if (batch) {
@@ -227,12 +229,14 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			this.testFrom = testFrom;
 			this.testTo = testTo;
 			this.step = step;
+			this.dbConfigurationFile = databaseConnectionProperties;
+			this.optimizationConfigurationFile = optimizationConfigurationFile;
 		}
 	}
 
 	public Space4Cloud(Operations operation, String basePath,
 			File usageModelExtFile, File resourceEnvExtFile,
-			File constraintFile, int testFrom, int testTo, int step) {
+			File constraintFile, int testFrom, int testTo, int step, String databaseConnectionProperties, File optimizationConfigurationFile) {
 		this(true, operation, Paths
 				.get(basePath, "default.resourceenvironment").toFile(),
 				"space4cloud", Paths.get(basePath, "default.usagemodel")
@@ -240,21 +244,16 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 						.toFile(), Paths.get(basePath, "default.repository")
 						.toFile(), "LQNS (Layered Queueing Network Solver)",
 				new File("LINE.properties"), usageModelExtFile,
-				resourceEnvExtFile, constraintFile, testFrom, testTo, step);
+				resourceEnvExtFile, constraintFile, testFrom, testTo, step,databaseConnectionProperties,optimizationConfigurationFile);
+	}
+	
+	public Space4Cloud(Operations operation, String basePath,
+			File usageModelExtFile, File resourceEnvExtFile,
+			File constraintFile, int testFrom, int testTo, int step) {
+		this(operation, basePath, usageModelExtFile, resourceEnvExtFile, constraintFile, testFrom, testTo, step, null, null);
 	}
 
-	public Space4Cloud(Operations operation, String basePath,
-			File usageModelExtFile, File constraintFile, int testFrom,
-			int testTo, int step) {
-		this(true, operation, Paths
-				.get(basePath, "default.resourceenvironment").toFile(),
-				"space4cloud", Paths.get(basePath, "default.usagemodel")
-						.toFile(), Paths.get(basePath, "default.allocation")
-						.toFile(), Paths.get(basePath, "default.repository")
-						.toFile(), "LQNS (Layered Queueing Network Solver)",
-				new File("LINE.properties"), usageModelExtFile, null,
-				constraintFile, testFrom, testTo, step);
-	}
+
 
 
 
@@ -1019,7 +1018,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		OptEngine engine = null;
 		try {
 			engine = new PartialEvaluationOptimizationEngine(
-					constraintHandler, batch);
+					constraintHandler,optimizationConfigurationFile, batch);
 		} catch (DatabaseConnectionFailureExteption e) {
 			programLogger.error("Error in connecting to the database",e);
 			cleanExit();
@@ -1312,9 +1311,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		String duration = "";
 		{
-			// an average of 2 minutes per attempt... maybe it's too little, but
+			// an average of 5 minutes per attempt... maybe it's too little, but
 			// whatever...
-			int res = (attempts * (int) Math.ceil(((testTo - testFrom) / step))) * 2 * 60;
+			int res = (attempts * (int) Math.ceil(((testTo - testFrom) / step))) * 5 * 60;
 			if (res > 60 * 60) {
 				duration += (res / (60 * 60)) + " h ";
 				res = res % (60 * 60);
@@ -1349,10 +1348,10 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			++i;
 		}
 		Files.createDirectory(p);
-
+		int step=0;
 		int el = 0;
 		for (File f : usageModelExtFiles) {
-
+			step++;
 			File bestSolution = null;
 			int bestCost = Integer.MAX_VALUE;
 
@@ -1363,7 +1362,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 								+ attempt, usageFile, allocationFile,
 						repositoryFile, solver, lineConfFile, f,
 						initialSolution != null ? null : resourceEnvExtFile,
-						constraintFile, testFrom, testTo, step);
+						constraintFile, testFrom, testTo, step, dbConfigurationFile, optimizationConfigurationFile);
 				// if initialSolution isn't null, it was because we generated
 				// it! so we must keep generating them!
 
@@ -1386,6 +1385,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 						if (g.exists()) {
 							found = true;
 
+							//save the solution
+							Files.createDirectories(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,"attempts","step"+step));
+							Files.copy(Paths.get(g.getAbsolutePath()), Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,"attempts","step"+step,"solution"+attempt+".xml"));
 							// to save space on hd I remove the results as soon
 							// as i get the solution.xml file, because that's
 							// all I need

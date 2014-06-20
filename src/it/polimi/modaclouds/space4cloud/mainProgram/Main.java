@@ -18,7 +18,10 @@
  */
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
+import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud.Operations;
+
 import java.io.File;
+import java.nio.file.Paths;
 
 /**
  * Main class of the CSPACE tool.<br/>
@@ -64,16 +67,22 @@ public class Main {
 	public static void main(String[] args) {
 		// RobustnessProgressWindow.main(null);
 		// System.out.println("space");
-		 Space4Cloud instance = new Space4Cloud();
-//		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\test\\";
-//		Space4Cloud instance = new Space4Cloud(
-//				Space4Cloud.Operations.Optimization, basePath, new File(
-//						basePath + "usage_model_extensionOfBiz.xml"), new File(
-//						basePath + "resource_model_extension_OfBiz.xml"),
-//				new File(basePath + "OfBiz-Constraint.xml"), 100, 10000, 300);
+//		 Space4Cloud instance = new Space4Cloud();
+		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizChi4r4\\";
+		Operations operation = Operations.Robustness;
+		File usageModelExtension = new File(basePath + "OfBiz-UsageExtension.xml");
+		File resourceModelExtension = new File(basePath + "OfBiz-ContainerExtension.xml");
+		File constraintsFile =  new File(basePath + "OfBiz-Constraint.xml");
+		int startPopulation = 2000;
+		int endPopulation = 3000;
+		int step = 500;
+		String dbConfigurationFilePath = Paths.get(basePath,"DBConnection.properties").toString();
+		File optimizationConfigurationFile = new File(basePath+"OptEngine.properties");
+		Space4Cloud instance = new Space4Cloud(	operation, basePath, usageModelExtension, resourceModelExtension,constraintsFile, startPopulation, endPopulation, step, dbConfigurationFilePath, optimizationConfigurationFile);
+		 instance.setRobustnessAttempts(10);
 		// instance.setProvidersInitialSolution("Amazon", "Microsoft");
 		// instance.setProvidersInitialSolution("Flexiscale");
-		// instance.setRobustnessAttempts(1);
+		
 		// System.out.println("execute");
 		instance.execute();
 		// System.out.println("fine!");

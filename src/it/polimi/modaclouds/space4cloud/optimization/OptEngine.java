@@ -140,7 +140,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	protected SeriesHandle seriesHandler;
 
-	protected Random random = new Random(0);
+	protected Random random = new Random();
 	protected int numIterNoImprov = 0;
 
 	protected int numTotImpr = 0;
@@ -170,6 +170,16 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * @throws DatabaseConnectionFailureExteption 
 	 */
 	public OptEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
+		this(handler, null, batch);
+	}
+	/**
+	 * Instantiates a new opt engine.
+	 * 
+	 * @param handler
+	 *            : the constraint handler
+	 * @throws DatabaseConnectionFailureExteption 
+	 */
+	public OptEngine(ConstraintHandler handler, File configurationFile, boolean batch) throws DatabaseConnectionFailureExteption {
 
 		try {
 			costLogImage = new Logger2JFreeChartImage();
@@ -180,8 +190,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			logger.error("Unable to create chart loggers", e);
 
 		}
-
-		loadConfiguration(batch); // false = show gui, true = batch mode
+		
+		loadConfiguration(configurationFile, batch); // false = show gui, true = batch mode
 
 		showConfiguration();
 		
@@ -827,11 +837,14 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	}
 
-	protected void loadConfiguration(boolean batch) {
+	protected void loadConfiguration(File configurationFile, boolean batch) {
 
 		OptimizationConfigurationFrame optLoader = new OptimizationConfigurationFrame();
 		// set the default configuration file
-		optLoader.setPreferenceFile("/config/OptEngine.properties");
+		if(configurationFile!= null)
+			optLoader.setPreferenceFile(configurationFile.getAbsolutePath());
+		else
+			optLoader.setPreferenceFile("/config/OptEngine.properties");
 
 		if (!batch) {
 			// show the frame and ask let the user interact
@@ -1268,7 +1281,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			
 			
 			optimLogger.info("Iteration: " + numberOfIterations);
-			optimLogger.trace( currentSolution.showStatus());
+			//optimLogger.trace( currentSolution.showStatus());
 
 			// 2: Internal Optimization process
 
@@ -1576,7 +1589,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			costLogImage.addPoint2Series(seriesHandler,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					bestSolution.getCost());
-			logger.info("updated best solution" + sol.showStatus());
+			//logger.info("updated best solution" + sol.showStatus());
 			return true;
 		}
 		return false;
