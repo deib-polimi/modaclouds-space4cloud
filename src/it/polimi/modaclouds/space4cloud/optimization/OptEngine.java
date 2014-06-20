@@ -1436,24 +1436,22 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	/**
-	 * Scramble. the aim of this method is to change some the type of some VM,
-	 * let's say a 5-10% of them and re-optimize by means of the mathematical
-	 * model.
+	 * Changes the type of virtual machines used. 
+	 * This change is more distruptive than acting on the number of virtual machines and the optimal type of VM is harder to find 
+	 * This move does not preserve the feasibility of the solution. 
 	 * 
 	 * @param the
 	 *            current solution
 	 */
 	protected void scramble(Solution sol) {
 		/*
-		 * Se non abbiamo le cose del russo a disposizione questa parte si fa +
-		 * complicata. diventa una specie di ricerca locale/mutation. dobbiamo
-		 * modificare il tipo di alcune macchine virtuali possiamo scegliere
-		 * macchine + potenti se i vincoli non sono soddisfatti e macchine meno
-		 * potenti altrimenti.
+		 * TODO:
+		 * 1) Choose the candidate tier for the VM change (possible strategies: RANDOM, cost)
+		 * 2) Retreive all the VM types that can substitute the current vm (Same provider/ region / service type and fulfilling architectural constraints)
+		 * 3) Choose the new type of VM to use. (possible strategies: RANDOM, efficiency=cores*processingrate/cost, randomDistribution(efficiency)
+		 * 		The proposed strategy uses a random variable whose probability distribution depends on the efficiency of the machines so to prefer machines that have a higher core*processingrate/cost
+		 * 4) Change the machine and invalidate the solution. 
 		 */
-
-		// the rationale is to borrow some ideas from tabu methods
-		// as for example the use of a memory structure.
 
 		// let's select the resource to change.
 		List<Tier> tierList = sol.getApplication(0).getTiers();
