@@ -39,6 +39,7 @@ import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -800,7 +801,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			break;
 		}
 
-		cleanExit();
+		//cleanExit();
 		return null;
 	}
 
@@ -900,13 +901,11 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		Logger2JFreeChartImage vmLogger = new Logger2JFreeChartImage(
 				"vmCount.properties");
 		Map<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
-		for (Tier t : providedSolution.getApplication(0)
-				.getTiersByResourceName().values()) {
+		for (Tier t : providedSolution.getApplication(0).getTiers()) {
 			vmSeriesHandlers.put(t.getId(), vmLogger.newSeries(t.getId()));
 		}
 		for (int i = 0; i < 24; i++) {
-			for (Tier t : providedSolution.getApplication(i)
-					.getTiersByResourceName().values()) {
+			for (Tier t : providedSolution.getApplication(i).getTiers()) {
 				vmLogger.addPoint2Series(vmSeriesHandlers.get(t.getId()), i,
 						((IaaS) t.getCloudService()).getReplicas());
 			}
@@ -917,16 +916,14 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		Logger2JFreeChartImage rtLogger = new Logger2JFreeChartImage(
 				"responseTime.properties");
 		Map<String, SeriesHandle> rtSeriesHandlers = new HashMap<>();
-		for (Tier t : providedSolution.getApplication(0)
-				.getTiersByResourceName().values())
+		for (Tier t : providedSolution.getApplication(0).getTiers())
 			for (Component c : t.getComponents())
 				for (Functionality f : c.getFunctionalities())
 					rtSeriesHandlers.put(f.getName(),
 							rtLogger.newSeries(f.getName()));
 
 		for (int i = 0; i < 24; i++)
-			for (Tier t : providedSolution.getApplication(i)
-					.getTiersByResourceName().values())
+			for (Tier t : providedSolution.getApplication(i).getTiers())
 				for (Component c : t.getComponents())
 					for (Functionality f : c.getFunctionalities()){
 						if(f.isEvaluated())
@@ -940,15 +937,13 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		Logger2JFreeChartImage utilLogger = new Logger2JFreeChartImage(
 				"utilization.properties");
 		Map<String, SeriesHandle> utilSeriesHandlers = new HashMap<>();
-		for (Tier t : providedSolution.getApplication(0)
-				.getTiersByResourceName().values())
+		for (Tier t : providedSolution.getApplication(0).getTiers())
 			utilSeriesHandlers.put(t.getId(), utilLogger.newSeries(t.getId()));
 
 		for (int i = 0; i < 24; i++)
-			for (Tier t : providedSolution.getApplication(i)
-					.getTiersByResourceName().values())
+			for (Tier t : providedSolution.getApplication(i).getTiers())
 				utilLogger.addPoint2Series(utilSeriesHandlers.get(t.getId()),
-						i, ((IaaS) t.getCloudService()).getUtilization());
+						i, ((Compute) t.getCloudService()).getUtilization());
 		assesmentWindow.setUtilizationLogger(utilLogger);
 		assesmentWindow.show();
 		assesmentWindow.updateImages();
@@ -1035,7 +1030,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 
 		// create the progress window
-		if (!batch) {
+		//if (!batch) {
 			progressWindow = new OptimizationProgressWindow();
 			progressWindow.setMax(engine.getMaxIterations());
 			progressWindow.setCostLogger(engine.getCostLogger());
@@ -1043,7 +1038,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
 			engine.addPropertyChangeListener(progressWindow);
 			engine.getEvalProxy().addPropertyChangeListener(progressWindow);
-		}
+		//}
 
 		// start the optimization
 		programLogger.info("Starting the optimization");

@@ -20,9 +20,11 @@ import it.polimi.modaclouds.space4cloud.gui.PartialEvaluationConfiguration;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,14 +106,14 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 				scalingFactors += " h: " + i + " val: " + factors[i];
 			logger.debug("Scaling factors: " + scalingFactors);
 			Solution previousSol = sol.clone();
-			ArrayList<ArrayList<IaaS>> vettResTot = generateVettResTot(sol);
+			List<ArrayList<Tier>> vettResTot = generateVettResTot(sol);
 			MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
 			// scale in each hour
 			for (int hour = 0; hour < 24; hour++) {
-				IaaS res = null;
+				Tier tier = null;
 				// remove resources with minimum number of replicas
 				for (int j = 0; j < vettResTot.get(hour).size(); j++)
-					if (vettResTot.get(hour).get(j).getReplicas() == 1)
+					if (((IaaS)vettResTot.get(hour).get(j).getCloudService()).getReplicas() == 1)
 						vettResTot.get(hour).remove(j);
 
 				// if no resource can be scaled in in this hour then jump to the
@@ -119,13 +121,12 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 				if (vettResTot.get(hour).size() == 0)
 					continue;
 
-				// if there are resources that can be scale then chose one
+				// if there are tiers that can be scale then chose one
 				// randomly
-				res = vettResTot.get(hour).get(
-						random.nextInt(vettResTot.get(hour).size()));
+				tier = vettResTot.get(hour).get(random.nextInt(vettResTot.get(hour).size()));
 
 				// scale the resource by the factor
-				moveArray[hour].scaleIn(res, factors[hour]);
+				moveArray[hour].scaleIn(tier, factors[hour]);
 				noScaleIn = false;
 
 			}

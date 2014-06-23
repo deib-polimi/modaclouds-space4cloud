@@ -15,7 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -79,10 +78,10 @@ public class Compute extends IaaS {
 	 * @param ram
 	 *            the ram
 	 */
-	public Compute(String name, String id, String provider, String serviceType,
+	public Compute(String provider, String serviceType,
 			String serviceName, String resourceName, int replicas,
 			int numberOfCores, double speed, int ram) {
-		super(name, id, provider, serviceType, serviceName, resourceName);
+		super(provider, serviceType, serviceName, resourceName);
 		this.replicas = replicas;
 		this.speed = speed;
 		this.ram = ram;
@@ -107,8 +106,7 @@ public class Compute extends IaaS {
 
 			logger.error("Compute clone not supprted, building a new Compute",
 					e);
-			compute = new Compute(new String(this.getName()), new String(
-					this.getId()), new String(this.getProvider()), new String(
+			compute = new Compute(new String(this.getProvider()), new String(
 					this.getServiceType()), new String(this.getServiceName()),
 					new String(this.getResourceName()), this.getReplicas(),
 					this.getNumberOfCores(), this.getSpeed(), this.getRam());
@@ -168,13 +166,6 @@ public class Compute extends IaaS {
 		return getSpeed() / StandardSpeed;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see it.polimi.modaclouds.space4cloud.optimization.solution.
-	 * IUtilizationConstrainable#getUtilization()
-	 */
-	@Override
 	public double getUtilization() {
 		return utilization;
 	}
@@ -245,22 +236,16 @@ public class Compute extends IaaS {
 		// "replicas: "+getReplicas()+" speed:_"+speed+"\t ram:_"+ram+" Utilization: "+utilization);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable
-	 * #update(it.polimi.modaclouds.space4cloud.lqn.LqnResultParser)
-	 */
-	@Override
-	public void update(LqnResultParser results) {
+	
+	public void update(double util) {
 		// update the utilization
-		if (results.getUtilization(getName()) > 0)
-			utilization = results.getUtilization(getName());
+		if (util > 0)
+			utilization = util;
 		else
 			utilization = -1;
 		// System.err.println("Processor name "+getName()+" not found in the results");
 
 	}
+
 
 }

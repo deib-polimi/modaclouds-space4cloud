@@ -240,48 +240,36 @@ public class SolutionMulti implements Cloneable, Serializable {
 				solution.appendChild(tiers);
 
 				ArrayList<Instance> hourApplication = sol.getApplications();
-				for (String s : hourApplication.get(0).getTiersByResourceName()
-						.keySet()) {
+				for (Tier t : hourApplication.get(0).getTiers()) {
 					// create the tier
 					Element tier = doc.createElement("Tier");
 					tiers.appendChild(tier);
 
 					// set id, name, provider name, service name, resource name,
 					// service type
-					tier.setAttribute("id", hourApplication.get(0)
-							.getTiersByResourceName().get(s).getCloudService()
-							.getId());
-					tier.setAttribute("name", hourApplication.get(0)
-							.getTiersByResourceName().get(s).getCloudService()
-							.getName());
-					tier.setAttribute("providerName", hourApplication.get(0)
-							.getTiersByResourceName().get(s).getCloudService()
-							.getProvider());
-					tier.setAttribute("serviceName", hourApplication.get(0)
-							.getTiersByResourceName().get(s).getCloudService()
-							.getServiceName());
-					tier.setAttribute("resourceName", hourApplication.get(0)
-							.getTiersByResourceName().get(s).getCloudService()
-							.getResourceName());
-					tier.setAttribute("serviceType", hourApplication.get(0)
-							.getTiersByResourceName().get(s).getCloudService()
-							.getServiceType());
+					tier.setAttribute("id", t.getId());
+					tier.setAttribute("name", t.getName());
 
-					for (int i = 0; i < 24; i++) {
-						// create the allocation element
-						Element hourAllocation = doc
-								.createElement("HourAllocation");
-						tier.appendChild(hourAllocation);
-						hourAllocation.setAttribute("hour", "" + i);
-						hourAllocation.setAttribute("allocation", ""
-								+ ((IaaS) hourApplication.get(i)
-										.getTiersByResourceName().get(s)
-										.getCloudService()).getReplicas());
+					CloudService cs = t.getCloudService();
+					tier.setAttribute("providerName", cs.getProvider());
+					tier.setAttribute("serviceName", cs.getServiceName());
+					tier.setAttribute("resourceName", cs.getResourceName());
+					tier.setAttribute("serviceType", cs.getServiceType());
 
+					if(cs instanceof IaaS){
+						for (int i = 0; i < 24; i++) {
+							// create the allocation element
+							Element hourAllocation = doc.createElement("HourAllocation");
+							tier.appendChild(hourAllocation);
+							hourAllocation.setAttribute("hour", "" + i);
+							hourAllocation.setAttribute("allocation", ""
+									+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
+						}
 					}
 				}
 
-				// create the element containign the response times
+
+				// create the element with the response times
 				Element functionalities = doc.createElement("functionalities");
 				solution.appendChild(functionalities);
 

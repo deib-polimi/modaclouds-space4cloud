@@ -22,6 +22,7 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
 
 import java.awt.event.ActionEvent;
@@ -30,6 +31,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -63,8 +65,7 @@ public class EvaluationServer implements ActionListener {
 	protected String solver = MessageStrings.LQNS_SOLVER;
 
 	protected SeriesHandle seriesHandleExecution;
-	protected SeriesHandle seriesHandleTier1;
-	protected SeriesHandle seriesHandleTier2;
+	protected Map<String,SeriesHandle> seriesHandleTiers;
 	protected SeriesHandle seriesHandleConstraint;
 	protected StopWatch timer = new StopWatch();
 	protected long costEvaluationTime = 0;
@@ -216,12 +217,18 @@ public class EvaluationServer implements ActionListener {
 			log2png.addPoint2Series(seriesHandleExecution,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getCost());
-			logVm.addPoint2Series(seriesHandleTier1,
+			if(seriesHandleTiers==null){
+				seriesHandleTiers = new HashMap<>();
+				for(Tier t:sol.getApplication(0).getTiers()){					
+					seriesHandleTiers.put(t.getId(),logVm.newSeries(t.getName()));					
+				}
+			}
+				
+			for(Tier t:sol.getApplication(0).getTiers()){
+			logVm.addPoint2Series(seriesHandleTiers.get(t.getId()),
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-					sol.getVmNumberPerTier(0));
-			logVm.addPoint2Series(seriesHandleTier2,
-					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-					sol.getVmNumberPerTier(1));
+					sol.getVmNumberPerTier(t.getId()));			
+			}
 			logConstraint.addPoint2Series(seriesHandleConstraint,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getNumberOfViolatedConstraints());
@@ -280,9 +287,7 @@ public class EvaluationServer implements ActionListener {
 	}
 
 	public void setMachineLog(Logger2JFreeChartImage logVM) {
-		this.logVm = logVM;
-		seriesHandleTier1 = logVm.newSeries("Tier1VMs");
-		seriesHandleTier2 = logVm.newSeries("Tier2VMs");
+		this.logVm = logVM;		
 	}
 
 	public void setSolver(String solver) {

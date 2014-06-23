@@ -25,9 +25,9 @@ public abstract class PaaS extends CloudService implements
 	 */
 	private static final long serialVersionUID = -8088032094520247525L;
 
-	public PaaS(String name, String id, String provider, String serviceType,
+	public PaaS(String provider, String serviceType,
 			String serviceName, String resourceName) {
-		super(name, id, provider, serviceType, serviceName, resourceName);
+		super(provider, serviceType, serviceName, resourceName);
 	}
 
 }

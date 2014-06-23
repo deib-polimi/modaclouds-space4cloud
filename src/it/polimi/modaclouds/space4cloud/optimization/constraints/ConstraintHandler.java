@@ -21,19 +21,17 @@ import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -68,8 +66,8 @@ public class ConstraintHandler {
 			//then create the appropriate constraint
 			Constraint constraint = null;	
 			if(metric == null){
-			logger.warn("Metric: "+cons.getMetric()+" on constraint "+cons.getName()+" id: "+cons.getId()+" not available."
-					+ " Supported metrics are: "+Metric.getSupportedMetricNames());
+				logger.warn("Metric: "+cons.getMetric()+" on constraint "+cons.getName()+" id: "+cons.getId()+" not available."
+						+ " Supported metrics are: "+Metric.getSupportedMetricNames());
 				continue;
 			}
 			switch (metric) {
@@ -106,9 +104,9 @@ public class ConstraintHandler {
 			}
 
 		}
-		
+
 	}
-	
+
 
 
 
@@ -154,19 +152,22 @@ public class ConstraintHandler {
 	 * @param resHasMap
 	 * @param origRes
 	 */
-	public void filterResources(List<IaaS> resList, CloudService origRes) {
+	public void filterResources(List<IaaS> resList, Tier tier) {
 
-		for(IaaS res:resList)
-			if(res.equals(origRes)){
+		//remove the resource that is currently used
+		for(IaaS res:resList){
+			if(res.equals(tier.getCloudService())){
 				resList.remove(res);
 				break;
 			}
+		}
 
+		//check other resources against constraints
 		List<IaaS> result = new ArrayList<>();
 		result.addAll(resList);
 		for(Constraint c:constraints)
 			//if the constraint affected the original resource
-			if(c instanceof ArchitecturalConstraint && c.getResourceID().equals(origRes.getId()))
+			if(c instanceof ArchitecturalConstraint && c.getResourceID().equals(tier.getId()))
 				for(IaaS resource:resList){
 					if(!((ArchitecturalConstraint)c).checkConstraint(resource))
 						result.remove(resource);
@@ -185,13 +186,6 @@ public class ConstraintHandler {
 
 	}
 
-	public List<Constraint> getConstraintsByService(CloudService service){
-		List<Constraint> constList = new ArrayList<>();
-		for(Constraint c:constraints)
-			if(c.getResourceID().equals(service.getId()))
-				constList.add(c);
-		return constList;
-	}
 
 
 }

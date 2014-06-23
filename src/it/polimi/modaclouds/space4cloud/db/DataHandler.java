@@ -28,7 +28,6 @@ import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -194,8 +193,7 @@ public class DataHandler {
 			}
 
 		}
-		return new Compute(service.getName(), service.getId(),
-				service.getProvider(), service.getServiceType(),
+		return new Compute(	service.getProvider(), service.getServiceType(),
 				service.getServiceName(), cr.getName(),
 				((IaaS) service).getReplicas(), numberOfCores, speed, ram);
 	}

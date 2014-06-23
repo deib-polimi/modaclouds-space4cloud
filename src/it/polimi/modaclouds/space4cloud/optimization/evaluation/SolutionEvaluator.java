@@ -31,6 +31,8 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import org.slf4j.LoggerFactory;
+
 import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
 
 public class SolutionEvaluator implements Runnable {
@@ -50,6 +52,8 @@ public class SolutionEvaluator implements Runnable {
 	private static final int LQNS_RETURN_FATAL_ERROR = -1;
 
 	private LineServerHandler handler;
+	
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SolutionEvaluator.class);
 
 	String filePath;
 	String resultfilePath;
@@ -103,7 +107,7 @@ public class SolutionEvaluator implements Runnable {
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (show)
-					System.out.println("Pb: " + line);
+					logger.debug("Pb: " + line);
 			}
 
 		} catch (IOException ioe) {
@@ -127,7 +131,12 @@ public class SolutionEvaluator implements Runnable {
 		// Evaluate with LINE
 		else
 			runWithLINE();
-
+		
+		String resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
+				+ ".lqxo";
+				
+		if(!Paths.get(resultfilePath).toFile().exists() && !Paths.get(resultfilePath+"~").toFile().exists())
+			System.err.println("ERROR LQNS OUTPUT NOT FOUND");
 		instance.setEvaluated(true);
 		parseResults();
 		for (ActionListener l : listeners)
@@ -136,7 +145,7 @@ public class SolutionEvaluator implements Runnable {
 
 	private void runWithLINE() {
 		if (handler == null) {
-			System.err.println("LINE server handle not initialized");
+			logger.error("LINE server handle not initialized");
 			return;
 		}
 
@@ -165,7 +174,7 @@ public class SolutionEvaluator implements Runnable {
 
 			ProcessBuilder pb = new ProcessBuilder(splitToCommandArray(command));
 			Process proc = pb.start();
-			readStream(proc.getInputStream(), false);
+			readStream(proc.getInputStream(), true);
 			readStream(proc.getErrorStream(), true);
 			int exitVal = proc.waitFor();
 			proc.destroy();
@@ -173,12 +182,11 @@ public class SolutionEvaluator implements Runnable {
 			if (exitVal == LQNS_RETURN_SUCCESS) {
 				instance.setEvaluated(true);
 			} else if (exitVal == LQNS_RETURN_MODEL_FAILED_TO_CONVERGE) {
-				System.err
-						.println(MessageStrings.LQNS_SOLVER
+				logger.error(MessageStrings.LQNS_SOLVER
 								+ " exited with "
 								+ exitVal
 								+ ": The model failed to converge. Results are most likely inaccurate. ");
-				System.err.println("Analysis Result has been written to: "
+				logger.error("Analysis Result has been written to: "
 						+ resultfilePath);
 				instance.setEvaluated(false);
 			} else {
@@ -195,12 +203,11 @@ public class SolutionEvaluator implements Runnable {
 							+ exitVal
 							+ ". Key: 0 on success, 1 if the model failed to meet the convergence criteria, 2 if the input was invalid, 4 if a command line argument was incorrect, 8 for file read/write problems and -1 for fatal errors. If multiple input files are being processed, the exit code is the bit-wise OR of the above conditions.";
 				}
-				System.err.println(message);
+				logger.error(message);
 				instance.setEvaluated(false);
 			}
 		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error in evaluting the  solution ",e);
 		}
 	}
 

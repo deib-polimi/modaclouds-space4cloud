@@ -22,10 +22,10 @@ public class BlobStorage extends Storage {
 	 */
 	private static final long serialVersionUID = -7729657910542016581L;
 
-	public BlobStorage(String name, String id, String provider,
+	public BlobStorage(String provider,
 			String serviceType, String serviceName, String resourceName,
 			int size) {
-		super(name, id, provider, serviceType, serviceName, resourceName, size);
+		super(provider, serviceType, serviceName, resourceName, size);
 		// TODO Auto-generated constructor stub
 	}
 

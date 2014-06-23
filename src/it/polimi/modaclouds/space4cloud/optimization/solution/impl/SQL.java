@@ -44,9 +44,9 @@ public class SQL extends Database {
 	 * @param resourceName
 	 *            the resource name
 	 */
-	public SQL(String name, String id, String provider, String serviceType,
+	public SQL(String provider, String serviceType,
 			String serviceName, String resourceName) {
-		super(name, id, provider, serviceType, serviceName, resourceName);
+		super(provider, serviceType, serviceName, resourceName);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -60,8 +60,7 @@ public class SQL extends Database {
 	@Override
 	public SQL clone() {
 
-		SQL sql = new SQL(new String(this.getName()), new String(this.getId()),
-				new String(this.getProvider()), new String(
+		SQL sql = new SQL(new String(this.getProvider()), new String(
 						this.getServiceType()), new String(
 						this.getServiceName()), new String(
 						this.getResourceName()));
@@ -86,6 +85,12 @@ public class SQL extends Database {
 	public void update(LqnResultParser parser) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public String getId() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

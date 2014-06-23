@@ -46,9 +46,9 @@ public class NOSQL extends Database {
 	 * @param resourceName
 	 *            the resource name
 	 */
-	public NOSQL(String name, String id, String provider, String serviceType,
+	public NOSQL(String provider, String serviceType,
 			String serviceName, String resourceName) {
-		super(name, id, provider, serviceType, serviceName, resourceName);
+		super(provider, serviceType, serviceName, resourceName);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -62,8 +62,7 @@ public class NOSQL extends Database {
 	@Override
 	public NOSQL clone() {
 
-		NOSQL nosql = new NOSQL(new String(this.getName()), new String(
-				this.getId()), new String(this.getProvider()), new String(
+		NOSQL nosql = new NOSQL(new String(this.getProvider()), new String(
 				this.getServiceType()), new String(this.getServiceName()),
 				new String(this.getResourceName()));
 
@@ -87,6 +86,12 @@ public class NOSQL extends Database {
 	public void update(LqnResultParser parser) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public String getId() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

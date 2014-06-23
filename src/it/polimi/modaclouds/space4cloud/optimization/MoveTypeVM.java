@@ -90,30 +90,33 @@ public class MoveTypeVM extends AbsMove {
 
 	}
 
+	/**
+	 * Retrieves all the IaaS resources whose performance affect the resource identified by the constrained resource id
+	 * @param constrainedResourceId
+	 * @return
+	 */
 	@SuppressWarnings("unused")
-	private ArrayList<IaaS> findResourceList(String id) {
+	private ArrayList<IaaS> findResourceList(String constrainedResourceId) {
 		ArrayList<IaaS> resultList = new ArrayList<>();
 		for (int i = 0; i < 24; i++) {
 			Instance application = this.currentSolution.getApplication(i);
-			IConstrainable constrainedResource = application
-					.getConstrainableResources().get(id);
+			IConstrainable constrainedResource = application.getConstrainableResources().get(constrainedResourceId);
 			IaaS resource = null;
+			//if the resource is the iaas itself
 			if (constrainedResource instanceof IaaS)
 				resource = (IaaS) constrainedResource;
 			// if the constraint is on a functionality we have to build the list
 			// of affected components
 			else if (constrainedResource instanceof Functionality) {
-
 				constrainedResource = ((Functionality) constrainedResource)
 						.getContainer();
 			}
 
 			// if it is a component
 			if (constrainedResource instanceof Component) {
-				for (Tier t : application.getTiersByResourceName().values())
+				for (Tier t : application.getTiers())
 					if (t.getComponents().contains(constrainedResource)) {
 						resource = (IaaS) t.getCloudService();
-						id = resource.getName();
 						break;
 					}
 			}

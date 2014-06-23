@@ -62,6 +62,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingWorker;
@@ -103,7 +104,8 @@ import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
  */
 public class OptEngine extends SwingWorker<Void, Void> {
 
-	private static String bestTmpSol;
+
+
 
 	protected SolutionMulti initialSolution = null;
 	// protected Solution initialSolution = null;
@@ -127,11 +129,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected int numberOfFeasibilityIterations;
 
 	protected int MAXMEMORYSIZE = 10;
+	
+	private static final int MAX_SCRAMBLE_NO_CHANGE = 10;
 
 	protected int MAXITERATIONS = 20; /*
-									 * 40 Now it is a constant in the future it
-									 * might become a parameter
-									 */
+	 * 40 Now it is a constant in the future it
+	 * might become a parameter
+	 */
 
 	protected int MAXFEASIBILITYITERATIONS = 10; // 20
 
@@ -156,7 +160,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraints;
 
-	private int bestTmpSolIndex;
 
 	public OptEngine(ConstraintHandler handler) throws DatabaseConnectionFailureExteption {
 		this(handler, false);
@@ -190,11 +193,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			logger.error("Unable to create chart loggers", e);
 
 		}
-		
+
 		loadConfiguration(configurationFile, batch); // false = show gui, true = batch mode
 
 		showConfiguration();
-		
+
 		Memory = new Cache<>(MAXMEMORYSIZE);
 		constraintHandler = handler;
 
@@ -480,27 +483,26 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		logger.trace(initialSolution.showStatus());
 	}
 
-	protected IaaS findResource(Instance application, String id) {
+	protected Tier findResource(Instance application, String id) {
 		return findResource(application, id, SELECTION_POLICY);
 	}
 
 	/**
-	 * Find the resource to scale given the id of the constraint
+	 * Find the tier to scale given the id of the constraint
 	 * 
-	 * @param id
-	 *            of the resurce in the constraint
+	 * @param id of the resource in the constraint
 	 * @return a IaaS resource on which to perform a scale operation.
 	 */
-	protected IaaS findResource(Instance application, String id,
+	protected Tier findResource(Instance application, String id,
 			SelectionPolicies policy) {
 
-		IaaS resource = null;
+		Tier resource = null;
 		IConstrainable constrainedResource = application
 				.getConstrainableResources().get(id);
 
-		// if the constraint is on a IaaS resource we do nothing
-		if (constrainedResource instanceof IaaS)
-			resource = (IaaS) constrainedResource;
+		// if the constraint is on the tier resource we do nothing
+		if (constrainedResource instanceof Tier)
+			resource = ((Tier) constrainedResource);
 		// if the constraint is on a functionality we have to build the list of
 		// affected components
 		else if (constrainedResource instanceof Functionality) {
@@ -513,7 +515,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			// with random policy
 			if (policy == SelectionPolicies.RANDOM)
 				selectedFun = functionalityChain.get(new Random()
-						.nextInt(functionalityChain.size()));
+				.nextInt(functionalityChain.size()));
 
 			// just the first of the list
 			else if (policy == SelectionPolicies.RANDOM)
@@ -530,70 +532,33 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			// the functionality whose resource has higher utilization
 			else if (policy == SelectionPolicies.UTILIZATION) {
 				selectedFun = functionalityChain.get(0);
-				resource = (IaaS) selectedFun.getContainer().getContainer()
-						.getCloudService();
+				resource = selectedFun.getContainer().getContainer();
 				for (Functionality f : functionalityChain) {
-					IaaS affectedRes = (IaaS) f.getContainer().getContainer()
-							.getCloudService();
-					if (affectedRes.getUtilization() > resource
-							.getUtilization()) {
+					Tier affectedRes = f.getContainer().getContainer();
+					if (affectedRes.getUtilization() > resource.getUtilization()) {
 						selectedFun = f;
-						resource = (IaaS) selectedFun.getContainer()
-								.getContainer().getCloudService();
+						resource = affectedRes;
 					}
 				}
 			}
 
 			// retreive the IaaS resource from the selected functionality
-			resource = (IaaS) selectedFun.getContainer().getContainer()
-					.getCloudService();
+			resource = selectedFun.getContainer().getContainer();
 
 		}
 
 		// if the constraint is on a component
+		//TODO: this could be improved by looking at the trace of all functionalities in the component and selecting the resource that have the highest aggregated utilization. 
 		if (constrainedResource instanceof Component)
-			resource = (IaaS) ((Component) constrainedResource).getContainer()
-					.getCloudService();
+			resource = ((Component) constrainedResource).getContainer();
+		
 
-		// We need to find which resource to scale out in case the constraint is
-		// not directly on the resource
 
 		return resource;
 
 	}
 
-	public ArrayList<IaaS> findResourceList(Solution sol, String id) {
-		ArrayList<IaaS> resultList = new ArrayList<>();
-		for (int i = 0; i < 24; i++) {
-			Instance application = sol.getApplication(i);
-			IConstrainable constrainedResource = application
-					.getConstrainableResources().get(id);
-			IaaS resource = null;
-			if (constrainedResource instanceof IaaS)
-				resource = (IaaS) constrainedResource;
-			// if the constraint is on a functionality we have to build the list
-			// of affected components
-			else if (constrainedResource instanceof Functionality) {
 
-				constrainedResource = ((Functionality) constrainedResource)
-						.getContainer();
-			}
-
-			// if it is a component
-			if (constrainedResource instanceof Component) {
-				for (Tier t : application.getTiersByResourceName().values())
-					if (t.getComponents().contains(constrainedResource)) {
-						resource = (IaaS) t.getCloudService();
-						id = resource.getName();
-						break;
-					}
-			}
-			resultList.add(resource);
-		}
-
-		return resultList;
-
-	}
 
 	protected void findSeffsInScenarioBehavior(
 			ScenarioBehaviour scenarioBehaviour, Map<String, String> calls) {
@@ -640,20 +605,19 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * @param sol
 	 * @return
 	 */
-	protected ArrayList<ArrayList<IaaS>> generateVettResTot(Solution sol) {
-		ArrayList<ArrayList<IaaS>> vettResTot = new ArrayList<ArrayList<IaaS>>(
-				24);
+	protected List<ArrayList<Tier>> generateVettResTot(Solution sol) {
+		List<ArrayList<Tier>> vettResTot = new ArrayList<ArrayList<Tier>>(24);
 		// list of lists of Iass
 
 		for (Instance i : sol.getApplications()) {
-			ArrayList<IaaS> resMemory = new ArrayList<>();
+			ArrayList<Tier> resMemory = new ArrayList<>();
 			for (Tier t : i.getTiers())
 				// if the cloud service hostin the application tier is a IaaS
 				if (t.getCloudService() instanceof IaaS &&
-				// and it has more than one replica
+						// and it has more than one replica
 						((IaaS) t.getCloudService()).getReplicas() > 1)
 					// add it to the list of resources that can be scaled in
-					resMemory.add((IaaS) t.getCloudService());
+					resMemory.add(t);
 
 			vettResTot.add(resMemory);
 		}
@@ -764,7 +728,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected void IteratedRandomScaleInLS(Solution sol) {
 		MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
 
-		ArrayList<ArrayList<IaaS>> vettResTot = generateVettResTot(sol);
+		List<ArrayList<Tier>> vettResTot = generateVettResTot(sol);
 		/* first phase: overall descent optimization */
 		// logger.warn("Descent Optimization first phase - start");
 		// logger.warn(sol.isFeasible()+","+sol.numberOfUnfeasibleHours());
@@ -775,27 +739,27 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		logger.info("\t Descent Optimization second phase");
 		resetNoImprovementCounter();
 		Solution restartSol = sol.clone();
-		IaaS res;
-		IaaS resArray[] = new IaaS[24];
+		Tier tier;
+		Tier tierArray[] = new Tier[24];
 		while (this.numIterNoImprov < 5) {
 			done = false;
 			while (!done) {
-				res = null;
+				tier = null;
 				boolean noScaleIn = true;
 				for (int i = 0; i < 24; i++) {
 
-					for (int j = 0; j < vettResTot.get(i).size(); j++)
-						if (vettResTot.get(i).get(j).getReplicas() == 1)
+					for (int j = 0; j < vettResTot.get(i).size(); j++)						
+						if (((IaaS)vettResTot.get(i).get(j).getCloudService()).getReplicas() == 1)
 							vettResTot.get(i).remove(j);
 
 					if (vettResTot.get(i).size() > 0) {
-						res = vettResTot.get(i).get(
+						tier = vettResTot.get(i).get(
 								random.nextInt(vettResTot.get(i).size()));
-						moveArray[i].scaleIn(res);
-						resArray[i] = res;
+						moveArray[i].scaleIn(tier);
+						tierArray[i] = tier;
 						noScaleIn = false;
 					} else
-						resArray[i] = null;
+						tierArray[i] = null;
 
 				}
 
@@ -814,8 +778,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 					for (int i = 0; i < 24; i++) {
 						if (!sol.getApplication(i).isFeasible()) {
-							moveArray[i].scaleOut(resArray[i]);
-							vettResTot.get(i).remove(resArray[i]);
+							moveArray[i].scaleOut(tierArray[i]);
+							vettResTot.get(i).remove(tierArray[i]);
 						}
 						totSize += vettResTot.get(i).size();
 					}
@@ -864,22 +828,22 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	/**
-     * Load initial solution. The aim of this method is to load the initial
-     * solution from file.
-     *
-     * @param resourceEnvExtension
-     *            the extension file
-     * @throws IOException
-     * @throws SAXException
-     * @throws ParserConfigurationException
-     * @throws JAXBException
-     */
-    public void loadInitialSolution(File resourceEnvExtension,
-            File usageModelExtension) throws ParserConfigurationException,
-            SAXException, IOException, JAXBException {
-        loadInitialSolution(resourceEnvExtension, usageModelExtension, null, null);
-    }
-	
+	 * Load initial solution. The aim of this method is to load the initial
+	 * solution from file.
+	 *
+	 * @param resourceEnvExtension
+	 *            the extension file
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws JAXBException
+	 */
+	public void loadInitialSolution(File resourceEnvExtension,
+			File usageModelExtension) throws ParserConfigurationException,
+			SAXException, IOException, JAXBException {
+		loadInitialSolution(resourceEnvExtension, usageModelExtension, null, null);
+	}
+
 	/**
 	 * Load initial solution. The aim of this method is to load the initial
 	 * solution from file.
@@ -924,30 +888,30 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				.getResourceContainer_ResourceEnvironment();
 
 		// we need to create a Solution object for each one of the providers!
-        ArrayList<String> providers = new ArrayList<String>();
-        for (String s : resourceEnvParser.getProviders().values()) {
-            if (s!= null && !providers.contains(s))
-                providers.add(s);
-        }
-        
-        //if no provider has been selected pick one form the database
-        boolean defaultProvider = false;
-        if(providers.size() == 0){
-        	defaultProvider = true;
-        	String defaultProviderName=null;
-        	Iterator<String> iter = dataHandler.getCloudProviders().iterator();
-        	
-        	do{
-        		defaultProviderName = iter.next();
-        		//skip the generic provider whose data might not be relevant and those that do not offer Compute services.
-        		if(defaultProviderName.equals("Generic") || dataHandler.getServices(defaultProviderName, "Compute").size()==0)
-        			defaultProviderName=null;
-        	}while(defaultProviderName==null && iter.hasNext());
-        	if(defaultProviderName == null)
-        		logger.error("No provider with services of type Compute has been found");
-        	providers.add(defaultProviderName);
-        	logger.info("No provider specified in the extension, defaulting on "+defaultProviderName);
-        }
+		ArrayList<String> providers = new ArrayList<String>();
+		for (String s : resourceEnvParser.getProviders().values()) {
+			if (s!= null && !providers.contains(s))
+				providers.add(s);
+		}
+
+		//if no provider has been selected pick one form the database
+		boolean defaultProvider = false;
+		if(providers.size() == 0){
+			defaultProvider = true;
+			String defaultProviderName=null;
+			Iterator<String> iter = dataHandler.getCloudProviders().iterator();
+
+			do{
+				defaultProviderName = iter.next();
+				//skip the generic provider whose data might not be relevant and those that do not offer Compute services.
+				if(defaultProviderName.equals("Generic") || dataHandler.getServices(defaultProviderName, "Compute").size()==0)
+					defaultProviderName=null;
+			}while(defaultProviderName==null && iter.hasNext());
+			if(defaultProviderName == null)
+				logger.error("No provider with services of type Compute has been found");
+			providers.add(defaultProviderName);
+			logger.info("No provider specified in the extension, defaulting on "+defaultProviderName);
+		}
 
 		for (String provider : providers) {
 
@@ -966,13 +930,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 						.get(c.ABSOLUTE_WORKING_DIRECTORY,
 								c.PERFORMANCE_RESULTS_FOLDER, provider,
 								c.FOLDER_PREFIX + i).toFile()
-						.listFiles(new FilenameFilter() {
-							@Override
-							public boolean accept(File dir, String name) {
-								// TODO Auto-generated method stub
-								return name.endsWith(".xml");
-							}
-						});
+								.listFiles(new FilenameFilter() {
+									@Override
+									public boolean accept(File dir, String name) {
+										// TODO Auto-generated method stub
+										return name.endsWith(".xml");
+									}
+								});
 				// suppose there is just 1 model
 				Path lqnModelPath = models[0].toPath();
 				application.initLqnHandler(lqnModelPath);
@@ -982,10 +946,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				double thinktime = -1;
 				if (usageModelParser.getPopulations().size() == 1)
 					population = usageModelParser.getPopulations().values()
-							.iterator().next()[i];
+					.iterator().next()[i];
 				if (usageModelParser.getThinkTimes().size() == 1)
 					thinktime = usageModelParser.getThinkTimes().values()
-							.iterator().next()[i];
+					.iterator().next()[i];
 
 				double percentage = (double) 1 / providers.size();
 
@@ -1034,19 +998,19 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					// .next();
 
 					// pick a service if not specified by the extension
-                    if (serviceName == null)
-                    	logger.info("provider: "+provider+" default: "+defaultProvider);
-                    	logger.info("serviceType: "+serviceType);
-                    	for(String st:dataHandler.getServices(provider, //cloudProvider,
-                                serviceType))
-                    		logger.info("\tService Name: "+st);
-                        serviceName = dataHandler.getServices(provider, //cloudProvider,
-                                serviceType).get(0);
-                    // if the resource size has not been decided pick one
-                    if (resourceSize == null)
-                        resourceSize = dataHandler
-                                .getCloudResourceSizes(provider,/* cloudProvider,*/ serviceName)
-                                .iterator().next();
+					if (serviceName == null)
+						logger.info("provider: "+provider+" default: "+defaultProvider);
+					logger.info("serviceType: "+serviceType);
+					for(String st:dataHandler.getServices(provider, //cloudProvider,
+							serviceType))
+						logger.info("\tService Name: "+st);
+					serviceName = dataHandler.getServices(provider, //cloudProvider,
+							serviceType).get(0);
+					// if the resource size has not been decided pick one
+					if (resourceSize == null)
+						resourceSize = dataHandler
+						.getCloudResourceSizes(provider,/* cloudProvider,*/ serviceName)
+						.iterator().next();
 
 					double speed = dataHandler.getProcessingRate(provider, // cloudProvider,
 							serviceName, resourceSize);
@@ -1062,11 +1026,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					 * each tier has a certain kind of cloud resource and a
 					 * number of replicas of that resource
 					 */
-					Tier t = new Tier();
+					Tier t = new Tier(c.getId(),c.getEntityName()+"_CPU_Processor");
 
 					/* creation of a Compute type resource */
-					service = new Compute(c.getEntityName() + "_CPU_Processor",
-							c.getId(), provider, /* cloudProvider, */
+					service = new Compute(provider, /* cloudProvider, */
 							serviceType, serviceName, resourceSize, replicas,
 							numberOfCores, speed, ram);
 
@@ -1129,13 +1092,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 										.eContainer()).getEntityName()
 										+ "_"
 										+ s.getDescribedService__SEFF()
-												.getEntityName(), function);
+										.getEntityName(), function);
 						comp.addFunctionality(function);
 					}
 
 					// add the component to the cloud resource
-					for (Tier t : application.getTiersByResourceName().values()) {
-						if (t.getCloudService().getId().equals(containerId))
+					for (Tier t : application.getTiers()) {
+						if (t.getId().equals(containerId))
 							t.addComponent(comp);
 					}
 				}
@@ -1207,7 +1170,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				// we need a list of all the resources involved
 				Map<Constraint, Double> constraintsEvaluation = sol
 						.getEvaluation().get(i);
-				HashSet<IaaS> resMemory = new HashSet<>();
+				Set<Tier>tierMemory = new HashSet<>();
 
 				// for each constraint find the IaaS affected resource and add
 				// it to the set. Multiple constraints affecting the same
@@ -1215,7 +1178,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				for (Constraint c : constraintsEvaluation.keySet())
 					if (c.hasNumericalRange())
 						if (constraintsEvaluation.get(c) > 0)
-							resMemory.add(findResource(sol.getApplication(i),
+							tierMemory.add(findResource(sol.getApplication(i),
 									c.getResourceID()));
 				// this is the list of the
 				// resouces that doesn't
@@ -1224,10 +1187,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				// now we will scaleout the resources
 				double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
 						* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
-				if (resMemory.size() > 0) {
+				if (tierMemory.size() > 0) {
 					MoveOnVM moveVM_i = new MoveOnVM(sol, i);
-					for (IaaS res : resMemory)
-						moveVM_i.scaleOut(res, factor);
+					for (Tier t: tierMemory)
+						moveVM_i.scaleOut(t, factor);
 				}
 
 			}
@@ -1253,7 +1216,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
 			return -1;
-		bestTmpSol = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY + "OptimalSolutionTraces"+"OptimSol").toString();
 		optimLogger.trace("starting the optimization");
 		timer.start();
 		timer.split();
@@ -1278,8 +1240,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// this is one possibility, I however prefer using the execution time as
 		// a stopping criterion. Mich
 		while (!isMaxNumberOfIterations()) {
-			
-			
+
+
 			optimLogger.info("Iteration: " + numberOfIterations);
 			//optimLogger.trace( currentSolution.showStatus());
 
@@ -1373,7 +1335,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		// this is one possibility, I however prefer using the execution time as
 		// a stopping criterion. Mich
 		while (!isMaxNumberOfIterations()) {
-			
+
 			logger.info("Iteration: " + numberOfIterations + "cost: "
 					+ currentSolution.getCost());
 			// 2: Internal Optimization process
@@ -1445,49 +1407,115 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 */
 	protected void scramble(Solution sol) {
 		/*
-		 * TODO:
+		 * 
 		 * 1) Choose the candidate tier for the VM change (possible strategies: RANDOM, cost)
 		 * 2) Retreive all the VM types that can substitute the current vm (Same provider/ region / service type and fulfilling architectural constraints)
 		 * 3) Choose the new type of VM to use. (possible strategies: RANDOM, efficiency=cores*processingrate/cost, randomDistribution(efficiency)
 		 * 		The proposed strategy uses a random variable whose probability distribution depends on the efficiency of the machines so to prefer machines that have a higher core*processingrate/cost
-		 * 4) Change the machine and invalidate the solution. 
+		 * 4) Change the machine and evaluate the new solution. 
 		 */
 
-		// let's select the resource to change.
-		List<Tier> tierList = sol.getApplication(0).getTiers();
+		//Phase0: initialization
+		MoveTypeVM moveVM = new MoveTypeVM(sol); 
+		boolean done = false; //tells if something has changed
+		int iterations = 0; //number of iterations without a change in the solution
+		
 
-		MoveTypeVM moveVM = new MoveTypeVM(sol); /* the move */
+		//try to performe the change until something has actually changed or we give up
+		while(!done && iterations<MAX_SCRAMBLE_NO_CHANGE){
+			//Phase1: Select the resource to change Policy: RANDOM
+			List<Tier> tierList = sol.getApplication(0).getTiers();
+			Tier selectedTier = tierList.get(random.nextInt(tierList.size()));
 
-		boolean done = false;
-		int memoryHit = 0;
-		while (!done) {
-			Tier selectedTier = tierList.get(random.nextInt(tierList
-					.size()));
+			//Phase2: Retrieve resources that can be exchanged with the current one
 			CloudService origRes = selectedTier.getCloudService();
-			List<IaaS> resList = dataHandler.getSameServiceResource(origRes,
-					sol.getRegion());
-			constraintHandler.filterResources(resList, origRes);
+			List<IaaS> resList = dataHandler.getSameServiceResource(origRes,sol.getRegion());
+			//filter resources according to architectural constraints
+			constraintHandler.filterResources(resList, selectedTier);
+			//if no resource can substitute the current one increase the number of iterations without a change and try again
 			if (resList.size() == 0) {
-				done = true;
-				logger.warn("No resource found for scramble");
+				logger.warn("No resource found for scramble, iteration: "+iterations);
+				iterations++;				
+				continue;				
 			}
+			
+			resList = filterByMemory(resList, sol, selectedTier);
+			//if no resource can substitute the current one increase the number of iterations without a change and try again
+			if (resList.size() == 0) {
+				logger.warn("No resource found for scramble, iteration: "+iterations);
+				iterations++;				
+				continue;				
+			}
+			
+			//Phase3: choose the new resource. Policy: RANDOM
 			CloudService newRes = resList.get(random.nextInt(resList.size()));
+			
+			//Phase4: performs the change and evaluate the solution
+			//add the new configuration in the memory			
+			Memory.put(buildSolutionTypeID(sol), null);
+			moveVM.changeMachine(selectedTier.getId(), (Compute) newRes);
+			evalProxy.EvaluateSolution(sol);			
+			logger.debug("Memory size "+ Memory.size());			
+			done = true;
+			
 
-			if (!Memory.containsKey(origRes.getId() + newRes.getId())) {
-				Memory.put(origRes.getId() + newRes.getResourceName(), "MOVE");
-				moveVM.changeMachine(origRes.getId(), (Compute) newRes);
-				evalProxy.EvaluateSolution(sol);
-				done = true;
-				System.out.printf("\t\t\t Memory size %s \n", Memory.size());
-				memoryHit++;
-			}
-			if (memoryHit >= 200) {
-				done = true;
-				logger.warn("scramble memory hitted 200 times, skipping move");
+		}
+	}
+	
+	
+	/**
+	 * Filters the resourceList removing resources that would cause the scramble process to obtain a configuration that has been already been evaluated (within the memory size limit)
+	 * The filtering process is performed by building a solution type ID which is defined by looking at all tiers and all type of services that are selected. 
+	 * @param resourceList the resource list to be filtered
+	 * @param sol the solution used to build the id
+	 * @param selectedTier the selected tier
+	 * @return the list of resources filtered by those resources that has already been evaluated.
+	 */
+	private List<IaaS> filterByMemory(List<IaaS> resourceList,Solution sol, Tier selectedTier){
+		//Filter resources that have been already used 
+		
+		final String token = "jfhbvwiuahj038h9nvlbv93vbie";
+		String solutionTypeID = buildSolutionTypeID(sol, selectedTier, token);
+		List<IaaS> newList = new ArrayList<IaaS>();
+		for(CloudService resource:resourceList){ 				
+			//Complete the id generated before
+			String newSolID = solutionTypeID.replace(token, resource.getResourceName());
+			if(!Memory.containsKey(newSolID)){
+				newList.add((IaaS)resource);
 			}
 		}
-
+		return newList;
+		
 	}
+	
+	/**
+	 * Builds the solution type ID looking at all tiers and all type of services that are selected. 
+	 * it substitutes the id the cloud service used in the selectedTier with the specified token			
+	 * @param sol
+	 * @param selectedTier
+	 * @param token
+	 * @return
+	 */
+	private String buildSolutionTypeID(Solution sol, Tier selectedTier, String token){
+		String solutionTypeID = "";
+		for(Tier t:sol.getApplication(0).getTiers()){
+			if(selectedTier != null && token!=null && t.equals(selectedTier)){
+				solutionTypeID += t.getId()+token;
+			}else
+				solutionTypeID += t.getId()+t.getCloudService().getResourceName();
+		}
+		return solutionTypeID;
+	}
+
+	/**
+	 * Builds the solution type ID looking at all tiers and all type of services that are selected.
+	 * @param sol
+	 * @return
+	 */
+	private String buildSolutionTypeID(Solution sol){
+		return buildSolutionTypeID(sol, null, null);
+	}
+	
 
 	protected void scramble(SolutionMulti sol) {
 		for (Solution s : sol.getAll())
@@ -1523,47 +1551,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		this.initialSolution = initialSolution;
 	}
 
-	// now this LS is not used
-	protected void UniformScaleInLS(Solution sol) {
-		MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
 
-		ArrayList<ArrayList<IaaS>> vettResTot = generateVettResTot(sol);
-		/* first phase: overall descent optimization */
-		boolean done = false;
-		while (!done) {
-			// let's decrease the number of machine for each resource of each
-			// hour
-			int numUnFeasibles = 0;
-			for (int i = 0; i < 24; i++) {
-				if (sol.getApplication(i).isFeasible()
-						&& vettResTot.get(i).size() != 0) {
 
-					// reduction of unity the nuber of resources associated to
-					// each tiers
-					for (int j = 0; j < vettResTot.get(i).size(); j++) {
-						if (vettResTot.get(i).get(j).getReplicas() > 1)
-							moveArray[i].scaleIn(vettResTot.get(i).get(j));
-
-					}
-				} else
-					numUnFeasibles += 1; // don't do anything just increase the
-				// counter
-			}
-			if (numUnFeasibles == 24)
-				done = true;
-			else {
-				evalProxy.EvaluateSolution(sol); // evaluate
-				vettResTot = generateVettResTot(sol);
-			}
-		}
-		// logger.warn("Descent Optimization first phase - minimized");
-		// for(Instance i:sol.getApplications())
-		// if(!i.isFeasible())
-		// logger.warn("\thour: "+sol.getApplications().indexOf(i)+" violated constraints: "+i.getNumerOfViolatedConstraints());
-
-	}
-
-	
 	/**
 	 * Checks wether the solution is "better" with respect to the current optimal solution. 
 	 * Better here means that the solution is Evaluated, Feasible and cost less 
@@ -1575,9 +1564,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 			// updating the best solution
 			// bestSolution = sol.clone();
-			bestTmpSolIndex++;
-//			String filename = bestTmpSol + bestTmpSolIndex+".xml";			
-//			sol.exportLight(filename);
+			//			String filename = bestTmpSol + bestTmpSolIndex+".xml";			
+			//			sol.exportLight(filename);
 			bestSolution.add(sol.clone());
 			this.numIterNoImprov = 0;
 			this.numTotImpr += 1;
@@ -1591,7 +1579,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			return true;
 		}
 		return false;
-		
+
 
 	}
 

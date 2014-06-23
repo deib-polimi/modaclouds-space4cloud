@@ -285,7 +285,7 @@ public class Solution implements Cloneable, Serializable {
 	public void exportLight(String filename) {
 		if (!isEvaluated()) {
 			System.err
-					.println("Trying to export a solution that has not been evaluated!");
+			.println("Trying to export a solution that has not been evaluated!");
 			return;
 		}
 		try {
@@ -309,48 +309,35 @@ public class Solution implements Cloneable, Serializable {
 			Element tiers = doc.createElement("Tiers");
 			rootElement.appendChild(tiers);
 
-			for (String s : hourApplication.get(0).getTiersByResourceName()
-					.keySet()) {
+			for (Tier t : hourApplication.get(0).getTiers()) {
 				// create the tier
 				Element tier = doc.createElement("Tier");
 				tiers.appendChild(tier);
 
 				// set id, name, provider name, service name, resource name,
 				// service type
-				tier.setAttribute("id", hourApplication.get(0)
-						.getTiersByResourceName().get(s).getCloudService()
-						.getId());
-				tier.setAttribute("name", hourApplication.get(0)
-						.getTiersByResourceName().get(s).getCloudService()
-						.getName());
-				tier.setAttribute("providerName", hourApplication.get(0)
-						.getTiersByResourceName().get(s).getCloudService()
-						.getProvider());
-				tier.setAttribute("serviceName", hourApplication.get(0)
-						.getTiersByResourceName().get(s).getCloudService()
-						.getServiceName());
-				tier.setAttribute("resourceName", hourApplication.get(0)
-						.getTiersByResourceName().get(s).getCloudService()
-						.getResourceName());
-				tier.setAttribute("serviceType", hourApplication.get(0)
-						.getTiersByResourceName().get(s).getCloudService()
-						.getServiceType());
+				tier.setAttribute("id", t.getId());
+				tier.setAttribute("name", t.getName());
 
-				for (int i = 0; i < 24; i++) {
-					// create the allocation element
-					Element hourAllocation = doc
-							.createElement("HourAllocation");
-					tier.appendChild(hourAllocation);
-					hourAllocation.setAttribute("hour", "" + i);
-					hourAllocation.setAttribute("allocation", ""
-							+ ((IaaS) hourApplication.get(i)
-									.getTiersByResourceName().get(s)
-									.getCloudService()).getReplicas());
+				CloudService cs = t.getCloudService();
+				tier.setAttribute("providerName", cs.getProvider());
+				tier.setAttribute("serviceName", cs.getServiceName());
+				tier.setAttribute("resourceName", cs.getResourceName());
+				tier.setAttribute("serviceType", cs.getServiceType());
 
+				if(cs instanceof IaaS){
+					for (int i = 0; i < 24; i++) {
+						// create the allocation element
+						Element hourAllocation = doc.createElement("HourAllocation");
+						tier.appendChild(hourAllocation);
+						hourAllocation.setAttribute("hour", "" + i);
+						hourAllocation.setAttribute("allocation", ""
+								+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
+					}
 				}
 			}
 
-			// create the element containign the response times
+			// create the element with the response times
 			Element functionalities = doc.createElement("functionalities");
 			rootElement.appendChild(functionalities);
 
@@ -488,22 +475,28 @@ public class Solution implements Cloneable, Serializable {
 		return region;
 	}
 
+	/**
+	 * Retrieves the total number of VMs used for the entire solution
+	 * @return
+	 */
 	public int getTotalVms() {
 		int vms = 0;
 		for (Instance inst : hourApplication)
-			for (Tier t : inst.getTiersByResourceName().values())
+			for (Tier t : inst.getTiers())
 				vms += ((IaaS) t.getCloudService()).getReplicas();
 
 		return vms;
 	}
 
-	public int getVmNumberPerTier(int tierNumber) {
+	/**
+	 * Retireves the total number of VMs used for the specified tier
+	 * @param tierId the id of the Tier
+	 * @return
+	 */
+	public int getVmNumberPerTier(String tierId) {
 		int vms = 0;
-		for (Instance inst : hourApplication)
-			if (inst.getTiersByResourceName().values().size() >= tierNumber)
-				vms += ((IaaS) ((Tier) inst.getTiersByResourceName().values()
-						.toArray()[tierNumber]).getCloudService())
-						.getReplicas();
+		for (Instance inst : hourApplication)			
+				vms += ((IaaS) inst.getTierById(tierId).getCloudService()).getReplicas();
 		return vms;
 	}
 
@@ -735,17 +728,5 @@ public class Solution implements Cloneable, Serializable {
 			}
 	}
 
-	/**
-	 * checks whether at least one of the instances is not feasible, if so marks
-	 * the entire solution as not feasible
-	 */
-	private void updateFeasibility() {
-		setFeasible(true);
-		for (Instance i : hourApplication)
-			if (!i.isFeasible()) {
-				setFeasible(false);
-				return;
-			}
-	}
 
 }

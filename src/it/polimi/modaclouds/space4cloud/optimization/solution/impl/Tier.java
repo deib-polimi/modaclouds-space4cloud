@@ -18,6 +18,7 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Tier implements Cloneable, IResponseTimeConstrainable,
+public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilizationConstrainable,
 		Serializable {
 
 	/**
@@ -33,14 +34,24 @@ public class Tier implements Cloneable, IResponseTimeConstrainable,
 	 */
 	private static final long serialVersionUID = -2057134756249273580L;
 
+	
+	
 	/** The cloud resource. */
 	private CloudService cloudService;
 
 	/** The list of components deployed on the cloud resource. */
 	private ArrayList<Component> components = new ArrayList<Component>();
 
-	/** The id cloud resource. */
-	private String idCloudResource;
+	/** The id of the Tier*/
+	private String id;
+	
+	/** The name of the Tier*/
+	private String name;
+	
+	public Tier(String id, String name) {
+		this.id = id;
+		this.name = name;
+	}
 
 	public void addComponent(Component component) {
 		this.components.add(component);
@@ -56,7 +67,7 @@ public class Tier implements Cloneable, IResponseTimeConstrainable,
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			t = new Tier();
+			t = new Tier(this.id,this.name);
 		}
 
 		// clone Cloud Resource
@@ -73,8 +84,6 @@ public class Tier implements Cloneable, IResponseTimeConstrainable,
 			t.addComponent(c.clone());
 		}
 
-		t.setIdCloudResource(new String(this.getIdCloudResource()));
-
 		return t;
 
 	}
@@ -88,10 +97,7 @@ public class Tier implements Cloneable, IResponseTimeConstrainable,
 	}
 
 	public Map<String, ? extends IConstrainable> getConstrinableResources() {
-		HashMap<String, IConstrainable> resources = new HashMap<>();
-		if (cloudService instanceof IConstrainable) // should be true by
-													// construction...
-			resources.put(cloudService.getId(), cloudService);
+		HashMap<String, IConstrainable> resources = new HashMap<>();		
 		for (Component c : components) {
 			if (c instanceof IConstrainable)
 				resources.put(c.getId(), c);
@@ -109,16 +115,14 @@ public class Tier implements Cloneable, IResponseTimeConstrainable,
 	}
 
 	@Override
-	public String getId() {
-		return cloudService.getName();
+	public String getId() {		
+		return id;
 	}
 
-	/**
-	 * @return the idCloudResource
-	 */
-	public String getIdCloudResource() {
-		return idCloudResource;
+	public String getName() {
+		return name;
 	}
+
 
 	@Override
 	public double getResponseTime() {
@@ -137,17 +141,9 @@ public class Tier implements Cloneable, IResponseTimeConstrainable,
 
 	}
 
-	/**
-	 * @param idCloudResource
-	 *            the idCloudResource to set
-	 */
-	public void setIdCloudResource(String idCloudResource) {
-		this.idCloudResource = idCloudResource;
-	}
 
 	public void setService(CloudService cloudService) {
 		this.cloudService = cloudService;
-		this.setIdCloudResource(cloudService.getId());
 	}
 
 	public String showStatus(String prefix) {
@@ -157,11 +153,22 @@ public class Tier implements Cloneable, IResponseTimeConstrainable,
 	@Override
 	public void update(LqnResultParser results) {
 		// update resource
-		cloudService.update(results);
+		if(cloudService instanceof Compute)
+			((Compute)cloudService).update(results.getUtilization(getName()));
 
 		// update components
 		for (Component c : components)
 			c.update(results);
 	}
+
+	@Override
+	public double getUtilization() {
+		if(cloudService instanceof Compute)
+			return ((Compute)cloudService).getUtilization();
+		else 
+			//TODO: we should raise some kind of warning here
+			return -1;
+	}
+	
 
 }

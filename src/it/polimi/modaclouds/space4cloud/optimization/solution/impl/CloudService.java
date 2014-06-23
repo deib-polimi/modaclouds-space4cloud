@@ -15,33 +15,25 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-
 import java.io.Serializable;
 
 /**
  * @author MODAClouds The abstract class CloudService define the general Cloud
  *         Resource type.
  */
-public abstract class CloudService implements Cloneable, IConstrainable,
-		Serializable {
+public abstract class CloudService implements Cloneable, Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 9126279019777559621L;
-	private String id;
-	private String resourceName; /* TODO: check this out asap */
-	private String name;// should go in tier?
+	private String resourceName; 
 	private String LQNPropertyTAG;
-
 	private String provider;
 	private String serviceType;
 	private String serviceName;
 
-	public CloudService(String name, String id, String provider,
+	public CloudService(String provider,
 			String serviceType, String serviceName, String resourceName) {
-		this.name = name;
-		this.id = id;
 		this.provider = provider;
 		this.serviceType = serviceType;
 		this.serviceName = serviceName;
@@ -53,7 +45,6 @@ public abstract class CloudService implements Cloneable, IConstrainable,
 		CloudService s = (CloudService) super.clone();
 		// copy mutable strings
 		s.setResourceName(new String(this.getResourceName()));
-		s.setName(new String(this.getName()));
 		s.setLQNPropertyTAG(new String(this.getLQNPropertyTAG()));
 		s.setProvider(new String(this.getProvider()));
 		s.setServiceName(new String(this.getServiceName()));
@@ -61,18 +52,12 @@ public abstract class CloudService implements Cloneable, IConstrainable,
 		return s;
 	}
 
-	@Override
-	public String getId() {
-		return id;
-	}
+
 
 	protected String getLQNPropertyTAG() {
 		return LQNPropertyTAG;
 	}
 
-	public String getName() {
-		return name;
-	}
 
 	public String getProvider() {
 		return provider;
@@ -94,10 +79,6 @@ public abstract class CloudService implements Cloneable, IConstrainable,
 		LQNPropertyTAG = lQNPropertyTAG;
 	}
 
-	private void setName(String name) {
-		this.name = name;
-	}
-
 	private void setProvider(String provider) {
 		this.provider = provider;
 	}
@@ -115,7 +96,7 @@ public abstract class CloudService implements Cloneable, IConstrainable,
 	}
 
 	public String showStatus(String prefix) {
-		return prefix + "resource id: " + getId() + "\t type: "
+		return prefix + "\t type: "
 				+ getServiceType() + "\t provider: " + getProvider()
 				+ "\t service Name: " + getServiceName() + "\t resource Name: "
 				+ getResourceName();

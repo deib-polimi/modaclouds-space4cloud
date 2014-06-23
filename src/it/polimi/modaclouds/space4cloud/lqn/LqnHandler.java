@@ -18,6 +18,7 @@ package it.polimi.modaclouds.space4cloud.lqn;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 import java.io.File;
 import java.io.IOException;
@@ -264,18 +265,19 @@ public class LqnHandler implements Cloneable, Serializable {
 	}
 
 	/**
-	 * Updateds the element corresponding to the resource in the dom
+	 * Updates the element corresponding to the resource in the dom
 	 */
-	public void updateElement(CloudService service) {
+	public void updateElement(Tier tier) {
 
+		CloudService service = tier.getCloudService();
 		// Iaas-Compute
 		if (service instanceof Compute) {
 			Compute c_resource = (Compute) service;
 			int multiplicity = c_resource.getNumberOfCores()
 					* c_resource.getReplicas();
-			changeElementbyName("processor", c_resource.getName(),
+			changeElementbyName("processor", tier.getName(),
 					"multiplicity", multiplicity);
-			changeElementbyName("processor", c_resource.getName(),
+			changeElementbyName("processor", tier.getName(),
 					"speed-factor", c_resource.getSpeedFactor());
 		}
 

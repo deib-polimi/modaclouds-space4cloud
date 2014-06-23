@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * @author Michele Ciavotta
@@ -50,10 +49,6 @@ public class Instance implements Cloneable, Serializable {
 
 	private boolean feasible = false;
 
-	private Map<String, Tier> tiersByResourceName = new TreeMap<String, Tier>();
-
-	private Map<String, Tier> tiersByResourceId = new TreeMap<String, Tier>();
-
 	private Map<String, IConstrainable> constrainableResources = new HashMap<String, IConstrainable>();
 
 	private int numberOfViolatedConstraints = 0;
@@ -67,20 +62,35 @@ public class Instance implements Cloneable, Serializable {
 	private String region;
 
 	private Solution father;
-
-	public void addTier(Tier tier) {
-		tiersByResourceName.put(tier.getCloudService().getName(), tier);
-		tiersByResourceId.put(tier.getCloudService().getId(), tier);
-		tiers.add(tier);
+	
+	public Tier getTierByName(String name){
+		for(Tier t:tiers)
+			if(t.getName().equals(name))
+			 return t;
+		return null;
+		
+	}
+	
+	public Tier getTierById(String id){
+		for(Tier t:tiers)
+			if(t.getId().equals(id))
+			 return t;
+		return null;
+		
 	}
 
-	public boolean changeValues(String idCloudResource,
+	public void addTier(Tier tier) {
+			tiers.add(tier);
+	}
+	
+
+	public boolean changeValues(String tierId,
 			List<String> propertyNames, List<Object> propertyValues) {
 
-		if (idCloudResource != null) {
+		if (tierId != null) {
 			try {
 				// 1: find the resource
-				Tier tier = tiersByResourceId.get(idCloudResource);
+				Tier tier = getTierById(tierId);
 
 				CloudService service = tier.getCloudService();
 
@@ -140,8 +150,6 @@ public class Instance implements Cloneable, Serializable {
 
 		// clone the tiers
 		cloneInst.setTiers(new ArrayList<Tier>());
-		cloneInst.setTiersByResourceId(new HashMap<String, Tier>());
-		cloneInst.setTiersByResourceName(new HashMap<String, Tier>());
 
 		for (Tier tier : this.getTiers())
 			cloneInst.addTier(tier.clone());
@@ -174,8 +182,7 @@ public class Instance implements Cloneable, Serializable {
 		String str = Integer.toString(workload);
 		if (tiers.size() > 0)
 			str += tiers.get(0).getCloudService().getProvider();
-		for (String s : tiersByResourceName.keySet()) {
-			Tier t = tiersByResourceName.get(s);
+		for(Tier t:tiers){
 			IaaS res = (IaaS) t.getCloudService();
 			str = str + res.getResourceName() + res.getReplicas();
 		}
@@ -205,9 +212,6 @@ public class Instance implements Cloneable, Serializable {
 		return tiers;
 	}
 
-	public Map<String, Tier> getTiersByResourceName() {
-		return tiersByResourceName;
-	}
 
 	public int getWorkload() {
 		return workload;
@@ -219,7 +223,7 @@ public class Instance implements Cloneable, Serializable {
 
 	public void initConstrainableResources() {
 		constrainableResources = new HashMap<String, IConstrainable>();
-		for (Tier t : tiersByResourceName.values()) {
+		for (Tier t : tiers) {
 			if (t instanceof IConstrainable)
 				constrainableResources.put(t.getId(), t);
 			constrainableResources.putAll(t.getConstrinableResources());
@@ -292,13 +296,6 @@ public class Instance implements Cloneable, Serializable {
 		this.tiers = tiers;
 	}
 
-	private void setTiersByResourceId(Map<String, Tier> tiersByResourceId) {
-		this.tiersByResourceId = tiersByResourceId;
-	}
-
-	private void setTiersByResourceName(Map<String, Tier> tiersByResourceName) {
-		this.tiersByResourceName = tiersByResourceName;
-	}
 
 	public void setWorkload(int workload) {
 		this.workload = workload;
@@ -308,8 +305,8 @@ public class Instance implements Cloneable, Serializable {
 		String result = prefix + "lqnFile: " + lqnHandler.getLqnFilePath();
 		result += "\n\tEvaluated: " + evaluated;
 		result += "\tFeasible: " + feasible;
-		for (Tier t : tiersByResourceName.values()) {
-			result += "\n" + prefix + "Tier" + t.getCloudService().getName();
+		for (Tier t : tiers) {
+			result += "\n" + prefix + "Tier" + t.getName()+" id:"+t.getId();
 			result += "\n" + t.showStatus(prefix + "\t");
 
 		}
@@ -346,9 +343,8 @@ public class Instance implements Cloneable, Serializable {
 	 */
 	public void updateLqn() {
 
-		for (Tier t : tiersByResourceName.values()) {
-			CloudService service = t.getCloudService();
-			lqnHandler.updateElement(service);
+		for (Tier t : tiers) {			
+			lqnHandler.updateElement(t);
 		}
 
 		lqnHandler.setPopulation(workload);
@@ -360,7 +356,7 @@ public class Instance implements Cloneable, Serializable {
 									 * here we save the result to pass the
 									 * result to the proxy later on
 									 */
-		for (Tier t : tiersByResourceName.values())
+		for (Tier t : tiers)
 			t.update(results);
 
 	}

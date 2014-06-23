@@ -324,18 +324,16 @@ public class SimpleEvaluator {
 			logger.error("Unable to create vmLogger", e);
 		}
 		HashMap<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
-		for (Tier t : initialSolution.getApplication(0)
-				.getTiersByResourceName().values())
+		for (Tier t : initialSolution.getApplication(0).getTiers())
 			if (t.getId().contains("CPU"))
 				vmSeriesHandlers.put(t.getId(), vmLogger.newSeries(t.getId()));
 		for (int i = 0; i < 24; i++)
-			for (Tier t : initialSolution.getApplication(i)
-					.getTiersByResourceName().values())
+			for (Tier t : initialSolution.getApplication(i).getTiers())
 				if (t.getId().contains("CPU"))
 					vmLogger.addPoint2Series(vmSeriesHandlers.get(t.getId()),
 							i, ((IaaS) t.getCloudService()).getReplicas());
 
-		// init response time logger
+		// initialize response time logger
 		try {
 			rtLogger = new Logger2JFreeChartImage("responseTime.properties");
 		} catch (NumberFormatException | IOException e) {
@@ -344,8 +342,7 @@ public class SimpleEvaluator {
 		HashMap<String, SeriesHandle> rtSeriesHandlers = new HashMap<>();
 
 		ArrayList<String> functionalities = new ArrayList<>();
-		for (Tier t : initialSolution.getApplication(0)
-				.getTiersByResourceName().values())
+		for (Tier t : initialSolution.getApplication(0).getTiers())
 			for (Component c : t.getComponents())
 				for (Functionality f : c.getFunctionalities())
 					functionalities.add(f.getName());

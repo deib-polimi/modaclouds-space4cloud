@@ -20,6 +20,7 @@ package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 import java.util.ArrayList;
 
@@ -29,7 +30,7 @@ import java.util.ArrayList;
  */
 public class MoveOnVM extends AbsMoveHour {
 
-	protected IaaS resource = null;
+	protected Tier tier = null;
 	private int numberOfReplicas = 1;
 
 	// Instance app;
@@ -60,20 +61,7 @@ public class MoveOnVM extends AbsMoveHour {
 	 */
 	@Override
 	public Solution apply() {
-
-		// TODO: questa funzione potrebbe andare anche in AbsMove
-		// TODO Auto-generated method stub
-
-		/*
-		 * When we apply the move it's better to not evaluate the whole solution
-		 * in that moment it is more efficient to make a set of moves and then
-		 * call the evaluation.
-		 */
-
-		// 1: identify the cloud resource.
-
-		// 2: Modify the Solution and LQN
-		application.changeValues(resource.getId(), this.propertyNames,
+		application.changeValues(tier.getId(), this.propertyNames,
 				this.propertyValues);
 
 		return this.currentSolution;
@@ -85,10 +73,10 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param res
 	 * @param numberOfReplicas
 	 */
-	public void scale(IaaS res, int numberOfReplicas) {
+	public void scale(Tier tier, int numberOfReplicas) {
 		// perform the move
 		// setCloudResource(resource);
-		setCloudResource(res);
+		setCloudResource(tier);
 		setNumberOfReplicas(numberOfReplicas);
 		apply();
 	}
@@ -98,13 +86,10 @@ public class MoveOnVM extends AbsMoveHour {
 	 * 
 	 * @param res
 	 */
-	public void scaleIn(IaaS res) {
-		// //perform the move
-		// setCloudResource(res);
-		// setNumberOfReplicas(resource.getReplicas()-1);
-		// apply();
-
-		scale(res, res.getReplicas() - 1);
+	public void scaleIn(Tier tier) {
+		if(tier.getCloudService() instanceof IaaS)
+			scale(tier, ((IaaS)tier.getCloudService()).getReplicas() - 1);
+		//TODO: add an else with a warning or raise an exception
 	}
 
 	/**
@@ -116,21 +101,16 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param res
 	 * @param factor
 	 */
-	public void scaleIn(IaaS res, double factor) {
-		// //perform the move
-		// setCloudResource(res);
-		// int newReplicas = (int)Math.ceil(resource.getReplicas()*(1/factor));
-		// if(newReplicas == res.getReplicas() || newReplicas==0)
-		// scaleIn(res);
-		// else
-		// setNumberOfReplicas(newReplicas);
-		// apply();
-
-		int newReplicas = (int) Math.ceil(res.getReplicas() * (1 / factor));
-		if (newReplicas == res.getReplicas() || newReplicas == 0)
-			scaleIn(res);
+	public void scaleIn(Tier tier, double factor) {
+		IaaS cloudService = null;
+		if(tier.getCloudService() instanceof IaaS)
+			cloudService = (IaaS) tier.getCloudService();
+		//TODO: again we should add an else with a warning or raise an exception
+		int newReplicas = (int) Math.ceil(cloudService.getReplicas() * (1 / factor));
+		if (newReplicas == cloudService.getReplicas() || newReplicas == 0)
+			scaleIn(tier);
 		else
-			scale(res, newReplicas);
+			scale(tier, newReplicas);
 	}
 
 	/**
@@ -138,13 +118,11 @@ public class MoveOnVM extends AbsMoveHour {
 	 * 
 	 * @param res
 	 */
-	public void scaleOut(IaaS res) {
-		// //perform the move
-		// setCloudResource(res);
-		// setNumberOfReplicas(resource.getReplicas()+1);
-		// apply();
-
-		scale(res, res.getReplicas() + 1);
+	public void scaleOut(Tier tier) {
+		
+		if(tier.getCloudService() instanceof IaaS)			
+			scale(tier, ((IaaS)tier.getCloudService()).getReplicas() + 1);
+		//TODO:here too we should add an else with a warning or raise an exception
 	}
 
 	/**
@@ -157,7 +135,7 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param res
 	 * @param factor
 	 */
-	public void scaleOut(IaaS res, double factor) {
+	public void scaleOut(Tier tier, double factor) {
 		// //perform the move
 		// setCloudResource(res);
 		// int newReplicas = (int)Math.ceil(resource.getReplicas()*factor);
@@ -166,12 +144,15 @@ public class MoveOnVM extends AbsMoveHour {
 		// else
 		// setNumberOfReplicas(newReplicas);
 		// apply();
-
-		int newReplicas = (int) Math.ceil(res.getReplicas() * factor);
-		if (newReplicas <= res.getReplicas())
-			scaleOut(res);
+		IaaS cloudService = null;
+		if(tier.getCloudService() instanceof IaaS)
+			cloudService = (IaaS) tier.getCloudService();
+		//TODO: even more.. we should add an else with a warning or raise an exception
+		int newReplicas = (int) Math.ceil(cloudService.getReplicas() * factor);
+		if (newReplicas <= cloudService.getReplicas())
+			scaleOut(tier);
 		else
-			scale(res, newReplicas);
+			scale(tier, newReplicas);
 	}
 
 	/**
@@ -181,8 +162,8 @@ public class MoveOnVM extends AbsMoveHour {
 	 *            the id cloud resource
 	 * @return the object itself
 	 */
-	protected MoveOnVM setCloudResource(IaaS idCloudResource) {
-		this.resource = idCloudResource;
+	protected MoveOnVM setCloudResource(Tier tier) {
+		this.tier = tier;
 		return this;
 	}
 

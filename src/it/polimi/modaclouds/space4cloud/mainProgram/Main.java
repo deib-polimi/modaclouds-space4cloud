@@ -67,9 +67,11 @@ public class Main {
 	public static void main(String[] args) {
 		// RobustnessProgressWindow.main(null);
 		// System.out.println("space");
-//		 Space4Cloud instance = new Space4Cloud();
+		//Space4Cloud instance = new Space4Cloud();
+
+		
 		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizChi4r4\\";
-		Operations operation = Operations.Robustness;
+		Operations operation = Operations.Optimization;
 		File usageModelExtension = new File(basePath + "OfBiz-UsageExtension.xml");
 		File resourceModelExtension = new File(basePath + "OfBiz-ContainerExtension.xml");
 		File constraintsFile =  new File(basePath + "OfBiz-Constraint.xml");

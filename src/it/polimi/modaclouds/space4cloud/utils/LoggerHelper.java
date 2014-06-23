@@ -16,7 +16,7 @@ public class LoggerHelper {
 	private static final String DEFAULT_LOG_FILE = "log4j.appender.file.File";
 	private static final String LINEPERF_LOG_FILE = "log4j.appender.linePerf.File";
 
-	public static Logger getLogger(Class clazz) {
+	public static Logger getLogger(Class<?> clazz) {
 
 		Properties props = new Properties();
 		// if the project has not been chosen provide a logger with the default

@@ -123,9 +123,9 @@ public class LoadModel extends OperationCompletedClass {
 	private List<File> models;
 
 	/** The list. */
-	private JList list;
+	private JList<String> list;
 
-	/** true is the user performed a choiche */
+	/** true is the user performed a choice */
 	private boolean chosen = false;
 
 	/** The output. */
@@ -324,7 +324,7 @@ public class LoadModel extends OperationCompletedClass {
 
 		// JList is a list where the elements cannot be added or removed.
 		// It is only possible to add element through the constructor
-		list = new JList(ls.toArray(new String[0]));
+		list = new JList<String>(ls.toArray(new String[0]));
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
