@@ -67,7 +67,7 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 	private void initialize() {
 
 		frmOptimizationProgress = new JFrame();
-		frmOptimizationProgress.setTitle("Solution Cost");
+		frmOptimizationProgress.setTitle("Optimization");
 		frmOptimizationProgress.setBounds(100, 100, 450, 300);
 		frmOptimizationProgress
 				.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -105,7 +105,7 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 
 		// Cost panel for cost image
 		costPanel = new JPanel();
-		costPanel.setBorder(new TitledBorder(null, "Cost",
+		costPanel.setBorder(new TitledBorder(null, "Solution Cost",
 				TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		lowerPanel.add(costPanel);
 

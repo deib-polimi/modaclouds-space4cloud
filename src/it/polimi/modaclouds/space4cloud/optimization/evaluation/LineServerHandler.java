@@ -174,7 +174,7 @@ public class LineServerHandler {
 			(new Thread(processLog)).start();
 			while (!processLog.isRunning())
 				Thread.sleep(100);
-			;
+			
 			localInstance = true;
 
 			// the startup has ended

@@ -550,6 +550,8 @@ public class Solution implements Cloneable, Serializable {
 	}
 
 	public boolean greaterThan(SolutionMulti sol) {
+		if(sol==null)
+			return true;
 		Solution s = sol.get(getProvider());
 		if (s == null)
 			return true;

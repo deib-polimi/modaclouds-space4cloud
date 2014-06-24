@@ -21,6 +21,7 @@ package it.polimi.modaclouds.space4cloud.db;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.Cost;
+import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
 import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Memory;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
@@ -44,8 +45,8 @@ import org.slf4j.LoggerFactory;
  *         to retrieve the data related to a certain provider and service
  */
 public class DataHandler {
-//	private static final Logger logger = LoggerHelper.getLogger(DataHandler.class);
-	
+	//	private static final Logger logger = LoggerHelper.getLogger(DataHandler.class);
+
 	private static final Logger logger=LoggerFactory.getLogger(DataHandler.class);
 	private final CloudProvidersDictionary cloudProviders;
 
@@ -62,7 +63,7 @@ public class DataHandler {
 	}
 	public static void main(String[] args) {
 		DataHandler handler = null; 
-		
+
 		try {
 			DatabaseConnector.initConnection(null);
 			handler = DataHandlerFactory.getHandler();
@@ -70,7 +71,7 @@ public class DataHandler {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		//String provider="Amazon";
 		Set<String> providers = handler.getCloudProviders();
 		for(String provider:providers){
@@ -80,9 +81,9 @@ public class DataHandler {
 				System.out.println("\t"+service);
 			}
 		}
-		
+
 		System.out.println("End");
-		
+
 
 	}
 	/**
@@ -127,9 +128,9 @@ public class DataHandler {
 		// TODO: Controllare questa cosa :(
 		for (CloudResource cr : cloudResourceList) {
 			if (cr.getName().equals(resourceName)) { // && cr.getHasCost() !=
-														// null &&
-														// cr.getHasCost().size()
-														// > 0) {
+				// null &&
+				// cr.getHasCost().size()
+				// > 0) {
 				return cr;
 			}
 		}
@@ -282,7 +283,7 @@ public class DataHandler {
 				// not been specified OR it has the same region)
 				if (!resources.contains(iaas)
 						&& (region == null || cost.getRegion() == null || cost
-								.getRegion().equals(region))) {
+						.getRegion().equals(region))) {
 					resources.add(iaas);
 				}
 			}
@@ -329,4 +330,6 @@ public class DataHandler {
 		}
 		return filteredServices;
 	}
+
+
 }

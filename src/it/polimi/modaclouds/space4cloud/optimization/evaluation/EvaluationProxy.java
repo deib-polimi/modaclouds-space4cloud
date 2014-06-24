@@ -19,7 +19,6 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,15 +49,10 @@ public class EvaluationProxy extends EvaluationServer {
 
 	@Override
 	public void EvaluateSolution(Solution sol) {
+		logger.debug("Entering Proxy");
 		this.ProxyIn(sol);
 		super.EvaluateSolution(sol);
 		this.ProxyOut(sol);
-	}
-
-	public void EvaluateSolution(SolutionMulti sol) {
-		for (Solution s : sol.getAll())
-			EvaluateSolution(s);
-		sol.updateEvaluation();
 	}
 
 	public int getHit() {

@@ -1032,12 +1032,12 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// create the progress window
 		//if (!batch) {
 			progressWindow = new OptimizationProgressWindow();
-			progressWindow.setMax(engine.getMaxIterations());
+			progressWindow.setMax(100);
 			progressWindow.setCostLogger(engine.getCostLogger());
 			progressWindow.setVMLogger(engine.getVMLogger());
 			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
 			engine.addPropertyChangeListener(progressWindow);
-			engine.getEvalProxy().addPropertyChangeListener(progressWindow);
+			engine.getEvalServer().addPropertyChangeListener(progressWindow);
 		//}
 
 		// start the optimization

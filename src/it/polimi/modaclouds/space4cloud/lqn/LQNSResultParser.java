@@ -46,6 +46,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -1523765717223255130L;
+	private static final int MAX_SOLVER_TIME = 100; //100 means 10 seconds
 	public static double convertStringToDouble(String toConvert)
 			throws ParseException {
 		double ret;
@@ -54,7 +55,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 		toConvert = toConvert.replaceAll("\\+", "");
 		DecimalFormat format = new DecimalFormat("0.0E000",
 				DecimalFormatSymbols.getInstance(Locale.ENGLISH));
-		ret = format.parse(toConvert).doubleValue();
+		ret = format.parse(toConvert).doubleValue() ;
 
 		return ret;
 	}
@@ -68,7 +69,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 	private Map<String, Double> responseTimes = new HashMap<>();
 
-	
+
 
 	public LQNSResultParser(Path path) {
 
@@ -118,26 +119,43 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			dBuilder = dbFactory.newDocumentBuilder();
 
 			// TODO: sometimes the temporary file has a name ending with a tilde
-			if (!filePath.toFile().exists())
-				filePath = Paths.get(filePath.toString() + "~");
+			Path normalPath = filePath;
+			Path tempPath = Paths.get(filePath+"~");
+			//wait for the generation of the result file
+			int waitingIteration = 0;
+			while(!tempPath.toFile().exists() && !normalPath.toFile().exists()){
+				Thread.sleep(100);
+				waitingIteration++;
+				logger.debug("Waiting for solver, waited for "+waitingIteration/10+"s");
+				if(waitingIteration > MAX_SOLVER_TIME){
+					logger.error("Solver did not produce output in "+waitingIteration/10+"s, which is themaximum waiting time.");
+					return;
+				}
+			}
+			if(normalPath.toFile().exists())
+				filePath = normalPath;
+			else if(tempPath.toFile().exists())
+				filePath = tempPath;
 
 			resultDOM = dBuilder.parse(filePath.toFile());
 			resultDOM.getDocumentElement().normalize();
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("",e);
 		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("",e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Output File not produced by the solver ",e);
+		} catch (InterruptedException e) {
+			logger.error("",e);
 		}
 
 	}
 
 	private void parse() {
 		// parse Processors
+		if(resultDOM==null){
+			logger.debug("");
+		}
 		NodeList processors = resultDOM.getElementsByTagName("processor");
 		utilizations.clear();
 		responseTimes.clear();
@@ -149,7 +167,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			int cores = 1;
 			if (!processor.getAttribute("multiplicity").isEmpty())
 				cores = Integer
-						.parseInt(processor.getAttribute("multiplicity"));
+				.parseInt(processor.getAttribute("multiplicity"));
 
 			// there should be exactly one
 			Element resultProcessor = (Element) processors.item(i)
@@ -175,7 +193,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 			double serviceTime = 0;
 			for(int j=0; j<resultActivities.getLength(); j++){
-				
+
 				Node serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("service-time");
 				if(serviceTimeNode == null)
 					serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("serviceTime");	
@@ -195,7 +213,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 	// reconstruct the Path from the string
 	private void readObject(ObjectInputStream in) throws IOException,
-			ClassNotFoundException, SAXException {
+	ClassNotFoundException, SAXException {
 		in.defaultReadObject();
 		filePath = Paths.get(filePathSerialization);
 		initDom();

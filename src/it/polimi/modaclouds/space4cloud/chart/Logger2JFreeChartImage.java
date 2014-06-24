@@ -56,6 +56,8 @@ public class Logger2JFreeChartImage {
 	private static final Logger logger = LoggerHelper
 			.getLogger(Logger2JFreeChartImage.class);
 
+	private static final int MAX_SHOW_SIZE = 500;
+
 	private List<XYSeries> seriesList = new ArrayList<XYSeries>();
 
 	public Logger2JFreeChartImage() throws NumberFormatException, IOException {
@@ -70,6 +72,11 @@ public class Logger2JFreeChartImage {
 	public void addPoint2Series(SeriesHandle h, double x, double y) {
 		if (h != null) {
 			XYSeries series = seriesList.get(h.getPosition());
+			//if any series passes the maximum value clear all of them
+			if(series.getItemCount()>MAX_SHOW_SIZE){
+				for(XYSeries s:seriesList)
+					s.clear();
+			}
 			series.add(x, y);
 		}
 	}
@@ -129,6 +136,10 @@ public class Logger2JFreeChartImage {
 				dataSet, PlotOrientation.VERTICAL, true, true, false);
 		if (dim == null)
 			dim = new Dimension(100, 100);
+		if(dim.getHeight()<=0)
+			dim.height=1;
+		if(dim.getWidth()<=0)
+			dim.width=1;
 
 		return chart.createBufferedImage((int) (dim.getWidth() * 0.9),
 				(int) (dim.getHeight() * 0.9));
@@ -160,9 +171,6 @@ public class Logger2JFreeChartImage {
 
 	}
 
-	public void setChartTitle(String chartTitle) {
-		this.chartTitle = chartTitle;
-	}
 
 	/**
 	 * @param path2save

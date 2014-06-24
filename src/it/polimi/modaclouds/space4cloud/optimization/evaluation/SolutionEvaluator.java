@@ -111,7 +111,7 @@ public class SolutionEvaluator implements Runnable {
 			}
 
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			logger.error("Error in reading stream",ioe);
 		}
 	}
 
@@ -174,7 +174,7 @@ public class SolutionEvaluator implements Runnable {
 
 			ProcessBuilder pb = new ProcessBuilder(splitToCommandArray(command));
 			Process proc = pb.start();
-			readStream(proc.getInputStream(), true);
+			readStream(proc.getInputStream(), false);
 			readStream(proc.getErrorStream(), true);
 			int exitVal = proc.waitFor();
 			proc.destroy();

@@ -22,8 +22,11 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
+import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,6 +52,7 @@ import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
  */
 public class EvaluationServer implements ActionListener {
 
+	private static final int DEFAULT_TIER_MEMORY_MAX_SIZE = 30;
 	protected ThreadPoolExecutor executor;
 	protected BlockingQueue<Runnable> queue = new SynchronousQueue<>();
 	protected int nMaxThreads = 24 * 100; // 24*100
@@ -75,6 +79,7 @@ public class EvaluationServer implements ActionListener {
 	protected long fullEvaluationTime = 0;
 	private LineServerHandler handler;
 	private boolean instanceEvaluationTerminated = false;
+	private Map<String,Cache<String,Integer>> longTermFrequencyMemory;
 
 	/**
 	 * @throws DatabaseConnectionFailureExteption 
@@ -155,6 +160,7 @@ public class EvaluationServer implements ActionListener {
 
 	public void EvaluateSolution(Solution sol) {
 		long startTime = -1;
+		logger.debug("Starting evaluation");
 		if (!sol.isEvaluated()) {
 
 			startTime = System.nanoTime();
@@ -203,10 +209,10 @@ public class EvaluationServer implements ActionListener {
 			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
 		sol.updateEvaluation();
 
-		// evaluate costs
+		// evaluate costs		
 		deriveCosts(sol);
 
-		logger.info("" + sol.getCost() + ", "
+		logger.trace("" + sol.getCost() + ", "
 				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
 				+ sol.isFeasible());
 
@@ -238,8 +244,35 @@ public class EvaluationServer implements ActionListener {
 			evaluationTime += (middleTime - startTime);
 			plottingTime += (endTime - middleTime);
 			fullEvaluationTime += (endTime - startTime);
-		}
+			logger.debug("Evaluation number: "+totalNumberOfEvaluations+" Time: "+(middleTime-startTime));
+		}else
+			logger.debug("Evaluation number: "+totalNumberOfEvaluations+" hitted proxy");
 		sol.setEvaluationTime(timer.getSplitTime());
+		
+		
+		
+		logger.debug("Update long term memory");
+		if(longTermFrequencyMemory==null){
+			longTermFrequencyMemory = new HashMap<String, Cache<String,Integer>>();			
+		}
+		
+		for(Tier t:sol.getApplication(0).getTiers()){			
+			Cache<String, Integer> tierMemory = longTermFrequencyMemory.get(t.getId());
+			if(tierMemory == null){
+				tierMemory = new Cache<String, Integer>(DEFAULT_TIER_MEMORY_MAX_SIZE);
+				longTermFrequencyMemory.put(t.getId(), tierMemory);
+			}
+			//get the tierTypeID
+			String tierTypeID = SolutionHelper.buildTierTypeID(t);
+			int counter = 0;
+			//if the tierTypeID already appears in the memory get the counter and update it
+			if(tierMemory.get(tierTypeID)!= null)
+				counter = tierMemory.get(tierTypeID);
+			counter++;
+			//if the tier is does not appear a new entry is created otherwise the old one is overritten.
+			tierMemory.put(tierTypeID, counter);
+		}
+		logger.debug("Evaluation ended");
 
 	}
 
@@ -254,6 +287,10 @@ public class EvaluationServer implements ActionListener {
 
 	public String getSolver() {
 		return solver;
+	}
+
+	public CostEvaluator getCostEvaulator() {
+		return costEvaulator;
 	}
 
 	public int getTotalNumberOfEvaluations() {
@@ -295,6 +332,15 @@ public class EvaluationServer implements ActionListener {
 
 	}
 
+	public Map<String, Cache<String, Integer>> getLongTermFrequencyMemory() {
+		return longTermFrequencyMemory;
+	}
+
+	public void setLongTermFrequencyMemory(
+			Map<String, Cache<String, Integer>> longTermFrequencyMemory) {
+		this.longTermFrequencyMemory = longTermFrequencyMemory;
+	}
+
 	public void setTimer(StopWatch timer) {
 		this.timer = timer;
 
@@ -323,5 +369,11 @@ public class EvaluationServer implements ActionListener {
 
 	public void terminateServer() {
 		handler.terminateLine();
+	}
+
+	public void EvaluateSolution(SolutionMulti sol) {
+		for (Solution s : sol.getAll())
+			EvaluateSolution(s);
+		sol.updateEvaluation();
 	}
 }

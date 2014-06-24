@@ -54,14 +54,13 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	@Override
 	protected void showConfiguration() {
 		super.showConfiguration();
-		logger.info("Default Scale in Factor: "+DEFAULT_SCALE_IN_FACTOR);
-		logger.info("Max Scale In Iterations: "+MAX_SCALE_IN_ITERATIONS);
-		logger.info("Max Scale In Convergence Iterations: "+MAX_SCALE_IN_CONV_ITERATIONS);
+		optimLogger.info("Default Scale in Factor: "+DEFAULT_SCALE_IN_FACTOR);
+		optimLogger.info("Max Scale In Iterations: "+MAX_SCALE_IN_ITERATIONS);
+		optimLogger.info("Max Scale In Convergence Iterations: "+MAX_SCALE_IN_CONV_ITERATIONS);
 	};
 	@Override
 	protected void IteratedRandomScaleInLS(Solution sol) {
 		logger.info("initializing scale in phase");
-		optimLogger.trace("scaleIn phase");
 
 	//	logger.info(sol.showStatus());
 		resetNoImprovementCounter();
@@ -139,7 +138,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			}
 
 			// evaluate the solution
-			evalProxy.EvaluateSolution(sol);
+			evalServer.EvaluateSolution(sol);
 			boolean improvement = updateBestSolution(sol);
 			
 			//if there has been no improvement then signal it 
@@ -162,7 +161,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			//this should not be necessary since hourly solutions are independent
 			if(reverted){
 				// evaluate the solution
-				evalProxy.EvaluateSolution(sol);
+				evalServer.EvaluateSolution(sol);
 				updateBestSolution(sol);
 			}
 

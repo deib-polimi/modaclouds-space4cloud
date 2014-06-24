@@ -78,8 +78,8 @@ public class CostEvaluator {
 				// filter by region
 				for (Cost c : onDemandLc)
 					if (c.getRegion() == null || c.getRegion() == ""
-							|| application.getRegion() == null
-							|| c.getRegion().equals(application.getRegion()))
+					|| application.getRegion() == null
+					|| c.getRegion().equals(application.getRegion()))
 						lc.add(c);
 
 				CostProfile cp = cloudResource.getHasCostProfile();
@@ -87,6 +87,39 @@ public class CostEvaluator {
 			}
 			// TODO Add Platform costs
 		}
+		return cost;
+	}
+
+	public double getResourceAverageCost(IaaS iaasResource, String region){
+		double cost = 0;
+		it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler
+				.getCloudResource(iaasResource.getProvider(),
+						iaasResource.getServiceName(),
+						iaasResource.getResourceName());
+
+		if (cloudResource == null) {
+			System.err.println("ERROR: The found resource is null!");
+		}
+
+		List<Cost> lc = cloudResource.getHasCost();
+		List<Cost> onDemandLc = new ArrayList<Cost>();
+
+		// filter only on-demand
+		for (Cost c : lc)
+			if (!c.getDescription().contains("Reserved"))
+				onDemandLc.add(c);
+
+		lc.clear();
+		// filter by region
+		for (Cost c : onDemandLc)
+			if (c.getRegion() == null || c.getRegion() == ""
+			|| region == null
+			|| c.getRegion().equals(region))
+				lc.add(c);
+
+		CostProfile cp = cloudResource.getHasCostProfile();
+		for(int i=0;i<24;i++)
+			cost += deriveCosts(lc, cp, 1, i)/24;
 		return cost;
 	}
 
@@ -190,7 +223,7 @@ public class CostEvaluator {
 					temp += c.getValue() * replicas;
 					break;
 
-				// Storage systems (storage/DB) have per GB-month costs
+					// Storage systems (storage/DB) have per GB-month costs
 				case PER_GBMONTH:
 					// Storage resources do not scale, so we don't have to take
 					// into account allocation when deriving costs! We must
@@ -217,7 +250,7 @@ public class CostEvaluator {
 						}
 					break;
 
-				// Future works
+					// Future works
 				case PER_MILLION_IO:
 				default:
 					break;
@@ -246,7 +279,7 @@ public class CostEvaluator {
 						temp = c.getValue() * replicas;
 						break;
 
-					// Storage systems (storage/DB) have per GB-month costs
+						// Storage systems (storage/DB) have per GB-month costs
 					case PER_GBMONTH:
 						// Storage resources do not scale, so we don't have to
 						// take into account allocation when deriving costs! We
