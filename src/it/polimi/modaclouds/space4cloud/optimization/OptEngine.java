@@ -132,9 +132,9 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	private static final int MAX_SCRAMBLE_NO_CHANGE = 10;
 
 	protected int MAXITERATIONS = 20; /*
-									 * 40 Now it is a constant in the future it
-									 * might become a parameter
-									 */
+	 * 40 Now it is a constant in the future it
+	 * might become a parameter
+	 */
 
 	protected int MAXFEASIBILITYITERATIONS = 10; // 20
 
@@ -216,7 +216,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		random = new Random(seed);
 
 		loadConfiguration(configurationFile, batch); // false = show gui, true =
-														// batch mode
+		// batch mode
 
 		showConfiguration();
 
@@ -539,7 +539,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			// with random policy
 			if (policy == SelectionPolicies.RANDOM)
 				selectedFun = functionalityChain.get(new Random()
-						.nextInt(functionalityChain.size()));
+				.nextInt(functionalityChain.size()));
 
 			// just the first of the list
 			else if (policy == SelectionPolicies.RANDOM)
@@ -551,7 +551,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				for (Functionality f : functionalityChain)
 					if (f.isEvaluated()
 							&& f.getResponseTime() > selectedFun
-									.getResponseTime())
+							.getResponseTime())
 						selectedFun = f;
 			}
 
@@ -611,6 +611,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	}
 
+
 	/**
 	 * @param sol
 	 * @return
@@ -639,7 +640,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			for (Tier t : i.getTiers())
 				// if the cloud service hostin the application tier is a IaaS
 				if (t.getCloudService() instanceof IaaS &&
-				// and it has more than one replica
+						// and it has more than one replica
 						((IaaS) t.getCloudService()).getReplicas() > 1)
 					// add it to the list of resources that can be scaled in
 					resMemory.add(t);
@@ -826,7 +827,16 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		}// while
 
 	}
-
+	
+	
+	@Override
+	protected void done(){ 
+		evalServer.terminateServer();
+		super.done();
+	}
+	
+	
+	
 	protected void loadConfiguration(File configurationFile, boolean batch) {
 
 		OptimizationConfigurationFrame optLoader = new OptimizationConfigurationFrame();
@@ -961,12 +971,12 @@ public class OptEngine extends SwingWorker<Void, Void> {
 						.get(c.ABSOLUTE_WORKING_DIRECTORY,
 								c.PERFORMANCE_RESULTS_FOLDER, provider,
 								c.FOLDER_PREFIX + i).toFile()
-						.listFiles(new FilenameFilter() {
-							@Override
-							public boolean accept(File dir, String name) {
-								return name.endsWith(".xml");
-							}
-						});
+								.listFiles(new FilenameFilter() {
+									@Override
+									public boolean accept(File dir, String name) {
+										return name.endsWith(".xml");
+									}
+								});
 				// suppose there is just 1 model
 				Path lqnModelPath = models[0].toPath();
 				application.initLqnHandler(lqnModelPath);
@@ -976,10 +986,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				double thinktime = -1;
 				if (usageModelParser.getPopulations().size() == 1)
 					population = usageModelParser.getPopulations().values()
-							.iterator().next()[i];
+					.iterator().next()[i];
 				if (usageModelParser.getThinkTimes().size() == 1)
 					thinktime = usageModelParser.getThinkTimes().values()
-							.iterator().next()[i];
+					.iterator().next()[i];
 
 				double percentage = (double) 1 / providers.size();
 
@@ -1040,10 +1050,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					// if the resource size has not been decided pick one
 					if (resourceSize == null)
 						resourceSize = dataHandler
-								.getCloudResourceSizes(provider,/*
-																 * cloudProvider,
-																 */serviceName)
-								.iterator().next();
+						.getCloudResourceSizes(provider,/*
+						 * cloudProvider,
+						 */serviceName)
+						 .iterator().next();
 
 					double speed = dataHandler.getProcessingRate(provider, // cloudProvider,
 							serviceName, resourceSize);
@@ -1064,7 +1074,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 					/* creation of a Compute type resource */
 					service = new Compute(provider, /* cloudProvider, */
-					serviceType, serviceName, resourceSize, replicas,
+							serviceType, serviceName, resourceSize, replicas,
 							numberOfCores, speed, ram);
 
 					t.setService(service);
@@ -1126,7 +1136,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 										.eContainer()).getEntityName()
 										+ "_"
 										+ s.getDescribedService__SEFF()
-												.getEntityName(), function);
+										.getEntityName(), function);
 						comp.addFunctionality(function);
 					}
 
@@ -1311,7 +1321,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			// long-ferm memory)
 			if (!solutionChanged) {
 				optimLogger
-						.info("Stuck in a local optimum, using long term memory");
+				.info("Stuck in a local optimum, using long term memory");
 				currentSolution = longTermMemoryRestart(currentSolution);
 				optimLogger.info("Long term memory statistics:");
 				for (Tier t : currentSolution.get(0).getApplication(0)
@@ -1344,8 +1354,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		logger.info(bestSolution.showStatus());
 		bestSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY + "solution.xml");
 		bestSolution.exportCSV(c.ABSOLUTE_WORKING_DIRECTORY + "results.csv");
-		evalServer.showStatistics();
-		evalServer.terminateServer();
+		evalServer.showStatistics();		
 
 		// ////
 		// evalProxy.showStatistics();
@@ -1553,7 +1562,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		MoveTypeVM moveVM = new MoveTypeVM(sol);
 		boolean done = false; // tells if something has changed
 		int iterations = 0; // number of iterations without a change in the
-							// solution
+		// solution
 		scrambleLogger.debug("iteration: " + numberOfIterations);
 
 		// try to performe the change until something has actually changed or we
@@ -1574,8 +1583,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			// of iterations without a change and try again
 			if (resList.size() == 0) {
 				scrambleLogger
-						.warn("No resource found for scramble after constraint check, iteration: "
-								+ iterations);
+				.warn("No resource found for scramble after constraint check, iteration: "
+						+ iterations);
 				iterations++;
 				continue;
 			}
@@ -1589,8 +1598,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					scrambleLogger.debug(s);
 				}
 				scrambleLogger
-						.warn("No resource found for scramble after memory check, iteration: "
-								+ iterations);
+				.warn("No resource found for scramble after memory check, iteration: "
+						+ iterations);
 				iterations++;
 				continue;
 			}

@@ -21,7 +21,6 @@ package it.polimi.modaclouds.space4cloud.db;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.Cost;
-import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
 import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Memory;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
@@ -330,6 +329,5 @@ public class DataHandler {
 		}
 		return filteredServices;
 	}
-
-
+	
 }

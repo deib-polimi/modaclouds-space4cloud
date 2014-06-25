@@ -28,6 +28,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
@@ -230,6 +231,10 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 
 	private void updateProgressBar(int progress) {
 		progressBar.setValue(progress);
+	}
+
+	public void signalCompletion() {
+		JOptionPane.showMessageDialog(frmOptimizationProgress, "Optimization process compleated");		
 	}
 
 }

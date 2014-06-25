@@ -111,6 +111,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	private static OptimizationProgressWindow progressWindow;
 	private static AssesmentWindow assesmentWindow;
+	private OptEngine engine = null;
 	private Constants c;
 
 	private static final Logger programLogger = LoggerHelper
@@ -320,7 +321,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			db = DataHandlerFactory.getHandler();
 		} catch (DatabaseConnectionFailureExteption e) {
 			programLogger.error("Error in connecting to the database",e);
-			cleanExit();
+			dirtyExit();
 		}
 		Set<String> providers = db.getCloudProviders();
 
@@ -417,8 +418,21 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	}
 
 	private void cleanExit() {
-		programLogger.info("Exiting SPACE4cloud");
-		// TODO relese any used resource
+		programLogger.info("Exiting SPACE4Cloud");		
+		//close the connection with the database
+		try {
+			DatabaseConnector.getConnection().close();
+		} catch (SQLException e) {
+			programLogger.error("Error in closing the connection with the database",e);
+		}
+		if(engine != null){
+			engine.cancel(true);
+		}
+	}
+	
+	private void dirtyExit(){
+		programLogger.info("Exiting SPACE4Cloud because of an error");
+		cleanExit();
 		this.cancel(true);
 	}
 
@@ -602,7 +616,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			dbConfigurationStream.close();
 		} catch (SQLException e1) {
 			programLogger.error("Could not initialize database connection",e1);
-			cleanExit();
+			dirtyExit();
 		} catch (IOException e1) {
 			programLogger.error("Could not load the Database configuration, will use the default one");
 		}
@@ -638,7 +652,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			programLogger
 					.error("The first initialization run has encounter some problem during the generation of the first solution");
 			programLogger.error("SPACE4CLOUD will now exit.");
-			cleanExit();
+			dirtyExit();
 			return null;
 		}
 
@@ -668,7 +682,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		if (usageModelExtFile == null) {
 			programLogger
 					.info("No usage model extension selected. Quitting SPACE4CLOUD");
-			cleanExit();
+			dirtyExit();
 			return null;
 		}
 		// c.RESOURCE_ENV_EXT_FILE = usageModelExtFile.getAbsolutePath();
@@ -759,7 +773,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		if (resourceEnvExtFile == null) {
 			programLogger
 					.warn("No resource model extension selected. Quitting SPACE4CLOUD");
-			cleanExit();
+			dirtyExit();
 			return null;
 		}
 
@@ -800,8 +814,6 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			programLogger.info("User exit at functionality choiche");
 			break;
 		}
-
-		//cleanExit();
 		return null;
 	}
 
@@ -868,13 +880,12 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			throws NumberFormatException, IOException,
 			ParserConfigurationException, SAXException {
 
-		OptEngine engine = null;
 		try {
 			engine = new PartialEvaluationOptimizationEngine(
 					constraintHandler, true);
 		} catch (DatabaseConnectionFailureExteption e) {
 			programLogger.error("Error in connecting to the database",e);
-			cleanExit();
+			dirtyExit();
 		}
 
 		// load the initial solution from the PCM specified in the
@@ -884,7 +895,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			engine.loadInitialSolution(resourceEnvExtFile, usageModelExtFile);
 		} catch (JAXBException e) {
 			programLogger.error("Error in loading the initial solution", e);
-			cleanExit();
+			dirtyExit();
 		}
 
 		// evaluate the solution
@@ -1010,13 +1021,13 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		programLogger
 				.info("Loading the optimization enging and perparing the solver");
 
-		OptEngine engine = null;
+		
 		try {
 			engine = new PartialEvaluationOptimizationEngine(
 					constraintHandler,optimizationConfigurationFile, batch);
 		} catch (DatabaseConnectionFailureExteption e) {
 			programLogger.error("Error in connecting to the database",e);
-			cleanExit();
+			dirtyExit();
 		}
 
 		// load the initial solution from the PCM specified in the
@@ -1043,9 +1054,18 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// start the optimization
 		programLogger.info("Starting the optimization");
 		engine.execute();
-
-		// TODO Auto-generated method stub
-
+		while(!engine.isDone()){
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				programLogger.error("Error while waiting for optimization completion",e);
+			}
+		}
+		//if(batch)
+			progressWindow.signalCompletion();
+		programLogger.info("Optimization ended");
+		cleanExit();
+		
 	}
 
 	/**

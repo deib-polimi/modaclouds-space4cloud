@@ -77,7 +77,7 @@ public class EvaluationServer implements ActionListener {
 	protected long evaluationTime = 0;
 	protected long plottingTime = 0;
 	protected long fullEvaluationTime = 0;
-	private LineServerHandler handler;
+	private LineServerHandler lineHandler;
 	private boolean instanceEvaluationTerminated = false;
 	private Map<String,Cache<String,Integer>> longTermFrequencyMemory;
 
@@ -91,8 +91,8 @@ public class EvaluationServer implements ActionListener {
 		executor = new ThreadPoolExecutor(24, nMaxThreads, 200,
 				TimeUnit.MILLISECONDS, queue);
 		if (solver.equals(MessageStrings.PERFENGINE_SOLVER)) {
-			handler = new LineServerHandler();
-			handler.connectToLINEServer(Constants.getInstance().LINE_PROPERTIES_FILE);
+			lineHandler = new LineServerHandler();
+			lineHandler.connectToLINEServer(Constants.getInstance().LINE_PROPERTIES_FILE);
 		}
 		timer.start();
 		timer.split();
@@ -144,7 +144,7 @@ public class EvaluationServer implements ActionListener {
 			if (solver.equals(MessageStrings.LQNS_SOLVER))
 				eval.parseResults();
 			else {
-				eval.setLineServerHandler(handler);
+				eval.setLineServerHandler(lineHandler);
 				eval.parseResults();
 			}
 		}
@@ -178,7 +178,7 @@ public class EvaluationServer implements ActionListener {
 					if (solver.equals(MessageStrings.LQNS_SOLVER))
 						executor.execute(eval);
 					else {
-						eval.setLineServerHandler(handler);
+						eval.setLineServerHandler(lineHandler);
 						executor.execute(eval);
 					}
 				} else
@@ -368,7 +368,10 @@ public class EvaluationServer implements ActionListener {
 	}
 
 	public void terminateServer() {
-		handler.terminateLine();
+		if(lineHandler!= null)
+			lineHandler.terminateLine();
+		if(executor!=null)
+			executor.shutdown();
 	}
 
 	public void EvaluateSolution(SolutionMulti sol) {
