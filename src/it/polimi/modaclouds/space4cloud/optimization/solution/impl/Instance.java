@@ -351,6 +351,10 @@ public class Instance implements Cloneable, Serializable {
 
 	}
 
+	/**
+	 * Updates performance values in the solution according to the evaluation
+	 * @param results
+	 */
 	public void updateResults(LqnResultParser results) {
 		this.resultParser = results; /*
 									 * here we save the result to pass the

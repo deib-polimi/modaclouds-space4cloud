@@ -18,6 +18,7 @@ package it.polimi.modaclouds.space4cloud.lqn;
 import it.polimi.modaclouds.space4cloud.line.CmcqnModel;
 import it.polimi.modaclouds.space4cloud.line.Processor;
 import it.polimi.modaclouds.space4cloud.line.SEFF;
+import it.polimi.modaclouds.space4cloud.line.Station;
 import it.polimi.modaclouds.space4cloud.line.Workload;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 import it.polimi.modaclouds.space4cloud.utils.XMLHelper;
@@ -140,6 +141,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	public double getUtilization(String resourceID) {
 		if (utilizations.get(resourceID) != null)
 			return utilizations.get(resourceID);
+		System.out.println("");
 		return -1;
 
 	}
@@ -175,11 +177,12 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 			utilizations.put(p.getName(), p.getUtil());
 
 		for (Workload wl : result.getWorkload())
-			responseTimes.put(wl.getName().split("_")[2], wl.getResponseTime());
+			for(Station st:wl.getStation())
+				responseTimes.put(st.getName().split("_")[2], st.getResponseTime());
 
 		for (SEFF sf : result.getSEFF())
 			responseTimes.put(sf.getName().split("_")[2], sf.getResponseTime());
-		System.out.println();
+
 
 	}
 

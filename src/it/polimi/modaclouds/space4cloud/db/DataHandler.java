@@ -74,14 +74,14 @@ public class DataHandler {
 		//String provider="Amazon";
 		Set<String> providers = handler.getCloudProviders();
 		for(String provider:providers){
-			System.out.println("Provider: "+provider);
+			logger.info("Provider: "+provider);
 			List<String> services = handler.getServices(provider, "Compute");
 			for(String service:services){
-				System.out.println("\t"+service);
+				logger.info("\t"+service);
 			}
 		}
 
-		System.out.println("End");
+		logger.info("End");
 
 
 	}

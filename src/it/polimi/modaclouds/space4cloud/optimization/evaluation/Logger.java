@@ -68,9 +68,9 @@ public class Logger implements Runnable {
 		return running;
 	}
 
-	private void logTime(String modelName) {
+	private void logTime(String modelName, long time) {
 		logger.info(modelName + ", " + evaluations.get(modelName) + ", "
-				+ timers.get(modelName).getTime());
+				+ time);
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class Logger implements Runnable {
 				Thread.sleep(100);
 				if (in.ready()) {
 					String line = in.readLine();
-					System.out.println("LINE " + prefix + ": " + line);
+					logger.debug("LINE " + prefix + ": " + line);
 
 					// set the starting
 					if (line.contains("Listening on port"))
@@ -89,20 +89,25 @@ public class Logger implements Runnable {
 						setConnected(true);
 					if (line.contains("LINE STOP"))
 						setRunning(false);
-					if (line.contains("MODEL"))
+					if (line.contains("ERROR"))
+						manageError(line);
+					else if (line.contains("MODEL"))
 						updateModelEvaluation(line);
+					
 				}
 
 			} catch (IOException e) {
 				if (e.getMessage().equals("Stream closed"))
-					System.out
-							.println("LINE " + prefix + ": " + e.getMessage());
+					logger.debug("LINE " + prefix + ": " + e.getMessage());
 				else
-					e.printStackTrace();
+					logger.error("Error in reading from LINE output",e);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Error in reading from LINE output",e);
 			}
+	}
+
+	private void manageError(String line) {
+		logger.error("LINE error:",line);		
 	}
 
 	private synchronized void setConnected(boolean connected) {
@@ -117,7 +122,7 @@ public class Logger implements Runnable {
 		message = message.trim().replaceAll(" +", " ");
 		String[] tokens = message.split(" ");
 		String modelName = tokens[1];
-		modelName = modelName.replace("_res.xml", ".xml");
+		modelName = modelName.replace("_line.xml", ".xml");
 		modelName = Paths.get(modelName).toString();
 		String status = null;
 		if (tokens.length == 4)
@@ -131,10 +136,39 @@ public class Logger implements Runnable {
 			timer.start();
 			timers.put(modelName, timer);
 		} else if (status.equals(SOLVED)) {
-			timers.get(modelName).stop();
-			logTime(modelName);
+			long time = -1;
+			try {
+				timers.get(modelName).stop();
+				time = timers.get(modelName).getTime();
+			} catch (IllegalStateException e) {
+				logger.error("Error in taking the time, will put -1");				
+			} finally
+			{
+				logTime(modelName,time);
+			}
+
+
 		}
 
+	}
+
+	/**
+	 * Removes the specified model from the list of model waiting from an evaluation
+	 * @param modelFilePath
+	 */
+	public synchronized void reset(String modelFilePath) {
+		evaluations.remove(modelFilePath);
+		timers.remove(modelFilePath);
+	
+	}
+
+	/**
+	 * Clears the list of models waiting for an evaluation
+	 */
+	public void clear() {
+		evaluations.clear();
+		timers.clear();
+		
 	}
 
 }

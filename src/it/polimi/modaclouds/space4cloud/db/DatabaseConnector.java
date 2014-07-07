@@ -44,18 +44,18 @@ public class DatabaseConnector {
 	protected static final Logger logger = LoggerHelper.getLogger(DatabaseConnector.class);
 //	protected static final Logger logger = LoggerFactory.getLogger(DatabaseConnector.class);
 
-
+	public static String url = "jdbc:mysql://109.231.122.191:3306/";		
+	public static String dbName = "cloud";
+	public static String driver = "com.mysql.jdbc.Driver";
+	public static String userName = "moda";
+	public static String password = "modaclouds";
 
 	public static void initConnection(InputStream confFileStream) throws SQLException, IOException{
 
 		//default values overritten by the ones in the configuration file
 //				String url = "jdbc:mysql://localhost:3306/";
 		//		String dbName = "cloud";
-		String url = "jdbc:mysql://109.231.122.191:3306/";		
-		String dbName = "cloud";
-		String driver = "com.mysql.jdbc.Driver";
-		String userName = "moda";
-		String password = "modaclouds";
+
 
 
 		if(confFileStream!=null){

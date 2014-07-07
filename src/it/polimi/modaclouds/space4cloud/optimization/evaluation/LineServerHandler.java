@@ -28,9 +28,12 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.slf4j.LoggerFactory;
 
 public class LineServerHandler {
 	/** LINE connection handlers **/
+	private String host = null;
+	private int port;
 	private Socket lineSocket = null;
 	private PrintWriter out = null;
 	private BufferedReader processIn = null;
@@ -40,8 +43,16 @@ public class LineServerHandler {
 	private Logger socketLog;
 	private boolean localInstance = false;
 	private Process proc;
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LineServerHandler.class);
 
 	public void closeConnections() {
+
+		//Send LINE command to close the connection
+		if(out!= null && lineSocket != null && !lineSocket.isClosed()){
+			String command = "CLOSE";
+			out.println(command);
+			out.flush();
+		}
 		if (out != null)
 			out.close();
 
@@ -57,8 +68,7 @@ public class LineServerHandler {
 			if (lineSocket != null)
 				lineSocket.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error in closing LINE connection");
 		}
 	}
 
@@ -107,7 +117,7 @@ public class LineServerHandler {
 			// fallback to local host and retry
 			if (host != "localhost") {
 				closeConnections();
-				System.out.println("Don't know about host:" + host
+				logger.info("Don't know about host:" + host
 						+ ". Switching to localhost and trying reconnection.");
 				host = "localhost";
 				connectToLINEServer(host, port);
@@ -115,26 +125,33 @@ public class LineServerHandler {
 		} catch (IOException e) {
 			closeConnections();
 			// fall back to local host and launch LINE
-			System.out
-					.println("Could not connect to LINE on host: "
-							+ host
-							+ " on port: "
-							+ port
-							+ "\ntrying to launch line locally and connect to localhost.");
+			logger.info("Could not connect to LINE on host: "
+					+ host
+					+ " on port: "
+					+ port
+					+ "\ntrying to launch line locally and connect to localhost.");
 			launchLine(linePropFile, directory);
 			host = "localhost";
 			try {
 				initLINEConnection(host, port);
 			} catch (IOException e1) {
 				closeConnections();
-				System.err
-						.println("Could not connect to local instance of LINE");
-				e1.printStackTrace();
+				logger.error("Could not connect to local instance of LINE",e1);				
 			}
 		}
 	}
 
+	private void reConnect(){
+		try {
+			initLINEConnection(host, port);
+		} catch (IOException e) {
+			logger.error("Error in re-connecting to LINE",e);
+		}
+	}
+
 	private void initLINEConnection(String host, int port) throws IOException {
+		this.host = host;
+		this.port = port;
 		lineSocket = new Socket(host, port);
 
 		out = new PrintWriter(lineSocket.getOutputStream());
@@ -149,10 +166,9 @@ public class LineServerHandler {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Error while waiting for LINE connection",e);
 			}
-		System.out.println("Connected to LINE on " + host + ":" + port);
+		logger.info("Connected to LINE on " + host + ":" + port);
 	}
 
 	public boolean isSolved(String modelFile) {
@@ -163,7 +179,7 @@ public class LineServerHandler {
 		try {
 			String lineInvocation = "LINE" + " " + "\""
 					+ linePropFile.getAbsolutePath().replace('\\', '/') + "\"";
-			System.out.println(lineInvocation);
+			logger.debug(lineInvocation);
 			ProcessBuilder pb = new ProcessBuilder(lineInvocation.split("\\s"));
 			pb.directory(directory);
 			pb.redirectErrorStream(true);
@@ -174,23 +190,25 @@ public class LineServerHandler {
 			(new Thread(processLog)).start();
 			while (!processLog.isRunning())
 				Thread.sleep(100);
-			
+
 			localInstance = true;
 
 			// the startup has ended
 			return true;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException | InterruptedException e) {
+			logger.error("Error in launching LINE",e);
 			return false;
 		}
+
 	}
 
 	public void solve(String modelFilePath, String REfilePath) {
+		
+		//check that the connection is alive
+		if(out.checkError()){
+			logger.info("Connection with LINE server has encoutner a problem, trying to reconnect...");
+			reConnect();
+		}
 
 		modelFilePath = modelFilePath.replace('\\', '/');
 		if (REfilePath != null)
@@ -201,8 +219,11 @@ public class LineServerHandler {
 			command += " " + REfilePath;
 
 		// "D://line_test//ofbiz ("+numExp+").xml D://line_test//ofbizRE ("+numExp+").xml";
-		System.out.println("Sending: " + command);
+		logger.debug("Sending: " + command);
 
+		//reset the Logger in case a previous model with the same name have been specified
+		socketLog.reset(modelFilePath);
+		
 		// send the command
 		out.println(command);
 		out.flush();
@@ -211,18 +232,30 @@ public class LineServerHandler {
 
 	}
 
+
+
 	public void terminateLine() {
 		if (localInstance) {
+			//If LINE was launched by SPACE4Cloud close it
 			out.println("QUIT");
 			out.flush();
 			try {
 				proc.waitFor();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Error in Quitting LINE",e);
 			}
 		}
+
+		//otherwise just close the connection
 		closeConnections();
 
+	}
+
+	/**
+	 * Clear the handler from events of previous evaluations
+	 */
+	public void clear() {
+		socketLog.clear();
+		
 	}
 }

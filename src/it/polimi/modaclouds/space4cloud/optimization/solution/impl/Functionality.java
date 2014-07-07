@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+
 public class Functionality implements Cloneable, IResponseTimeConstrainable, Serializable {
 	/**
 	 * 
@@ -35,6 +37,7 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 	private double responseTime;
 	private Component container;
 	private HashMap<String,Functionality> externalCalls = new HashMap<String,Functionality>();
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Functionality.class);
 
 	private void setExternalCalls(HashMap<String, Functionality> externalCalls) {
 		this.externalCalls = externalCalls;
@@ -68,7 +71,7 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 		return id;
 	}
 	public void show(String prefix) {
-		System.out.println(prefix+"Functionality name: "+getName()+" id: "+getId()+" callId: "+getEntryLevelCallID()+" evaluated: "+isEvaluated()+" response time: "+getResponseTime());
+		logger.info(prefix+"Functionality name: "+getName()+" id: "+getId()+" callId: "+getEntryLevelCallID()+" evaluated: "+isEvaluated()+" response time: "+getResponseTime());
 	}
 	public String getEntryLevelCallID() {
 		return entryLevelCallID;

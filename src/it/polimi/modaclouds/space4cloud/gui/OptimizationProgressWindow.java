@@ -34,6 +34,9 @@ import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 import javax.swing.border.TitledBorder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class OptimizationProgressWindow implements PropertyChangeListener {
 
 	private JFrame frmOptimizationProgress;
@@ -54,6 +57,7 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 	private Logger2JFreeChartImage vmLogger;
 
 	private Logger2JFreeChartImage constraintsLogger;
+	private static final Logger logger = LoggerFactory.getLogger(OptimizationProgressWindow.class);
 
 	/**
 	 * Create the application.
@@ -165,7 +169,7 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 		if (evt.getPropertyName().equals("totalNumberOfEvaluations")) {
 			updateImages();
 		} else {
-			System.out.println("property: " + evt.getPropertyName());
+			logger.debug("property: " + evt.getPropertyName());
 		}
 
 	}

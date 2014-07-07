@@ -110,7 +110,7 @@ public class LoadModel extends OperationCompletedClass {
 	public static void main(String[] args) {
 		LoadModel lm = new LoadModel(null, "Resource Model",
 				".resourceenvironment");
-		System.out.println(lm.getModelFile());
+		programLogger.info("model"+lm.getModelFile());
 	}
 
 	/** The frm load model. */

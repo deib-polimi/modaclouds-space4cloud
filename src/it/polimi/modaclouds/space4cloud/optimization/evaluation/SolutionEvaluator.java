@@ -91,7 +91,7 @@ public class SolutionEvaluator implements Runnable {
 			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
 		} else {
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
-					+ "_res.xml";
+					+ "_line.xml";
 			resultParser = new LINEResultParser(Paths.get(resultfilePath));
 		}
 
@@ -132,12 +132,7 @@ public class SolutionEvaluator implements Runnable {
 		else
 			runWithLINE();
 		
-		String resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
-				+ ".lqxo";
-				
-		if(!Paths.get(resultfilePath).toFile().exists() && !Paths.get(resultfilePath+"~").toFile().exists())
-			System.err.println("ERROR LQNS OUTPUT NOT FOUND");
-		instance.setEvaluated(true);
+				instance.setEvaluated(true);
 		parseResults();
 		for (ActionListener l : listeners)
 			l.actionPerformed(new ActionEvent(this, 0, null));
@@ -147,7 +142,7 @@ public class SolutionEvaluator implements Runnable {
 		if (handler == null) {
 			logger.error("LINE server handle not initialized");
 			return;
-		}
+		}		
 
 		handler.solve(filePath, null);
 		// wait for the model to be solved
@@ -155,8 +150,7 @@ public class SolutionEvaluator implements Runnable {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Error watiting for LINE solution",e);
 			}
 
 	}

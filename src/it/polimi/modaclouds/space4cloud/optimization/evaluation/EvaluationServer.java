@@ -52,14 +52,15 @@ import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
  */
 public class EvaluationServer implements ActionListener {
 
-	private static final int DEFAULT_TIER_MEMORY_MAX_SIZE = 30;
+	private static final int DEFAULT_TIER_MEMORY_MAX_SIZE = 30;	
 	protected ThreadPoolExecutor executor;
 	protected BlockingQueue<Runnable> queue = new SynchronousQueue<>();
 	protected int nMaxThreads = 24 * 100; // 24*100
 	protected HashMap<Solution, Integer> counters = new HashMap<>();
 	protected CostEvaluator costEvaulator;
 	protected ConstraintHandler constraintHandler;
-	protected int totalNumberOfEvaluations = 0;
+	protected int actualNumberOfEvaluations = 0;
+	protected int requestedEvaluations = 0; 
 	protected PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 	protected Logger logger = LoggerFactory.getLogger(EvaluationServer.class);
 
@@ -67,6 +68,7 @@ public class EvaluationServer implements ActionListener {
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraint;
 	protected String solver = MessageStrings.LQNS_SOLVER;
+	
 
 	protected SeriesHandle seriesHandleExecution;
 	protected Map<String,SeriesHandle> seriesHandleTiers;
@@ -152,14 +154,14 @@ public class EvaluationServer implements ActionListener {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Error while evaluating an instance",e);
 			}
 
 	}
 
 	public void EvaluateSolution(Solution sol) {
-		long startTime = -1;
+		long startTime = -1;		
+		requestedEvaluations++;
 		logger.debug("Starting evaluation");
 		if (!sol.isEvaluated()) {
 
@@ -167,8 +169,14 @@ public class EvaluationServer implements ActionListener {
 
 			ArrayList<Instance> instanceList = sol.getHourApplication();
 			counters.put(sol, 0);
-			// evaluate hourly solutions
+			
+			
+			//reset the logger for line server handler
+			if(!solver.equals(MessageStrings.LQNS_SOLVER)){
+				lineHandler.clear();
+			}
 
+			// evaluate hourly solutions
 			for (Instance i : instanceList) {
 				// we need to reevaluate it only if something has changed.
 				if (!i.isEvaluated()) {
@@ -244,9 +252,9 @@ public class EvaluationServer implements ActionListener {
 			evaluationTime += (middleTime - startTime);
 			plottingTime += (endTime - middleTime);
 			fullEvaluationTime += (endTime - startTime);
-			logger.debug("Evaluation number: "+totalNumberOfEvaluations+" Time: "+(middleTime-startTime));
+			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
 		}else
-			logger.debug("Evaluation number: "+totalNumberOfEvaluations+" hitted proxy");
+			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
 		sol.setEvaluationTime(timer.getSplitTime());
 		
 		
@@ -294,14 +302,14 @@ public class EvaluationServer implements ActionListener {
 	}
 
 	public int getTotalNumberOfEvaluations() {
-		return totalNumberOfEvaluations;
+		return actualNumberOfEvaluations;
 	}
 
 	private void incrementTotalNumberOfEvaluations() {
-		int temp = totalNumberOfEvaluations;
-		totalNumberOfEvaluations++;
+		int temp = actualNumberOfEvaluations;
+		actualNumberOfEvaluations++;
 		pcs.firePropertyChange("totalNumberOfEvaluations", temp,
-				totalNumberOfEvaluations);
+				actualNumberOfEvaluations);
 	}
 
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -352,18 +360,18 @@ public class EvaluationServer implements ActionListener {
 						/ costEvaluations, TimeUnit.NANOSECONDS)));
 		logger.info("Avg plotting time: "
 				+ TimeUnit.MILLISECONDS.convert(plottingTime
-						/ totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
+						/ actualNumberOfEvaluations, TimeUnit.NANOSECONDS));
 		logger.info("Avg full evaluation time: "
 				+ TimeUnit.MILLISECONDS.convert(fullEvaluationTime
-						/ totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
+						/ actualNumberOfEvaluations, TimeUnit.NANOSECONDS));
 		logger.info("Avg evaluation time: "
 				+ TimeUnit.MILLISECONDS.convert(evaluationTime
-						/ totalNumberOfEvaluations, TimeUnit.NANOSECONDS));
+						/ actualNumberOfEvaluations, TimeUnit.NANOSECONDS));
 		logger.info("Number of fully evaluated solutions: "
-				+ totalNumberOfEvaluations);
+				+ actualNumberOfEvaluations);
 		logger.info("Number of total cost evaluations: " + costEvaluations);
 		logger.info("Number of solutions with only cost evaluations "
-				+ (costEvaluations - totalNumberOfEvaluations));
+				+ (costEvaluations - actualNumberOfEvaluations));
 
 	}
 

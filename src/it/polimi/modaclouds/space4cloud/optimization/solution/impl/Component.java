@@ -129,7 +129,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable,
 	}
 
 	public void showStatus(String prefix) {
-		System.out.println(prefix + "Component id: " + getId()
+		logger.info(prefix + "Component id: " + getId()
 				+ " avgResponsetime " + getResponseTime());
 		for (Functionality f : functionalities)
 			f.show(prefix + "\t");

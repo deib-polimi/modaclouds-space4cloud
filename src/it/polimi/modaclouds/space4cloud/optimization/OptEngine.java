@@ -211,7 +211,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		}
 		//int seed = randomSeed.nextInt();
-		int seed = 1422947335;
+		int seed = 1280220077;
 		optimLogger.debug("Random seed: " + seed);
 		random = new Random(seed);
 
@@ -257,24 +257,23 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 *            from the usage model extension file.
 	 */
 	protected void changeWorkload(Solution sol, double rate) {
-		System.out.printf("The hourly values of the workload are: ");
+		logger.debug("The hourly values of the workload are: ");
 		for (Instance i : sol.getApplications())
-			System.out.printf("%d ", i.getWorkload());
-		System.out.printf("\nTrying the change them using a rate of %f...",
+			logger.debug("%d ", i.getWorkload());
+		logger.debug("\nTrying the change them using a rate of %f...",
 				rate);
 
 		MoveChangeWorkload move = new MoveChangeWorkload(sol);
 
 		try {
 			move.modifyWorkload(new File(c.USAGE_MODEL_EXT_FILE), rate);
-			System.out.printf("done!\nThe new values are: ");
+			logger.debug("done!\nThe new values are: ");
 			for (Instance i : sol.getApplications())
-				System.out.printf("%d ", i.getWorkload());
-			System.out.println();
+				logger.debug("%d ", i.getWorkload());
 
 		} catch (ParserConfigurationException | SAXException | IOException
 				| JAXBException e) {
-			System.out.printf("error!\n");
+			logger.debug("error!\n");
 			e.printStackTrace();
 			logger.error("Error performing the change of the workload.\n"
 					+ e.getMessage());
@@ -295,11 +294,10 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		HashMap<String, ArrayList<Tier>> tierMap = new HashMap<String, ArrayList<Tier>>();
 
 		for (Solution sol : sols.getAll()) {
-			System.out.printf("The hourly values of the workload for "
+			logger.debug("The hourly values of the workload for "
 					+ sol.getProvider() + " are: ");
 			for (Instance i : sol.getApplications())
-				System.out.printf("%d ", i.getWorkload());
-			System.out.println();
+				logger.debug("%d ", i.getWorkload());
 
 			List<Tier> tierList = sol.getApplication(0).getTiers();
 			String provider = sol.getProvider();
@@ -336,7 +334,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		for (int i = 0; i < 24; ++i) {
 
 			for (String id : tierMap.keySet()) {
-				System.out.printf("Hour: %d, Tier ID: %s\n", i, id);
+				logger.debug("Hour: %d, Tier ID: %s\n", i, id);
 
 				ArrayList<Tier> tierByIdList = tierMap.get(id);
 				double processingRates[] = new double[tierByIdList.size()];
@@ -394,11 +392,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 						}
 					}
 
-					System.out.print("\t" + sol.getProvider() + ": ");
+					logger.debug("\t" + sol.getProvider() + ": ");
 					for (double rate : rates) {
-						System.out.print((int) (rate * 100) + " ");
+						logger.debug((int) (rate * 100) + " ");
 					}
-					System.out.println();
+					
 
 					ratesMap.put(sol.getProvider(), rates);
 				}
@@ -435,7 +433,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 						for (double rate : rates) {
 							System.out.print((int) (rate * 100) + " ");
 						}
-						System.out.println();
 
 						ratesMap.put(sol.getProvider(), rates);
 					}
@@ -451,15 +448,14 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			try {
 				move.modifyWorkload(new File(c.USAGE_MODEL_EXT_FILE),
 						ratesMap.get(sol.getProvider()));
-				System.out.printf("Done! The new values for "
+				logger.debug("Done! The new values for "
 						+ sol.getProvider() + " are: ");
 				for (Instance i : sol.getApplications())
-					System.out.printf("%d ", i.getWorkload());
-				System.out.println();
+					logger.debug("%d ", i.getWorkload());
 
 			} catch (ParserConfigurationException | SAXException | IOException
 					| JAXBException e) {
-				System.out.printf("error!\n");
+				logger.debug("error!\n");
 				e.printStackTrace();
 				logger.error("Error performing the change of the workload.\n"
 						+ e.getMessage());
@@ -1393,7 +1389,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * Builds a solution from the less used components in the long term memory
 	 * in order to increase diversification
 	 * 
-	 * @param s
+	 * @param solver
 	 *            the current solution
 	 * @return the changed solution
 	 */

@@ -176,8 +176,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 					.getAttribute("utilization")) / cores;
 			// LQNS uses values from 0 to 100 we use from 0 to 1
 
-			// add the processor utilization to the hashmap
-			// System.out.println("proc id: "+id+ " utilization: "+utilization);
+			// add the processor utilization to the hashmap	
 			if(utilization > 1){
 				logger.debug("Utilization greater than one!");
 				logger.debug("file: "+filePath+" utilization: "+utilization+" id: "+id);

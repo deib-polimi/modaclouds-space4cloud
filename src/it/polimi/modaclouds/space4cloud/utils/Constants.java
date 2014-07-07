@@ -21,6 +21,9 @@ package it.polimi.modaclouds.space4cloud.utils;
 import java.io.File;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.slf4j.LoggerFactory;
+
+import com.jcraft.jsch.Logger;
 
 import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
 
@@ -54,6 +57,8 @@ public class Constants {
 
 	/** The instance. */
 	private static Constants instance;
+	
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Constants.class);
 
 	public static void clear() {
 		instance = null;
@@ -189,12 +194,12 @@ public class Constants {
 
 		LOG4J_PROP_FILE = this.getClass().getResource("/log/log4j.properties")
 				.toString();
-		System.out.println("Project Name: " + PROJECT_NAME);
-		System.out.println("Project Path: " + PROJECT_PATH);
-		System.out.println("Working Directory: " + WORKING_DIRECTORY);
-		System.out.println("Full Working Directory: "
+		logger.info("Project Name: " + PROJECT_NAME);
+		logger.info("Project Path: " + PROJECT_PATH);
+		logger.info("Working Directory: " + WORKING_DIRECTORY);
+		logger.info("Full Working Directory: "
 				+ ABSOLUTE_WORKING_DIRECTORY);
-		System.out.println("Relative Working Directory: "
+		logger.info("Relative Working Directory: "
 				+ REL_WORKING_DIRECTORY);
 	}
 

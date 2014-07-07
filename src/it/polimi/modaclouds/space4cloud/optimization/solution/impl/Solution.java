@@ -146,13 +146,13 @@ public class Solution implements Cloneable, Serializable {
 		File[] modelFiles = resultDirPath.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.endsWith(".xml") && !name.contains("_res");
+				return name.endsWith(".xml") && !name.contains("_line");
 			}
 		});
 		File[] resultFiles = resultDirPath.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.endsWith("_res.xml") || name.endsWith(".lqxo");
+				return name.endsWith("_line.xml") || name.endsWith(".lqxo");
 			}
 		});
 
@@ -168,13 +168,13 @@ public class Solution implements Cloneable, Serializable {
 		// with the corresponding evaluation
 		Path resultModelPath = resultFiles[0].toPath();
 
-		Files.createDirectory(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
+		Files.createDirectories(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
 				c.PERFORMANCE_RESULTS_FOLDER, folder));
 
 		for (int i = 0; i < 24; i++) {
 			Path tmpFolderPath = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
-					c.PERFORMANCE_RESULTS_FOLDER, folder, c.FOLDER_PREFIX + i);
-			Files.createDirectory(tmpFolderPath);
+					c.PERFORMANCE_RESULTS_FOLDER, folder, c.FOLDER_PREFIX + i);			
+			Files.createDirectories(tmpFolderPath);
 			Path tmpLqnPath = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
 					c.PERFORMANCE_RESULTS_FOLDER, folder, c.FOLDER_PREFIX + i,
 					lqnModelPath.getFileName().toString());
@@ -378,7 +378,7 @@ public class Solution implements Cloneable, Serializable {
 			DOMSource source = new DOMSource(doc);
 			File file = new File(filename);
 			StreamResult result = new StreamResult(file);
-			System.out.println("Exported in: " + file.getAbsolutePath());
+			logger.info("Exported in: " + file.getAbsolutePath());
 
 			// Output to console for testing
 			// StreamResult result = new StreamResult(System.out);

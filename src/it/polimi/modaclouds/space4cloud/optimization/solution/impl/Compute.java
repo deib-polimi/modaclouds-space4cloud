@@ -239,7 +239,7 @@ public class Compute extends IaaS {
 	
 	public void update(double util) {
 		// update the utilization
-		if (util > 0)
+		if (util >= 0)
 			utilization = util;
 		else
 			utilization = -1;

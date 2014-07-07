@@ -23,6 +23,9 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * This class define a proxy object able to verify if a application has been already evaluated
  * in order to speed up the whole evaluation process
@@ -30,6 +33,7 @@ import java.util.Map;
 public class EvaluationProxy extends EvaluationServer {
 
 	private final Map<String, LqnResultParser> map = new HashMap<String, LqnResultParser>();
+	private static final Logger profileLogger = LoggerFactory.getLogger("ProfilerLogger");
 
 	int hit = 0;
 
@@ -60,6 +64,8 @@ public class EvaluationProxy extends EvaluationServer {
 	}
 
 	public void ProxyIn(Solution sol) {
+		
+		int missedEvaluations = 0;
 		if (!enabled)
 			return;
 
@@ -72,8 +78,12 @@ public class EvaluationProxy extends EvaluationServer {
 					instance.updateResults(results);
 					instance.setEvaluated(true);
 				}
+				else
+					missedEvaluations++;
 			}
 		}
+		profileLogger.info(requestedEvaluations+","+missedEvaluations);
+		
 	}
 
 	public Solution ProxyOut(Solution sol) {

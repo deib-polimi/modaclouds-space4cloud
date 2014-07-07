@@ -313,7 +313,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			DOMSource source = new DOMSource(doc);
 			File file = new File(filename);
 			StreamResult result = new StreamResult(file);
-			System.out.println("Exported in: " + file.getAbsolutePath());
+			logger.info("Exported in: " + file.getAbsolutePath());
 
 			// Output to console for testing
 			// StreamResult result = new StreamResult(System.out);

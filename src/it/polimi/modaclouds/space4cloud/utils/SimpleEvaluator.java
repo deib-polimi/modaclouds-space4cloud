@@ -286,13 +286,13 @@ public class SimpleEvaluator {
 		if (c.SOLVER.equals(MessageStrings.LQNS_SOLVER))
 			resultFileIdentifier = ".lqxo";
 		else
-			resultFileIdentifier = "_res.xml";
+			resultFileIdentifier = "_line.xml";
 
 		// fill the lists and plot the data
 		for (File f : subFolder)
 			if (f.isDirectory()) {
 				String name = f.getName();
-				System.out.println("name: " + name);
+				logger.info("name: " + name);
 				String number = name.substring(name.indexOf("hour") + 5,
 						name.length());
 				int hour = Integer.parseInt(number);
@@ -307,7 +307,7 @@ public class SimpleEvaluator {
 					}
 				});
 
-				System.out.println("Parsing hour: " + hour + " file: "
+				logger.info("Parsing hour: " + hour + " file: "
 						+ resultFiles[0].getAbsolutePath());
 				if (c.SOLVER.equals(MessageStrings.LQNS_SOLVER))
 					parser = new LQNSResultParser(resultFiles[0].toPath());
@@ -353,7 +353,7 @@ public class SimpleEvaluator {
 				rtSeriesHandlers.put(s, rtLogger.newSeries(s));
 
 		for (int i = 0; i < 24; i++) {
-			System.out.println("responseTime: " + i);
+			logger.info("responseTime: " + i);
 			for (String s : responseTimes.get(i).keySet())
 				if (functionalities.contains(s)
 						|| c.SOLVER.equals(MessageStrings.PERFENGINE_SOLVER))
@@ -379,21 +379,21 @@ public class SimpleEvaluator {
 					utilLogger.addPoint2Series(utilSeriesHandlers.get(s), i,
 							utilizations.get(i).get(s));
 
-		System.out.println("Utilizations");
+		logger.info("Utilizations");
 		for (int i = 0; i < 24; i++) {
-			System.out.println("Hour " + i);
+			logger.info("Hour " + i);
 			for (String k : utilizations.get(i).keySet())
 				if (k.contains("CPU"))
-					System.out.println("\tID: " + k + "\tVal: "
+					logger.info("\tID: " + k + "\tVal: "
 							+ utilizations.get(i).get(k));
 		}
 
-		System.out.println("Response Times");
+		logger.info("Response Times");
 		for (int i = 0; i < 24; i++) {
-			System.out.println("Hour " + i);
+			logger.info("Hour " + i);
 			for (String k : responseTimes.get(i).keySet())
 				if (k.contains("CPU"))
-					System.out.println("\tID: " + k + "\tVal: "
+					logger.info("\tID: " + k + "\tVal: "
 							+ responseTimes.get(i).get(k));
 		}
 

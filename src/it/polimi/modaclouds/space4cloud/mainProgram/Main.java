@@ -66,11 +66,11 @@ public class Main {
 	 **/
 	public static void main(String[] args) {
 		// RobustnessProgressWindow.main(null);
-		// System.out.println("space");
-		//Space4Cloud instance = new Space4Cloud();
 
-		
-		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizChi4r4\\";
+	Space4Cloud instance = new Space4Cloud();
+
+/**		
+		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\";
 		Operations operation = Operations.Optimization;
 		File usageModelExtension = new File(basePath + "OfBiz-UsageExtension.xml");
 		File resourceModelExtension = new File(basePath + "OfBiz-ContainerExtension.xml");
@@ -81,13 +81,12 @@ public class Main {
 		String dbConfigurationFilePath = Paths.get(basePath,"DBConnection.properties").toString();
 		File optimizationConfigurationFile = new File(basePath+"OptEngine.properties");
 		Space4Cloud instance = new Space4Cloud(	operation, basePath, usageModelExtension, resourceModelExtension,constraintsFile, startPopulation, endPopulation, step, dbConfigurationFilePath, optimizationConfigurationFile);
-		 instance.setRobustnessAttempts(10);
+		// instance.setRobustnessAttempts(10);
+	*/ 
 		// instance.setProvidersInitialSolution("Amazon", "Microsoft");
 		// instance.setProvidersInitialSolution("Flexiscale");
 		
-		// System.out.println("execute");
 		instance.execute();
-		// System.out.println("fine!");
 	}
 
 }

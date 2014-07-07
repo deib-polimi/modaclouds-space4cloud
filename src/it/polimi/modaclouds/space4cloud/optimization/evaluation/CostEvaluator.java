@@ -34,6 +34,9 @@ import it.polimi.modaclouds.space4cloud.types.palladio.AllocationProfile;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 // TODO: Auto-generated Javadoc
 /**
  * Provides utility methods to derive system costs.
@@ -44,6 +47,7 @@ import java.util.List;
 public class CostEvaluator {
 
 	DataHandler dataHandler = null;
+	private static final Logger logger = LoggerFactory.getLogger(CostEvaluator.class);
 	public CostEvaluator() throws DatabaseConnectionFailureExteption {
 		dataHandler = DataHandlerFactory.getHandler();
 	}
@@ -61,7 +65,7 @@ public class CostEvaluator {
 								iaasResource.getResourceName());
 
 				if (cloudResource == null) {
-					System.out.println("ERROR: The found resource is null!");
+					logger.error("ERROR: The found resource is null!");
 					cost += 1;
 					continue;
 				}

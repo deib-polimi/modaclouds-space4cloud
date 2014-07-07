@@ -19,7 +19,7 @@ public class RussianEvaluator {
 
 	protected Constants c = Constants.getInstance();
 
-	protected Solver s;
+	protected Solver solver;
 
 	protected File resourceEnvExt = null, solution = null,
 			multiCloudExt = null;
@@ -30,40 +30,49 @@ public class RussianEvaluator {
 
 	protected long evaluationTime = -1L;
 
-	private static String url = "jdbc:mysql://localhost:3306/";
-	private static String dbName = "cloud_full";
-	private static String driver = "com.mysql.jdbc.Driver";
-	private static String userName = "moda";
-	private static String password = "modaclouds";
+	private static String URL = "jdbc:mysql://localhost:3306/";
+	private static String DBNAME = "cloud";
+	private static String DRIVER = "com.mysql.jdbc.Driver";
+	private static String USERNAME = "moda";
+	private static String PASSWORD = "modaclouds";
 	
 	public RussianEvaluator(File usageModelExtFile, File constraintFile) {
-		s = new Solver(c.PROJECT_PATH, c.WORKING_DIRECTORY,
+		solver = new Solver(c.PROJECT_PATH, c.WORKING_DIRECTORY,
 				c.RESOURCE_MODEL, c.USAGE_MODEL, c.ALLOCATION_MODEL, c.REPOSITORY_MODEL,
 				Paths.get(Paths.get(c.RESOURCE_MODEL).getParent().toString(), "default.system").toString(),
 				constraintFile.getAbsolutePath(), usageModelExtFile.getAbsolutePath());
 		
-		s.getOptions().SqlDBUrl = url;
-		s.getOptions().DBName = dbName;
-		s.getOptions().DBDriver = driver;
-		s.getOptions().DBUserName = userName;
-		s.getOptions().DBPassword = password;
+		solver.getOptions().SqlDBUrl = URL;
+		solver.getOptions().DBName = DBNAME;
+		solver.getOptions().DBDriver = DRIVER;
+		solver.getOptions().DBUserName = USERNAME;
+		solver.getOptions().DBPassword = PASSWORD;
 	}
 	
-	public static void setDatabaseInformation(InputStream confFileStream) throws IOException {
-		Properties properties = new Properties();
-		
-		properties.load(confFileStream);
-		url = properties.getProperty("URL");
-		dbName = properties.getProperty("DBNAME");
-		driver = properties.getProperty("DRIVER");
-		userName = properties.getProperty("USERNAME");
-		password = properties.getProperty("PASSWORD");
+	public static void setDatabaseInformation(InputStream confFileStream) throws IOException {		
+		if(confFileStream!=null){
+			Properties properties = new Properties();
+			properties.load(confFileStream);		
+			URL=properties.getProperty("URL");
+			DBNAME=properties.getProperty("DBNAME");
+			DRIVER=properties.getProperty("DRIVER");
+			USERNAME=properties.getProperty("USERNAME");
+			PASSWORD=properties.getProperty("PASSWORD");
+		}
+	}
+	
+	public static void setDatabaseInformation(String url, String dbName, String driver, String userName, String password) throws IOException {												
+			URL=url;
+			DBNAME=dbName;
+			DRIVER=driver;
+			USERNAME=userName;
+			PASSWORD=password;
 	}
 
 	public void eval() throws Exception {
-		resourceEnvExt = s.getResourceModelExt();
-		solution = s.getSolution();
-		multiCloudExt = s.getMultiCloudExt();
+		resourceEnvExt = solver.getResourceModelExt();
+		solution = solver.getSolution();
+		multiCloudExt = solver.getMultiCloudExt();
 		cost = -1;
 		evaluationTime = -1L;
 		computed = true;
@@ -136,22 +145,22 @@ public class RussianEvaluator {
 	}
 
 	public void setMinimumNumberOfProviders(int num) {
-		s.setMinimumNumberOfProviders(num);
+		solver.setMinimumNumberOfProviders(num);
 		reset();
 	}
 
 	public void setProviders(String... provider) {
-		s.setProviders(provider);
+		solver.setProviders(provider);
 		reset();
 	}
 
 	public void setRegions(String... region) {
-		s.setRegions(region);
+		solver.setRegions(region);
 		reset();
 	}
 
 	public void setStartingSolution(File f) {
-		s.setStartingSolution(f);
+		solver.setStartingSolution(f);
 		reset();
 	}
 

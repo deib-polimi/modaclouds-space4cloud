@@ -20,9 +20,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Properties;
 
 
@@ -92,10 +95,21 @@ public class ConfigurationHandler {
 
 	}
 
-	public static void cleanFolders(String path) {	
-		File directory = new File(path);
-		if(directory.exists())
-			deleteDirectory(directory);		
+	public static void cleanFolders(String path) throws IOException {			
+		   Files.walkFileTree(Paths.get(path), new SimpleFileVisitor<Path>() {
+			   @Override
+			   public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				   Files.delete(file);
+				   return FileVisitResult.CONTINUE;
+			   }
+
+			   @Override
+			   public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				   Files.delete(dir);
+				   return FileVisitResult.CONTINUE;
+			   }
+
+		   });
 	}
 
 
@@ -109,9 +123,9 @@ public class ConfigurationHandler {
 		if(perfFolder.exists())
 			for(File folder:perfFolder.listFiles()){
 				if(folder.exists() && folder.isDirectory()){
-					//Delete all non xml files or xml files that are result of LINE (_res.xml)  
+					//Delete all non xml files or xml files that are result of LINE (_line.xml)  
 					for(File f:folder.listFiles())
-						if(f.exists() && !f.getName().endsWith(".xml") || f.getName().endsWith("_res.xml"))
+						if(f.exists() && !f.getName().endsWith(".xml") || f.getName().endsWith("_line.xml"))
 							f.delete();
 						else if(f.isDirectory()){
 							for(File f1:f.listFiles())
