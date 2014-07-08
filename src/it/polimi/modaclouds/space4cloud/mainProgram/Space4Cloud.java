@@ -38,6 +38,8 @@ import it.polimi.modaclouds.space4cloud.gui.XMLFileSelection;
 import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandler;
+import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
@@ -306,7 +308,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			solver = MessageStrings.LQNS_SOLVER;
 			break;
 		case 1:
-			solver = MessageStrings.PERFENGINE_SOLVER;
+			solver = MessageStrings.LINE;
 			break;
 		case 2:
 			solver = "Simucom";
@@ -441,9 +443,6 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	@Override
 
 	protected Object doInBackground() throws CoreException, InitalFolderCreationException {
-
-
-
 
 		LoadModel lm;
 		if (!batch) {
@@ -584,7 +583,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 				// if the solver is LINE it needs the path to its configuration
 				// file
-				if (solver.equals(MessageStrings.PERFENGINE_SOLVER)) {
+				if (solver.equals(MessageStrings.LINE)) {
 					lm = new LoadModel(null, "Performance Engine Config",
 							".properties");
 					if (!lm.isChosen()) {
@@ -643,6 +642,21 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		// refresh the project in the workspace
 		refreshProject();
+		
+		//If the chosen solver is LINE try to connect to it or launch it locally. 		
+		if(c.SOLVER.equals(MessageStrings.LINE)){
+			programLogger.info("Looking for LINE server");
+			LineServerHandlerFactory.setLinePropFilePath(c.LINE_PROPERTIES_FILE);
+			LineServerHandler lineHandler = LineServerHandlerFactory.getHandler();
+			lineHandler.connectToLINEServer();
+			lineHandler.closeConnections();
+			programLogger.info("succesfully connected to LINE server");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				programLogger.error("Error while waiting for LINE first connection",e);
+			}//give time to LINE to close the connection on his side
+		}
 
 		// Build the run configuration
 		RunConfigurationsHandler runConfigHandler = new RunConfigurationsHandler();

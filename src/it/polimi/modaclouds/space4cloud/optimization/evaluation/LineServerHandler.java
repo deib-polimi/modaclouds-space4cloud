@@ -21,29 +21,32 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.slf4j.LoggerFactory;
 
 public class LineServerHandler {
 	/** LINE connection handlers **/
 	private String host = null;
-	private int port;
+	private int port=-1;
 	private Socket lineSocket = null;
 	private PrintWriter out = null;
 	private BufferedReader processIn = null;
 	private BufferedReader socketIn = null;
-	private String linePropFilePath;
 	private Logger processLog;
 	private Logger socketLog;
 	private boolean localInstance = false;
 	private Process proc;
+	private File propFile;
+	private File directory = null;
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LineServerHandler.class);
+
+	public LineServerHandler(File linePropFile) {
+		propFile = linePropFile;
+	}
+
 
 	public void closeConnections() {
 
@@ -57,10 +60,6 @@ public class LineServerHandler {
 			out.close();
 
 		try {
-			if (processLog != null && processIn != null) {
-				processLog.close();
-				processIn.close();
-			}
 			if (socketLog != null && socketIn != null) {
 				socketLog.close();
 				socketIn.close();
@@ -71,37 +70,13 @@ public class LineServerHandler {
 			logger.error("Error in closing LINE connection");
 		}
 	}
-
-	public void connectToLINEServer() {
-		connectToLINEServer(null, -1);
-	}
-
-	public void connectToLINEServer(String configFilePath) {
-		linePropFilePath = configFilePath;
-		connectToLINEServer();
-	}
-
-	public void connectToLINEServer(String host, int port) {
-
+	
+	private void loadProperties(){
 		Properties lineProperties = new Properties();
 
-		URL linePropFileURL = null;
-		File linePropFile = null;
+		
 		try {
-			linePropFileURL = FileLocator.toFileURL(new URL(linePropFilePath));
-			linePropFile = new File(linePropFileURL.getFile());
-		} catch (MalformedURLException e2) {
-			// if it is not a workspace url but a path to a file
-			linePropFile = new File(linePropFilePath);
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-
-		File directory = null;
-		try {
-
-			FileInputStream propInput = new FileInputStream(linePropFile);
+			FileInputStream propInput = new FileInputStream(propFile);
 			lineProperties.load(propInput);
 			propInput.close();
 			if (host == null)
@@ -110,9 +85,19 @@ public class LineServerHandler {
 				port = Integer.parseInt(lineProperties.getProperty("port",
 						"5463"));
 			directory = new File(lineProperties.getProperty("directory", null));
+		}catch(IOException e){
+			logger.error("Could not load LINE connection properties",e);
+		}
+	}
 
+	public void connectToLINEServer() {
+
+		
+		loadProperties();
+		
+		try {			
 			// try to connect
-			initLINEConnection(host, port);
+			initLINEConnection();
 		} catch (UnknownHostException e) {
 			// fallback to local host and retry
 			if (host != "localhost") {
@@ -120,7 +105,9 @@ public class LineServerHandler {
 				logger.info("Don't know about host:" + host
 						+ ". Switching to localhost and trying reconnection.");
 				host = "localhost";
-				connectToLINEServer(host, port);
+				connectToLINEServer();
+			}else{
+				logger.error("Error while connecting to localhost",e);
 			}
 		} catch (IOException e) {
 			closeConnections();
@@ -130,10 +117,11 @@ public class LineServerHandler {
 					+ " on port: "
 					+ port
 					+ "\ntrying to launch line locally and connect to localhost.");
-			launchLine(linePropFile, directory);
+			//launch line locally
 			host = "localhost";
+			launchLine();			
 			try {
-				initLINEConnection(host, port);
+				initLINEConnection();
 			} catch (IOException e1) {
 				closeConnections();
 				logger.error("Could not connect to local instance of LINE",e1);				
@@ -143,15 +131,13 @@ public class LineServerHandler {
 
 	private void reConnect(){
 		try {
-			initLINEConnection(host, port);
+			initLINEConnection();
 		} catch (IOException e) {
 			logger.error("Error in re-connecting to LINE",e);
 		}
 	}
 
-	private void initLINEConnection(String host, int port) throws IOException {
-		this.host = host;
-		this.port = port;
+	private void initLINEConnection() throws IOException {
 		lineSocket = new Socket(host, port);
 
 		out = new PrintWriter(lineSocket.getOutputStream());
@@ -175,10 +161,11 @@ public class LineServerHandler {
 		return socketLog.isModelEvaluated(modelFile);
 	}
 
-	private boolean launchLine(File linePropFile, File directory) {
+
+	public boolean launchLine() {
 		try {
 			String lineInvocation = "LINE" + " " + "\""
-					+ linePropFile.getAbsolutePath().replace('\\', '/') + "\"";
+					+ propFile.getAbsolutePath().replace('\\', '/') + "\"";
 			logger.debug(lineInvocation);
 			ProcessBuilder pb = new ProcessBuilder(lineInvocation.split("\\s"));
 			pb.directory(directory);
@@ -203,7 +190,7 @@ public class LineServerHandler {
 	}
 
 	public void solve(String modelFilePath, String REfilePath) {
-		
+
 		//check that the connection is alive
 		if(out.checkError()){
 			logger.info("Connection with LINE server has encoutner a problem, trying to reconnect...");
@@ -223,7 +210,7 @@ public class LineServerHandler {
 
 		//reset the Logger in case a previous model with the same name have been specified
 		socketLog.reset(modelFilePath);
-		
+
 		// send the command
 		out.println(command);
 		out.flush();
@@ -244,6 +231,15 @@ public class LineServerHandler {
 			} catch (InterruptedException e) {
 				logger.error("Error in Quitting LINE",e);
 			}
+			
+			if (processLog != null && processIn != null) {
+				processLog.close();
+				try {
+					processIn.close();
+				} catch (IOException e) {
+					logger.error("Error in closing the process reader of LINE",e);
+				}
+			}
 		}
 
 		//otherwise just close the connection
@@ -256,6 +252,8 @@ public class LineServerHandler {
 	 */
 	public void clear() {
 		socketLog.clear();
-		
+
 	}
+
+
 }

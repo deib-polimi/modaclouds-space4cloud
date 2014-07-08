@@ -349,14 +349,14 @@ public class SimpleEvaluator {
 
 		for (String s : responseTimes.get(0).keySet())
 			if (functionalities.contains(s)
-					|| c.SOLVER.equals(MessageStrings.PERFENGINE_SOLVER))
+					|| c.SOLVER.equals(MessageStrings.LINE))
 				rtSeriesHandlers.put(s, rtLogger.newSeries(s));
 
 		for (int i = 0; i < 24; i++) {
 			logger.info("responseTime: " + i);
 			for (String s : responseTimes.get(i).keySet())
 				if (functionalities.contains(s)
-						|| c.SOLVER.equals(MessageStrings.PERFENGINE_SOLVER))
+						|| c.SOLVER.equals(MessageStrings.LINE))
 					rtLogger.addPoint2Series(rtSeriesHandlers.get(s), i,
 							responseTimes.get(i).get(s));
 		}

@@ -25,7 +25,6 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
-import it.polimi.modaclouds.space4cloud.utils.Constants;
 import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 
 import java.awt.event.ActionEvent;
@@ -92,9 +91,9 @@ public class EvaluationServer implements ActionListener {
 		costEvaulator = new CostEvaluator();
 		executor = new ThreadPoolExecutor(24, nMaxThreads, 200,
 				TimeUnit.MILLISECONDS, queue);
-		if (solver.equals(MessageStrings.PERFENGINE_SOLVER)) {
-			lineHandler = new LineServerHandler();
-			lineHandler.connectToLINEServer(Constants.getInstance().LINE_PROPERTIES_FILE);
+		if (solver.equals(MessageStrings.LINE)) {
+			lineHandler = LineServerHandlerFactory.getHandler();
+			lineHandler.connectToLINEServer();
 		}
 		timer.start();
 		timer.split();

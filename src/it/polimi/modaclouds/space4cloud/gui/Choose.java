@@ -105,7 +105,7 @@ public class Choose extends JDialog {
 		PerfEngineButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				solver = MessageStrings.PERFENGINE_SOLVER;
+				solver = MessageStrings.LINE;
 				chosen = true;
 				dispose();
 			}

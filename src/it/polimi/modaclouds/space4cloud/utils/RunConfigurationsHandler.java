@@ -79,7 +79,7 @@ public class RunConfigurationsHandler {
 		// choose the template according to the solver
 		if (constant.SOLVER.equals(MessageStrings.LQNS_SOLVER))
 			template = getClass().getResource("/launch_configs/LQNS.launch");
-		else if (constant.SOLVER.equals(MessageStrings.PERFENGINE_SOLVER))
+		else if (constant.SOLVER.equals(MessageStrings.LINE))
 			template = getClass().getResource(
 					"/launch_configs/PerformanceEngine.launch");
 		else
