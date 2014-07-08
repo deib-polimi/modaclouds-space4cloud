@@ -349,7 +349,7 @@
 		<dependency>
 			<groupId>it.polimi.modaclouds.space4cloud</groupId>
 			<artifactId>milp</artifactId>
-			<version>0.0.4</version>
+			<version>0.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

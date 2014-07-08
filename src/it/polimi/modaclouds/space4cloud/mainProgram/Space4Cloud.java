@@ -740,7 +740,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			}
 		}
 
-		int n = 1; // 0 = generate the solution by default, 1 otherwise
+		int n = 0; // 0 = generate the solution by default, 1 otherwise
 		if (!batch && functionality != Operations.Assessment) {
 			/*
 			 * Here I (Riccardo B. Desantis) am implementing the generation of
