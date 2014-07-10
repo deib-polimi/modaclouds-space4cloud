@@ -77,7 +77,8 @@ public class Logger implements Runnable {
 	public void run() {
 		while (isRead())
 			try {
-				Thread.sleep(100);
+				if(!in.ready())
+					Thread.sleep(100);
 				if (in.ready()) {
 					String line = in.readLine();
 					logger.debug("LINE " + prefix + ": " + line);
@@ -93,7 +94,7 @@ public class Logger implements Runnable {
 						manageError(line);
 					else if (line.contains("MODEL"))
 						updateModelEvaluation(line);
-					
+
 				}
 
 			} catch (IOException e) {
@@ -138,15 +139,16 @@ public class Logger implements Runnable {
 		} else if (status.equals(SOLVED)) {
 			long time = -1;
 			try {
-				timers.get(modelName).stop();
-				time = timers.get(modelName).getTime();
+				if(timers.containsKey(modelName)){
+					timers.get(modelName).stop();
+					time = timers.get(modelName).getTime();
+				}
 			} catch (IllegalStateException e) {
-				logger.error("Error in taking the time, will put -1");				
+				logger.error("Error in taking the time, will put -1",e);				
 			} finally
 			{
 				logTime(modelName,time);
 			}
-
 
 		}
 
@@ -159,7 +161,7 @@ public class Logger implements Runnable {
 	public synchronized void reset(String modelFilePath) {
 		evaluations.remove(modelFilePath);
 		timers.remove(modelFilePath);
-	
+
 	}
 
 	/**
@@ -168,7 +170,7 @@ public class Logger implements Runnable {
 	public void clear() {
 		evaluations.clear();
 		timers.clear();
-		
+
 	}
 
 }

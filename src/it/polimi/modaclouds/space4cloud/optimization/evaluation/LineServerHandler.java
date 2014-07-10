@@ -63,9 +63,13 @@ public class LineServerHandler {
 			if (socketLog != null && socketIn != null) {
 				socketLog.close();
 				socketIn.close();
+				socketIn = null;
+				socketLog = null;				
 			}
-			if (lineSocket != null)
+			if (lineSocket != null){
 				lineSocket.close();
+				socketLog = null;	
+			}
 		} catch (IOException e) {
 			logger.error("Error in closing LINE connection");
 		}

@@ -84,7 +84,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 					return (nl.getLength() == 0);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error in checking if the solution is empty",e);
 			}
 		return true;
 	}

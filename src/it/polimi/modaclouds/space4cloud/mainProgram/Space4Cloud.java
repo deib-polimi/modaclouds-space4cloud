@@ -791,7 +791,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			resourceEnvExtFile = new File("none");
 			initialSolution = new File("none");
 
-		} else if (n == 0) {
+		} else if (n == 0 && functionality != Operations.Assessment) {
 			try {
 				getProvidersFromExtension();
 			} catch (ParserConfigurationException | SAXException | IOException
