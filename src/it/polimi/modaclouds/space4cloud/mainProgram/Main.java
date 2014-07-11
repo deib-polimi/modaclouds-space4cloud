@@ -18,10 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
-import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud.Operations;
 
-import java.io.File;
-import java.nio.file.Paths;
+
 
 /**
  * Main class of the CSPACE tool.<br/>

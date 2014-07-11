@@ -47,6 +47,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
 import it.polimi.modaclouds.space4cloud.utils.ConfigurationHandler;
 import it.polimi.modaclouds.space4cloud.utils.Constants;
 import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
@@ -94,23 +95,6 @@ import org.xml.sax.SAXException;
 import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
 
 public class Space4Cloud extends SwingWorker<Object, Object> {
-
-	public static enum Operations {
-		Assessment, Optimization, Robustness, Exit;
-
-		public static Operations getById(int id) {
-			Operations[] values = Operations.values();
-			if (id < 0)
-				id = 0;
-			else if (id >= values.length)
-				id = values.length - 1;
-			return values[id];
-		}
-
-		public static int size() {
-			return Operations.values().length;
-		}
-	}
 
 	private static OptimizationProgressWindow progressWindow;
 	private static AssesmentWindow assesmentWindow;
@@ -185,7 +169,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	}
 
 	private boolean batch;
-	private Operations functionality;
+	private Operation functionality;
 	private File resourceEnvironmentFile, usageFile, allocationFile,
 	repositoryFile, lineConfFile, usageModelExtFile,
 	resourceEnvExtFile, constraintFile;
@@ -213,7 +197,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				null, null, null, 100, 10000, 300, null, null);
 	}
 
-	public Space4Cloud(boolean batch, Operations functionality,
+	public Space4Cloud(boolean batch, Operation functionality,
 			File resourceEnvironmentFile, String resFolder, File usageFile,
 			File allocationFile, File repositoryFile, String solver,
 			File lineConfFile, File usageModelExtFile, File resourceEnvExtFile,
@@ -239,7 +223,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 	}
 
-	public Space4Cloud(Operations operation, String basePath,
+	public Space4Cloud(Operation operation, String basePath,
 			File usageModelExtFile, File resourceEnvExtFile,
 			File constraintFile, int testFrom, int testTo, int step, String databaseConnectionProperties, File optimizationConfigurationFile) {
 		this(true, operation, Paths
@@ -252,7 +236,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				resourceEnvExtFile, constraintFile, testFrom, testTo, step,databaseConnectionProperties,optimizationConfigurationFile);
 	}
 
-	public Space4Cloud(Operations operation, String basePath,
+	public Space4Cloud(Operation operation, String basePath,
 			File usageModelExtFile, File resourceEnvExtFile,
 			File constraintFile, int testFrom, int testTo, int step) {
 		this(operation, basePath, usageModelExtFile, resourceEnvExtFile, constraintFile, testFrom, testTo, step, null, null);
@@ -272,10 +256,10 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		// Object[] options = { Constants.ASSESSMENT, Constants.OPTIMIZATION,
 		// Constants.ROBUSTNESS, Constants.CANCEL };
 
-		Object[] options = new Object[Operations.size()];
+		Object[] options = new Object[Operation.size()];
 
 		int i = 0;
-		for (Operations o : Operations.values())
+		for (Operation o : Operation.values())
 			options[i++] = o.toString();
 
 		int id = JOptionPane.showOptionDialog(null,
@@ -283,7 +267,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
 				null, options, options[options.length - 1]);
 
-		functionality = Operations.getById(id);
+		functionality = Operation.getById(id);
 	}
 
 	private void askForSolver() {
@@ -447,12 +431,12 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		LoadModel lm;
 		if (!batch) {
 
-			functionality = Operations.Exit;
+			functionality = Operation.Exit;
 
 			askForFunctionality();
 
 			// in case the user cancelled exit
-			if (functionality == Operations.Exit) {
+			if (functionality == Operation.Exit) {
 				cleanExit();
 				return null;
 			}
@@ -755,7 +739,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 
 		int n = 0; // 0 = generate the solution by default, 1 otherwise
-		if (!batch && functionality != Operations.Assessment) {
+		if (!batch && functionality != Operation.Assessment) {
 			/*
 			 * Here I (Riccardo B. Desantis) am implementing the generation of
 			 * the first solution using cplex and the tool made by Alexander
@@ -774,7 +758,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 			programLogger.debug("Initial Solution generation: " + n);
 		}
-		if (n == 0 && !batch && functionality == Operations.Robustness) {
+		if (n == 0 && !batch && functionality == Operation.Robustness) {
 			try {
 				getProvidersFromExtension();
 			} catch (ParserConfigurationException | SAXException | IOException
@@ -791,7 +775,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			resourceEnvExtFile = new File("none");
 			initialSolution = new File("none");
 
-		} else if (n == 0 && functionality != Operations.Assessment) {
+		} else if (n == 0 && functionality != Operation.Assessment) {
 			try {
 				getProvidersFromExtension();
 			} catch (ParserConfigurationException | SAXException | IOException
@@ -1407,7 +1391,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 			for (int attempt = 1; attempt <= attempts; ++attempt) {
 				Space4Cloud s4c = new Space4Cloud(true,
-						Operations.Optimization, resourceEnvironmentFile,
+						Operation.Optimization, resourceEnvironmentFile,
 						resFolder + File.separator + testValue + File.separator
 						+ attempt, usageFile, allocationFile,
 						repositoryFile, solver, lineConfFile, f,
