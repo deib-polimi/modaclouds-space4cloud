@@ -15,8 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.chart;
 
-import it.polimi.modaclouds.space4cloud.utils.Constants;
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
@@ -36,6 +35,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michele Ciavotta The target of this class is to create a
@@ -53,8 +53,7 @@ public class Logger2JFreeChartImage {
 	private int height = 300;
 	final ChartCreator chartCreator = new ChartCreator("");
 
-	private static final Logger logger = LoggerHelper
-			.getLogger(Logger2JFreeChartImage.class);
+	private static final Logger logger = LoggerFactory.getLogger(Logger2JFreeChartImage.class);
 
 	private static final int MAX_SHOW_SIZE = 500;
 
@@ -156,7 +155,7 @@ public class Logger2JFreeChartImage {
 
 			// Path path = Paths.get(path2save);
 			Path path = Paths.get(
-					Constants.getInstance().ABSOLUTE_WORKING_DIRECTORY,
+					Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,
 					path2save);
 			if (Files.notExists(path.getParent()))
 				Files.createDirectory(path.getParent());

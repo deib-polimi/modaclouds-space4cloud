@@ -15,8 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -24,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.time.StopWatch;
+import org.slf4j.LoggerFactory;
 
 public class Logger implements Runnable {
 	private BufferedReader in;
@@ -32,8 +31,7 @@ public class Logger implements Runnable {
 	private boolean connected = false;
 	private Map<String, String> evaluations = new HashMap<String, String>();
 	private Map<String, StopWatch> timers = new HashMap<String, StopWatch>();
-	private static final org.slf4j.Logger logger = LoggerHelper
-			.getLogger(Logger.class);
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Logger.class);
 	private static final Object SUBMITTED = "SUBMITTED";
 	private static final Object SOLVED = "SOLVED";
 

@@ -33,15 +33,14 @@ public class ResourceEnvironmentExtentionLoader extends
 	 * @throws IOException
 	 * @throws JAXBException
 	 */
-	public ResourceEnvironmentExtentionLoader(File extensionFile)
+	public ResourceEnvironmentExtentionLoader(File resourceEnvExtension)
 			throws ParserConfigurationException, SAXException, IOException,
 			JAXBException {
 		// build structures
-		super(extensionFile, false);
+		super(resourceEnvExtension,false);
 
 		// load the model
-		ResourceModelExtension loadedExtension = XMLHelper.deserialize(
-				extension.toURI().toURL(), ResourceModelExtension.class);
+		ResourceModelExtension loadedExtension = XMLHelper.deserialize(resourceEnvExtension.toURI().toURL(),ResourceModelExtension.class);
 
 		// fill structures
 		for (ResourceContainer container : loadedExtension

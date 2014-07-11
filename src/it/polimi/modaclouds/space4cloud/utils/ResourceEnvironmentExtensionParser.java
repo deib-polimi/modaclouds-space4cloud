@@ -25,12 +25,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -38,8 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class ResourceEnvironmentExtensionParser {
-
-	protected File extension;
+	protected File resourceEnvExtension;
 	protected Map<String, String> serviceTypes = new HashMap<>();
 	protected Map<String, String> providers = new HashMap<>();
 	protected Map<String, String> serviceNames = new HashMap<>();
@@ -47,20 +46,20 @@ public class ResourceEnvironmentExtensionParser {
 	protected Map<String, int[]> instanceReplicas = new HashMap<>();
 	protected Map<String, String> serviceLocations = new HashMap<>();
 	protected static final int HOURS = 24;
+	private static final Logger logger = Logger.getLogger(ResourceEnvironmentExtensionParser.class);
 
 	DocumentBuilderFactory dbFactory;
 	DocumentBuilder dBuilder;
 	Document doc;
 
-	public ResourceEnvironmentExtensionParser(File extensionFile)
+	public ResourceEnvironmentExtensionParser(File resourceEnvExtension)
 			throws ParserConfigurationException, SAXException, IOException {
-		this(extensionFile, true);
+		this(resourceEnvExtension,true);
 	}
 
-	public ResourceEnvironmentExtensionParser(File extensionFile, boolean parse)
+	public ResourceEnvironmentExtensionParser(File resourceEnvExtension,boolean parse)
 			throws ParserConfigurationException, SAXException, IOException {
-
-		this.extension = extensionFile;
+		this.resourceEnvExtension = resourceEnvExtension;
 		if (parse)
 			parse();
 	}
@@ -103,18 +102,15 @@ public class ResourceEnvironmentExtensionParser {
 			Transformer transformer = transformerFactory.newTransformer();
 
 			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(extension);
+			StreamResult result = new StreamResult(resourceEnvExtension);
+										
 
 			// Output to console for testing
 			// StreamResult result = new StreamResult(System.out);
 
 			transformer.transform(source, result);
-		} catch (TransformerConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error in transforming the xml",e);
 		}
 	}
 
@@ -165,7 +161,7 @@ public class ResourceEnvironmentExtensionParser {
 			IOException {
 		dbFactory = DocumentBuilderFactory.newInstance();
 		dBuilder = dbFactory.newDocumentBuilder();
-		doc = dBuilder.parse(extension);
+		doc = dBuilder.parse(resourceEnvExtension);
 		doc.getDocumentElement().normalize();
 		// parse resource containers
 		NodeList list = doc.getElementsByTagName("resourceContainer");

@@ -25,6 +25,8 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 
 import java.awt.event.ActionEvent;
@@ -42,8 +44,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
 
 /**
  * @author Michele Ciavotta
@@ -66,7 +66,6 @@ public class EvaluationServer implements ActionListener {
 	protected Logger2JFreeChartImage log2png;
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraint;
-	protected String solver = MessageStrings.LQNS_SOLVER;
 	
 
 	protected SeriesHandle seriesHandleExecution;
@@ -86,18 +85,17 @@ public class EvaluationServer implements ActionListener {
 	 * @throws DatabaseConnectionFailureExteption 
 	 * 
 	 */
-	public EvaluationServer(String solver) throws DatabaseConnectionFailureExteption {
+	public EvaluationServer() throws DatabaseConnectionFailureExteption {
 		// set min to 24
 		costEvaulator = new CostEvaluator();
 		executor = new ThreadPoolExecutor(24, nMaxThreads, 200,
 				TimeUnit.MILLISECONDS, queue);
-		if (solver.equals(MessageStrings.LINE)) {
+		if (Configuration.SOLVER==Solver.LINE) {
 			lineHandler = LineServerHandlerFactory.getHandler();
 			lineHandler.connectToLINEServer();
 		}
 		timer.start();
 		timer.split();
-		this.solver = solver;
 
 	}
 
@@ -136,13 +134,12 @@ public class EvaluationServer implements ActionListener {
 		return totalCost;
 	}
 
-	public void evaluateInstance(Instance instance, String solver) {
+	public void evaluateInstance(Instance instance) {
 		instanceEvaluationTerminated = false;
 		if (!instance.isEvaluated()) {
-			SolutionEvaluator eval = new SolutionEvaluator(instance, solver,
-					null);
+			SolutionEvaluator eval = new SolutionEvaluator(instance, null);
 			eval.addListener(this);
-			if (solver.equals(MessageStrings.LQNS_SOLVER))
+			if (Configuration.SOLVER == Solver.LQNS)
 				eval.parseResults();
 			else {
 				eval.setLineServerHandler(lineHandler);
@@ -171,7 +168,7 @@ public class EvaluationServer implements ActionListener {
 			
 			
 			//reset the logger for line server handler
-			if(!solver.equals(MessageStrings.LQNS_SOLVER)){
+			if(Configuration.SOLVER!=Solver.LQNS){
 				lineHandler.clear();
 			}
 
@@ -179,10 +176,9 @@ public class EvaluationServer implements ActionListener {
 			for (Instance i : instanceList) {
 				// we need to reevaluate it only if something has changed.
 				if (!i.isEvaluated()) {
-					SolutionEvaluator eval = new SolutionEvaluator(i, solver,
-							sol);
+					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
 					eval.addListener(this);
-					if (solver.equals(MessageStrings.LQNS_SOLVER))
+					if (Configuration.SOLVER == Solver.LQNS)
 						executor.execute(eval);
 					else {
 						eval.setLineServerHandler(lineHandler);
@@ -292,10 +288,6 @@ public class EvaluationServer implements ActionListener {
 		return nMaxThreads;
 	}
 
-	public String getSolver() {
-		return solver;
-	}
-
 	public CostEvaluator getCostEvaulator() {
 		return costEvaulator;
 	}
@@ -332,11 +324,6 @@ public class EvaluationServer implements ActionListener {
 
 	public void setMachineLog(Logger2JFreeChartImage logVM) {
 		this.logVm = logVM;		
-	}
-
-	public void setSolver(String solver) {
-		this.solver = solver;
-
 	}
 
 	public Map<String, Cache<String, Integer>> getLongTermFrequencyMemory() {

@@ -18,6 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -27,7 +29,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -36,6 +37,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -47,8 +49,7 @@ import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
  * The Class RunConfigurationsDerivation.
  */
 public class RunConfigurationsHandler {
-	private static final Logger logger = LoggerHelper
-			.getLogger(RunConfigurationsHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(RunConfigurationsHandler.class);
 	/** The launch configs. */
 	private ILaunchConfiguration launchConfig;
 
@@ -61,29 +62,25 @@ public class RunConfigurationsHandler {
 	/** The root. */
 	private Element root;
 
-	/** The c. */
-	private Constants constant = Constants.getInstance();
-
 	/**
 	 * Instantiates a new run configurations derivation.
 	 */
 	public RunConfigurationsHandler() {
-		logger.debug("Initializing run configuration from: "
-				+ constant.ABSOLUTE_WORKING_DIRECTORY + " and "
-				+ constant.LAUNCH_CONFIG);
+		
 		// create the launch configuration
-		Path launchConfigPath = Paths.get(constant.ABSOLUTE_WORKING_DIRECTORY,
-				constant.LAUNCH_CONFIG);
-		URL template;
+		Path launchConfigPath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.LAUNCH_CONFIG);		
+		logger.debug("Initializing run configuration from: "+launchConfigPath);
+		URL template = null;
 
 		// choose the template according to the solver
-		if (constant.SOLVER.equals(MessageStrings.LQNS_SOLVER))
+		if (Configuration.SOLVER == Solver.LQNS)
 			template = getClass().getResource("/launch_configs/LQNS.launch");
-		else if (constant.SOLVER.equals(MessageStrings.LINE))
-			template = getClass().getResource(
-					"/launch_configs/PerformanceEngine.launch");
-		else
-			template = getClass().getResource("/launch_configs/SimuCom.launch");
+		else if (Configuration.SOLVER == Solver.LINE)
+			template = getClass().getResource("/launch_configs/PerformanceEngine.launch");
+		else			
+			logger.error("Wrong Solver Selection");
+		
+//			template = getClass().getResource("/launch_configs/SimuCom.launch");
 
 		logger.debug("Using template: " + template);
 
@@ -130,30 +127,17 @@ public class RunConfigurationsHandler {
 			else if (x.getAttribute("key").equals("perfEngPropFile"))
 				e_line_prop = x;
 		}
-		e_repo.setAttribute("value", constant.REPOSITORY_MODEL);
-		e_alloc.setAttribute("value", constant.ALLOCATION_MODEL);
-		e_usage.setAttribute("value", constant.USAGE_MODEL);
-		e_out.setAttribute("value", constant.ABSOLUTE_WORKING_DIRECTORY
-				+ constant.PERFORMANCE_RESULTS_FOLDER);
+		e_repo.setAttribute("value", Configuration.PALLADIO_REPOSITORY_MODEL);
+		e_alloc.setAttribute("value", Configuration.PALLADIO_ALLOCATION_MODEL);
+		e_usage.setAttribute("value", Configuration.PALLADIO_USAGE_MODEL);
+		Path outPath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.PERFORMANCE_RESULTS_FOLDER);
+		e_out.setAttribute("value", outPath.toString());
 		if (e_line_prop != null) {
-			e_line_prop.setAttribute("value", constant.LINE_PROPERTIES_FILE);
+			e_line_prop.setAttribute("value", Configuration.LINE_PROP_FILE);
 		}
 
 		// save the modified configuration
 		DOM.serialize(doc, launchConfigurationFile);
-
-		// refresh the project in the workspace
-		try {
-			ResourcesPlugin
-					.getWorkspace()
-					.getRoot()
-					.getProject(constant.PROJECT_NAME)
-					.refreshLocal(IResource.DEPTH_INFINITE,
-							new NullProgressMonitor());
-		} catch (CoreException e) {
-			logger.error("error in refreshing the workspace", e);
-		}
-
 	}
 
 	/**
@@ -161,25 +145,16 @@ public class RunConfigurationsHandler {
 	 */
 	public void launch() {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IPath location = org.eclipse.core.runtime.Path.fromOSString(Paths.get(
-				constant.ABSOLUTE_WORKING_DIRECTORY, constant.LAUNCH_CONFIG)
-				.toString());
+		Path launchConfigPath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.LAUNCH_CONFIG);
+		IPath location = org.eclipse.core.runtime.Path.fromOSString(launchConfigPath.toString());
 		IFile ifile = workspace.getRoot().getFileForLocation(location);
 		launchConfig = DebugPlugin.getDefault().getLaunchManager()
 				.getLaunchConfiguration(ifile);
 		try {
 			launchConfig.launch("run", new NullProgressMonitor());
-
-			// refresh the project in the workspace
-			ResourcesPlugin
-					.getWorkspace()
-					.getRoot()
-					.getProject(constant.PROJECT_NAME)
-					.refreshLocal(IResource.DEPTH_INFINITE,
-							new NullProgressMonitor());
+		
 		} catch (CoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while running launch configuration "+launchConfig.getName());			
 		}
 	}
 

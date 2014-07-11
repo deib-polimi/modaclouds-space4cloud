@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -26,8 +27,7 @@ public class UsageModelExtensionParser {
 	private DocumentBuilder dBuilder;
 	private Document doc;
 	private File extension;
-	private static final Logger logger = LoggerHelper
-			.getLogger(UsageModelExtensionParser.class);
+	private static final Logger logger = LoggerFactory.getLogger(UsageModelExtensionParser.class);
 
 	public UsageModelExtensionParser(File extensionFile)
 			throws ParserConfigurationException, SAXException, IOException,
@@ -57,46 +57,6 @@ public class UsageModelExtensionParser {
 
 	private void parse() throws ParserConfigurationException, SAXException,
 			IOException, JAXBException {
-		/*
-		 * UsageModelExtensions umes =
-		 * XMLHelper.deserialize(extension.toURI().toURL(),
-		 * UsageModelExtensions.class);
-		 * 
-		 * //Parse usage model extension UsageModelExtension usageModelExt =
-		 * umes.getUsageModelExtension();
-		 * 
-		 * //retreive the usage scenario id String usageScenarioId =
-		 * usageModelExt.getScenarioId();
-		 * 
-		 * //if the workload is closed get hour, population and think time if
-		 * (usageModelExt.getClosedWorkload() != null) { //get all the workload
-		 * elements inside the closed workload
-		 * 
-		 * ClosedWorkload cw = usageModelExt.getClosedWorkload(); Double[] time
-		 * = new Double[HOURS]; Integer[] pop = new Integer[HOURS];
-		 * 
-		 * for (ClosedWorkloadElement we : cw.getWorkloadElement()) { int hour =
-		 * we.getHour()-1; time[hour] = new Double(we.getThinkTime()); pop[hour]
-		 * = we.getPopulation(); }
-		 * 
-		 * thinkTimes.put(usageScenarioId, time);
-		 * populations.put(usageScenarioId, pop);
-		 * 
-		 * } else if (usageModelExt.getOpenWorkload() != null) { //get the hour
-		 * and the population
-		 * 
-		 * OpenWorkload ow = usageModelExt.getOpenWorkload(); Integer[] pop =
-		 * new Integer[HOURS];
-		 * 
-		 * for (OpenWorkloadElement we : ow.getWorkloadElement()) { int hour =
-		 * we.getHour()-1; pop[hour] = we.getPopulation(); }
-		 * 
-		 * populations.put(usageScenarioId, pop);
-		 * 
-		 * } else { logger.error(
-		 * "The Usage model extension should specify exactly one open or closed worklaod element"
-		 * ); return; }
-		 */
 
 		dbFactory = DocumentBuilderFactory.newInstance();
 		dBuilder = dbFactory.newDocumentBuilder();

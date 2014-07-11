@@ -18,8 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -44,6 +42,7 @@ import javax.swing.event.ListSelectionListener;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -54,8 +53,7 @@ import org.slf4j.Logger;
  */
 public class LoadModel extends OperationCompletedClass {
 
-	private static final Logger programLogger = LoggerHelper
-			.getLogger(LoadModel.class);
+	private static final Logger programLogger = LoggerFactory.getLogger(LoadModel.class);
 
 	public static List<File> explore(File root, final String ext) {
 		return explore(root, ext, Integer.MIN_VALUE);

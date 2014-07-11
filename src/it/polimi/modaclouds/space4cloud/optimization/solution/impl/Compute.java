@@ -15,11 +15,10 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Class Compute.
@@ -52,7 +51,7 @@ public class Compute extends IaaS {
 	/** The utilization. */
 	private double utilization;
 
-	private static final Logger logger = LoggerHelper.getLogger(Compute.class);
+	private static final Logger logger = LoggerFactory.getLogger(Compute.class);
 
 	/**
 	 * Instantiates a new compute.

@@ -15,6 +15,8 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,12 +41,11 @@ public class LineServerHandler {
 	private Logger socketLog;
 	private boolean localInstance = false;
 	private Process proc;
-	private File propFile;
 	private File directory = null;
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LineServerHandler.class);
 
-	public LineServerHandler(File linePropFile) {
-		propFile = linePropFile;
+	public LineServerHandler() {
+		
 	}
 
 
@@ -80,7 +81,7 @@ public class LineServerHandler {
 
 		
 		try {
-			FileInputStream propInput = new FileInputStream(propFile);
+			FileInputStream propInput = new FileInputStream(Configuration.LINE_PROP_FILE);
 			lineProperties.load(propInput);
 			propInput.close();
 			if (host == null)
@@ -168,8 +169,11 @@ public class LineServerHandler {
 
 	public boolean launchLine() {
 		try {
+//			String lineInvocation = "LINE" + " " + "\""
+//					+ propFile.getAbsolutePath().replace('\\', '/') + "\"";
+			
 			String lineInvocation = "LINE" + " " + "\""
-					+ propFile.getAbsolutePath().replace('\\', '/') + "\"";
+					+ Configuration.LINE_PROP_FILE.replace('\\', '/') + "\"";
 			logger.debug(lineInvocation);
 			ProcessBuilder pb = new ProcessBuilder(lineInvocation.split("\\s"));
 			pb.directory(directory);

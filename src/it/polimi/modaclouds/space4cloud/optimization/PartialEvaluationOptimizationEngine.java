@@ -16,13 +16,12 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.gui.PartialEvaluationConfiguration;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,23 +31,26 @@ import org.slf4j.LoggerFactory;
 public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 	private static double DEFAULT_SCALE_IN_FACTOR = 2;
-	private static double MAX_SCALE_IN_ITERATIONS = 25;
-	private static double MAX_SCALE_IN_CONV_ITERATIONS = 7;
+	private static int MAX_SCALE_IN_ITERATIONS = 25;
+	private static int MAX_SCALE_IN_CONV_ITERATIONS = 7;
 	private static final Logger logger = LoggerFactory
 			.getLogger(PartialEvaluationOptimizationEngine.class);
 
-	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) throws DatabaseConnectionFailureExteption {
+	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) throws DatabaseConnectionFailureExteption {	
 		super(handler);
+		loadConfiguration();
 	}	
 	
-	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, File configurationFile, boolean batch) throws DatabaseConnectionFailureExteption {
-		super(handler, configurationFile,batch);		
+	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
+		super(handler, batch);
+		loadConfiguration();
 	}
 	
-	
-	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
-
-		super(handler, batch);
+	protected void loadConfiguration(){
+		super.loadConfiguration();
+		DEFAULT_SCALE_IN_FACTOR = Configuration.SCALE_IN_FACTOR;
+		MAX_SCALE_IN_ITERATIONS = Configuration.SCALE_IN_ITERS;
+		MAX_SCALE_IN_CONV_ITERATIONS = Configuration.SCALE_IN_CONV_ITERS;
 	}
 
 	@Override
@@ -169,34 +171,6 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 		return true;
 
 	}
-	@Override
-	protected void loadConfiguration(File configurationFile, boolean batch) {
 
-		PartialEvaluationConfiguration optLoader = new PartialEvaluationConfiguration();
-		// set the default configuration file
-		if(configurationFile!= null)
-			optLoader.setPreferenceFile(configurationFile.getAbsolutePath());
-		else
-			optLoader.setPreferenceFile("/config/OptEngine.properties");
-
-		if (!batch) {
-			// show the frame and ask let the user interact
-			optLoader.setVisible(true);
-			while (!optLoader.isSaved())
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					logger.error("Error in loading the configuration", e);
-				}
-		}
-		MAXMEMORYSIZE = optLoader.getMaxMemorySize();
-		MAXITERATIONS = optLoader.getMaxIterations();
-		MAXFEASIBILITYITERATIONS = optLoader.getMaxFeasIter();
-		SELECTION_POLICY = optLoader.getPolicy();
-		DEFAULT_SCALE_IN_FACTOR = optLoader.getDefaultScaleInFact();
-		MAX_SCALE_IN_ITERATIONS = optLoader.getMaxScaleInIters();
-		MAX_SCALE_IN_CONV_ITERATIONS = optLoader.getMaxScaleInConvIters();
-
-	}
 
 }

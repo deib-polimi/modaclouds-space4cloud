@@ -47,8 +47,8 @@ public class EvaluationProxy extends EvaluationServer {
 		return miss;
 	}
 
-	public EvaluationProxy(String solver) throws DatabaseConnectionFailureExteption {
-		super(solver);
+	public EvaluationProxy() throws DatabaseConnectionFailureExteption {
+		super();
 	}
 
 	@Override

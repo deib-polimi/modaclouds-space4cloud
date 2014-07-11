@@ -28,21 +28,21 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
-
-import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
+import org.slf4j.LoggerFactory;
 
 public class SimpleEvaluator {
 
-	protected Constants c = Constants.getInstance();
 	protected DataHandler dataHandler = DataHandlerFactory.getHandler();
 	protected LqnResultParser parser;
 	protected Solution initialSolution;
@@ -52,8 +52,7 @@ public class SimpleEvaluator {
 	private Logger2JFreeChartImage rtLogger;
 	private Logger2JFreeChartImage utilLogger;
 
-	protected static final Logger logger = LoggerHelper
-			.getLogger(SimpleEvaluator.class);
+	protected static final Logger logger = LoggerFactory.getLogger(SimpleEvaluator.class);
 
 	public SimpleEvaluator() throws DatabaseConnectionFailureExteption {
 		dataHandler = DataHandlerFactory.getHandler();	
@@ -277,13 +276,15 @@ public class SimpleEvaluator {
 
 		Map<Integer, Map<String, Double>> utilizations = new HashMap<>();
 		Map<Integer, Map<String, Double>> responseTimes = new HashMap<>();
-		File resultFolder = new File(c.ABSOLUTE_WORKING_DIRECTORY
-				+ System.getProperty("file.separator")
-				+ c.PERFORMANCE_RESULTS_FOLDER);
+
+		File resultFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+				Configuration.WORKING_DIRECTORY,
+				Configuration.PERFORMANCE_RESULTS_FOLDER).toFile();
+
 		File[] subFolder = resultFolder.listFiles();
 		final String resultFileIdentifier;
 		LqnResultParser parser;
-		if (c.SOLVER.equals(MessageStrings.LQNS_SOLVER))
+		if (Configuration.SOLVER == Solver.LQNS)
 			resultFileIdentifier = ".lqxo";
 		else
 			resultFileIdentifier = "_line.xml";
@@ -309,7 +310,7 @@ public class SimpleEvaluator {
 
 				logger.info("Parsing hour: " + hour + " file: "
 						+ resultFiles[0].getAbsolutePath());
-				if (c.SOLVER.equals(MessageStrings.LQNS_SOLVER))
+				if (Configuration.SOLVER == Solver.LQNS)
 					parser = new LQNSResultParser(resultFiles[0].toPath());
 				else
 					parser = new LINEResultParser(resultFiles[0].toPath());
@@ -349,14 +350,14 @@ public class SimpleEvaluator {
 
 		for (String s : responseTimes.get(0).keySet())
 			if (functionalities.contains(s)
-					|| c.SOLVER.equals(MessageStrings.LINE))
+					|| Configuration.SOLVER == Solver.LINE)
 				rtSeriesHandlers.put(s, rtLogger.newSeries(s));
 
 		for (int i = 0; i < 24; i++) {
 			logger.info("responseTime: " + i);
 			for (String s : responseTimes.get(i).keySet())
 				if (functionalities.contains(s)
-						|| c.SOLVER.equals(MessageStrings.LINE))
+						|| Configuration.SOLVER == Solver.LINE)
 					rtLogger.addPoint2Series(rtSeriesHandlers.get(s), i,
 							responseTimes.get(i).get(s));
 		}
@@ -397,8 +398,7 @@ public class SimpleEvaluator {
 							+ responseTimes.get(i).get(k));
 		}
 
-		initialSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY
-				+ "solution.xml");
+		initialSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME));
 	}
 
 }

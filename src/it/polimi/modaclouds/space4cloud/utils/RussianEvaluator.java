@@ -5,7 +5,6 @@ import it.polimi.modaclouds.space4clouds.milp.Solver;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -16,8 +15,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class RussianEvaluator {
-
-	protected Constants c = Constants.getInstance();
 
 	protected Solver solver;
 
@@ -36,11 +33,16 @@ public class RussianEvaluator {
 	private static String USERNAME = "moda";
 	private static String PASSWORD = "modaclouds";
 	
-	public RussianEvaluator(File usageModelExtFile, File constraintFile) {
-		solver = new Solver(c.PROJECT_PATH, c.WORKING_DIRECTORY,
-				c.RESOURCE_MODEL, c.USAGE_MODEL, c.ALLOCATION_MODEL, c.REPOSITORY_MODEL,
-				Paths.get(Paths.get(c.RESOURCE_MODEL).getParent().toString(), "default.system").toString(),
-				constraintFile.getAbsolutePath(), usageModelExtFile.getAbsolutePath());
+	public RussianEvaluator() {
+		solver = new Solver(Configuration.PROJECT_BASE_FOLDER, 
+							Configuration.WORKING_DIRECTORY,
+							Configuration.PALLADIO_RESOURCE_MODEL, 
+							Configuration.PALLADIO_USAGE_MODEL, 
+							Configuration.PALLADIO_ALLOCATION_MODEL,
+							Configuration.PALLADIO_REPOSITORY_MODEL,
+							Configuration.PALLADIO_SYSTEM_MODEL,					
+							Configuration.CONSTRAINTS, 
+							Configuration.USAGE_MODEL_EXTENSION);
 		
 		solver.getOptions().SqlDBUrl = URL;
 		solver.getOptions().DBName = DBNAME;

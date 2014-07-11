@@ -18,8 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -28,6 +26,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -41,8 +40,8 @@ public class DatabaseConnector {
 
 	/** The connection */
 	private static Connection conn=null;
-	protected static final Logger logger = LoggerHelper.getLogger(DatabaseConnector.class);
-//	protected static final Logger logger = LoggerFactory.getLogger(DatabaseConnector.class);
+	protected static final Logger logger = LoggerFactory.getLogger(DatabaseConnector.class);
+//	
 
 	public static String url = "jdbc:mysql://109.231.122.191:3306/";		
 	public static String dbName = "cloud";

@@ -21,6 +21,8 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnHandler;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,14 +60,12 @@ public class SolutionEvaluator implements Runnable {
 	String filePath;
 	String resultfilePath;
 	Instance instance;
-	String solver;
 	LqnHandler lqnHandler;
 	LqnResultParser resultParser;
 	Solution solution;
 	ArrayList<ActionListener> listeners = new ArrayList<>();
 
-	public SolutionEvaluator(Instance instance, String solver, Solution sol) {
-		this.solver = solver;
+	public SolutionEvaluator(Instance instance, Solution sol) {		
 		this.instance = instance;
 		this.lqnHandler = instance.getLqnHandler();
 		filePath = lqnHandler.getLqnFilePath().toAbsolutePath().toString();
@@ -85,7 +85,7 @@ public class SolutionEvaluator implements Runnable {
 	}
 
 	public void parseResults() {
-		if (solver.equals(MessageStrings.LQNS_SOLVER)) {
+		if (Configuration.SOLVER == Solver.LQNS) {
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
 					+ ".lqxo";
 			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
@@ -126,7 +126,7 @@ public class SolutionEvaluator implements Runnable {
 		lqnHandler.saveToFile();
 
 		// run the evaluator
-		if (solver.equals(MessageStrings.LQNS_SOLVER))
+		if (Configuration.SOLVER == Solver.LQNS)
 			runWithLQNS();
 		// Evaluate with LINE
 		else

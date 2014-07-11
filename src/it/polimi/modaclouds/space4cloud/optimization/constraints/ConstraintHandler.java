@@ -26,9 +26,10 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,6 @@ import org.xml.sax.SAXException;
  */
 public class ConstraintHandler {
 
-	File constraintFile;
 	List<Constraint> constraints = new ArrayList<>();
 	private static final Logger logger = LoggerFactory.getLogger(ConstraintHandler.class);
 	public void addConstraint(Constraint constraint){
@@ -54,12 +54,10 @@ public class ConstraintHandler {
 	}	
 
 
-	public void loadConstraints(File selectedFile)
-			throws ParserConfigurationException, SAXException, IOException, JAXBException {
-		constraintFile = selectedFile;
+	public void loadConstraints()
+			throws ParserConfigurationException, SAXException, IOException, JAXBException {		
 		//load from the XML
-		Constraints  loadedConstraints = XMLHelper.deserialize(
-				constraintFile.toURI().toURL(), Constraints.class);
+		Constraints  loadedConstraints = XMLHelper.deserialize(Paths.get(Configuration.CONSTRAINTS).toUri().toURL(),Constraints.class);
 		for(it.polimi.modaclouds.qos_models.schema.Constraint cons:loadedConstraints.getConstraints()){
 			//first get the metric
 			Metric metric = Metric.getMetricFromTag(cons.getMetric());			

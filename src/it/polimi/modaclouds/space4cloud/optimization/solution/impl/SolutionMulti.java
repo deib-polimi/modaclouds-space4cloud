@@ -7,13 +7,13 @@ import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,6 +29,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -42,8 +43,7 @@ import org.w3c.dom.NodeList;
 public class SolutionMulti implements Cloneable, Serializable {
 
 	private static final long serialVersionUID = -9050926347950168327L;
-	private static final Logger logger = LoggerHelper
-			.getLogger(SolutionMulti.class);
+	private static final Logger logger = LoggerFactory.getLogger(SolutionMulti.class);
 
 	public static int getCost(File solution) {
 		int cost = Integer.MAX_VALUE;
@@ -153,7 +153,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return clone;
 	}
 
-	public void exportCSV(String filename) {
+	public void exportCSV(Path filePath) {
 		String text = "";
 
 		text += "total cost: " + getCost() + "\n";
@@ -192,7 +192,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		}
 
 		try {
-			PrintWriter outFile = new PrintWriter(filename);
+			PrintWriter outFile = new PrintWriter(filePath.toFile());
 			outFile.println(text);
 			outFile.close();
 		} catch (FileNotFoundException e) {
@@ -201,7 +201,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		}
 	}
 
-	public void exportLight(String filename) {
+	public void exportLight(Path filePath) {
 		if (!isEvaluated()) {
 			System.err
 					.println("Trying to export a solution that has not been evaluated!");
@@ -311,7 +311,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 					.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(doc);
-			File file = new File(filename);
+			File file = filePath.toFile();
 			StreamResult result = new StreamResult(file);
 			logger.info("Exported in: " + file.getAbsolutePath());
 

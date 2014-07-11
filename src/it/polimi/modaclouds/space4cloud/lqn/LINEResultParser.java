@@ -20,7 +20,6 @@ import it.polimi.modaclouds.space4cloud.line.Processor;
 import it.polimi.modaclouds.space4cloud.line.SEFF;
 import it.polimi.modaclouds.space4cloud.line.Station;
 import it.polimi.modaclouds.space4cloud.line.Workload;
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 import it.polimi.modaclouds.space4cloud.utils.XMLHelper;
 
 import java.io.File;
@@ -49,6 +48,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -59,8 +59,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	private static final String SCHEMA_LOCATION = "http://www.modaclouds.eu/xsd/2013/6/lineResult lineResult.xsd";
 	private static final String NAMESPACE = "http://www.modaclouds.eu/xsd/2013/6/lineResult";
 
-	private static final Logger logger = LoggerHelper
-			.getLogger(LINEResultParser.class);
+	private static final Logger logger = LoggerFactory.getLogger(LINEResultParser.class);
 
 	public static double convertStringToDouble(String toConvert)
 			throws ParseException {

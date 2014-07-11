@@ -18,7 +18,6 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -43,8 +43,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable,
 	private String id;
 	private List<Functionality> functionalities = new ArrayList<Functionality>();
 	private Tier container;
-	private static final Logger logger = LoggerHelper
-			.getLogger(Component.class);
+	private static final Logger logger = LoggerFactory.getLogger(Component.class);
 
 	public Component(String id) {
 		this.id = id;

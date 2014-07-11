@@ -23,7 +23,6 @@ import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.gui.OptimizationConfigurationFrame;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
@@ -39,8 +38,8 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
-import it.polimi.modaclouds.space4cloud.utils.Constants;
-import it.polimi.modaclouds.space4cloud.utils.LoggerHelper;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
 import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
@@ -119,19 +118,17 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	protected DataHandler dataHandler;
 
-	protected Constants c = Constants.getInstance();
-
-	protected SelectionPolicies SELECTION_POLICY;
-
 	protected int numberOfIterations;
 
 	protected int numberOfFeasibilityIterations;
 
+	protected Policy SELECTION_POLICY;
+	
 	protected int MAXMEMORYSIZE = 10;
 
 	private static final int MAX_SCRAMBLE_NO_CHANGE = 10;
 
-	protected int MAXITERATIONS = 20; /*
+	protected int MAX_SCRUMBLE_ITERS = 20; /*
 	 * 40 Now it is a constant in the future it
 	 * might become a parameter
 	 */
@@ -164,7 +161,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	protected EvaluationServer evalServer;
 
-	protected Logger logger = LoggerHelper.getLogger(OptEngine.class);
+	protected Logger logger = LoggerFactory.getLogger(OptEngine.class);
 	protected Logger optimLogger = LoggerFactory.getLogger("optimLogger");
 	protected Logger scrambleLogger = LoggerFactory.getLogger("scrambleLogger");
 
@@ -185,21 +182,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 *            : the constraint handler
 	 * @throws DatabaseConnectionFailureExteption
 	 */
-	public OptEngine(ConstraintHandler handler, boolean batch)
-			throws DatabaseConnectionFailureExteption {
-		this(handler, null, batch);
-	}
-
-	/**
-	 * Instantiates a new opt engine.
-	 * 
-	 * @param handler
-	 *            : the constraint handler
-	 * @throws DatabaseConnectionFailureExteption
-	 */
-	public OptEngine(ConstraintHandler handler, File configurationFile,
+	public OptEngine(ConstraintHandler handler,
 			boolean batch) throws DatabaseConnectionFailureExteption {
 
+		loadConfiguration();
+		
 		try {
 			costLogImage = new Logger2JFreeChartImage();
 			logVm = new Logger2JFreeChartImage("vmCount.properties");
@@ -215,7 +202,6 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		optimLogger.debug("Random seed: " + seed);
 		random = new Random(seed);
 
-		loadConfiguration(configurationFile, batch); // false = show gui, true =
 		// batch mode
 
 		showConfiguration();
@@ -227,7 +213,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		dataHandler = DataHandlerFactory.getHandler();
 
 		/* this object is a server needed to evaluate the solutions */
-		this.evalServer = new EvaluationProxy(c.SOLVER);
+		this.evalServer = new EvaluationProxy();
 		this.evalServer.setConstraintHandler(handler);
 		this.evalServer.setLog2png(costLogImage);
 		this.evalServer.setMachineLog(logVm);
@@ -240,7 +226,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected void showConfiguration() {
 		optimLogger.info("Running the optimization with parameters:");
 		optimLogger.info("Max Memory Size: " + MAXMEMORYSIZE);
-		optimLogger.info("Max Scrumble Iterations: " + MAXITERATIONS);
+		optimLogger.info("Max Scrumble Iterations: " + MAX_SCRUMBLE_ITERS);
 		optimLogger.info("Max Feasibility Iterations: "
 				+ MAXFEASIBILITYITERATIONS);
 		optimLogger.info("Selection Policy: " + SELECTION_POLICY);
@@ -266,7 +252,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		MoveChangeWorkload move = new MoveChangeWorkload(sol);
 
 		try {
-			move.modifyWorkload(new File(c.USAGE_MODEL_EXT_FILE), rate);
+			move.modifyWorkload(new File(Configuration.USAGE_MODEL_EXTENSION), rate);
 			logger.debug("done!\nThe new values are: ");
 			for (Instance i : sol.getApplications())
 				logger.debug("%d ", i.getWorkload());
@@ -396,7 +382,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 					for (double rate : rates) {
 						logger.debug((int) (rate * 100) + " ");
 					}
-					
+
 
 					ratesMap.put(sol.getProvider(), rates);
 				}
@@ -446,7 +432,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			MoveChangeWorkload move = new MoveChangeWorkload(sol);
 
 			try {
-				move.modifyWorkload(new File(c.USAGE_MODEL_EXT_FILE),
+				move.modifyWorkload(new File(Configuration.USAGE_MODEL_EXTENSION),
 						ratesMap.get(sol.getProvider()));
 				logger.debug("Done! The new values for "
 						+ sol.getProvider() + " are: ");
@@ -514,7 +500,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * @return a IaaS resource on which to perform a scale operation.
 	 */
 	protected Tier findResource(Instance application, String id,
-			SelectionPolicies policy) {
+			Policy policy) {
 
 		Tier resource = null;
 		IConstrainable constrainedResource = application
@@ -533,16 +519,16 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			// Resource from
 			Functionality selectedFun = null;
 			// with random policy
-			if (policy == SelectionPolicies.RANDOM)
+			if (policy == Policy.Random)
 				selectedFun = functionalityChain.get(new Random()
 				.nextInt(functionalityChain.size()));
 
 			// just the first of the list
-			else if (policy == SelectionPolicies.RANDOM)
+			else if (policy == Policy.First)
 				selectedFun = functionalityChain.get(0);
 
 			// the functionality that takes more time in the chain
-			else if (policy == SelectionPolicies.LONGEST) {
+			else if (policy == Policy.Longest) {
 				selectedFun = functionalityChain.get(0);
 				for (Functionality f : functionalityChain)
 					if (f.isEvaluated()
@@ -552,7 +538,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			}
 
 			// the functionality whose resource has higher utilization
-			else if (policy == SelectionPolicies.UTILIZATION) {
+			else if (policy == Policy.Utilization) {
 				selectedFun = functionalityChain.get(0);
 				resource = selectedFun.getContainer().getContainer();
 				for (Functionality f : functionalityChain) {
@@ -667,7 +653,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	}
 
 	public int getMaxIterations() {
-		return MAXITERATIONS;
+		return MAX_SCRUMBLE_ITERS;
 	}
 
 	public Logger2JFreeChartImage getVMLogger() {
@@ -741,7 +727,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 	protected boolean isMaxNumberOfIterations() {
 
-		if (numberOfIterations <= MAXITERATIONS) {
+		if (numberOfIterations <= MAX_SCRUMBLE_ITERS) {
 			return false;
 		}
 		return true;
@@ -823,41 +809,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		}// while
 
 	}
-	
-	
+
+
 	@Override
 	protected void done(){ 
 		evalServer.terminateServer();
 		super.done();
 	}
-	
-	
-	
-	protected void loadConfiguration(File configurationFile, boolean batch) {
-
-		OptimizationConfigurationFrame optLoader = new OptimizationConfigurationFrame();
-		// set the default configuration file
-		if (configurationFile != null)
-			optLoader.setPreferenceFile(configurationFile.getAbsolutePath());
-		else
-			optLoader.setPreferenceFile("/config/OptEngine.properties");
-
-		if (!batch) {
-			// show the frame and ask let the user interact
-			optLoader.setVisible(true);
-			while (!optLoader.isSaved())
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					logger.error("Error in loading the configuration", e);
-				}
-		}
-		MAXMEMORYSIZE = optLoader.getMaxMemorySize();
-		MAXITERATIONS = optLoader.getMaxIterations();
-		MAXFEASIBILITYITERATIONS = optLoader.getMaxFeasIter();
-		SELECTION_POLICY = optLoader.getPolicy();
-
-	}
 
 	/**
 	 * Load initial solution. The aim of this method is to load the initial
@@ -870,11 +828,9 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * @throws ParserConfigurationException
 	 * @throws JAXBException
 	 */
-	public void loadInitialSolution(File resourceEnvExtension,
-			File usageModelExtension) throws ParserConfigurationException,
+	public void loadInitialSolution() throws ParserConfigurationException,
 			SAXException, IOException, JAXBException {
-		loadInitialSolution(resourceEnvExtension, usageModelExtension, null,
-				null);
+		loadInitialSolution(null,null);
 	}
 
 	/**
@@ -888,23 +844,20 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * @throws ParserConfigurationException
 	 * @throws JAXBException
 	 */
-	public void loadInitialSolution(File resourceEnvExtension,
-			File usageModelExtension, File generatedInitialSolution,
+	public void loadInitialSolution(File generatedInitialSolution,
 			File generatedInitialMce) throws ParserConfigurationException,
 			SAXException, IOException, JAXBException {
 		// initialSolution = new Solution();
 		this.initialSolution = new SolutionMulti();
 
 		// parse the extension file
-		ResourceEnvironmentExtensionParser resourceEnvParser = new ResourceEnvironmentExtentionLoader(
-				resourceEnvExtension);
-		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(
-				usageModelExtension);
+		ResourceEnvironmentExtensionParser resourceEnvParser = new ResourceEnvironmentExtentionLoader(Paths.get(Configuration.RESOURCE_ENVIRONMENT_EXTENSION).toFile());
+		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
 
 		// get the PCM from the launch configuration
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IPath location = org.eclipse.core.runtime.Path.fromOSString(Paths.get(
-				c.ABSOLUTE_WORKING_DIRECTORY, c.LAUNCH_CONFIG).toString());
+				Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY, Configuration.LAUNCH_CONFIG).toString());
 		IFile ifile = workspace.getRoot().getFileForLocation(location);
 		ILaunchConfiguration launchConfig = DebugPlugin.getDefault()
 				.getLaunchManager().getLaunchConfiguration(ifile);
@@ -964,9 +917,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				Instance application = new Instance();
 				initialSolution.addApplication(application);
 				File[] models = Paths
-						.get(c.ABSOLUTE_WORKING_DIRECTORY,
-								c.PERFORMANCE_RESULTS_FOLDER, provider,
-								c.FOLDER_PREFIX + i).toFile()
+						.get(Configuration.PROJECT_BASE_FOLDER, 
+								Configuration.WORKING_DIRECTORY, 
+								Configuration.PERFORMANCE_RESULTS_FOLDER, 
+								provider,
+								Configuration.FOLDER_PREFIX + i).toFile()
 								.listFiles(new FilenameFilter() {
 									@Override
 									public boolean accept(File dir, String name) {
@@ -1164,7 +1119,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 				// use the initial evaluation to initialize parser and
 				// structures
-				evalServer.evaluateInstance(application, c.SOLVER);
+				evalServer.evaluateInstance(application);
 				// initialSolution.showStatus();
 			}
 
@@ -1327,7 +1282,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 				}
 				localBestSolution = currentSolution.clone();
 			}			
-			setProgress((numberOfIterations*100/MAXITERATIONS));
+			setProgress((numberOfIterations*100/MAX_SCRUMBLE_ITERS));
 			// increment the number of iterations
 			numberOfIterations += 1;
 
@@ -1348,8 +1303,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		}
 
 		logger.info(bestSolution.showStatus());
-		bestSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY + "solution.xml");
-		bestSolution.exportCSV(c.ABSOLUTE_WORKING_DIRECTORY + "results.csv");
+		bestSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME));
+		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
 		evalServer.showStatistics();		
 
 		// ////
@@ -1484,7 +1439,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 			// 4 Scrambling the current solution.
 			scramble(currentSolution);
-			setProgress(numberOfIterations/MAXITERATIONS);
+			setProgress(numberOfIterations/MAX_SCRUMBLE_ITERS);
 			// increment the number of iterations
 			numberOfIterations += 1;
 
@@ -1500,8 +1455,8 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 		logger.warn(bestSolution.showStatus());
 		logger.info(bestSolution.showStatus());
-		bestSolution.exportLight(c.ABSOLUTE_WORKING_DIRECTORY + "solution.xml");
-		bestSolution.exportCSV(c.ABSOLUTE_WORKING_DIRECTORY + "results.csv");
+		bestSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME));
+		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
 		evalServer.showStatistics();
 		evalServer.terminateServer();
 
@@ -1808,6 +1763,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected void updateBestSolution(SolutionMulti sol) {
 		for (Solution s : sol.getAll())
 			updateBestSolution(s);
+	}
+
+	protected void loadConfiguration() {
+		MAXFEASIBILITYITERATIONS = Configuration.FEASIBILITY_ITERS;
+		MAX_SCRUMBLE_ITERS = Configuration.SCRUMBLE_ITERS;
+		MAXMEMORYSIZE = Configuration.TABU_MEMORY_SIZE;
+		SELECTION_POLICY = Configuration.SELECTION_POLICY;
 	}
 
 }
