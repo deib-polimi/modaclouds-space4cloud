@@ -10,6 +10,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -24,7 +26,7 @@ import javax.swing.JTabbedPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigurationWindow implements ActionListener, PropertyChangeListener {
+public class ConfigurationWindow extends WindowAdapter implements ActionListener, PropertyChangeListener {
 
 	private JFrame frame;
 	private JTabbedPane tabbedPane;	
@@ -36,6 +38,8 @@ public class ConfigurationWindow implements ActionListener, PropertyChangeListen
 	private FunctionalityPanel functionalityPane;
 	private OptimizationConfigurationPanel optimizationConfigurationPane;
 	private static final Logger logger = LoggerFactory.getLogger(ConfigurationWindow.class);
+	private boolean disposed = false;
+	private boolean cancelled = true;
 
 	/**
 	 * Launch the application.
@@ -74,6 +78,8 @@ public class ConfigurationWindow implements ActionListener, PropertyChangeListen
 		gridBagLayout.columnWeights = new double[]{1.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
 		frame.getContentPane().setLayout(gridBagLayout);
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frame.addWindowListener(this);
 
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -136,13 +142,13 @@ public class ConfigurationWindow implements ActionListener, PropertyChangeListen
 		extensionSelectionPane = new ExtensionModelSpecificationPanel();
 		extensionSelectionPane.setPreferredSize(frame.getContentPane().getPreferredSize());
 		tabbedPane.addTab(extensionSelectionPane.getName(), extensionSelectionPane);
-		
+
 
 		functionalityPane = new FunctionalityPanel();
 		functionalityPane.setPreferredSize(frame.getContentPane().getPreferredSize());
 		functionalityPane.addPropertyChangeListener(FunctionalityPanel.functionalityProperty,this);
 		tabbedPane.addTab(functionalityPane.getName(), functionalityPane);		
-		
+
 		optimizationConfigurationPane = new OptimizationConfigurationPanel();
 		optimizationConfigurationPane.setPreferredSize(frame.getContentPane().getPreferredSize());
 		optimizationConfigurationPane.setEnabled(false);		
@@ -155,7 +161,13 @@ public class ConfigurationWindow implements ActionListener, PropertyChangeListen
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource().equals(startButton)){
-			//TODO: start the assessment/evaluation/robustness
+			modelSelectionPane.updateConfiguration();
+			extensionSelectionPane.updateConfiguration();
+			functionalityPane.updateConfiguration();
+			optimizationConfigurationPane.updateConfiguration();
+			cancelled = false;
+			disposed = true;
+			frame.dispose();
 		}else if (e.getSource().equals(loadConfigurationButton)){
 			File configurationFile = FileLoader.loadFile("Load SPACE4Cloud Configuration");
 			if(configurationFile !=  null){
@@ -171,9 +183,9 @@ public class ConfigurationWindow implements ActionListener, PropertyChangeListen
 			}
 
 		}else if(e.getSource().equals(saveConfigurationButton)){
-			extensionSelectionPane.updateConfiguration();
-			functionalityPane.updateConfiguration();
 			modelSelectionPane.updateConfiguration();
+			extensionSelectionPane.updateConfiguration();
+			functionalityPane.updateConfiguration();			
 			optimizationConfigurationPane.updateConfiguration();
 			File configurationFile = FileLoader.saveFile("Load SPACE4Cloud Configuration");
 			if(configurationFile!=null){
@@ -202,9 +214,27 @@ public class ConfigurationWindow implements ActionListener, PropertyChangeListen
 			}
 		}
 	}
-	
+
+	public boolean hasBeenDisposed() {
+		return disposed;
+	}
+
+	public boolean isCancelled() {
+		return cancelled;
+	}
 
 
+	@Override
+	public void windowClosing(WindowEvent e) {		
+		super.windowClosing(e);
+		frame.dispose();
+		disposed = true;
+		//TODO: we can check all the files here i suppose 
+	}
+
+	public void show() {
+		frame.setVisible(true);
+	}
 
 }
 

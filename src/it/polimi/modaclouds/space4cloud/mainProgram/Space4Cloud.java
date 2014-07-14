@@ -29,6 +29,7 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.exceptions.InitalFolderCreationException;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
+import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
@@ -63,6 +64,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttribute;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -141,11 +143,25 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 	@Override
 
-	protected Object doInBackground() throws CoreException, InitalFolderCreationException {
+	protected Object doInBackground() throws CoreException {
 
 		//load the configuration
 		if (!batch) {
-			//TODO: show the GUI
+			ConfigurationWindow configGui = new ConfigurationWindow();
+			configGui.show();
+			while(!configGui.hasBeenDisposed()){
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					programLogger.error("Error waiting for GUI to be closed",e);
+				}				
+			}
+			
+			if(configGui.isCancelled()){
+				programLogger.error("Execution cancelled by the user");
+				cleanExit();
+				return null;
+			}
 		}else{
 			//TODO: load the configuration from a file
 		}
@@ -164,7 +180,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			programLogger.error("Error cleaning directories",e);
 		}
 
-		//TODO: analizzare da qui
+
 
 
 		//initialize the connection to the database
@@ -211,6 +227,13 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			} catch (InterruptedException e) {
 				programLogger.error("Error while waiting for LINE first connection",e);
 			}//give time to LINE to close the connection on his side
+		}
+		
+		//Build the temporary space4cloud folder
+		try {
+			Files.createDirectories(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY));
+		} catch (IOException e) {
+			programLogger.error("Error creating the "+Configuration.PERFORMANCE_RESULTS_FOLDER+" folder",e);
 		}
 
 		// Build the run configuration

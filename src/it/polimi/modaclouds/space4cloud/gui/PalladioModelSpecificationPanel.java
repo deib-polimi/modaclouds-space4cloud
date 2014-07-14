@@ -264,7 +264,7 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 		Configuration.PALLADIO_SYSTEM_MODEL = systemTextField.getText();
 		Configuration.PALLADIO_RESOURCE_MODEL = resourceTextField.getText();
 		Configuration.PALLADIO_ALLOCATION_MODEL = allocationTextField.getText();
-		Configuration.PALLADIO_ALLOCATION_MODEL = usageTextField.getText();
+		Configuration.PALLADIO_USAGE_MODEL = usageTextField.getText();
 	}
 
 }
