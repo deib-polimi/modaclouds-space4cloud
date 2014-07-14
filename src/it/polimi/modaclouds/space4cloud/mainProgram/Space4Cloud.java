@@ -27,7 +27,6 @@ import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
-import it.polimi.modaclouds.space4cloud.exceptions.InitalFolderCreationException;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
@@ -64,7 +63,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttribute;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,7 +76,10 @@ import javax.swing.SwingWorker;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -88,12 +89,12 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	private static OptimizationProgressWindow progressWindow;
 	private static AssesmentWindow assesmentWindow;
 	private OptEngine engine = null;	
-	private static final Logger programLogger = LoggerFactory.getLogger(Space4Cloud.class);
+	private static final Logger logger = LoggerFactory.getLogger(Space4Cloud.class);
 	private boolean batch;
 	private ConstraintHandler constraintHandler;	
 	private File initialSolution = null, initialMce = null;
-
 	private List<String> providersInitialSolution = new ArrayList<String>();
+	private String batchConfigurationFile;
 
 
 	/**
@@ -115,20 +116,27 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		}
 	}
 
-	public Space4Cloud(int testFrom, int testTo, int step) {
-		this(true, testFrom, testTo, step);
+	
+	
+	/**
+	 * Initialize space4cloud in batch mode in order to run the configuration specified in the provided file
+	 * @param batchConfFile the path to the file containing the configuration
+	 */
+	public Space4Cloud(String batchConfFile){
+		batchConfigurationFile = batchConfFile;
+		batch = true;
 	}
 
 
 
 	private void cleanExit() {
-		programLogger.info("Exiting SPACE4Cloud");		
+		logger.info("Exiting SPACE4Cloud");		
 		//close the connection with the database
 		try {
 			if(DatabaseConnector.getConnection() != null)
 				DatabaseConnector.getConnection().close();
 		} catch (SQLException e) {
-			programLogger.error("Error in closing the connection with the database",e);
+			logger.error("Error in closing the connection with the database",e);
 		}
 		if(engine != null){
 			engine.cancel(true);
@@ -136,7 +144,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 	}
 
 	private void dirtyExit(){
-		programLogger.info("Exiting SPACE4Cloud because of an error");
+		logger.info("Exiting SPACE4Cloud because of an error");
 		cleanExit();
 		this.cancel(true);
 	}
@@ -153,17 +161,21 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
-					programLogger.error("Error waiting for GUI to be closed",e);
+					logger.error("Error waiting for GUI to be closed",e);
 				}				
 			}
-			
+
 			if(configGui.isCancelled()){
-				programLogger.error("Execution cancelled by the user");
+				logger.error("Execution cancelled by the user");
 				cleanExit();
 				return null;
 			}
 		}else{
-			//TODO: load the configuration from a file
+			try {
+				Configuration.loadConfiguration(batchConfigurationFile);
+			} catch (IOException e) {
+				logger.error("Could not load the configuration from: "+batchConfigurationFile);
+			}
 		}
 
 
@@ -172,16 +184,20 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY));
 		}	catch (NoSuchFileException e) {
 			if(e.getMessage().contains("space4cloud"))
-				programLogger.debug("Space4Cloud folder not present, nothing to clean");
+				logger.debug("Space4Cloud folder not present, nothing to clean");
 			else
-				programLogger.error("Error cleaning directories",e);
+				logger.error("Error cleaning directories",e);
 		}
 		catch (IOException e) {
-			programLogger.error("Error cleaning directories",e);
+			if(e.getMessage().contains("cannot access the file")){
+				logger.error("An error occurred while accessing a temporary file from a previous run, space4cloud will try to ignore it and proceed");
+			}else{
+				logger.error("Error cleaning directories",e);
+			}
 		}
 
 
-
+		refreshProject();
 
 		//initialize the connection to the database
 		try {
@@ -191,53 +207,56 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				dbConfigurationStream = new FileInputStream(Configuration.DB_CONNECTION_FILE);				
 			}else{
 				//if the file has not been specified or it does not exist use the one with default values embedded in the plugin
-				programLogger.info("Could not load the database connection file: "+Configuration.DB_CONNECTION_FILE+" will use the default configuration");
+				logger.info("Could not load the database connection file: "+Configuration.DB_CONNECTION_FILE+" will use the default configuration");
 				dbConfigurationStream = this.getClass().getResourceAsStream(Configuration.DEFAULT_DB_CONNECTION_FILE);				
 			}
 			DatabaseConnector.initConnection(dbConfigurationStream);		
 			dbConfigurationStream.close();
 		} catch (SQLException | IOException e) {
-			programLogger.error("Could not initialize database connection",e);
+			logger.error("Could not initialize database connection",e);
 			dirtyExit();
 		}
-		
+
 		//if the initial solution has to be computed then initialize the solver with the database connection values
 		if(Configuration.RELAXED_INITIAL_SOLUTION){
 			try {
 				RussianEvaluator.setDatabaseInformation(DatabaseConnector.url,
-					DatabaseConnector.dbName,
-					DatabaseConnector.driver,
-					DatabaseConnector.userName,
-					DatabaseConnector.password);
+						DatabaseConnector.dbName,
+						DatabaseConnector.driver,
+						DatabaseConnector.userName,
+						DatabaseConnector.password);
 			} catch (IOException e) {
-				programLogger.error("Could not init the Initial solution engine",e);
+				logger.error("Could not init the Initial solution engine",e);
 				dirtyExit();
 			}
 		}
 
 		//If the chosen solver is LINE try to connect to it or launch it locally. 		
 		if(Configuration.SOLVER ==Solver.LINE){
-			programLogger.info("Looking for LINE server");			
+			logger.info("Looking for LINE server");			
 			LineServerHandler lineHandler = LineServerHandlerFactory.getHandler();
 			lineHandler.connectToLINEServer();
 			lineHandler.closeConnections();
-			programLogger.info("succesfully connected to LINE server");
+			logger.info("succesfully connected to LINE server");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				programLogger.error("Error while waiting for LINE first connection",e);
+				logger.error("Error while waiting for LINE first connection",e);
 			}//give time to LINE to close the connection on his side
 		}
-		
+
 		//Build the temporary space4cloud folder
 		try {
 			Files.createDirectories(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY));
 		} catch (IOException e) {
-			programLogger.error("Error creating the "+Configuration.PERFORMANCE_RESULTS_FOLDER+" folder",e);
+			logger.error("Error creating the "+Configuration.PERFORMANCE_RESULTS_FOLDER+" folder",e);
 		}
+
 
 		// Build the run configuration
 		RunConfigurationsHandler runConfigHandler = new RunConfigurationsHandler();
+
+		refreshProject();
 		// launch it
 		runConfigHandler.launch();
 
@@ -260,9 +279,9 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		// if the palladio run has not produced a lqn model exit
 		if (modelFiles.length != 1 || resultFiles.length != 1) {
-			programLogger
+			logger
 			.error("The first initialization run has encounter some problem during the generation of the first solution");
-			programLogger.error("SPACE4CLOUD will now exit.");
+			logger.error("SPACE4CLOUD will now exit.");
 			dirtyExit();
 			return null;
 		}
@@ -279,7 +298,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			constraintHandler.loadConstraints();
 		} catch (ParserConfigurationException | SAXException | IOException
 				| JAXBException e) {
-			programLogger.error("Error in loading constraints", e);
+			logger.error("Error in loading constraints", e);
 		}
 
 		//TODO: check these conditions with a fresh mind
@@ -288,7 +307,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				getProvidersFromExtension();
 			} catch (ParserConfigurationException | SAXException | IOException
 					| JAXBException e) {
-				programLogger
+				logger
 				.error("Error in loading the selected providers from the resource environemnt extension file",
 						e);
 			}
@@ -305,7 +324,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 				getProvidersFromExtension();
 			} catch (ParserConfigurationException | SAXException | IOException
 					| JAXBException e) {
-				programLogger
+				logger
 				.error("Error in loading the selected providers from the resource environemnt extension file",
 						e);
 			}
@@ -318,20 +337,20 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		switch (Configuration.FUNCTIONALITY) {
 		case Assessment:
 			try {
-				programLogger.info("Performing Assesment");
+				logger.info("Performing Assesment");
 				performAssessment();
 			} catch (NumberFormatException | IOException
 					| ParserConfigurationException | SAXException e) {
-				programLogger.error("Error in performing the assesment", e);
+				logger.error("Error in performing the assesment", e);
 			}
 			break;
 
 		case Optimization:
 			try {
-				programLogger.info("Performing Optimization");
+				logger.info("Performing Optimization");
 				performOptimization();
 			} catch (ParserConfigurationException | SAXException | IOException e) {
-				programLogger.error("Error in the optimization", e);
+				logger.error("Error in the optimization", e);
 			}
 			break;
 
@@ -346,7 +365,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			break;*/
 
 		default:
-			programLogger.info("User exit at functionality choiche");
+			logger.info("User exit at functionality choiche");
 			break;
 		}
 		return null;
@@ -357,10 +376,10 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		try {
 			get();
 		} catch (ExecutionException e) {
-			programLogger
+			logger
 			.error("Execution error while running space4cloud ", e);
 		} catch (InterruptedException e) {
-			programLogger.error("Interrupted execution of space4cloud ", e);
+			logger.error("Interrupted execution of space4cloud ", e);
 		}
 	}
 
@@ -403,22 +422,22 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 			engine = new PartialEvaluationOptimizationEngine(
 					constraintHandler, true);
 		} catch (DatabaseConnectionFailureExteption e) {
-			programLogger.error("Error in connecting to the database",e);
+			logger.error("Error in connecting to the database",e);
 			dirtyExit();
 		}
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension
-		programLogger.info("Parsing The Solution");
+		logger.info("Parsing The Solution");
 		try {
 			engine.loadInitialSolution();
 		} catch (JAXBException e) {
-			programLogger.error("Error in loading the initial solution", e);
+			logger.error("Error in loading the initial solution", e);
 			dirtyExit();
 		}
 
 		// evaluate the solution
-		programLogger.info("Evaluating the solution");
+		logger.info("Evaluating the solution");
 		engine.evaluate();
 
 		// print the results
@@ -495,7 +514,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		try {
 			re.eval();
 		} catch (Exception e) {
-			programLogger.error("Error! It's impossible to generate the solution! Are you connected?",e);			
+			logger.error("Error! It's impossible to generate the solution! Are you connected?",e);			
 			dirtyExit();
 		}
 
@@ -504,14 +523,14 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		initialSolution = re.getSolution();
 		initialMce = re.getMultiCloudExt();
 
-		programLogger.info("Generated resource model extension: "+ Configuration.RESOURCE_ENVIRONMENT_EXTENSION);
-		programLogger.info("Generated solution: "+ initialSolution.getAbsolutePath());
-		programLogger.info("Generated multi cloud extension: "+ initialMce.getAbsolutePath());
-		programLogger.info("Cost: " + re.getCost() + ", computed in: "+ re.getEvaluationTime() + " ms");
+		logger.info("Generated resource model extension: "+ Configuration.RESOURCE_ENVIRONMENT_EXTENSION);
+		logger.info("Generated solution: "+ initialSolution.getAbsolutePath());
+		logger.info("Generated multi cloud extension: "+ initialMce.getAbsolutePath());
+		logger.info("Cost: " + re.getCost() + ", computed in: "+ re.getEvaluationTime() + " ms");
 
 		if (SolutionMulti.isEmpty(initialSolution)) {
 			Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
-			programLogger.error("The generated solution is empty!");
+			logger.error("The generated solution is empty!");
 			dirtyExit();
 		}
 
@@ -530,24 +549,24 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 
 		// Build a new Optimization Engine engine and an empty initial
 		// solution
-		programLogger
+		logger
 		.info("Loading the optimization enging and perparing the solver");
 
 
 		try {
 			engine = new PartialEvaluationOptimizationEngine(constraintHandler, batch);
 		} catch (DatabaseConnectionFailureExteption e) {
-			programLogger.error("Error in connecting to the database",e);
+			logger.error("Error in connecting to the database",e);
 			dirtyExit();
 		}
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension
-		programLogger.info("Parsing The Solution");
+		logger.info("Parsing The Solution");
 		try {
 			engine.loadInitialSolution(initialSolution, initialMce);
 		} catch (JAXBException e) {
-			programLogger.error("Error in loading the initial solution", e);
+			logger.error("Error in loading the initial solution", e);
 		}
 
 		// create the progress window
@@ -562,18 +581,18 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		//}
 
 		// start the optimization
-		programLogger.info("Starting the optimization");
+		logger.info("Starting the optimization");
 		engine.execute();
 		while(!engine.isDone()){
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				programLogger.error("Error while waiting for optimization completion",e);
+				logger.error("Error while waiting for optimization completion",e);
 			}
 		}
 		//if(batch)
 		progressWindow.signalCompletion();
-		programLogger.info("Optimization ended");
+		logger.info("Optimization ended");
 		cleanExit();
 
 	}
@@ -1065,6 +1084,16 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		this.attempts = attempts;
 	}
 
+	private void refreshProject() throws CoreException {
+		ResourcesPlugin
+		.getWorkspace()
+		.getRoot()
+		.getProject(Configuration.getProjectName())
+		.refreshLocal(IResource.DEPTH_INFINITE,
+				new NullProgressMonitor());
+
+	}
+
 	private static File generateModifiedUsageModelExt(File f, double deltaRatio)
 			throws JAXBException, IOException, SAXException {
 		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
@@ -1090,7 +1119,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		g = File.createTempFile("ume" + s + "-", ".xml");
 		XMLHelper.serialize(umes, UsageModelExtensions.class,
 				new FileOutputStream(g));
-		programLogger.info(g.getAbsolutePath());
+		logger.info(g.getAbsolutePath());
 		return g;
 
 	}
@@ -1152,7 +1181,7 @@ public class Space4Cloud extends SwingWorker<Object, Object> {
 		try {
 			db = DataHandlerFactory.getHandler();
 		} catch (DatabaseConnectionFailureExteption e) {
-			programLogger.error("Error in connecting to the database",e);
+			logger.error("Error in connecting to the database",e);
 			dirtyExit();
 		}
 		Set<String> providers = db.getCloudProviders();

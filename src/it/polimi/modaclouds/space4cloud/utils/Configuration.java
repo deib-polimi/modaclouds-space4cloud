@@ -3,6 +3,7 @@ package it.polimi.modaclouds.space4cloud.utils;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class Configuration {
@@ -46,7 +47,7 @@ public class Configuration {
 	
 	//Operations
 	public static enum Operation {
-		Assessment, Optimization, Robustness, Exit;
+		Assessment, Optimization, Robustness;
 
 		public static Operation getById(int id) {
 			Operation[] values = Operation.values();
@@ -160,6 +161,17 @@ public class Configuration {
 		RELAXED_INITIAL_SOLUTION= Boolean.parseBoolean(prop.getProperty("RELAXED_INITIAL_SOLUTION"));
 		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
 		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
+	}
+
+	/**
+	 * Retrieves the name of the project. 
+	 * This method assumes that the project has the same name of the folder in which it is contained.
+	 * @return the name of the eclipse project
+	 */
+	public static String getProjectName() {
+		if(PROJECT_BASE_FOLDER != null)
+			return Paths.get(PROJECT_BASE_FOLDER).getFileName().toString(); 
+		return null;
 	}
 	
 

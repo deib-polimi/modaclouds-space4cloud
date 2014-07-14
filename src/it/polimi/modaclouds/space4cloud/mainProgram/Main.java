@@ -64,8 +64,9 @@ public class Main {
 	 **/
 	public static void main(String[] args) {
 		// RobustnessProgressWindow.main(null);
-
-	Space4Cloud instance = new Space4Cloud();
+		String configuration = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\NewGuiConfigurationLQNS.prop";
+		//	Space4Cloud instance = new Space4Cloud();
+		Space4Cloud instance = new Space4Cloud(configuration);
 
 		/**
 		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\";
@@ -80,10 +81,10 @@ public class Main {
 		File optimizationConfigurationFile = new File(basePath+"OptEngine.properties");
 		Space4Cloud instance = new Space4Cloud(	operation, basePath, usageModelExtension, resourceModelExtension,constraintsFile, startPopulation, endPopulation, step, dbConfigurationFilePath, optimizationConfigurationFile);
 		// instance.setRobustnessAttempts(10);
-	 */
+		 */
 		// instance.setProvidersInitialSolution("Amazon", "Microsoft");
 		// instance.setProvidersInitialSolution("Flexiscale");
-		
+
 		instance.execute();
 	}
 

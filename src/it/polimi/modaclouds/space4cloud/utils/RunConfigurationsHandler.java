@@ -130,7 +130,10 @@ public class RunConfigurationsHandler {
 		e_repo.setAttribute("value", Configuration.PALLADIO_REPOSITORY_MODEL);
 		e_alloc.setAttribute("value", Configuration.PALLADIO_ALLOCATION_MODEL);
 		e_usage.setAttribute("value", Configuration.PALLADIO_USAGE_MODEL);
-		Path outPath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.PERFORMANCE_RESULTS_FOLDER);
+		String outPath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.PERFORMANCE_RESULTS_FOLDER).toString();
+		if(!outPath.endsWith("\\")){
+			outPath += "\\";
+		}
 		e_out.setAttribute("value", outPath.toString());
 		if (e_line_prop != null) {
 			e_line_prop.setAttribute("value", Configuration.LINE_PROP_FILE);
@@ -154,7 +157,7 @@ public class RunConfigurationsHandler {
 			launchConfig.launch("run", new NullProgressMonitor());
 		
 		} catch (CoreException e) {
-			logger.error("Error while running launch configuration "+launchConfig.getName());			
+			logger.error("Error while running launch configuration "+launchConfig.getName(),e);			
 		}
 	}
 
