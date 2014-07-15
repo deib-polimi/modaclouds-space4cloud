@@ -185,8 +185,9 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		}else if(e.getSource().equals(saveConfigurationButton)){
 			modelSelectionPane.updateConfiguration();
 			extensionSelectionPane.updateConfiguration();
-			functionalityPane.updateConfiguration();			
-			optimizationConfigurationPane.updateConfiguration();
+			functionalityPane.updateConfiguration();		
+			if(Configuration.FUNCTIONALITY == Operation.Optimization)
+				optimizationConfigurationPane.updateConfiguration();
 			File configurationFile = FileLoader.saveFile("Load SPACE4Cloud Configuration");
 			if(configurationFile!=null){
 				try {					

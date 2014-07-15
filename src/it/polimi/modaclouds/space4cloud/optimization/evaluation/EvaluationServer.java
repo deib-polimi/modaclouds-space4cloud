@@ -80,6 +80,7 @@ public class EvaluationServer implements ActionListener {
 	private LineServerHandler lineHandler;
 	private boolean instanceEvaluationTerminated = false;
 	private Map<String,Cache<String,Integer>> longTermFrequencyMemory;
+	private boolean error=false;
 
 	/**
 	 * @throws DatabaseConnectionFailureExteption 
@@ -105,7 +106,12 @@ public class EvaluationServer implements ActionListener {
 		if (e.getActionCommand() != null
 				&& e.getActionCommand().equals("ResultsUpdated")) {
 			instanceEvaluationTerminated = true;
-		} else {
+		} else if (e.getActionCommand() != null
+				&& e.getActionCommand().equals("EvaluationError")) {
+			logger.error("An error occured in the evaluation of a performance model");
+			error = true;
+		} 
+		else {
 
 			Solution sol = ((SolutionEvaluator) e.getSource()).getSolution();
 			counters.put(sol, counters.get(sol) + 1);
@@ -134,11 +140,12 @@ public class EvaluationServer implements ActionListener {
 		return totalCost;
 	}
 
-	public void evaluateInstance(Instance instance) {
+	public void evaluateInstance(Instance instance) throws AnalysisFailureException {
 		instanceEvaluationTerminated = false;
 		if (!instance.isEvaluated()) {
 			SolutionEvaluator eval = new SolutionEvaluator(instance, null);
 			eval.addListener(this);
+			
 			if (Configuration.SOLVER == Solver.LQNS)
 				eval.parseResults();
 			else {
@@ -159,6 +166,7 @@ public class EvaluationServer implements ActionListener {
 		long startTime = -1;		
 		requestedEvaluations++;
 		logger.debug("Starting evaluation");
+		error = false;
 		if (!sol.isEvaluated()) {
 
 			startTime = System.nanoTime();
@@ -194,14 +202,19 @@ public class EvaluationServer implements ActionListener {
 																// counter
 			}
 
-			while (counters.get(sol) < 24)
+			while (counters.get(sol) < 24 && !error)
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.error("Error waiting for the evaluation of a solution",e);
 				} // loop until everything has been evaluated
 
+			if(error){
+				logger.error("Error evaluating a solution");
+				pcs.firePropertyChange("EvaluationError", false, true);
+				return;
+			}
+			
 			// remove the counters for the evaluated solution
 			counters.remove(sol);
 			incrementTotalNumberOfEvaluations();

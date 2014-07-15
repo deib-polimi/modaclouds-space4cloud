@@ -32,17 +32,17 @@ public class Configuration {
 	public static String DB_CONNECTION_FILE;
 	public static Operation FUNCTIONALITY;
 	public static Solver SOLVER;
-	public static String LINE_PROP_FILE;	
-	public static int TABU_MEMORY_SIZE;
-	public static int SCRUMBLE_ITERS;
-	public static int FEASIBILITY_ITERS;
-	public static double SCALE_IN_FACTOR;
-	public static int SCALE_IN_ITERS;
-	public static int SCALE_IN_CONV_ITERS;
+	public static String LINE_PROP_FILE = "";	
+	public static int TABU_MEMORY_SIZE = 10;
+	public static int SCRUMBLE_ITERS = 25;
+	public static int FEASIBILITY_ITERS = 10;
+	public static double SCALE_IN_FACTOR = 2.0;
+	public static int SCALE_IN_ITERS = 15;
+	public static int SCALE_IN_CONV_ITERS = 5;
 	public static Policy SELECTION_POLICY;
-	public static boolean RELAXED_INITIAL_SOLUTION;
-	public static String SSH_USER_NAME;
-	public static String SSH_PASSWORD;	
+	public static boolean RELAXED_INITIAL_SOLUTION = false;
+	public static String SSH_USER_NAME = "";
+	public static String SSH_PASSWORD = "";	
 	
 	
 	//Operations

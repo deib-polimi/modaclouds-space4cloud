@@ -84,10 +84,15 @@ public class SolutionEvaluator implements Runnable {
 		return solution;
 	}
 
-	public void parseResults() {
+	public void parseResults() throws AnalysisFailureException {
 		if (Configuration.SOLVER == Solver.LQNS) {
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
 					+ ".lqxo";
+			//use temporary file if lqns did produce it but crashed after finish. Results here might be inaccurate
+			if(!Paths.get(resultfilePath).toFile().exists())
+				resultfilePath = resultfilePath+"~";
+			if(!Paths.get(resultfilePath).toFile().exists())
+				throw new AnalysisFailureException(resultfilePath);
 			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
 		} else {
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
@@ -133,7 +138,13 @@ public class SolutionEvaluator implements Runnable {
 			runWithLINE();
 		
 				instance.setEvaluated(true);
-		parseResults();
+		try {
+			parseResults();
+		} catch (AnalysisFailureException e) {
+			logger.error("Error in the evaluation of model: "+e.getFilePath());
+			for(ActionListener l:listeners)
+				l.actionPerformed(new ActionEvent(this, 0, "EvaluationError"));
+		}
 		for (ActionListener l : listeners)
 			l.actionPerformed(new ActionEvent(this, 0, null));
 	}

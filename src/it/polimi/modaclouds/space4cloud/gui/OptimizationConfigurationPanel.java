@@ -120,7 +120,6 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_scaleInFactorLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_scaleInFactorLabel.gridx = 0;
 		gbc_scaleInFactorLabel.gridy = 4;
-		scaleInFactorLabel.setVisible(false);
 		
 		selectionPolicyBox = new JComboBox<Policy>();
 		selectionPolicyBox.setModel(new DefaultComboBoxModel<Policy>(Policy.values()));

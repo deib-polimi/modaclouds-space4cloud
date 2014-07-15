@@ -8,6 +8,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -173,7 +175,7 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 		gbc_resourceButton.gridy = 7;
 		add(resourceButton, gbc_resourceButton);
 
-		JLabel usageLabel = new JLabel("Usage Model Label");
+		JLabel usageLabel = new JLabel("Usage Model");
 		GridBagConstraints gbc_usageLabel = new GridBagConstraints();
 		gbc_usageLabel.anchor = GridBagConstraints.WEST;
 		gbc_usageLabel.insets = new Insets(0, 0, 5, 5);
@@ -259,7 +261,8 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 	/**
 	 * Updates values in the Configuration class according to those selected in the panel
 	 */
-	public void updateConfiguration(){		
+	public void updateConfiguration(){	
+		Configuration.PROJECT_BASE_FOLDER = Paths.get(reposirotyTextField.getText()).getParent().toString();
 		Configuration.PALLADIO_REPOSITORY_MODEL = reposirotyTextField.getText();
 		Configuration.PALLADIO_SYSTEM_MODEL = systemTextField.getText();
 		Configuration.PALLADIO_RESOURCE_MODEL = resourceTextField.getText();

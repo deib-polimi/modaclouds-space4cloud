@@ -25,6 +25,7 @@ import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.evaluation.AnalysisFailureException;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
@@ -45,6 +46,8 @@ import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader
 import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -65,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.SwingWorker;
@@ -104,7 +108,7 @@ import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
 /**
  * @author Michele Ciavotta Class defining the optimization engine.
  */
-public class OptEngine extends SwingWorker<Void, Void> {
+public class OptEngine extends SwingWorker<Void, Void> implements PropertyChangeListener{
 
 	protected SolutionMulti initialSolution = null;
 
@@ -123,7 +127,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	protected int numberOfFeasibilityIterations;
 
 	protected Policy SELECTION_POLICY;
-	
+
 	protected int MAXMEMORYSIZE = 10;
 
 	private static final int MAX_SCRAMBLE_NO_CHANGE = 10;
@@ -186,7 +190,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 			boolean batch) throws DatabaseConnectionFailureExteption {
 
 		loadConfiguration();
-		
+
 		try {
 			costLogImage = new Logger2JFreeChartImage();
 			logVm = new Logger2JFreeChartImage("vmCount.properties");
@@ -213,12 +217,13 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		dataHandler = DataHandlerFactory.getHandler();
 
 		/* this object is a server needed to evaluate the solutions */
-		this.evalServer = new EvaluationProxy();
-		this.evalServer.setConstraintHandler(handler);
-		this.evalServer.setLog2png(costLogImage);
-		this.evalServer.setMachineLog(logVm);
-		this.evalServer.setConstraintLog(logConstraints);
-		this.evalServer.setTimer(timer);
+		evalServer = new EvaluationProxy();
+		evalServer.setConstraintHandler(handler);
+		evalServer.setLog2png(costLogImage);
+		evalServer.setMachineLog(logVm);
+		evalServer.setConstraintLog(logConstraints);
+		evalServer.setTimer(timer);
+		evalServer.addPropertyChangeListener(this);
 
 		// this.evalProxy.setEnabled(false);
 	}
@@ -779,6 +784,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 				}
 
+
 				evalServer.EvaluateSolution(sol);
 				updateBestSolution(sol);
 
@@ -812,9 +818,16 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 
 	@Override
-	protected void done(){ 
+	protected void done(){ 		
 		evalServer.terminateServer();
-		super.done();
+		try {
+			get();
+		} catch (InterruptedException e) {
+			logger.error("Interrupted ending of optimization engine",e);			
+		} catch (ExecutionException e) {
+			logger.error("Execution exception occurred in the optimization engine",e);
+		}
+
 	}
 
 	/**
@@ -829,7 +842,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * @throws JAXBException
 	 */
 	public void loadInitialSolution() throws ParserConfigurationException,
-			SAXException, IOException, JAXBException {
+	SAXException, IOException, JAXBException {
 		loadInitialSolution(null,null);
 	}
 
@@ -1119,7 +1132,11 @@ public class OptEngine extends SwingWorker<Void, Void> {
 
 				// use the initial evaluation to initialize parser and
 				// structures
-				evalServer.evaluateInstance(application);
+				try {
+					evalServer.evaluateInstance(application);
+				} catch (AnalysisFailureException e) {
+					logger.error("Error evaluating an instance",e);
+				}
 				// initialSolution.showStatus();
 			}
 
@@ -1207,7 +1224,7 @@ public class OptEngine extends SwingWorker<Void, Void> {
 	 * 
 	 * @return the integer -1 an error has happened.
 	 */
-	public Integer optimize() {
+	public Integer optimize() {	
 
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
@@ -1770,6 +1787,14 @@ public class OptEngine extends SwingWorker<Void, Void> {
 		MAX_SCRUMBLE_ITERS = Configuration.SCRUMBLE_ITERS;
 		MAXMEMORYSIZE = Configuration.TABU_MEMORY_SIZE;
 		SELECTION_POLICY = Configuration.SELECTION_POLICY;
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if(evt.getSource().equals(evalServer) && evt.getPropertyName().equals("EvaluationError")){
+			logger.error("Optimizaiton ending due to evaluation error");
+			cancel(true);
+		}
 	}
 
 }
