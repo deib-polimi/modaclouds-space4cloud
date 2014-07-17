@@ -16,10 +16,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -164,7 +166,18 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			modelSelectionPane.updateConfiguration();
 			extensionSelectionPane.updateConfiguration();
 			functionalityPane.updateConfiguration();
-			optimizationConfigurationPane.updateConfiguration();
+			if(Configuration.FUNCTIONALITY == Operation.Optimization)
+			optimizationConfigurationPane.updateConfiguration();			
+			List<String> errors = Configuration.checkValidity();
+			if(!errors.isEmpty()){
+				String message="";
+				for(String s:errors)
+					message +=s+"\n";
+				JOptionPane.showMessageDialog(frame, message, "Configuration Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}			
+			//log the configuration
+			Configuration.flushLog();
 			cancelled = false;
 			disposed = true;
 			frame.dispose();
@@ -230,7 +243,6 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		super.windowClosing(e);
 		frame.dispose();
 		disposed = true;
-		//TODO: we can check all the files here i suppose 
 	}
 
 	public void show() {

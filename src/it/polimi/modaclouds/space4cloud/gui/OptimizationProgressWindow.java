@@ -21,8 +21,11 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -37,7 +40,7 @@ import javax.swing.border.TitledBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OptimizationProgressWindow implements PropertyChangeListener {
+public class OptimizationProgressWindow extends WindowAdapter implements PropertyChangeListener {
 
 	private JFrame frmOptimizationProgress;
 
@@ -58,6 +61,8 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 
 	private Logger2JFreeChartImage constraintsLogger;
 	private static final Logger logger = LoggerFactory.getLogger(OptimizationProgressWindow.class);
+	
+	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 	/**
 	 * Create the application.
@@ -79,6 +84,8 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 		frmOptimizationProgress.getContentPane().setLayout(
 				new BorderLayout(0, 0));
 
+		frmOptimizationProgress.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frmOptimizationProgress.addWindowListener(this);
 		// Upper panel (for progress bar)
 		upperPanel = new JPanel();
 		frmOptimizationProgress.getContentPane().add(upperPanel,
@@ -240,5 +247,15 @@ public class OptimizationProgressWindow implements PropertyChangeListener {
 	public void signalCompletion() {
 		JOptionPane.showMessageDialog(frmOptimizationProgress, "Optimization process compleated");		
 	}
+	
+	public void addPropertyChangeListener(PropertyChangeListener listener){
+		pcs.addPropertyChangeListener(listener);
+	}
 
+	@Override
+	public void windowClosing(WindowEvent e) {		
+		super.windowClosing(e);
+		frmOptimizationProgress.dispose();
+		pcs.firePropertyChange("WindowClosed", false, true);
+	}
 }

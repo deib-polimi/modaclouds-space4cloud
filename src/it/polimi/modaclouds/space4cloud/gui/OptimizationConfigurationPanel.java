@@ -283,12 +283,36 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	public void updateConfiguration(){
 		//TODO: validate with number format exceptions
 		Configuration.SELECTION_POLICY = (Policy) selectionPolicyBox.getSelectedItem();
+		try{
 		Configuration.TABU_MEMORY_SIZE = Integer.parseInt(tabuMemoryText.getText());
+		}catch(NumberFormatException e){
+			Configuration.TABU_MEMORY_SIZE = -1;
+		}
+		try{
 		Configuration.SCRUMBLE_ITERS = Integer.parseInt(scrumbleText.getText());
+		}catch(NumberFormatException e){
+			Configuration.SCRUMBLE_ITERS = -1;
+		}
+		try{
 		Configuration.FEASIBILITY_ITERS = Integer.parseInt(feasibilityText.getText());
+		}catch(NumberFormatException e){
+			Configuration.FEASIBILITY_ITERS = -1;
+		}
+		try{
 		Configuration.SCALE_IN_FACTOR = Double.parseDouble(scaleInFactorText.getText());
+		}catch(NumberFormatException e){
+			Configuration.SCALE_IN_FACTOR = -1;
+		}
+		try{
 		Configuration.SCALE_IN_ITERS = Integer.parseInt(scaleInIterText.getText());
+		}catch(NumberFormatException e){
+			Configuration.SCALE_IN_ITERS = -1;
+		}
+		try{
 		Configuration.SCALE_IN_CONV_ITERS = Integer.parseInt(scaleInConfText.getText());
+		}catch(NumberFormatException e){
+			Configuration.SCALE_IN_CONV_ITERS = -1;
+		}
 		Configuration.RELAXED_INITIAL_SOLUTION = initialSolutionBox.isSelected();
 		Configuration.SSH_PASSWORD = sshPasswordText.getText();
 		Configuration.SSH_USER_NAME = sshNameText.getText();

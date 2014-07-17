@@ -63,6 +63,10 @@ public class Solution implements Cloneable, Serializable {
 	ArrayList<Instance> hourApplication = new ArrayList<Instance>();
 
 	private static Logger logger = LoggerFactory.getLogger(Solution.class);
+	
+	private int generationIteration = 0;
+	
+	private long generationTime =0;
 
 	/**
 	 * if the solution has been evaluated or not.
@@ -293,8 +297,10 @@ public class Solution implements Cloneable, Serializable {
 
 			// set cost
 			rootElement.setAttribute("cost", "" + getCost());
-			// set evaluationtime
-			rootElement.setAttribute("time", "" + getEvaluationTime());
+			// set generation time
+			rootElement.setAttribute("time", "" + getGenerationTime());
+			// set generation iteration
+			rootElement.setAttribute("iteration", "" + getGenerationIteration());
 			// set feasibility
 			rootElement.setAttribute("feasibility", "" + isFeasible());
 
@@ -491,6 +497,22 @@ public class Solution implements Cloneable, Serializable {
 		for (Instance inst : hourApplication)			
 				vms += ((IaaS) inst.getTierById(tierId).getCloudService()).getReplicas();
 		return vms;
+	}
+
+	public int getGenerationIteration() {
+		return generationIteration;
+	}
+
+	public void setGenerationIteration(int generationIteration) {
+		this.generationIteration = generationIteration;
+	}
+
+	public long getGenerationTime() {
+		return generationTime;
+	}
+
+	public void setGenerationTime(long generationTime) {
+		this.generationTime = generationTime;
 	}
 
 	/**

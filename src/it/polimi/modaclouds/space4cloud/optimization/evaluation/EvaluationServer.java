@@ -378,7 +378,7 @@ public class EvaluationServer implements ActionListener {
 		if(lineHandler!= null)
 			lineHandler.terminateLine();
 		if(executor!=null)
-			executor.shutdown();
+			executor.shutdownNow();
 	}
 
 	public void EvaluateSolution(SolutionMulti sol) {

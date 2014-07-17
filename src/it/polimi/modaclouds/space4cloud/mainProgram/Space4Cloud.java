@@ -98,6 +98,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	private String batchConfigurationFile;
 
 
+
 	/**
 	 * Robustness Variables
 	 * */
@@ -139,9 +140,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		} catch (SQLException e) {
 			logger.error("Error in closing the connection with the database",e);
 		}
-		if(engine != null){
-			engine.cancel(true);
-		}
 		if(Configuration.SOLVER == Solver.LINE){
 			if(LineServerHandlerFactory.getHandler() != null){
 				LineServerHandlerFactory.getHandler().closeConnections();
@@ -151,6 +149,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			engine.cancel(true);
 			engine = null;
 		}
+		this.interrupt();
+		refreshProject();
 	}
 
 	@Override
@@ -162,7 +162,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			if(Configuration.PROJECT_BASE_FOLDER == null)
 				Configuration.PROJECT_BASE_FOLDER = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();						
 			ConfigurationWindow configGui = new ConfigurationWindow();
-			configGui.show();
+			configGui.show();			
 			while(!configGui.hasBeenDisposed()){
 				try {
 					Thread.sleep(1000);
@@ -176,6 +176,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				cleanExit();
 				return;
 			}
+
+			//rlease all resources, this should not be necessary
+			configGui = null;
 
 
 		}else{
@@ -372,6 +375,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			logger.info("User exit at functionality choiche");
 			break;
 		}
+		refreshProject();
 		return;
 	}
 
@@ -577,8 +581,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			progressWindow.setCostLogger(engine.getCostLogger());
 			progressWindow.setVMLogger(engine.getVMLogger());
 			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
+			progressWindow.addPropertyChangeListener(this);
 			engine.addPropertyChangeListener(progressWindow);
 			engine.getEvalServer().addPropertyChangeListener(progressWindow);
+
 		}
 
 		// start the optimization
@@ -1073,8 +1079,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	public void setRobustnessAttempts(int attempts) {
 		this.attempts = attempts;
 	}
-	
-	
+
+
 
 	private void refreshProject() {
 		try {
@@ -1124,13 +1130,17 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				Files.delete(file);
+				//skip deleting hidden files and directories
+				if(!file.toString().contains(".svn"))
+					Files.delete(file);
 				return FileVisitResult.CONTINUE;
 			}
 
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				Files.delete(dir);
+				//skip deleting hidden files and directories
+				if(!dir.toString().contains(".svn"))
+					Files.delete(dir);
 				return FileVisitResult.CONTINUE;
 			}
 
@@ -1208,12 +1218,18 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		//when the worker with the engine has done
-		if(evt.getSource().equals(engine) && evt.getPropertyName().equals("state") && evt.getNewValue()== StateValue.DONE){
-			if(engine.isDone()){
-				if(!batch)
-					progressWindow.signalCompletion();
-				logger.info("Optimization ended");				
-			}
+		if(evt.getSource().equals(engine) && evt.getPropertyName().equals("state") && evt.getNewValue()== StateValue.DONE && !engine.isCancelled()){
+
+			if(!batch)
+				progressWindow.signalCompletion();
+			logger.info("Optimization ended");				
+
+			cleanExit();
+		}
+		//stop the optimization process if the user closes the window
+		else if(evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed")){
+			engine.cancel(true);
+			logger.info("Optimization Process cancelled by the user");
 			cleanExit();
 		}
 

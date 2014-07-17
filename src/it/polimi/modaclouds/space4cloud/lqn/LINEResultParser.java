@@ -151,15 +151,14 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	}
 
 	private void loadXML() {
-		try {
+		try {	
+			fixSchemaReference(filePath.toFile());
 			result = XMLHelper.deserialize(filePath.toUri().toURL(),
 					CmcqnModel.class);
 		} catch (MalformedURLException | JAXBException e) {
 
-			if (e instanceof UnmarshalException) {
-				fixSchemaReference(filePath.toFile());
-				logger.warn("Fixed xml index in file: " + filePath.toString());
-				loadXML();
+			if (e instanceof UnmarshalException) {				
+				logger.error("Error loading solutions from LINE");
 			} else {
 				logger.error("Unable to parse LINE results of mofel: "
 						+ filePath.toString(), e);

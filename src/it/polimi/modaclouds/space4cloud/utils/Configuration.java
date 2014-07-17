@@ -4,10 +4,16 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Configuration {
 	
+	private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 	
 	//Configuration constant among all runs
 	public static final String WORKING_DIRECTORY = "space4cloud";
@@ -172,6 +178,92 @@ public class Configuration {
 		if(PROJECT_BASE_FOLDER != null)
 			return Paths.get(PROJECT_BASE_FOLDER).getFileName().toString(); 
 		return null;
+	}
+
+	/**
+	 * Checks if the configuration is valid returning a list of errors
+	 * @return
+	 */
+	public static List<String> checkValidity() {
+		ArrayList<String> errors = new ArrayList<String>();
+		
+		//check Palladio Model Files
+		if(PALLADIO_REPOSITORY_MODEL == null || PALLADIO_REPOSITORY_MODEL.isEmpty())
+			errors.add("The palladio repository model has not been specified");
+		if(PALLADIO_SYSTEM_MODEL== null|| PALLADIO_SYSTEM_MODEL.isEmpty())
+			errors.add("The palladio system model has not been specified");
+		if(PALLADIO_RESOURCE_MODEL== null|| PALLADIO_RESOURCE_MODEL.isEmpty())
+			errors.add("The palladio resource environment model has not been specified");
+		if(PALLADIO_ALLOCATION_MODEL== null|| PALLADIO_ALLOCATION_MODEL.isEmpty())
+			errors.add("The palladio allocation model has not been specified");
+		if(PALLADIO_USAGE_MODEL== null|| PALLADIO_USAGE_MODEL.isEmpty())
+			errors.add("The palladio usage model has not been specified");
+		
+		//check extensions
+		if(USAGE_MODEL_EXTENSION==null|| USAGE_MODEL_EXTENSION.isEmpty())
+			errors.add("The usage model extension has not been specified");
+		if(RESOURCE_ENVIRONMENT_EXTENSION==null|| RESOURCE_ENVIRONMENT_EXTENSION.isEmpty())
+			errors.add("The resource environment extension has not been specified");
+		if(CONSTRAINTS==null|| CONSTRAINTS.isEmpty())
+			errors.add("The constraint file has not been specified");
+		
+		//check functionality and the solver
+		if(DB_CONNECTION_FILE==null|| DB_CONNECTION_FILE.isEmpty())
+			errors.add("The database connection file has not been specified");		
+		if(SOLVER== Solver.LINE)
+			errors.add("The LINE configuration file has not been specified");
+		
+		//check the optimization if it has been selected
+		if(FUNCTIONALITY==Operation.Optimization){
+			if(TABU_MEMORY_SIZE < 1)
+				errors.add("The tabu memory size must be a positive number");
+			if(SCRUMBLE_ITERS < 1)
+				errors.add("The number of scrumble iterations must be positive");
+			if(FEASIBILITY_ITERS < 1)
+				errors.add("The number of feasibility iterations must be positive");
+			if(SCALE_IN_FACTOR < 1)
+				errors.add("The scale in factor must be positive");
+			if(SCALE_IN_ITERS < 1)
+				errors.add("The number of scale in iterations must be positive");
+			if(SCALE_IN_CONV_ITERS < 1)
+				errors.add("The number of scale in convergence iterations must be positive");
+			
+			//check the initial solution generation
+			if(RELAXED_INITIAL_SOLUTION){
+				if(SSH_USER_NAME==null|| SSH_USER_NAME.isEmpty())
+					errors.add("A the user name for SSH connection has to be provided to perform the initial solution generation");
+				if(SSH_PASSWORD==null|| SSH_PASSWORD.isEmpty())
+					errors.add("A the password for SSH connection has to be provided to perform the initial solution generation");
+			}		
+		}
+
+		return errors;
+	}
+
+	public static void flushLog() {
+		logger.debug("PALLADIO_REPOSITORY_MODEL: "+ PALLADIO_REPOSITORY_MODEL);
+		logger.debug("PALLADIO_SYSTEM_MODEL: "+ PALLADIO_SYSTEM_MODEL);
+		logger.debug("PALLADIO_ALLOCATION_MODEL: "+ PALLADIO_ALLOCATION_MODEL);
+		logger.debug("PALLADIO_USAGE_MODEL: "+ PALLADIO_USAGE_MODEL);
+		logger.debug("PALLADIO_RESOURCE_MODEL: "+ PALLADIO_RESOURCE_MODEL);
+		logger.debug("USAGE_MODEL_EXTENSION: "+ USAGE_MODEL_EXTENSION);
+		logger.debug("RESOURCE_ENVIRONMENT_EXTENSION: "+ RESOURCE_ENVIRONMENT_EXTENSION);
+		logger.debug("CONSTRAINTS: "+ CONSTRAINTS);
+		logger.debug("PROJECT_BASE_FOLDER: "+ PROJECT_BASE_FOLDER);
+		logger.debug("DB_CONNECTION_FILE: "+ DB_CONNECTION_FILE);
+		logger.debug("FUNCTIONALITY: "+ FUNCTIONALITY.toString());
+		logger.debug("SOLVER: "+ SOLVER.toString() );
+		logger.debug("LINE_PROP_FILE: "+ LINE_PROP_FILE);		
+		logger.debug("TABU_MEMORY_SIZE: "+ Integer.toString(TABU_MEMORY_SIZE));
+		logger.debug("SCRUMBLE_ITERS: "+ Integer.toString(SCRUMBLE_ITERS));
+		logger.debug("FEASIBILITY_ITERS: "+ Integer.toString(FEASIBILITY_ITERS));
+		logger.debug("SCALE_IN_CONV_ITERS: "+ Integer.toString(SCALE_IN_CONV_ITERS));
+		logger.debug("SCALE_IN_FACTOR: "+ Double.toString(SCALE_IN_FACTOR));
+		logger.debug("SCALE_IN_ITERS: "+ Integer.toString(SCALE_IN_ITERS));
+		logger.debug("SELECTION_POLICY: "+ SELECTION_POLICY.toString());
+		logger.debug("RELAXED_INITIAL_SOLUTION: "+ Boolean.toString(RELAXED_INITIAL_SOLUTION));
+		logger.debug("SSH_USER_NAME: "+ SSH_USER_NAME);
+		logger.debug("SSH_PASSWORD: "+ SSH_PASSWORD);
 	}
 	
 

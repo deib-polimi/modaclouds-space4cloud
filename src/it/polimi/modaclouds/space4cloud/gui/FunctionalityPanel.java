@@ -177,12 +177,14 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 			File dbConnectionFile = FileLoader.loadFile("Database Connection Parameters");
 			if(dbConnectionFile!=null){
 				Configuration.DB_CONNECTION_FILE=dbConnectionFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=dbConnectionFile.getParent().toString();
 				dbConfText.setText(dbConnectionFile.getAbsolutePath());
 			}
 		}else if(e.getSource().equals(lineConfButton)){
 			File linePropFile = FileLoader.loadFile("LINE Server Connection Parameters");
 			if(linePropFile!=null){
 				Configuration.LINE_PROP_FILE=linePropFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=linePropFile.getParent().toString();
 				lineConfText.setText(linePropFile.getAbsolutePath());
 			}
 		}

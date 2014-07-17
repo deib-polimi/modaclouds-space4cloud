@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -111,7 +112,7 @@ import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
 public class OptEngine extends SwingWorker<Void, Void> implements PropertyChangeListener{
 
 	protected SolutionMulti initialSolution = null;
-
+	
 	protected SolutionMulti bestSolution = null;
 
 	protected SolutionMulti currentSolution = null;
@@ -826,6 +827,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Interrupted ending of optimization engine",e);			
 		} catch (ExecutionException e) {
 			logger.error("Execution exception occurred in the optimization engine",e);
+		} catch (CancellationException e){
+			logger.debug("Execution was cancelled");
 		}
 
 	}
@@ -1207,7 +1210,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 
 			}
-			// it shouldn't be necessary to to set the solution to unEvaluated.
+			// it shouldn't be necessary to set the solution to unEvaluated.
 			evalServer.EvaluateSolution(sol);
 			numberOfFeasibilityIterations += 1;
 		}
@@ -1733,12 +1736,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 */
 	protected boolean updateBestSolution(Solution sol) {
 		if (sol.greaterThan(bestSolution)) {
-
-			// updating the best solution
-			// bestSolution = sol.clone();
-			// String filename = bestTmpSol + bestTmpSolIndex+".xml";
-			// sol.exportLight(filename);
-			bestSolution.add(sol.clone());
+			Solution clone = sol.clone();
+			bestSolution.add(clone);
 			logger.warn("" + bestSolution.getCost() + ", "
 					+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())
 					+ ", " + bestSolution.isFeasible());
@@ -1746,6 +1745,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					bestSolution.getCost());
 			optimLogger.info("updated best solution");
+			sol.setGenerationIteration(numberOfIterations);
+			timer.split();
+			sol.setGenerationTime(timer.getSplitTime());
 			return true;
 		}
 		return false;

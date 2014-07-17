@@ -137,7 +137,7 @@ public class SolutionEvaluator implements Runnable {
 		else
 			runWithLINE();
 		
-				instance.setEvaluated(true);
+		instance.setEvaluated(true);
 		try {
 			parseResults();
 		} catch (AnalysisFailureException e) {
@@ -170,10 +170,7 @@ public class SolutionEvaluator implements Runnable {
 		try {
 			String solverProgram = "lqns";
 
-			String command = solverProgram + " " + filePath + " -f"; // using
-																		// the
-																		// fast
-																		// option
+			String command = solverProgram + " " + filePath + /*" -f"+*/ " -z iteration-limit=1000";
 			// String command = solverProgram+" "+filePath; //without using the
 			// fast option
 
@@ -181,7 +178,12 @@ public class SolutionEvaluator implements Runnable {
 			Process proc = pb.start();
 			readStream(proc.getInputStream(), false);
 			readStream(proc.getErrorStream(), true);
-			int exitVal = proc.waitFor();
+			int exitVal = -1;
+			try{
+				exitVal = proc.waitFor();
+			}catch (InterruptedException e){
+				logger.debug("Evaluation was interrupted");
+			}
 			proc.destroy();
 
 			if (exitVal == LQNS_RETURN_SUCCESS) {
@@ -211,7 +213,7 @@ public class SolutionEvaluator implements Runnable {
 				logger.error(message);
 				instance.setEvaluated(false);
 			}
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
 			logger.error("Error in evaluting the  solution ",e);
 		}
 	}

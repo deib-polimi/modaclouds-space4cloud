@@ -160,18 +160,21 @@ public class ExtensionModelSpecificationPanel extends JPanel implements ActionLi
 			if(loadedFile!=null){	
 				usageExtensionTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.USAGE_MODEL_EXTENSION=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(resourceEnvironmentButton)){
 			loadedFile = FileLoader.loadExtensionFile("Load Resource Environment Extension",ResourceModelExtension.class);
 			if(loadedFile!=null){
 				resourceEnvironmentTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.RESOURCE_ENVIRONMENT_EXTENSION=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(constraintButton)){
 			loadedFile = FileLoader.loadExtensionFile("Load Constraints",Constraints.class);
 			if(loadedFile!=null){
 				constraintTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.CONSTRAINTS=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}
 	}

@@ -8,7 +8,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javax.swing.JButton;
@@ -218,30 +217,35 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 			if(loadedFile!=null){
 				reposirotyTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_REPOSITORY_MODEL=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(systemButton)){
 			loadedFile = FileLoader.loadFile("Load System Model");
 			if(loadedFile!=null){
 				systemTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_SYSTEM_MODEL=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(allocationButton)){
 			loadedFile = FileLoader.loadFile("Load Allocation Model");
 			if(loadedFile!=null){
 				allocationTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_ALLOCATION_MODEL=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(resourceButton)){
 			loadedFile = FileLoader.loadFile("Load Resource Model");
 			if(loadedFile!=null){
 				resourceTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_RESOURCE_MODEL=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(usageButton)){
 			loadedFile = FileLoader.loadFile("Load Usage Model");
 			if(loadedFile!=null){
 				usageTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_USAGE_MODEL=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}
 	}
@@ -262,7 +266,8 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 	 * Updates values in the Configuration class according to those selected in the panel
 	 */
 	public void updateConfiguration(){	
-		Configuration.PROJECT_BASE_FOLDER = Paths.get(reposirotyTextField.getText()).getParent().toString();
+		if(!reposirotyTextField.getText().isEmpty())
+			Configuration.PROJECT_BASE_FOLDER = Paths.get(reposirotyTextField.getText()).getParent().toString();
 		Configuration.PALLADIO_REPOSITORY_MODEL = reposirotyTextField.getText();
 		Configuration.PALLADIO_SYSTEM_MODEL = systemTextField.getText();
 		Configuration.PALLADIO_RESOURCE_MODEL = resourceTextField.getText();

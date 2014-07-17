@@ -95,7 +95,6 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 	@Override
 	public Map<String, Double> getResponseTimes() {
-		// TODO Auto-generated method stub
 		return responseTimes;
 	}
 
@@ -109,7 +108,6 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 	@Override
 	public Map<String, Double> getUtilizations() {
-		// TODO Auto-generated method stub
 		return utilizations;
 	}
 

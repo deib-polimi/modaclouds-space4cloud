@@ -230,8 +230,10 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 				// set cost
 				solution.setAttribute("cost", "" + sol.getCost());
-				// set evaluationtime
-				solution.setAttribute("time", "" + sol.getEvaluationTime());
+				// set generation time
+				solution.setAttribute("time", "" + sol.getGenerationTime());
+				// set generation iteration
+				solution.setAttribute("iteration", "" + sol.getGenerationIteration());
 				// set feasibility
 				solution.setAttribute("feasibility", "" + sol.isFeasible());
 
