@@ -1228,6 +1228,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		//stop the optimization process if the user closes the window
 		else if(evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed")){
+			engine.exportSolution();
 			engine.cancel(true);
 			logger.info("Optimization Process cancelled by the user");
 			cleanExit();

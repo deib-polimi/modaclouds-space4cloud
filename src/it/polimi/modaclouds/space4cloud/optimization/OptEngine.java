@@ -1322,9 +1322,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Unable to create charts", e);
 		}
 
-		logger.info(bestSolution.showStatus());
-		bestSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME));
-		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
+		exportSolution();
 		evalServer.showStatistics();		
 
 		// ////
@@ -1797,6 +1795,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Optimizaiton ending due to evaluation error");
 			cancel(true);
 		}
+	}
+
+	public void exportSolution() {
+		logger.info(bestSolution.showStatus());
+		bestSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+Configuration.SOLUTION_FILE_EXTENSION));
+		for(Solution sol:bestSolution.getAll())
+			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
+		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
 	}
 
 }

@@ -20,7 +20,9 @@ public class Configuration {
 	public static final String FOLDER_PREFIX = "hour_";
 	public static final String PERFORMANCE_RESULTS_FOLDER = "performance_results";
 	public static final String LAUNCH_CONFIG = "launchConfig.launch";
-	public static final String SOLUTION_FILE_NAME = "solution.xml";
+	public static final String SOLUTION_FILE_NAME = "solution";
+	public static final String SOLUTION_FILE_EXTENSION= ".xml";
+	public static final String SOLUTION_LIGHT_FILE_NAME = "solution_light";
 	public static final String SOLUTION_CSV_FILE_NAME = "solution.csv";
 	public static final String DEFAULT_DB_CONNECTION_FILE = "/config/DBConnection.properties";
 
@@ -210,7 +212,7 @@ public class Configuration {
 		//check functionality and the solver
 		if(DB_CONNECTION_FILE==null|| DB_CONNECTION_FILE.isEmpty())
 			errors.add("The database connection file has not been specified");		
-		if(SOLVER== Solver.LINE)
+		if(SOLVER== Solver.LINE && (LINE_PROP_FILE == null || LINE_PROP_FILE.isEmpty()))
 			errors.add("The LINE configuration file has not been specified");
 		
 		//check the optimization if it has been selected

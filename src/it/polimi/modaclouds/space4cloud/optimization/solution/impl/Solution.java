@@ -18,11 +18,20 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.qos_models.schema.IaasService;
+import it.polimi.modaclouds.qos_models.schema.Location;
+import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
+import it.polimi.modaclouds.qos_models.schema.PaasService;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -32,8 +41,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -743,6 +754,78 @@ public class Solution implements Cloneable, Serializable {
 				setEvaluated(false);
 				return;
 			}
+	}
+	
+	/**
+	 * Export the solution in the format of the extension used as input for space4cloud
+	 */
+	public void exportAsExtension(Path fileName){
+		
+		//Build the objects
+		ObjectFactory factory = new ObjectFactory();
+		ResourceModelExtension extension = factory.createResourceModelExtension();		
+		List<ResourceContainer> resourceContainers = extension.getResourceContainer();
+		Map<String,ResourceContainer> containersByID = new HashMap<>();
+		//initialize fields common to all hours by looking at the first one
+		for(Tier t:hourApplication.get(0).getTiers()){
+			//build the resource container that maps the tier
+			ResourceContainer container = factory.createResourceContainer(); 
+			container.setId(t.getId());
+			containersByID.put(t.getId(), container);
+			
+			//take out the selected service
+			CloudService service = t.getCloudService();
+			container.setProvider(service.getProvider());			
+			
+			//in case this is a IaaS service
+			if(service instanceof IaaS){
+				IaaS iaaService  = (IaaS) service;
+				IaasService resource = factory.createIaasService();
+				resource.setServiceType(iaaService.getServiceType());
+				resource.setServiceName(iaaService.getServiceName());
+				resource.setResourceSizeID(iaaService.getResourceName());							
+				Location location = factory.createLocation();
+				location.setRegion(hourApplication.get(0).getRegion());
+				resource.setLocation(location);				
+				resource.setReplicas(factory.createReplica());
+				container.setCloudResource(resource);
+			}
+			//if it is a Paas service
+			else if (service instanceof PaaS){
+				PaaS paaService  = (PaaS) service;
+				PaasService platform = factory.createPaasService();
+				platform.setServiceType(paaService.getServiceType());
+				platform.setServiceName(paaService.getServiceName());
+				container.setCloudPlatform(platform);
+			}			
+			resourceContainers.add(container);
+		}
+		
+		//fill the fields that depend on the time slot (e.g. VMs replicas)
+		for(Instance instance:hourApplication){
+			for(Tier t:instance.getTiers()){
+				CloudService service = t.getCloudService();
+				if(service instanceof IaaS){					
+					//build the replica element
+					IaaS iaaService  = (IaaS) service;
+					ReplicaElement replica = factory.createReplicaElement();
+					replica.setHour(hourApplication.indexOf(instance));
+					replica.setValue(iaaService.getReplicas());					
+					//add it to the resource container 
+					containersByID.get(t.getId()).getCloudResource().getReplicas().getReplicaElement().add(replica);
+				}
+			}
+		}
+		
+		//serialize them		
+		try {			
+			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()));
+		} catch (JAXBException e) {
+			logger.error("The generated solution is not valid",e);
+		} catch (FileNotFoundException e) {
+			logger.error("Error exporting the solution",e);
+		}
+		
 	}
 
 

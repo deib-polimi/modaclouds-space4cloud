@@ -208,7 +208,7 @@ public class Instance implements Cloneable, Serializable {
 		return resultParser;
 	}
 
-	public ArrayList<Tier> getTiers() {
+	public List<Tier> getTiers() {
 		return tiers;
 	}
 
