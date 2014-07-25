@@ -71,8 +71,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 701, 431);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setBounds(100, 100, 701, 431);		
 		frame.setMinimumSize(new Dimension(800,500));
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{685, 0};

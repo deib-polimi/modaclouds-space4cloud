@@ -25,6 +25,7 @@ public class Configuration {
 	public static final String SOLUTION_LIGHT_FILE_NAME = "solution_light";
 	public static final String SOLUTION_CSV_FILE_NAME = "solution.csv";
 	public static final String DEFAULT_DB_CONNECTION_FILE = "/config/DBConnection.properties";
+	
 
 	
 	//Configuration for the current run of space4cloud	
@@ -50,7 +51,8 @@ public class Configuration {
 	public static Policy SELECTION_POLICY;
 	public static boolean RELAXED_INITIAL_SOLUTION = false;
 	public static String SSH_USER_NAME = "";
-	public static String SSH_PASSWORD = "";	
+	public static String SSH_PASSWORD = "";
+	public static int RANDOM_SEED = 1;
 	
 	
 	//Operations
@@ -136,6 +138,7 @@ public class Configuration {
 		prop.put("RELAXED_INITIAL_SOLUTION", Boolean.toString(RELAXED_INITIAL_SOLUTION));
 		prop.put("SSH_USER_NAME", SSH_USER_NAME);
 		prop.put("SSH_PASSWORD", SSH_PASSWORD);
+		prop.put("RANDOM_SEED", Integer.toString(RANDOM_SEED));
 		
 		
 		prop.store(fos, "SPACE4Clouds configuration properties");
@@ -169,6 +172,7 @@ public class Configuration {
 		RELAXED_INITIAL_SOLUTION= Boolean.parseBoolean(prop.getProperty("RELAXED_INITIAL_SOLUTION"));
 		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
 		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
+		RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
 	}
 
 	/**
@@ -266,6 +270,7 @@ public class Configuration {
 		logger.debug("RELAXED_INITIAL_SOLUTION: "+ Boolean.toString(RELAXED_INITIAL_SOLUTION));
 		logger.debug("SSH_USER_NAME: "+ SSH_USER_NAME);
 		logger.debug("SSH_PASSWORD: "+ SSH_PASSWORD);
+		logger.debug("RANDOM_SEED: "+ Integer.toString(RANDOM_SEED));
 	}
 	
 

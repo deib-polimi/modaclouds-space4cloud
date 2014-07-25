@@ -64,9 +64,9 @@ public class Main {
 	 **/
 	public static void main(String[] args) {
 		// RobustnessProgressWindow.main(null);
-//		String configuration = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\NewGuiConfigurationLQNS.prop";
+		//String configuration = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\NewGuiConfigurationLQNS.prop";
 		Space4Cloud instance = new Space4Cloud();
-//		Space4Cloud instance = new Space4Cloud(configuration);
+		//Space4Cloud instance = new Space4Cloud(configuration);
 
 		/**
 		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\";

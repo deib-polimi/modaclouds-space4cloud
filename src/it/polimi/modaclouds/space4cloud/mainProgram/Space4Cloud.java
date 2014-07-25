@@ -52,6 +52,7 @@ import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -96,6 +97,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	private File initialSolution = null, initialMce = null;
 	private List<String> providersInitialSolution = new ArrayList<String>();
 	private String batchConfigurationFile;
+	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 
 
@@ -104,6 +106,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	 * */
 	private int testFrom, testTo, step;
 	private int attempts = 5;
+	private boolean compleated = false;
 
 	public Space4Cloud() {
 		this(false,100, 10000, 300 );
@@ -149,8 +152,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			engine.cancel(true);
 			engine = null;
 		}
-		this.interrupt();
+		
+		//this.interrupt();
 		refreshProject();
+		compleated = true;
 	}
 
 	@Override
@@ -376,6 +381,15 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			break;
 		}
 		refreshProject();
+		
+		
+		while(!compleated){
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				logger.error("Waiting for space4cloud completion error",e);
+			}
+		}
 		return;
 	}
 
@@ -590,6 +604,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		// start the optimization
 		logger.info("Starting the optimization");
 		engine.execute();
+		
 
 	}
 
@@ -1126,7 +1141,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	}
 
-	private  void cleanFolders(Path path) throws IOException {			
+	public static void cleanFolders(Path path) throws IOException {			
 		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
@@ -1219,11 +1234,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	public void propertyChange(PropertyChangeEvent evt) {
 		//when the worker with the engine has done
 		if(evt.getSource().equals(engine) && evt.getPropertyName().equals("state") && evt.getNewValue()== StateValue.DONE && !engine.isCancelled()){
-
+			logger.info("Optimization ended");										
+			pcs.firePropertyChange("optimizationEnded", false, true);
 			if(!batch)
 				progressWindow.signalCompletion();
-			logger.info("Optimization ended");				
-
 			cleanExit();
 		}
 		//stop the optimization process if the user closes the window
@@ -1231,9 +1245,16 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			engine.exportSolution();
 			engine.cancel(true);
 			logger.info("Optimization Process cancelled by the user");
+			pcs.firePropertyChange("optimizationEnded", false, true);
 			cleanExit();
+		}else if (evt.getSource().equals(engine) && evt.getPropertyName().equals("progress")) {
+			logger.info("Progress: "+(int) evt.getNewValue());			
 		}
 
+	}
+
+	public void addPropertyChangeListener(PropertyChangeListener listener){
+		pcs.addPropertyChangeListener(listener);
 	}
 
 }

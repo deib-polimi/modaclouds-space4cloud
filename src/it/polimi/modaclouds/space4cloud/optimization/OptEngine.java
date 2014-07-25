@@ -158,7 +158,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected SeriesHandle bestSolutionSerieHandler;
 	protected SeriesHandle localBestSolutionSerieHandler;
 
-	protected Random randomSeed = new Random();
 	protected Random random;
 	protected int numIterNoImprov = 0;
 
@@ -202,10 +201,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Unable to create chart loggers", e);
 
 		}
-		//int seed = randomSeed.nextInt();
-		int seed = 1280220077;
-		optimLogger.debug("Random seed: " + seed);
-		random = new Random(seed);
+		
+		optimLogger.debug("Random seed: " + Configuration.RANDOM_SEED);
+		random = new Random(Configuration.RANDOM_SEED);
 
 		// batch mode
 
@@ -1305,6 +1303,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			setProgress((numberOfIterations*100/MAX_SCRUMBLE_ITERS));
 			// increment the number of iterations
 			numberOfIterations += 1;
+			firePropertyChange("iteration", numberOfIterations-1, numberOfIterations);
 
 		}
 
