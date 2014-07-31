@@ -152,7 +152,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			engine.cancel(true);
 			engine = null;
 		}
-		
+
 		//this.interrupt();
 		refreshProject();
 		compleated = true;
@@ -381,8 +381,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			break;
 		}
 		refreshProject();
-		
-		
+
+
 		while(!compleated){
 			try {
 				Thread.sleep(500);
@@ -564,7 +564,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		// Build a new Optimization Engine engine and an empty initial
 		// solution
 		logger
-		.info("Loading the optimization enging and perparing the solver");
+		.info("Loading the optimization engine and perparing the solver");
 
 
 		try {
@@ -604,7 +604,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		// start the optimization
 		logger.info("Starting the optimization");
 		engine.execute();
-		
+
 
 	}
 
@@ -1242,8 +1242,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		//stop the optimization process if the user closes the window
 		else if(evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed")){
-			engine.exportSolution();
-			engine.cancel(true);
+			if(engine != null){
+				engine.exportSolution();
+				engine.cancel(true);
+			}
 			logger.info("Optimization Process cancelled by the user");
 			pcs.firePropertyChange("optimizationEnded", false, true);
 			cleanExit();

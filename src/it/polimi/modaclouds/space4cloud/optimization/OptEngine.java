@@ -487,7 +487,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	public void evaluate() {
 
 		timer.start();
-		timer.split();
 		evalServer.EvaluateSolution(initialSolution);
 		logger.trace(initialSolution.showStatus());
 	}
@@ -1232,7 +1231,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			return -1;
 		optimLogger.trace("starting the optimization");
 		timer.start();
-		timer.split();
 		evalServer.EvaluateSolution(initialSolution);// evaluate the current
 		// solution
 		// initialSolution.showStatus();
@@ -1241,6 +1239,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		bestSolution = initialSolution.clone();
 		localBestSolution = initialSolution.clone();
 		bestSolutionSerieHandler = costLogImage.newSeries("Best Solution");
+		timer.split();
 		localBestSolutionSerieHandler = costLogImage
 				.newSeries("Local Best Solution");
 		costLogImage.addPoint2Series(localBestSolutionSerieHandler,
@@ -1251,6 +1250,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				bestSolution.getCost());
 		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
 				+ bestSolution.isFeasible());
+		timer.unsplit();
 
 		numberOfIterations = 1;
 		currentSolution = initialSolution.clone(); // the best solution is the
@@ -1428,7 +1428,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				bestSolution.getCost());
 		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
 				+ bestSolution.isFeasible());
-
+		timer.unsplit();
 		numberOfIterations = 1;
 		currentSolution = initialSolution.clone(); // the best solution is the
 
@@ -1735,6 +1735,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		if (sol.greaterThan(bestSolution)) {
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
+			timer.split();
 			logger.warn("" + bestSolution.getCost() + ", "
 					+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())
 					+ ", " + bestSolution.isFeasible());
@@ -1743,8 +1744,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					bestSolution.getCost());
 			optimLogger.info("updated best solution");
 			sol.setGenerationIteration(numberOfIterations);
-			timer.split();
 			sol.setGenerationTime(timer.getSplitTime());
+			timer.unsplit();
 			return true;
 		}
 		return false;
@@ -1759,12 +1760,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// sol.exportLight(filename);
 			localBestSolution.add(sol.clone());
 			this.numIterNoImprov = 0;
+			timer.split();
 			logger.warn("" + localBestSolution.getCost() + ", "
 					+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())
 					+ ", " + localBestSolution.isFeasible());
 			costLogImage.addPoint2Series(localBestSolutionSerieHandler,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					localBestSolution.getCost());
+			timer.unsplit();
 			optimLogger.info("updated local best solution");
 			return true;
 		}
@@ -1779,6 +1782,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected void updateBestSolution(SolutionMulti sol) {
 		for (Solution s : sol.getAll())
 			updateBestSolution(s);
+		
 	}
 
 	protected void loadConfiguration() {

@@ -42,7 +42,10 @@ public class RussianEvaluator {
 							Configuration.PALLADIO_REPOSITORY_MODEL,
 							Configuration.PALLADIO_SYSTEM_MODEL,					
 							Configuration.CONSTRAINTS, 
-							Configuration.USAGE_MODEL_EXTENSION);
+							Configuration.USAGE_MODEL_EXTENSION,
+							Configuration.SSH_HOST,
+							Configuration.SSH_PASSWORD,
+							Configuration.SSH_USER_NAME);
 		
 		solver.getOptions().SqlDBUrl = URL;
 		solver.getOptions().DBName = DBNAME;

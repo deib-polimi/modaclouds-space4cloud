@@ -22,7 +22,7 @@ public class Configuration {
 	public static final String LAUNCH_CONFIG = "launchConfig.launch";
 	public static final String SOLUTION_FILE_NAME = "solution";
 	public static final String SOLUTION_FILE_EXTENSION= ".xml";
-	public static final String SOLUTION_LIGHT_FILE_NAME = "solution_light";
+	public static final String SOLUTION_LIGHT_FILE_NAME = "statistics";
 	public static final String SOLUTION_CSV_FILE_NAME = "solution.csv";
 	public static final String DEFAULT_DB_CONNECTION_FILE = "/config/DBConnection.properties";
 	
@@ -52,6 +52,7 @@ public class Configuration {
 	public static boolean RELAXED_INITIAL_SOLUTION = false;
 	public static String SSH_USER_NAME = "";
 	public static String SSH_PASSWORD = "";
+	public static String SSH_HOST = "specclient1.dei.polimi.it"; //TODO: add to the gui and the configuration file
 	public static int RANDOM_SEED = 1;
 	
 	

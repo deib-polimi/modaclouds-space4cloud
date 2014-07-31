@@ -169,8 +169,6 @@ public class EvaluationServer implements ActionListener {
 		error = false;
 		if (!sol.isEvaluated()) {
 
-			startTime = System.nanoTime();
-
 			ArrayList<Instance> instanceList = sol.getHourApplication();
 			counters.put(sol, 0);
 			
@@ -227,15 +225,13 @@ public class EvaluationServer implements ActionListener {
 
 		// evaluate costs		
 		deriveCosts(sol);
-
+		timer.split();
 		logger.trace("" + sol.getCost() + ", "
 				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
 				+ sol.isFeasible());
-
 		long middleTime = System.nanoTime();
 		if (log2png != null && logVm != null && logConstraint != null
 				&& timer != null) {
-			timer.split();
 			log2png.addPoint2Series(seriesHandleExecution,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getCost());
@@ -255,6 +251,7 @@ public class EvaluationServer implements ActionListener {
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getNumberOfViolatedConstraints());
 		}
+		timer.unsplit();
 		long endTime = System.nanoTime();
 		if (startTime != -1) {
 			evaluationTime += (middleTime - startTime);
@@ -263,7 +260,6 @@ public class EvaluationServer implements ActionListener {
 			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
 		}else
 			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
-		sol.setEvaluationTime(timer.getSplitTime());
 		
 		
 		

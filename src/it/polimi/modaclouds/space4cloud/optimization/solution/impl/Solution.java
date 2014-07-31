@@ -96,8 +96,6 @@ public class Solution implements Cloneable, Serializable {
 	/** The evaluation. */
 	private ArrayList<HashMap<Constraint, Double>> evaluation;
 
-	private long evaluationTime;
-
 	private double[] percentageWorkload = new double[24];
 
 	/**
@@ -444,10 +442,6 @@ public class Solution implements Cloneable, Serializable {
 		return evaluation;
 	}
 
-	public long getEvaluationTime() {
-		return evaluationTime;
-	}
-
 	/**
 	 * Gets the hour application.
 	 * 
@@ -510,6 +504,9 @@ public class Solution implements Cloneable, Serializable {
 		return vms;
 	}
 
+	/**
+	 * @return the number of the scramble iteration in which the solution have been generated
+	 */
 	public int getGenerationIteration() {
 		return generationIteration;
 	}
@@ -518,6 +515,9 @@ public class Solution implements Cloneable, Serializable {
 		this.generationIteration = generationIteration;
 	}
 
+	/**
+	 * @return the time elapsed from the starting of the optimization and the generation of the solution
+	 */
 	public long getGenerationTime() {
 		return generationTime;
 	}
@@ -668,9 +668,6 @@ public class Solution implements Cloneable, Serializable {
 		}
 	}
 
-	public void setEvaluationTime(long splitTime) {
-		evaluationTime = splitTime;
-	}
 
 	/**
 	 * Sets the feasibility.

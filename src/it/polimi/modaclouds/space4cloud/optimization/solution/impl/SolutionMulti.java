@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,6 +45,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	private static final long serialVersionUID = -9050926347950168327L;
 	private static final Logger logger = LoggerFactory.getLogger(SolutionMulti.class);
+	private int generationIteration = 0;	
+	private long generationTime =0;
 
 	public static int getCost(File solution) {
 		int cost = Integer.MAX_VALUE;
@@ -99,8 +102,6 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	/** The Cost. */
 	private int cost = 0;
-
-	private long evaluationTime = 0L;
 
 	private HashMap<String, Solution> solutions;
 
@@ -217,63 +218,28 @@ public class SolutionMulti implements Cloneable, Serializable {
 			Element rootElement = doc.createElement("SolutionMultiResult");
 			doc.appendChild(rootElement);
 
-			// set cost
-			rootElement.setAttribute("cost", "" + getCost());
-			// set evaluationtime
-			rootElement.setAttribute("time", "" + getEvaluationTime());
-			// set feasibility
+			rootElement.setAttribute("cost", Double.toString(getCost()));				
+			rootElement.setAttribute("generationTime", Long.toString(getGenerationTime()));
+			rootElement.setAttribute("generationIteration", Integer.toString(getGenerationIteration()));
 			rootElement.setAttribute("feasibility", "" + isFeasible());
 
 			for (Solution sol : getAll()) {
 				Element solution = doc.createElement("Solution");
 				rootElement.appendChild(solution);
 
+				solution.setAttribute("provider", sol.getProvider());
 				// set cost
-				solution.setAttribute("cost", "" + sol.getCost());
+				solution.setAttribute("cost", Double.toString(sol.getCost()));
 				// set generation time
-				solution.setAttribute("time", "" + sol.getGenerationTime());
+				solution.setAttribute("generationTime", Long.toString(sol.getGenerationTime()));
 				// set generation iteration
-				solution.setAttribute("iteration", "" + sol.getGenerationIteration());
+				solution.setAttribute("generationIteration",  Integer.toString(sol.getGenerationIteration()));
 				// set feasibility
-				solution.setAttribute("feasibility", "" + sol.isFeasible());
-
-				// create tier container element
-				Element tiers = doc.createElement("Tiers");
-				solution.appendChild(tiers);
+				solution.setAttribute("feasibility",Boolean.toString(sol.isFeasible()));
 
 				ArrayList<Instance> hourApplication = sol.getApplications();
-				for (Tier t : hourApplication.get(0).getTiers()) {
-					// create the tier
-					Element tier = doc.createElement("Tier");
-					tiers.appendChild(tier);
 
-					// set id, name, provider name, service name, resource name,
-					// service type
-					tier.setAttribute("id", t.getId());
-					tier.setAttribute("name", t.getName());
-
-					CloudService cs = t.getCloudService();
-					tier.setAttribute("providerName", cs.getProvider());
-					tier.setAttribute("serviceName", cs.getServiceName());
-					tier.setAttribute("resourceName", cs.getResourceName());
-					tier.setAttribute("serviceType", cs.getServiceType());
-
-					if(cs instanceof IaaS){
-						for (int i = 0; i < 24; i++) {
-							// create the allocation element
-							Element hourAllocation = doc.createElement("HourAllocation");
-							tier.appendChild(hourAllocation);
-							hourAllocation.setAttribute("hour", "" + i);
-							hourAllocation.setAttribute("allocation", ""
-									+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
-						}
-					}
-				}
-
-
-				// create the element with the response times
-				Element functionalities = doc.createElement("functionalities");
-				solution.appendChild(functionalities);
+		
 
 				HashMap<String, Functionality> funcList = new HashMap<>();
 				for (Tier t : hourApplication.get(0).getTiers())
@@ -284,7 +250,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 				for (String id : funcList.keySet()) {
 					// create the tier
 					Element functionality = doc.createElement("Functionality");
-					functionalities.appendChild(functionality);
+					solution.appendChild(functionality);
 
 					// set id, name, provider name, service name, resource name,
 					// service type
@@ -322,11 +288,10 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 			transformer.transform(source, result);
 
-			exportLightNew(file.getParent() + File.separator + "mce.xml");
+			exportLightNew(Paths.get(filePath.getParent().toString(), "mce.xml").toString());
 
 		} catch (ParserConfigurationException | TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error exporting the solution statistics",e);
 		}
 
 	}
@@ -394,9 +359,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return cost;
 	}
 
-	public long getEvaluationTime() {
-		return evaluationTime;
-	}
+
 
 	public boolean greaterThan(Solution sol) {
 		String provider = sol.getProvider();
@@ -654,13 +617,11 @@ public class SolutionMulti implements Cloneable, Serializable {
 		boolean evaluated = true, feasible = true;
 		// int previousCost = cost;
 		cost = 0;
-		evaluationTime = 0L;
 
 		for (Solution s : getAll()) {
 			evaluated = evaluated && s.isEvaluated();
 			feasible = feasible && s.isFeasible();
 			cost += s.getCost();
-			evaluationTime += s.getEvaluationTime();
 		}
 
 		this.evaluated = evaluated;
@@ -668,6 +629,23 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 		// System.out.printf("DEBUG: Cost updated from %d to %d.\n",
 		// previousCost, cost);
+	}
+
+
+	public int getGenerationIteration() {
+		return generationIteration;
+	}
+
+	public void setGenerationIteration(int generationIteration) {
+		this.generationIteration = generationIteration;
+	}
+
+	public long getGenerationTime() {
+		return generationTime;
+	}
+
+	public void setGenerationTime(long generationTime) {
+		this.generationTime = generationTime;
 	}
 
 }
