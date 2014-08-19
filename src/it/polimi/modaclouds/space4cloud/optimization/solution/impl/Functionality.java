@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
-public class Functionality implements Cloneable, IResponseTimeConstrainable, Serializable {
+public class Functionality implements Cloneable, IPercentileRTConstrainable, Serializable {
 	/**
 	 * 
 	 */
@@ -151,6 +151,8 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 		}
 		return calls;		
 	}
+	
+	@Override
 	public Map<Integer, Double> getRtPercentiles() {
 		return rtPercentiles;
 	}

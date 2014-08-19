@@ -17,6 +17,7 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 import it.polimi.modaclouds.qos_models.schema.AggregateFunction;
 import it.polimi.modaclouds.qos_models.schema.Range;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +53,19 @@ public abstract class Constraint {
 		this.metric = metric;
 		this.priority = priority;
 	}
+	/**
+	 * Checks the fulfillment of the constraint against the specified resource. The id of the resource should be the same as the one specified in the constraint and the resource should have been evaluated
+	 * @param measurement
+	 * @return Positive distance in case the constraint was not fulfilled, negative otherwise.
+	 */
+	public abstract double checkConstraintDistance(IConstrainable resource);	
 
-	// Positive distance if the constraint has not been fulfilled.
-	public double checkConstraintDistance(Object measurement) {
+	/**
+	 * Checks the distance between the constraint and the provided value. Positive distance if the constraint has not been fulfilled, negative if it has been fulfilled
+	 * @param measurement
+	 * @return
+	 */
+	protected double checkConstraintDistance(Object measurement) {
 		double value = 0;
 		if (measurement instanceof Double)
 			value = (Double) measurement;

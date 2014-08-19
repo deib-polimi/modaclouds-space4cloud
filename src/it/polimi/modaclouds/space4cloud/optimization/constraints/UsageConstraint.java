@@ -15,11 +15,25 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
+
 public class UsageConstraint extends QoSConstraint {
 
 	public UsageConstraint(
 			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
+	}
+
+	@Override
+	public double checkConstraintDistance(IConstrainable resource) {
+		if(!(resource instanceof IUtilizationConstrainable)){
+			logger.error("Evaluating a RAM constraint on a wrong resource with id: "+resource.getId()+
+					" RAM constraints should be evaluated against "+IUtilizationConstrainable.class+
+					", the specified resource is of type: "+resource.getClass());
+			return -1;
+			}
+			return super.checkConstraintDistance(((IUtilizationConstrainable)resource).getUtilization());
 	}
 
 }

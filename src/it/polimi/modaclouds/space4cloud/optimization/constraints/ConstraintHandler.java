@@ -80,9 +80,9 @@ public class ConstraintHandler {
 			switch (metric) {
 			case RESPONSETIME:
 				if(cons.getMetricAggregation().getAggregateFunction().equals(AVERAGE_AGGREGATION))
-				constraint = new AvgRTConstraint(cons);
+					constraint = new AvgRTConstraint(cons);
 				else if(cons.getMetricAggregation().getAggregateFunction().equals(PERCENTILE_AGGREGATION))
-				constraint = new PercentileRTconstraint(cons);
+					constraint = new PercentileRTconstraint(cons);
 				break;
 			case CPU:
 				constraint = new UsageConstraint(cons);					
@@ -150,19 +150,7 @@ public class ConstraintHandler {
 			if(app.getConstrainableResources().containsKey(c.getResourceID())){
 				//evaluate the constraint
 				IConstrainable resource = app.getConstrainableResources().get(c.getResourceID());
-				//check the type of resource and retrieve the value. 
-				//we also check the type of constraint here at the same level but we could also discriminate between numerical and set. 
-				if(resource instanceof IResponseTimeConstrainable && c instanceof RTConstraint)
-					result.put(c, c.checkConstraintDistance(((IResponseTimeConstrainable)resource).getResponseTime()));
-				//TODO: if the responsetime constrainable resource is a funcitonality and it has not been evaluated 
-				//(because it is not present in the result output of the evaluation tool) we should warn the user that we will not consider the constraint. 
-				// by default response time of those functionalities are lower than zero so the constraint will aslways be true. Neveretheless, a warning should be raised.
-				else if(resource instanceof IUtilizationConstrainable && c instanceof UsageConstraint)
-					result.put(c, c.checkConstraintDistance(((IUtilizationConstrainable)resource).getUtilization()));
-				//System.out.println("utilization: "+)
-
-				//else
-				//System.err.println("Resource with id: "+resource.getId()+" of class "+resource.getClass()+" not yet supported");
+				result.put(c, c.checkConstraintDistance(resource));
 			}else
 				logger.error("No resource found with id: "+c.getResourceID()+" while evaluating constraints.");
 		}
