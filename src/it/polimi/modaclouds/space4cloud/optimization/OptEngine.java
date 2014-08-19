@@ -1234,7 +1234,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * 
 	 * @return the integer -1 an error has happened.
 	 */
-	public Integer optimize() {	
+	public Integer optimize() {
 
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)

@@ -147,10 +147,10 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			
 			//if there has been no improvement then signal it 
 			//TODO: check this condition
-//			boolean improvement = updateBestSolution(sol);
-//			if(!improvement){
-//				numIterNoImprov++;				
-//			}
+			boolean improvement = updateBestSolution(sol);
+			if(!improvement){
+				numIterNoImprov++;				
+			}
 
 			// if an application has become feasible, revert it and try again
 			// with a smaller factor
@@ -159,7 +159,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 				if (!sol.getApplication(i).isFeasible()) {
 					sol.copyApplication(previousSol.getApplication(i), i);
 					factors[i] = DEFAULT_SCALE_IN_FACTOR
-							- ((iterations + 1) / MAX_SCALE_IN_ITERATIONS)
+							- ((double)(iterations + 1) / MAX_SCALE_IN_ITERATIONS)
 							* (DEFAULT_SCALE_IN_FACTOR - 1);
 					reverted = true;
 				}

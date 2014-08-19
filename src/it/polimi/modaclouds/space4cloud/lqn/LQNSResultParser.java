@@ -182,7 +182,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			}
 			utilizations.put(id, utilization);
 
-			String seffID=id.split("_")[2];
+			String seffID=null; 
 			NodeList resultActivities = null;
 			resultActivities = processor.getElementsByTagName("result-activity");
 			if(resultActivities.getLength() == 0)
@@ -190,14 +190,20 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 			double serviceTime = 0;
 			for(int j=0; j<resultActivities.getLength(); j++){
-
 				Node serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("service-time");
 				if(serviceTimeNode == null)
 					serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("serviceTime");	
 				if(serviceTimeNode!=null)
 					serviceTime += Double.parseDouble(serviceTimeNode.getTextContent());
+				String activityName = resultActivities.item(j).getParentNode().getAttributes().getNamedItem("name").getNodeValue();
+				if(activityName.startsWith("StartAction")){
+					String[] tokens = activityName.split("_");
+					seffID = tokens[2]+"_"+tokens[3]+"_"+tokens[5];
+				}
+				
 			}
-			responseTimes.put(seffID, serviceTime);
+			if(seffID!=null)
+				responseTimes.put(seffID, serviceTime);
 
 		}
 

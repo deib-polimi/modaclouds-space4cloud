@@ -96,8 +96,8 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	@Override
 	public void update(LqnResultParser parser) {
 		//copy the average response time
-		if(parser.getResponseTime(name)> 0){
-			responseTime = parser.getResponseTime(name);
+		if(parser.getResponseTime(id)> 0){
+			responseTime = parser.getResponseTime(id);
 			evaluated = true;
 		}
 		else{
@@ -109,7 +109,7 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 		//copy the percentile response time
 		//Only LINE generate this information
 		if(parser instanceof LINEResultParser){
-			rtPercentiles = ((LINEResultParser)parser).getPercentiles(name);
+			rtPercentiles = ((LINEResultParser)parser).getPercentiles(id);
 		}
 		
 	}
