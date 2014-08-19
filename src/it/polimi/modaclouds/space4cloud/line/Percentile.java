@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.lang.CopyStrategy;
 import org.jvnet.jaxb2_commons.lang.CopyTo;
@@ -42,8 +41,8 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
  * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="util" type="{http://www.w3.org/2001/XMLSchema}double" />
+ *       &lt;attribute name="level" use="required" type="{http://www.w3.org/2001/XMLSchema}double" />
+ *       &lt;attribute name="value" use="required" type="{http://www.w3.org/2001/XMLSchema}double" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -53,63 +52,46 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "")
-@XmlRootElement(name = "processor")
-public class Processor
+@XmlRootElement(name = "percentile")
+public class Percentile
     implements Cloneable, CopyTo, Equals, HashCode, MergeFrom, ToString
 {
 
-    @XmlAttribute(name = "name")
-    @XmlSchemaType(name = "anySimpleType")
-    protected String name;
-    @XmlAttribute(name = "util")
-    protected Double util;
+    @XmlAttribute(name = "level", required = true)
+    protected double level;
+    @XmlAttribute(name = "value", required = true)
+    protected double value;
 
     /**
-     * Gets the value of the name property.
+     * Gets the value of the level property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
      */
-    public String getName() {
-        return name;
+    public double getLevel() {
+        return level;
     }
 
     /**
-     * Sets the value of the name property.
+     * Sets the value of the level property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
      */
-    public void setName(String value) {
-        this.name = value;
+    public void setLevel(double value) {
+        this.level = value;
     }
 
     /**
-     * Gets the value of the util property.
+     * Gets the value of the value property.
      * 
-     * @return
-     *     possible object is
-     *     {@link Double }
-     *     
      */
-    public Double getUtil() {
-        return util;
+    public double getValue() {
+        return value;
     }
 
     /**
-     * Sets the value of the util property.
+     * Sets the value of the value property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link Double }
-     *     
      */
-    public void setUtil(Double value) {
-        this.util = value;
+    public void setValue(double value) {
+        this.value = value;
     }
 
     public String toString() {
@@ -128,41 +110,41 @@ public class Processor
 
     public StringBuilder appendFields(ObjectLocator locator, StringBuilder buffer, ToStringStrategy strategy) {
         {
-            String theName;
-            theName = this.getName();
-            strategy.appendField(locator, this, "name", buffer, theName);
+            double theLevel;
+            theLevel = (true?this.getLevel(): 0.0D);
+            strategy.appendField(locator, this, "level", buffer, theLevel);
         }
         {
-            Double theUtil;
-            theUtil = this.getUtil();
-            strategy.appendField(locator, this, "util", buffer, theUtil);
+            double theValue;
+            theValue = (true?this.getValue(): 0.0D);
+            strategy.appendField(locator, this, "value", buffer, theValue);
         }
         return buffer;
     }
 
     public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
-        if (!(object instanceof Processor)) {
+        if (!(object instanceof Percentile)) {
             return false;
         }
         if (this == object) {
             return true;
         }
-        final Processor that = ((Processor) object);
+        final Percentile that = ((Percentile) object);
         {
-            String lhsName;
-            lhsName = this.getName();
-            String rhsName;
-            rhsName = that.getName();
-            if (!strategy.equals(LocatorUtils.property(thisLocator, "name", lhsName), LocatorUtils.property(thatLocator, "name", rhsName), lhsName, rhsName)) {
+            double lhsLevel;
+            lhsLevel = (true?this.getLevel(): 0.0D);
+            double rhsLevel;
+            rhsLevel = (true?that.getLevel(): 0.0D);
+            if (!strategy.equals(LocatorUtils.property(thisLocator, "level", lhsLevel), LocatorUtils.property(thatLocator, "level", rhsLevel), lhsLevel, rhsLevel)) {
                 return false;
             }
         }
         {
-            Double lhsUtil;
-            lhsUtil = this.getUtil();
-            Double rhsUtil;
-            rhsUtil = that.getUtil();
-            if (!strategy.equals(LocatorUtils.property(thisLocator, "util", lhsUtil), LocatorUtils.property(thatLocator, "util", rhsUtil), lhsUtil, rhsUtil)) {
+            double lhsValue;
+            lhsValue = (true?this.getValue(): 0.0D);
+            double rhsValue;
+            rhsValue = (true?that.getValue(): 0.0D);
+            if (!strategy.equals(LocatorUtils.property(thisLocator, "value", lhsValue), LocatorUtils.property(thatLocator, "value", rhsValue), lhsValue, rhsValue)) {
                 return false;
             }
         }
@@ -177,14 +159,14 @@ public class Processor
     public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
         int currentHashCode = 1;
         {
-            String theName;
-            theName = this.getName();
-            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "name", theName), currentHashCode, theName);
+            double theLevel;
+            theLevel = (true?this.getLevel(): 0.0D);
+            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "level", theLevel), currentHashCode, theLevel);
         }
         {
-            Double theUtil;
-            theUtil = this.getUtil();
-            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "util", theUtil), currentHashCode, theUtil);
+            double theValue;
+            theValue = (true?this.getValue(): 0.0D);
+            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "value", theValue), currentHashCode, theValue);
         }
         return currentHashCode;
     }
@@ -205,30 +187,22 @@ public class Processor
 
     public Object copyTo(ObjectLocator locator, Object target, CopyStrategy strategy) {
         final Object draftCopy = ((target == null)?createNewInstance():target);
-        if (draftCopy instanceof Processor) {
-            final Processor copy = ((Processor) draftCopy);
-            if (this.name!= null) {
-                String sourceName;
-                sourceName = this.getName();
-                String copyName = ((String) strategy.copy(LocatorUtils.property(locator, "name", sourceName), sourceName));
-                copy.setName(copyName);
-            } else {
-                copy.name = null;
-            }
-            if (this.util!= null) {
-                Double sourceUtil;
-                sourceUtil = this.getUtil();
-                Double copyUtil = ((Double) strategy.copy(LocatorUtils.property(locator, "util", sourceUtil), sourceUtil));
-                copy.setUtil(copyUtil);
-            } else {
-                copy.util = null;
-            }
+        if (draftCopy instanceof Percentile) {
+            final Percentile copy = ((Percentile) draftCopy);
+            double sourceLevel;
+            sourceLevel = (true?this.getLevel(): 0.0D);
+            double copyLevel = strategy.copy(LocatorUtils.property(locator, "level", sourceLevel), sourceLevel);
+            copy.setLevel(copyLevel);
+            double sourceValue;
+            sourceValue = (true?this.getValue(): 0.0D);
+            double copyValue = strategy.copy(LocatorUtils.property(locator, "value", sourceValue), sourceValue);
+            copy.setValue(copyValue);
         }
         return draftCopy;
     }
 
     public Object createNewInstance() {
-        return new Processor();
+        return new Percentile();
     }
 
     public void mergeFrom(Object left, Object right) {
@@ -237,25 +211,25 @@ public class Processor
     }
 
     public void mergeFrom(ObjectLocator leftLocator, ObjectLocator rightLocator, Object left, Object right, MergeStrategy strategy) {
-        if (right instanceof Processor) {
-            final Processor target = this;
-            final Processor leftObject = ((Processor) left);
-            final Processor rightObject = ((Processor) right);
+        if (right instanceof Percentile) {
+            final Percentile target = this;
+            final Percentile leftObject = ((Percentile) left);
+            final Percentile rightObject = ((Percentile) right);
             {
-                String lhsName;
-                lhsName = leftObject.getName();
-                String rhsName;
-                rhsName = rightObject.getName();
-                String mergedName = ((String) strategy.merge(LocatorUtils.property(leftLocator, "name", lhsName), LocatorUtils.property(rightLocator, "name", rhsName), lhsName, rhsName));
-                target.setName(mergedName);
+                double lhsLevel;
+                lhsLevel = (true?leftObject.getLevel(): 0.0D);
+                double rhsLevel;
+                rhsLevel = (true?rightObject.getLevel(): 0.0D);
+                double mergedLevel = ((double) strategy.merge(LocatorUtils.property(leftLocator, "level", lhsLevel), LocatorUtils.property(rightLocator, "level", rhsLevel), lhsLevel, rhsLevel));
+                target.setLevel(mergedLevel);
             }
             {
-                Double lhsUtil;
-                lhsUtil = leftObject.getUtil();
-                Double rhsUtil;
-                rhsUtil = rightObject.getUtil();
-                Double mergedUtil = ((Double) strategy.merge(LocatorUtils.property(leftLocator, "util", lhsUtil), LocatorUtils.property(rightLocator, "util", rhsUtil), lhsUtil, rhsUtil));
-                target.setUtil(mergedUtil);
+                double lhsValue;
+                lhsValue = (true?leftObject.getValue(): 0.0D);
+                double rhsValue;
+                rhsValue = (true?rightObject.getValue(): 0.0D);
+                double mergedValue = ((double) strategy.merge(LocatorUtils.property(leftLocator, "value", lhsValue), LocatorUtils.property(rightLocator, "value", rhsValue), lhsValue, rhsValue));
+                target.setValue(mergedValue);
             }
         }
     }

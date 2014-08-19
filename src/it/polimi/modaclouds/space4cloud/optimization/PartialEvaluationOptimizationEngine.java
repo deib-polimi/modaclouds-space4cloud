@@ -43,6 +43,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
 		super(handler, batch);
+		logger.debug("loading configuration");
 		loadConfiguration();
 	}
 	
@@ -141,12 +142,15 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 			// evaluate the solution
 			evalServer.EvaluateSolution(sol);
-			boolean improvement = updateBestSolution(sol);
+			updateBestSolution(sol);
+			
 			
 			//if there has been no improvement then signal it 
-			if(!improvement){
-				numIterNoImprov++;				
-			}
+			//TODO: check this condition
+//			boolean improvement = updateBestSolution(sol);
+//			if(!improvement){
+//				numIterNoImprov++;				
+//			}
 
 			// if an application has become feasible, revert it and try again
 			// with a smaller factor

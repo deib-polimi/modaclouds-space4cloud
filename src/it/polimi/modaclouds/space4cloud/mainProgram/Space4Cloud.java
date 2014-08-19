@@ -162,6 +162,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	public void  run(){
 
+		LineServerHandlerFactory.clearHandler();
 		//load the configuration
 		if (!batch) {
 			if(Configuration.PROJECT_BASE_FOLDER == null)
@@ -574,6 +575,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			cleanExit();
 			return;
 		}
+	
 		engine.addPropertyChangeListener(this);
 
 		// load the initial solution from the PCM specified in the

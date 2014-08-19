@@ -49,11 +49,20 @@ public class ConstraintHandler {
 
 	List<Constraint> constraints = new ArrayList<>();
 	private static final Logger logger = LoggerFactory.getLogger(ConstraintHandler.class);
+	public  static final String AVERAGE_AGGREGATION = "Average";
+	public static final String PERCENTILE_AGGREGATION = "Percentile";
 	public void addConstraint(Constraint constraint){
 		constraints.add(constraint);
 	}	
 
 
+	/**
+	 * Parses the constraints from the xml file and initializes the handler
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws JAXBException
+	 */
 	public void loadConstraints()
 			throws ParserConfigurationException, SAXException, IOException, JAXBException {		
 		//load from the XML
@@ -69,8 +78,11 @@ public class ConstraintHandler {
 				continue;
 			}
 			switch (metric) {
-			case RESPONSETIME:				
-				constraint = new ResponseTimeConstraint(cons);
+			case RESPONSETIME:
+				if(cons.getMetricAggregation().getAggregateFunction().equals(AVERAGE_AGGREGATION))
+				constraint = new AvgRTConstraint(cons);
+				else if(cons.getMetricAggregation().getAggregateFunction().equals(PERCENTILE_AGGREGATION))
+				constraint = new PercentileRTconstraint(cons);
 				break;
 			case CPU:
 				constraint = new UsageConstraint(cons);					
@@ -93,9 +105,15 @@ public class ConstraintHandler {
 			logger.info("\tpriority: "+c.getPriority());
 
 			logger.info("\tmetric: "+c.getMetric());
-			if(c instanceof ResponseTimeConstraint){
-				logger.info("\tmax: "+((ResponseTimeConstraint)c).getMax());			
-			}else if(c instanceof UsageConstraint){
+			if(c instanceof AvgRTConstraint){
+				logger.info("\tmetric: "+AVERAGE_AGGREGATION);
+				logger.info("\tmax: "+((AvgRTConstraint)c).getMax());			
+			}else if(c instanceof PercentileRTconstraint){
+				logger.info("\tmetric: "+PERCENTILE_AGGREGATION);
+				logger.info("\tlevel: "+((PercentileRTconstraint)c).getLevel());
+				logger.info("\tmax: "+((PercentileRTconstraint)c).getMax());
+			}
+			else if(c instanceof UsageConstraint){
 				logger.info("\tmax: "+((UsageConstraint)c).getMax());			
 			}else if(c instanceof RamConstraint){
 				logger.info("\tmin: "+((RamConstraint)c).getMin());			
@@ -109,6 +127,11 @@ public class ConstraintHandler {
 
 
 
+	/**
+	 * evaluate the feasibility the solution against the constrained loaded in the initialization of the handler. 
+	 * @param sol the solution to be evaluated
+	 * @return a list of maps, each element in the list represent one hourly solution and the map contains all the constrained and their evaluation value
+	 */
 	public  ArrayList<HashMap<Constraint, Double>> evaluateFeasibility(Solution sol){
 		ArrayList<HashMap<Constraint,Double>> result = new ArrayList<>();
 		for(Instance i:sol.getApplications())
@@ -116,6 +139,11 @@ public class ConstraintHandler {
 		return result;
 	}
 
+	/**
+	 * evaluates the feasibility of an application against the constrained loaded in the initialization of the handler.  
+	 * @param app the application to be evaluated
+	 * @return a map containing all the loaded constraints and their evaluation value
+	 */
 	public HashMap<Constraint,Double> evaluateApplication(Instance app){
 		HashMap<Constraint, Double> result = new HashMap<>();
 		for(Constraint c:constraints){
@@ -124,7 +152,7 @@ public class ConstraintHandler {
 				IConstrainable resource = app.getConstrainableResources().get(c.getResourceID());
 				//check the type of resource and retrieve the value. 
 				//we also check the type of constraint here at the same level but we could also discriminate between numerical and set. 
-				if(resource instanceof IResponseTimeConstrainable && c instanceof ResponseTimeConstraint)
+				if(resource instanceof IResponseTimeConstrainable && c instanceof RTConstraint)
 					result.put(c, c.checkConstraintDistance(((IResponseTimeConstrainable)resource).getResponseTime()));
 				//TODO: if the responsetime constrainable resource is a funcitonality and it has not been evaluated 
 				//(because it is not present in the result output of the evaluation tool) we should warn the user that we will not consider the constraint. 

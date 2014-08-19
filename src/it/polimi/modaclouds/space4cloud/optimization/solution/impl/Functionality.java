@@ -15,6 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 
@@ -22,6 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,7 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 	private String id;
 	private String entryLevelCallID=null;
 	private double responseTime;
+	private Map<Integer,Double> rtPercentiles;
 	private Component container;
 	private HashMap<String,Functionality> externalCalls = new HashMap<String,Functionality>();
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Functionality.class);
@@ -86,8 +89,13 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 	public void setResponseTime(double responseTime) {
 		this.responseTime = responseTime;
 	}
+	/* (non-Javadoc)
+	 * @see it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable#update(it.polimi.modaclouds.space4cloud.lqn.LqnResultParser)
+	 * Updates the average and percentile response times of the functionality according to the information available in the parser
+	 */
 	@Override
 	public void update(LqnResultParser parser) {
+		//copy the average response time
 		if(parser.getResponseTime(name)> 0){
 			responseTime = parser.getResponseTime(name);
 			evaluated = true;
@@ -98,6 +106,11 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 			//System.err.println("Functionality "+getName()+" not found in the results");
 		}
 
+		//copy the percentile response time
+		//Only LINE generate this information
+		if(parser instanceof LINEResultParser){
+			rtPercentiles = ((LINEResultParser)parser).getPercentiles(name);
+		}
 		
 	}
 	
@@ -137,5 +150,8 @@ public class Functionality implements Cloneable, IResponseTimeConstrainable, Ser
 			calls.addAll(f.getExternalCallTrace());
 		}
 		return calls;		
+	}
+	public Map<Integer, Double> getRtPercentiles() {
+		return rtPercentiles;
 	}
 }

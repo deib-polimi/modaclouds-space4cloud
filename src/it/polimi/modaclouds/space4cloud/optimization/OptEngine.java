@@ -112,7 +112,7 @@ import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
 public class OptEngine extends SwingWorker<Void, Void> implements PropertyChangeListener{
 
 	protected SolutionMulti initialSolution = null;
-	
+
 	protected SolutionMulti bestSolution = null;
 
 	protected SolutionMulti currentSolution = null;
@@ -201,7 +201,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Unable to create chart loggers", e);
 
 		}
-		
+
 		optimLogger.debug("Random seed: " + Configuration.RANDOM_SEED);
 		random = new Random(Configuration.RANDOM_SEED);
 
@@ -974,6 +974,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				// STEP 1: load the resource environment
 				for (ResourceContainer c : resourceContainers) {
+					logger.info("Tier "+c.getId());
 
 					CloudService service = null;
 					// switch over the type of cloud service
@@ -1012,22 +1013,29 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					serviceName = dataHandler.getServices(provider, // cloudProvider,
 							serviceType).get(0);
 					// if the resource size has not been decided pick one
-					if (resourceSize == null)
+					if (resourceSize == null){
+						logger.info("Defaulting on resource Size");
 						resourceSize = dataHandler
-						.getCloudResourceSizes(provider,/*
-						 * cloudProvider,
-						 */serviceName)
-						 .iterator().next();
+								.getCloudResourceSizes(provider,/*
+								 * cloudProvider,
+								 */serviceName)
+								 .iterator().next();
+					}
+					logger.info("default size"+resourceSize);
+
 
 					double speed = dataHandler.getProcessingRate(provider, // cloudProvider,
 							serviceName, resourceSize);
+					logger.info("processing rate "+speed);
 
 					int ram = dataHandler.getAmountMemory(provider, // cloudProvider,
 							serviceName, resourceSize);
+					logger.info("ram "+ram);
 
 					int numberOfCores = dataHandler.getNumberOfReplicas(
 							provider, /* cloudProvider, */serviceName,
 							resourceSize);
+					logger.info("cores "+numberOfCores);
 
 					/*
 					 * each tier has a certain kind of cloud resource and a
@@ -1176,7 +1184,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		numberOfFeasibilityIterations = 0;
 		while (!sol.isFeasible() && !isMaxNumberOfFesibilityIterations()) {
 			logger.info("\tFeasibility iteration: "
-					+ numberOfFeasibilityIterations);
+					+ numberOfFeasibilityIterations);	
+
+			double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
+					* numberOfFeasibilityIterations
+					/ MAXFEASIBILITYITERATIONS;
 			for (int i = 0; i < 24; i++) {
 				// this part can be turned into a multithread section
 				// we need a list of all the resources involved
@@ -1197,9 +1209,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// satisfy the constraints
 
 				// now we will scaleout the resources
-				double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
-						* numberOfFeasibilityIterations
-						/ MAXFEASIBILITYITERATIONS;
+
 				if (tierMemory.size() > 0) {
 					MoveOnVM moveVM_i = new MoveOnVM(sol, i);
 					for (Tier t : tierMemory)
@@ -1782,7 +1792,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected void updateBestSolution(SolutionMulti sol) {
 		for (Solution s : sol.getAll())
 			updateBestSolution(s);
-		
+
 	}
 
 	protected void loadConfiguration() {

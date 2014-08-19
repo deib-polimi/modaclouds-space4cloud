@@ -24,6 +24,7 @@
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element ref="lrs:station" maxOccurs="unbounded"/>
+				<xs:element ref="lrs:responseTimeDistribution" minOccurs="0"/>
 			</xs:sequence>
 			<xs:attribute name="name"/>
 			<xs:attribute name="responseTime" type="xs:double"/>
@@ -32,6 +33,9 @@
 	</xs:element>
 	<xs:element name="SEFF">
 		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="lrs:responseTimeDistribution" minOccurs="0"/>
+			</xs:sequence>
 			<xs:attribute name="name"/>
 			<xs:attribute name="responseTime" type="xs:double"/>
 		</xs:complexType>
@@ -40,6 +44,19 @@
 		<xs:complexType>
 			<xs:attribute name="name"/>
 			<xs:attribute name="responseTime" type="xs:double"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="percentile">
+		<xs:complexType>
+			<xs:attribute name="level" type="xs:double" use="required"/>
+			<xs:attribute name="value" type="xs:double" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="responseTimeDistribution">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="lrs:percentile" maxOccurs="unbounded"/>
+			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 </xs:schema>

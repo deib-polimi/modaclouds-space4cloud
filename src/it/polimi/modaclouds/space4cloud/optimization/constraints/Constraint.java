@@ -30,7 +30,7 @@ public abstract class Constraint {
 	protected AggregateFunction metricAcggregationFunction;
 	protected int priority;
 	protected Range range;
-	private static final Logger logger = LoggerFactory
+	protected static final Logger logger = LoggerFactory
 			.getLogger(Constraint.class);
 
 	public Constraint(
