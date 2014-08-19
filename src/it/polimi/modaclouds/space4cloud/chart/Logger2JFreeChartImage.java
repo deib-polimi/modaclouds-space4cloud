@@ -25,7 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jfree.chart.ChartFactory;
@@ -45,6 +47,7 @@ import org.slf4j.LoggerFactory;
 public class Logger2JFreeChartImage {
 
 	private String chartTitle = "";
+	private Map<String,Integer> keyCounters= new HashMap<String,Integer>();
 
 	private String path2save = "";
 	private JFreeChart chart;
@@ -112,6 +115,16 @@ public class Logger2JFreeChartImage {
 
 	public SeriesHandle newSeries(String seriesTitle) {
 
+		
+		for(XYSeries serie:seriesList){
+			if(serie.getKey().equals(seriesTitle)){
+				if(!keyCounters.containsKey(seriesTitle))
+					keyCounters.put(seriesTitle, 1);
+				else
+					keyCounters.put(seriesTitle, keyCounters.get(seriesTitle)+1);
+				seriesTitle += keyCounters.get(seriesTitle);
+			}				
+		}
 		final XYSeries series = new XYSeries(seriesTitle);
 
 		if (seriesList.add(series)) {

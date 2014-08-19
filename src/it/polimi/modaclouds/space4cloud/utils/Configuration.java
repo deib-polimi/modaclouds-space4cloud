@@ -162,7 +162,10 @@ public class Configuration {
 		DB_CONNECTION_FILE= prop.getProperty("DB_CONNECTION_FILE");
 		FUNCTIONALITY = Operation.valueOf(prop.getProperty("FUNCTIONALITY"));
 		SOLVER = Solver.valueOf(prop.getProperty("SOLVER"));
-		LINE_PROP_FILE= prop.getProperty("LINE_PROP_FILE");		
+		LINE_PROP_FILE= prop.getProperty("LINE_PROP_FILE");	
+		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
+		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
+		try{
 		TABU_MEMORY_SIZE= Integer.parseInt(prop.getProperty("TABU_MEMORY_SIZE"));
 		SCRUMBLE_ITERS= Integer.parseInt(prop.getProperty("SCRUMBLE_ITERS"));
 		FEASIBILITY_ITERS= Integer.parseInt(prop.getProperty("FEASIBILITY_ITERS"));
@@ -171,9 +174,10 @@ public class Configuration {
 		SCALE_IN_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_ITERS"));
 		SELECTION_POLICY= Policy.valueOf(prop.getProperty("SELECTION_POLICY"));
 		RELAXED_INITIAL_SOLUTION= Boolean.parseBoolean(prop.getProperty("RELAXED_INITIAL_SOLUTION"));
-		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
-		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
 		RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
+		}catch(NumberFormatException e){
+			logger.warn("Part of the configuration was invalid, reverted the invalid value to the default one.",e);
+		}
 	}
 
 	/**
