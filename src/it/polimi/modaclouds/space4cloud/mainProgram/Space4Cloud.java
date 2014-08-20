@@ -30,6 +30,7 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
+import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
@@ -183,7 +184,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				return;
 			}
 
-			//rlease all resources, this should not be necessary
+			//release all resources, this should not be necessary
 			configGui = null;
 
 
@@ -277,6 +278,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		refreshProject();
 		// launch it
+		logger.info("Launching Palladio transformation..");
 		runConfigHandler.launch();
 
 		// Build the folder structure to host results and copy the LQN model in
@@ -295,7 +297,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				return name.endsWith("_line.xml") || name.endsWith(".lqxo");
 			}
 		});
-
+		
 		// if the palladio run has not produced a lqn model exit
 		if (modelFiles.length != 1 || resultFiles.length != 1) {
 			logger
@@ -303,6 +305,14 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			logger.error("SPACE4CLOUD will now exit.");
 			cleanExit();
 			return;
+		}
+		
+		logger.info("Transformation succesfully performed");
+		
+		//if the solver is LINE we need to initialize the id mapping between SEFFs and processors in the LQN using the generated LQN model
+		if(Configuration.SOLVER == Solver.LINE){
+			logger.info("Initializing LINE result parser");
+			LINEResultParser.initIds(modelFiles[0]);
 		}
 
 		// Parse the constraints and initialize the handler

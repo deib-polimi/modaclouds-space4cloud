@@ -152,7 +152,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 	private void parse() {
 		// parse Processors
 		if(resultDOM==null){
-			logger.debug("");
+			logger.error("No DOM was produced by the LQNS result parser");
 		}
 		NodeList processors = resultDOM.getElementsByTagName("processor");
 		utilizations.clear();
@@ -182,9 +182,8 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			}
 			utilizations.put(id, utilization);
 
-			String seffID=null; 
-			NodeList resultActivities = null;
-			resultActivities = processor.getElementsByTagName("result-activity");
+			String seffID=null;
+			NodeList resultActivities = processor.getElementsByTagName("result-activity");
 			if(resultActivities.getLength() == 0)
 				resultActivities = processor.getElementsByTagName("resultActivity");
 

@@ -54,10 +54,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class LINEResultParser implements LqnResultParser, Serializable {
 
+	private static Map<String,String> idSubstitutionMap = new HashMap<String,String>();
 	private static final long serialVersionUID = -1456536857995387200L;
 	private static final String SCHEMA_LOCATION = "http://www.modaclouds.eu/xsd/2013/6/lineResult lineResult.xsd";
 	private static final String NAMESPACE = "http://www.modaclouds.eu/xsd/2013/6/lineResult";
@@ -65,8 +67,8 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	private Map<String,Map<Integer,Double>> percentiles = new HashMap<String,Map<Integer,Double>>();
 	private transient Path filePath;
 	private String filePathSerialization;
-	private HashMap<String, Double> utilizations = new HashMap<>();
-	private HashMap<String, Double> responseTimes = new HashMap<>();
+	private Map<String, Double> utilizations = new HashMap<>();
+	private Map<String, Double> responseTimes = new HashMap<>();
 	private CmcqnModel result;
 
 
@@ -81,8 +83,8 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 			return percentiles.get(functionalityID).get(percentileLevel);
 		return -1;
 	}
-	
-	
+
+
 	public static double convertStringToDouble(String toConvert)
 			throws ParseException {
 		double ret;
@@ -94,9 +96,15 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 		ret = format.parse(toConvert).doubleValue();
 
 		return ret;
+
 	}
 
-		public LINEResultParser(Path path) {
+	public LINEResultParser(Path path) {
+
+		if(idSubstitutionMap.isEmpty()){
+			logger.error("Parser not initialized, mapping between functionality ids and LQN processor names are missing");
+			return;
+		}
 
 		this.filePath = path;
 		// parse the document
@@ -130,16 +138,14 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 		try {
 			transformer = transformerFactory.newTransformer();
 		} catch (TransformerConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while fixing schema reference",e);
 		}
 		DOMSource source = new DOMSource(doc);
 		StreamResult result = new StreamResult(solutionFile);
 		try {
 			transformer.transform(source, result);
 		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while fixing schema reference",e);
 		}
 	}
 
@@ -151,7 +157,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	}
 
 	@Override
-	public HashMap<String, Double> getResponseTimes() {
+	public Map<String, Double> getResponseTimes() {
 		return responseTimes;
 	}
 
@@ -165,7 +171,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	}
 
 	@Override
-	public HashMap<String, Double> getUtilizations() {
+	public Map<String, Double> getUtilizations() {
 		return utilizations;
 	}
 
@@ -192,7 +198,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	/**
 	 * Deserialize the xlm file and loads information in the hash maps. 
 	 */
-	private void parse() {
+	private void parse() {		
 
 		loadXML();
 
@@ -214,9 +220,8 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 		}
 
 		for (SEFF sf : result.getSEFF()){
-			String seffName=sf.getName().split("_")[2];
-			//copy the response time
-			responseTimes.put(seffName, sf.getResponseTime());
+			String seffName=sf.getName();
+			responseTimes.put(idSubstitutionMap.get(seffName), sf.getResponseTime());
 			//copy the percentile
 			ResponseTimeDistribution percentiles= sf.getResponseTimeDistribution();
 			if(percentiles!= null){
@@ -224,7 +229,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 				for(Percentile perc:percentiles.getPercentile())
 					//LINE exports response time level as a double between 0 and 1
 					percentilesMap.put((int)Math.round(100*perc.getLevel()), perc.getValue());
-				this.percentiles.put(seffName,percentilesMap);
+				this.percentiles.put(idSubstitutionMap.get(seffName),percentilesMap);
 			}
 		}
 
@@ -239,7 +244,7 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	 * @throws SAXException
 	 */
 	private void readObject(ObjectInputStream in) throws IOException,
-			ClassNotFoundException, SAXException {
+	ClassNotFoundException, SAXException {
 		in.defaultReadObject();
 		filePath = Paths.get(filePathSerialization);
 		parse();
@@ -263,5 +268,38 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	 */
 	public Map<Integer, Double> getPercentiles(String name) {
 		return percentiles.get(name);
+	}
+
+
+	public static void initIds(File lqnFile) {
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		try {
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document resultDOM = dBuilder.parse(lqnFile);
+			resultDOM.getDocumentElement().normalize();
+			NodeList processors = resultDOM.getElementsByTagName("processor");
+			for (int i = 0; i < processors.getLength(); i++) {
+				Element processor = (Element) processors.item(i);
+				String processorName = processor.getAttribute("name");				
+				NodeList activities = processor.getElementsByTagName("activity");
+				String functionalityId = null;
+				for(int j=0; j<activities.getLength(); j++){
+					String activityName = activities.item(j).getAttributes().getNamedItem("name").getNodeValue();
+					if(activityName.startsWith("StartAction")){
+						String[] tokens = activityName.split("_");
+						functionalityId = tokens[2]+"_"+tokens[3]+"_"+tokens[5];
+					}
+
+				}
+				if(processorName != null && functionalityId != null)
+					idSubstitutionMap.put(processorName, functionalityId);
+			}
+		}catch(IOException e){
+			logger.error("Error initializing the LINE result parser, could not access the LQN file",e);
+		} catch (ParserConfigurationException e) {
+			logger.error("Error initializing the LINE result parser, could not parse the LQN file",e);
+		} catch (SAXException e) {
+			logger.error("Error initializing the LINE result parser, could not parse the LQN file",e);
+		}
 	}
 }
