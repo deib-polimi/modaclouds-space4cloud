@@ -17,6 +17,7 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 
 import it.polimi.modaclouds.qos_models.schema.Constraints;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
@@ -88,6 +89,9 @@ public class ConstraintHandler {
 			case RAM:
 				constraint = new RamConstraint(cons);
 				break;
+			case REPLICATION:
+				constraint = new ReplicasConstraint(cons);
+				break;
 				//add other constraints
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
@@ -115,6 +119,10 @@ public class ConstraintHandler {
 				logger.info("\tmax: "+((UsageConstraint)c).getMax());			
 			}else if(c instanceof RamConstraint){
 				logger.info("\tmin: "+((RamConstraint)c).getMin());			
+			}else if(c instanceof ReplicasConstraint){
+				logger.info("\tmin: "+((ReplicasConstraint)c).getMin());
+				logger.info("\tmax: "+((ReplicasConstraint)c).getMax());
+				
 			}
 
 		}

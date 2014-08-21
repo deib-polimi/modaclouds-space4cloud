@@ -75,10 +75,24 @@ public abstract class Constraint {
 			value = ((Float) measurement).doubleValue();
 		else
 			logger.error("Error in casting the value to check");
+		double upper = -1; //if upper is negative the constraint of max is fulfilled
+		double lower = -1; //if lower is negative the constraint of min is fulfilled
 		if (range.getHasMaxValue() != null)
-			return value - range.getHasMaxValue();
-		else
-			return range.getHasMinValue() - value;
+			upper = value - range.getHasMaxValue();
+		if(range.getHasMinValue() != null)
+			lower = range.getHasMinValue() - value;
+		//if the value is over the max return the difference
+		if(upper>0)
+			return upper;
+		
+		//if the value is under the min return the difference
+		if(lower>0)
+			return lower;
+		
+		//if the value is in the range return the distance to the closest bound (max since these are negative numbers)
+		return Math.max(upper, lower);
+		
+		
 	}
 
 	public Metric getMetric() {
