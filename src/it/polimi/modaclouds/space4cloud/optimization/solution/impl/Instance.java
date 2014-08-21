@@ -17,6 +17,7 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.space4cloud.lqn.LqnHandler;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.utils.ReflectionUtility;
 
@@ -51,7 +52,7 @@ public class Instance implements Cloneable, Serializable {
 
 	private Map<String, IConstrainable> constrainableResources = new HashMap<String, IConstrainable>();
 
-	private int numberOfViolatedConstraints = 0;
+	private List<Constraint> violatedConstraints= new ArrayList<Constraint>();
 
 	private LqnResultParser resultParser;
 
@@ -197,7 +198,7 @@ public class Instance implements Cloneable, Serializable {
 	}
 
 	public int getNumerOfViolatedConstraints() {
-		return numberOfViolatedConstraints;
+		return violatedConstraints.size();
 	}
 
 	public String getRegion() {
@@ -217,8 +218,8 @@ public class Instance implements Cloneable, Serializable {
 		return workload;
 	}
 
-	public void incrementViolatedConstraints() {
-		this.numberOfViolatedConstraints++;
+	public void incrementViolatedConstraints(Constraint violatedConstraint) {
+		violatedConstraints.add(violatedConstraint);		
 	}
 
 	public void initConstrainableResources() {
@@ -230,10 +231,13 @@ public class Instance implements Cloneable, Serializable {
 		}
 	}
 
+	/**
+	 * Build a new lqn handler from the provided file
+	 * @param lqnFilePath
+	 */
 	public void initLqnHandler(Path lqnFilePath) {
 
 		// evaluate the model to build the result
-		// TODO: call the evaluation
 		lqnHandler = new LqnHandler(lqnFilePath);
 
 	}
@@ -252,9 +256,8 @@ public class Instance implements Cloneable, Serializable {
 		return feasible;
 	}
 
-	public void resetConstraintCounter() {
-		numberOfViolatedConstraints = 0;
-
+	public void resetViolatedConstraints() {
+		violatedConstraints.clear();
 	}
 
 	/**
@@ -363,6 +366,10 @@ public class Instance implements Cloneable, Serializable {
 		for (Tier t : tiers)
 			t.update(results);
 
+	}
+
+	public List<Constraint> getViolatedConstraints() {
+		return violatedConstraints;
 	}
 
 }

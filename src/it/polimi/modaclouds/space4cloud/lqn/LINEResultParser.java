@@ -54,12 +54,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class LINEResultParser implements LqnResultParser, Serializable {
+public class LINEResultParser extends LqnResultParser implements Serializable {
 
-	private static Map<String,String> idSubstitutionMap = new HashMap<String,String>();
+
 	private static final long serialVersionUID = -1456536857995387200L;
 	private static final String SCHEMA_LOCATION = "http://www.modaclouds.eu/xsd/2013/6/lineResult lineResult.xsd";
 	private static final String NAMESPACE = "http://www.modaclouds.eu/xsd/2013/6/lineResult";
@@ -100,11 +99,6 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	}
 
 	public LINEResultParser(Path path) {
-
-		if(idSubstitutionMap.isEmpty()){
-			logger.error("Parser not initialized, mapping between functionality ids and LQN processor names are missing");
-			return;
-		}
 
 		this.filePath = path;
 		// parse the document
@@ -221,15 +215,17 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 
 		for (SEFF sf : result.getSEFF()){
 			String seffName=sf.getName();
-			responseTimes.put(idSubstitutionMap.get(seffName), sf.getResponseTime());
-			//copy the percentile
-			ResponseTimeDistribution percentiles= sf.getResponseTimeDistribution();
-			if(percentiles!= null){
-				Map<Integer, Double> percentilesMap = new HashMap<Integer,Double>();
-				for(Percentile perc:percentiles.getPercentile())
-					//LINE exports response time level as a double between 0 and 1
-					percentilesMap.put((int)Math.round(100*perc.getLevel()), perc.getValue());
-				this.percentiles.put(idSubstitutionMap.get(seffName),percentilesMap);
+			if(idSubstitutionMap.containsKey(seffName)){
+				responseTimes.put(idSubstitutionMap.get(seffName), sf.getResponseTime());
+				//copy the percentile
+				ResponseTimeDistribution percentiles= sf.getResponseTimeDistribution();
+				if(percentiles!= null){
+					Map<Integer, Double> percentilesMap = new HashMap<Integer,Double>();
+					for(Percentile perc:percentiles.getPercentile())
+						//LINE exports response time level as a double between 0 and 1
+						percentilesMap.put((int)Math.round(100*perc.getLevel()), perc.getValue());
+					this.percentiles.put(idSubstitutionMap.get(seffName),percentilesMap);
+				}
 			}
 		}
 
@@ -271,35 +267,5 @@ public class LINEResultParser implements LqnResultParser, Serializable {
 	}
 
 
-	public static void initIds(File lqnFile) {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		try {
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document resultDOM = dBuilder.parse(lqnFile);
-			resultDOM.getDocumentElement().normalize();
-			NodeList processors = resultDOM.getElementsByTagName("processor");
-			for (int i = 0; i < processors.getLength(); i++) {
-				Element processor = (Element) processors.item(i);
-				String processorName = processor.getAttribute("name");				
-				NodeList activities = processor.getElementsByTagName("activity");
-				String functionalityId = null;
-				for(int j=0; j<activities.getLength(); j++){
-					String activityName = activities.item(j).getAttributes().getNamedItem("name").getNodeValue();
-					if(activityName.startsWith("StartAction")){
-						String[] tokens = activityName.split("_");
-						functionalityId = tokens[2]+"_"+tokens[3]+"_"+tokens[5];
-					}
 
-				}
-				if(processorName != null && functionalityId != null)
-					idSubstitutionMap.put(processorName, functionalityId);
-			}
-		}catch(IOException e){
-			logger.error("Error initializing the LINE result parser, could not access the LQN file",e);
-		} catch (ParserConfigurationException e) {
-			logger.error("Error initializing the LINE result parser, could not parse the LQN file",e);
-		} catch (SAXException e) {
-			logger.error("Error initializing the LINE result parser, could not parse the LQN file",e);
-		}
-	}
 }

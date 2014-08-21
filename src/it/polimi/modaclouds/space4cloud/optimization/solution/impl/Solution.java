@@ -651,16 +651,17 @@ public class Solution implements Cloneable, Serializable {
 		// initialize solutions as feasible and counters to 0
 		for (Instance tmp : hourApplication) {
 			tmp.setFeasible(true);
-			tmp.resetConstraintCounter();
+			tmp.resetViolatedConstraints();
 		}
 
 		int i = 0;
+		//suppose that evaluations and applications are in the same order!
 		for (Map<Constraint, Double> m : evaluation) {
 			Instance app = getApplication(i);
 
 			for (Constraint c : m.keySet())
 				if (m.get(c) > 0) {
-					app.incrementViolatedConstraints();
+					app.incrementViolatedConstraints(c);
 					app.setFeasible(false);
 					setFeasible(false);
 				}
@@ -700,6 +701,13 @@ public class Solution implements Cloneable, Serializable {
 		this.region = region;
 		for (Instance app : hourApplication)
 			app.setRegion(region);
+	}
+	public List<Constraint> getViolatedConstraints(){
+		List<Constraint> violatedConstraints = new ArrayList<>();
+		for(Instance application:hourApplication){
+			violatedConstraints.addAll(application.getViolatedConstraints());
+		}
+		return violatedConstraints;
 	}
 
 	/**

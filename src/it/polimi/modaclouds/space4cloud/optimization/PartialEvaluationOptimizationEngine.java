@@ -16,7 +16,9 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -63,6 +65,12 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	};
 	@Override
 	protected void IteratedRandomScaleInLS(Solution sol) {
+		for(Constraint constraint:sol.getViolatedConstraints()){
+			if(constraint instanceof RamConstraint){
+				logger.info("Wrong type of VM selected, scale in will not be executed");
+				return;
+			}
+		}
 		logger.info("initializing scale in phase");
 
 	//	logger.info(sol.showStatus());

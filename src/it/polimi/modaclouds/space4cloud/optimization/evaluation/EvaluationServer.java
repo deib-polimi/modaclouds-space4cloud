@@ -218,11 +218,16 @@ public class EvaluationServer implements ActionListener {
 			incrementTotalNumberOfEvaluations();
 		}
 
+		
+		
 		// evaluate feasibility
 		if (constraintHandler != null)
 			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
 		sol.updateEvaluation();
 
+		
+		
+		
 		// evaluate costs		
 		deriveCosts(sol);
 		timer.split();

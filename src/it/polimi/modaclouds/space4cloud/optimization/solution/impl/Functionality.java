@@ -35,6 +35,7 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	private boolean evaluated = true;
 	private String name;
 	private String id;
+	private String lqnProcessorId;
 	private String entryLevelCallID=null;
 	private double responseTime;
 	private Map<Integer,Double> rtPercentiles;
@@ -155,5 +156,11 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	@Override
 	public Map<Integer, Double> getRtPercentiles() {
 		return rtPercentiles;
+	}
+	public String getLqnProcessorId() {
+		return lqnProcessorId;
+	}
+	public void setLqnProcessorId(String lqnProcessorId) {
+		this.lqnProcessorId = lqnProcessorId;
 	}
 }

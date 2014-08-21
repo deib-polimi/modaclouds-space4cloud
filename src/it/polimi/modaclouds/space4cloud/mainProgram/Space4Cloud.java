@@ -308,12 +308,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		
 		logger.info("Transformation succesfully performed");
-		
-		//if the solver is LINE we need to initialize the id mapping between SEFFs and processors in the LQN using the generated LQN model
-		if(Configuration.SOLVER == Solver.LINE){
-			logger.info("Initializing LINE result parser");
-			LINEResultParser.initIds(modelFiles[0]);
-		}
+//		
+//		//if the solver is LINE we need to initialize the id mapping between SEFFs and processors in the LQN using the generated LQN model
+//		if(Configuration.SOLVER == Solver.LINE){
+//			logger.info("Initializing LINE result parser");
+//			LINEResultParser.initIds(modelFiles[0]);
+//		}
 
 		// Parse the constraints and initialize the handler
 		constraintHandler = new ConstraintHandler();

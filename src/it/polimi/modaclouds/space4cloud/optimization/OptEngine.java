@@ -23,8 +23,10 @@ import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.AnalysisFailureException;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
@@ -98,6 +100,7 @@ import de.uka.ipd.sdq.pcm.seff.AbstractAction;
 import de.uka.ipd.sdq.pcm.seff.ExternalCallAction;
 import de.uka.ipd.sdq.pcm.seff.ResourceDemandingSEFF;
 import de.uka.ipd.sdq.pcm.seff.ServiceEffectSpecification;
+import de.uka.ipd.sdq.pcm.seff.StartAction;
 import de.uka.ipd.sdq.pcm.usagemodel.AbstractUserAction;
 import de.uka.ipd.sdq.pcm.usagemodel.Branch;
 import de.uka.ipd.sdq.pcm.usagemodel.BranchTransition;
@@ -458,23 +461,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	}
 
-	/**
-	 * @param sol
-	 * 
-	 */
-	protected void descentOptimize(Solution sol) {
-
-		// UniformScaleInLS(sol);
-		/* inicialization array of moves */
-		/* turning back one step for feasibility */
-		// makeFeasible(sol);
-		// logger.warn("Descent Optimization first phase - feasibility");
-		// updateBestSolution(sol);
-
-		/* phase 2: scaling In one res at time */
-		IteratedRandomScaleInLS(sol);
-	}
-
 	@Override
 	protected Void doInBackground() throws Exception {
 		if (initialSolution.size() > 1)
@@ -710,7 +696,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		updateLocalBestSolution(sol);
 
 		optimLogger.info("costReduction phase");
-		descentOptimize(sol);
+		IteratedRandomScaleInLS(sol);
 		// optimLogger.trace("optimized solution"+sol.showStatus());
 
 	}
@@ -737,8 +723,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	}
 
 	protected void IteratedRandomScaleInLS(Solution sol) {
+		for(Constraint constraint:sol.getViolatedConstraints()){
+			if(constraint instanceof RamConstraint){
+				logger.info("Wron type of VM selected, make feasible will not be executed");
+				return;
+			}
+		}
 		MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
-
 		List<ArrayList<Tier>> vettResTot = generateVettResTot(sol);
 		/* first phase: overall descent optimization */
 		// logger.warn("Descent Optimization first phase - start");
@@ -847,15 +838,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	}
 
 	/**
-	 * Load initial solution. The aim of this method is to load the initial
-	 * solution from file.
+	 * Load the initial solution. The aim of this method is to load the initial
+	 * solution from the palladio model files contained in the configuration
 	 * 
-	 * @param resourceEnvExtension
-	 *            the extension file
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws JAXBException
 	 */
 	public void loadInitialSolution(File generatedInitialSolution,
 			File generatedInitialMce) throws ParserConfigurationException,
@@ -878,15 +863,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		@SuppressWarnings("deprecation")
 		PCMInstance pcm = new PCMInstance(launchConfig);
 		// Since we are working on a single cloud solution a hourly solution
-		// is just an instance (no multi cloud, no load balancer, non
-		// exposed component)
+		// is just an instance (no multi cloud, no load balancer)
 
 		// create a tier for each resource container
 		EList<ResourceContainer> resourceContainers = pcm
 				.getResourceEnvironment()
 				.getResourceContainer_ResourceEnvironment();
 
-		// we need to create a Solution object for each one of the providers!
+		// we need to create a Solution object for each one of the providers
 		ArrayList<String> providers = new ArrayList<String>();
 		for (String s : resourceEnvParser.getProviders().values()) {
 			if (s != null && !providers.contains(s))
@@ -903,7 +887,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			do {
 				defaultProviderName = iter.next();
 				// skip the generic provider whose data might not be relevant
-				// and those that do not offer Compute services.
+				// and those that do not offer Compute services.  (use only IaaS now)
 				if (defaultProviderName.equals("Generic")
 						|| dataHandler.getServices(defaultProviderName,
 								"Compute").size() == 0)
@@ -1068,7 +1052,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// STEP 3: load components from the allocation
 				EList<AllocationContext> allocations = pcm.getAllocation()
 						.getAllocationContexts_Allocation();
-				HashMap<String, Functionality> functionalities = new HashMap<>();
+				Map<String, Functionality> functionalities = new HashMap<>();
+				Map<String,String> startActionId2FunId = new HashMap<>();
 				for (AllocationContext context : allocations) {
 					String containerId = context
 							.getResourceContainer_AllocationContext().getId();
@@ -1101,6 +1086,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 										.getInterface__OperationSignature()
 										.getEntityName()
 										+ "_" + sig.getEntityName(), null);
+							}else if(a instanceof StartAction){
+								startActionId2FunId.put(a.getId(),function.getId());
 							}
 						}
 						functionalities.put(
@@ -1138,13 +1125,19 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// initialize the constrinable hashmap
 				application.initConstrainableResources();
 
+
+				//fill the lqnProcessorId in the functionality by using the mapping 
+				//between the start action and looking in the lqn file
+				Map<String,String> processorId2FunId = application.getLqnHandler().getProcessorIdMap(startActionId2FunId);
+				LqnResultParser.setIdSubstitutionMap(processorId2FunId);
+
 				// use the initial evaluation to initialize parser and
 				// structures
 				try {
 					evalServer.evaluateInstance(application);
 				} catch (AnalysisFailureException e) {
 					logger.error("Error evaluating an instance",e);
-				}
+				}								
 				// initialSolution.showStatus();
 			}
 
@@ -1155,7 +1148,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				generatedInitialMce);
 		logger.info(this.initialSolution.showStatus());
 	}
-
+	/**
+	 * Loads the solution from a serliazed object
+	 * */
 	public void loadInitialSolutionObject(File file) {
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
@@ -1183,6 +1178,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		final double MIN_FACTOR = 1.2;
 		numberOfFeasibilityIterations = 0;
 		while (!sol.isFeasible() && !isMaxNumberOfFesibilityIterations()) {
+			//if the unfeasibility is due to a violated ram constraints this procedure is ineffective and should be terminated			
+			//since vmType is constant among hours we can just look at the first one
+			for(Constraint constraint:sol.getViolatedConstraints()){
+				if(constraint instanceof RamConstraint){
+					logger.info("Wrong type of VM selected, make feasible will not be executed");
+					return;
+				}
+			}
 			logger.info("\tFeasibility iteration: "
 					+ numberOfFeasibilityIterations);	
 

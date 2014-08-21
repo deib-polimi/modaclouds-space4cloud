@@ -40,7 +40,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class LQNSResultParser implements LqnResultParser, Serializable {
+public class LQNSResultParser extends LqnResultParser implements Serializable {
 
 	/**
 	 * 
@@ -161,7 +161,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 			// search for the result element
 			Element processor = (Element) processors.item(i);
-			String id = processor.getAttribute("name");
+			String processorName = processor.getAttribute("name");
 			int cores = 1;
 			if (!processor.getAttribute("multiplicity").isEmpty())
 				cores = Integer
@@ -177,12 +177,11 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			// add the processor utilization to the hashmap	
 			if(utilization > 1){
 				logger.debug("Utilization greater than one!");
-				logger.debug("file: "+filePath+" utilization: "+utilization+" id: "+id);
+				logger.debug("file: "+filePath+" utilization: "+utilization+" id: "+processorName);
 				utilization=1;
 			}
-			utilizations.put(id, utilization);
+			utilizations.put(processorName, utilization);
 
-			String seffID=null;
 			NodeList resultActivities = processor.getElementsByTagName("result-activity");
 			if(resultActivities.getLength() == 0)
 				resultActivities = processor.getElementsByTagName("resultActivity");
@@ -194,15 +193,10 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 					serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("serviceTime");	
 				if(serviceTimeNode!=null)
 					serviceTime += Double.parseDouble(serviceTimeNode.getTextContent());
-				String activityName = resultActivities.item(j).getParentNode().getAttributes().getNamedItem("name").getNodeValue();
-				if(activityName.startsWith("StartAction")){
-					String[] tokens = activityName.split("_");
-					seffID = tokens[2]+"_"+tokens[3]+"_"+tokens[5];
-				}
 				
 			}
-			if(seffID!=null)
-				responseTimes.put(seffID, serviceTime);
+			if(idSubstitutionMap.containsKey(processorName))
+				responseTimes.put(idSubstitutionMap.get(processorName), serviceTime);
 
 		}
 
