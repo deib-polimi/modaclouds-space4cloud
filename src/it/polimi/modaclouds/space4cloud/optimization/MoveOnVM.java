@@ -18,11 +18,15 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandlerFactory;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Michele Ciavotta
@@ -73,7 +77,7 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param res
 	 * @param numberOfReplicas
 	 */
-	public void scale(Tier tier, int numberOfReplicas) {
+	private void scale(Tier tier, int numberOfReplicas) {
 		// perform the move
 		// setCloudResource(resource);
 		setCloudResource(tier);
@@ -82,14 +86,25 @@ public class MoveOnVM extends AbsMoveHour {
 	}
 
 	/**
-	 * Reduces by 1 the number of replicas of the specified resources
+	 * Reduces by 1 the number of replicas of the specified resources if this does not conflict with the constraints
 	 * 
 	 * @param res
 	 */
 	public void scaleIn(Tier tier) {
-		if(tier.getCloudService() instanceof IaaS)
-			scale(tier, ((IaaS)tier.getCloudService()).getReplicas() - 1);
-		//TODO: add an else with a warning or raise an exception
+		if(!(tier.getCloudService() instanceof IaaS)){
+			logger.warn("Warning trying to scale a non IaaS resource");
+			return;
+		}
+		//avoid breaking constraints when scaling in	
+		List<Constraint> constraints =  ConstraintHandlerFactory.getConstraintHandler().getConstraintByResourceId(tier.getId(), ReplicasConstraint.class);
+		for(Constraint c:constraints){
+			if(((IaaS)tier.getCloudService()).getReplicas() <= ((ReplicasConstraint)c).getMax()){
+				logger.warn("Warning: trying to scale in a resource that is already at its maximu allowed number of replicas, tier id:"+tier.getId());
+				return;
+			}
+		}
+					
+		scale(tier, ((IaaS)tier.getCloudService()).getReplicas() - 1);
 	}
 
 	/**
@@ -103,10 +118,20 @@ public class MoveOnVM extends AbsMoveHour {
 	 */
 	public void scaleIn(Tier tier, double factor) {
 		IaaS cloudService = null;
-		if(tier.getCloudService() instanceof IaaS)
-			cloudService = (IaaS) tier.getCloudService();
-		//TODO: again we should add an else with a warning or raise an exception
+		if(!(tier.getCloudService() instanceof IaaS)){
+			logger.warn("Warning trying to scale a non IaaS resource");
+			return;
+		}
+		cloudService = (IaaS) tier.getCloudService();
 		int newReplicas = (int) Math.ceil(cloudService.getReplicas() * (1 / factor));
+		//avoid breaking constraints when scaling in 		
+		List<Constraint> constraints =  ConstraintHandlerFactory.getConstraintHandler().getConstraintByResourceId(tier.getId(), ReplicasConstraint.class);
+		for(Constraint c:constraints){
+			if(newReplicas < ((ReplicasConstraint)c).getMin()){
+				newReplicas = ((ReplicasConstraint)c).getMin();
+				break;
+			}
+		}
 		if (newReplicas == cloudService.getReplicas() || newReplicas == 0)
 			scaleIn(tier);
 		else
@@ -114,15 +139,26 @@ public class MoveOnVM extends AbsMoveHour {
 	}
 
 	/**
-	 * Increases by 1 the number of replicas of the specified resource
+	 * Increases by 1 the number of replicas of the specified resource if this does not conflict with the onstraints
 	 * 
 	 * @param res
 	 */
 	public void scaleOut(Tier tier) {
 		
-		if(tier.getCloudService() instanceof IaaS)			
-			scale(tier, ((IaaS)tier.getCloudService()).getReplicas() + 1);
-		//TODO:here too we should add an else with a warning or raise an exception
+		if(!(tier.getCloudService() instanceof IaaS)){
+			logger.warn("Warning trying to scale a non IaaS resource");
+			return;
+		}
+		//avoid breaking constraints when scaling out	
+		List<Constraint> constraints =  ConstraintHandlerFactory.getConstraintHandler().getConstraintByResourceId(tier.getId(), ReplicasConstraint.class);
+		for(Constraint c:constraints){
+			if(((IaaS)tier.getCloudService()).getReplicas() >= ((ReplicasConstraint)c).getMax()){
+				logger.warn("Warning: trying to scale out a resource that is already at its maximu allowed number of replicas, tier id:"+tier.getId());
+				return;
+			}
+		}
+					
+		scale(tier, ((IaaS)tier.getCloudService()).getReplicas() + 1);
 	}
 
 	/**
@@ -136,19 +172,20 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param factor
 	 */
 	public void scaleOut(Tier tier, double factor) {
-		// //perform the move
-		// setCloudResource(res);
-		// int newReplicas = (int)Math.ceil(resource.getReplicas()*factor);
-		// if(newReplicas <= res.getReplicas())
-		// scaleOut(res);
-		// else
-		// setNumberOfReplicas(newReplicas);
-		// apply();
+
 		IaaS cloudService = null;
 		if(tier.getCloudService() instanceof IaaS)
 			cloudService = (IaaS) tier.getCloudService();
-		//TODO: even more.. we should add an else with a warning or raise an exception
+				
 		int newReplicas = (int) Math.ceil(cloudService.getReplicas() * factor);
+		//avoid breaking constraints when scaling in 		
+		List<Constraint> constraints =  ConstraintHandlerFactory.getConstraintHandler().getConstraintByResourceId(tier.getId(), ReplicasConstraint.class);
+		for(Constraint c:constraints){
+			if(newReplicas > ((ReplicasConstraint)c).getMax()){
+				newReplicas = ((ReplicasConstraint)c).getMax();
+				break;
+			}
+		}
 		if (newReplicas <= cloudService.getReplicas())
 			scaleOut(tier);
 		else

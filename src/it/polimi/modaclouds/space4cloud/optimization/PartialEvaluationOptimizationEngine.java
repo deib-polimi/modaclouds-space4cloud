@@ -19,7 +19,6 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
@@ -122,16 +121,14 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			for (int hour = 0; hour < 24; hour++) {
 				Tier tier = null;
 				// remove resources with minimum number of replicas
-				for (int j = 0; j < vettResTot.get(hour).size(); j++)
-					if (((IaaS)vettResTot.get(hour).get(j).getCloudService()).getReplicas() == 1)
-						vettResTot.get(hour).remove(j);
-
+				vettResTot=constraintHandler.filterResourcesForScaleDown(vettResTot,hour);
+				
 				// if no resource can be scaled in in this hour then jump to the
 				// next one
 				if (vettResTot.get(hour).size() == 0)
 					continue;
 
-				// if there are tiers that can be scale then chose one
+				// if there are tiers that can be scaled then chose one
 				// randomly
 				tier = vettResTot.get(hour).get(random.nextInt(vettResTot.get(hour).size()));
 
@@ -149,40 +146,35 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			}
 
 			// evaluate the solution
-			evalServer.EvaluateSolution(sol);
-			updateBestSolution(sol);
-			
-			
-			//if there has been no improvement then signal it 
-			//TODO: check this condition
-			boolean improvement = updateBestSolution(sol);
-			if(!improvement){
-				numIterNoImprov++;				
-			}
+			evalServer.EvaluateSolution(sol);	
 
 			// if an application has become feasible, revert it and try again
 			// with a smaller factor
-			boolean reverted = false;
 			for (int i = 0; i < 24; i++) {
 				if (!sol.getApplication(i).isFeasible()) {
 					sol.copyApplication(previousSol.getApplication(i), i);
 					factors[i] = DEFAULT_SCALE_IN_FACTOR
 							- ((double)(iterations + 1) / MAX_SCALE_IN_ITERATIONS)
 							* (DEFAULT_SCALE_IN_FACTOR - 1);
-					reverted = true;
 				}
 			}
-			//this should not be necessary since hourly solutions are independent
-			if(reverted){
-				// evaluate the solution
-				evalServer.EvaluateSolution(sol);
-				updateBestSolution(sol);
+			
+			
+			//if there has been no improvement then signal it 
+			//It should not be necessary to re-evaluate it
+			//evalServer.EvaluateSolution(sol);
+			boolean improvement = updateBestSolution(sol);
+			if(!improvement){
+				numIterNoImprov++;				
 			}
 
 		}
+		evalServer.EvaluateSolution(sol);	
 		return true;
 
 	}
+
+
 
 
 }

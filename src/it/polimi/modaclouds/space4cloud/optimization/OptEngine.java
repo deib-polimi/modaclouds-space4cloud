@@ -609,7 +609,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		for (Instance i : sol.getApplications()) {
 			ArrayList<Tier> resMemory = new ArrayList<>();
 			for (Tier t : i.getTiers())
-				// if the cloud service hostin the application tier is a IaaS
+				// if the cloud service hosting the application tier is a IaaS
 				if (t.getCloudService() instanceof IaaS &&
 						// and it has more than one replica
 						((IaaS) t.getCloudService()).getReplicas() > 1)
@@ -1193,29 +1193,26 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					* numberOfFeasibilityIterations
 					/ MAXFEASIBILITYITERATIONS;
 			for (int i = 0; i < 24; i++) {
-				// this part can be turned into a multithread section
-				// we need a list of all the resources involved
-				Map<Constraint, Double> constraintsEvaluation = sol
-						.getEvaluation().get(i);
-				Set<Tier> tierMemory = new HashSet<>();
+			
+				Set<Tier> affectedTiers = new HashSet<>();
 
 				// for each constraint find the IaaS affected resource and add
 				// it to the set. Multiple constraints affecting the same
 				// resource are ignored since we use a Set as memory
-				for (Constraint c : constraintsEvaluation.keySet())
-					if (c.hasNumericalRange())
-						if (constraintsEvaluation.get(c) > 0)
-							tierMemory.add(findResource(sol.getApplication(i),
-									c.getResourceID()));
+				for (Constraint c : sol.getApplication(i).getViolatedConstraints())
+					affectedTiers.add(findResource(sol.getApplication(i),c.getResourceID()));
+				
+				//remove resources that have reached the maximum replica constraint
+				affectedTiers = constraintHandler.filterResourcesForScaleOut(affectedTiers);
 				// this is the list of the
 				// resouces that doesn't
 				// satisfy the constraints
-
 				// now we will scaleout the resources
+				
 
-				if (tierMemory.size() > 0) {
+				if (affectedTiers.size() > 0) {
 					MoveOnVM moveVM_i = new MoveOnVM(sol, i);
-					for (Tier t : tierMemory)
+					for (Tier t : affectedTiers)
 						moveVM_i.scaleOut(t, factor);
 				}
 
@@ -1230,6 +1227,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		else
 			logger.info("Max number of feasibility iterations reached");
 	}
+
+
 
 	/**
 	 * This is the bulk of the optimization process in case of a single provider
@@ -1609,19 +1608,19 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			IaaS newRes = resList.get(index);
 
 			// debugging
-			scrambleLogger.debug("Sorted Resources");
-			for (IaaS res : resList) {
-				if (newRes.equals(res))
-					scrambleLogger.debug("Index: " + resList.indexOf(res)
-							+ " res: " + res.getResourceName() + " value: "
-							+ getEfficiency(res, sol.getRegion())
-							+ " <--- SELECTED");
-				else
-					scrambleLogger.debug("Index: " + resList.indexOf(res)
-							+ " res:" + res.getResourceName() + " value: "
-							+ getEfficiency(res, sol.getRegion()));
-			}
-			scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
+//			scrambleLogger.debug("Sorted Resources");
+//			for (IaaS res : resList) {
+//				if (newRes.equals(res))
+//					scrambleLogger.debug("Index: " + resList.indexOf(res)
+//							+ " res: " + res.getResourceName() + " value: "
+//							+ getEfficiency(res, sol.getRegion())
+//							+ " <--- SELECTED");
+//				else
+//					scrambleLogger.debug("Index: " + resList.indexOf(res)
+//							+ " res:" + res.getResourceName() + " value: "
+//							+ getEfficiency(res, sol.getRegion()));
+//			}
+//			scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
 
 			// Phase4: performs the change and evaluate the solution
 			// add the new configuration in the memory

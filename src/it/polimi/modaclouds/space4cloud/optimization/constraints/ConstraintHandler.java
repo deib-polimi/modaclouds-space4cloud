@@ -30,7 +30,10 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,13 +49,18 @@ import org.xml.sax.SAXException;
 public class ConstraintHandler {
 
 	List<Constraint> constraints = new ArrayList<>();
+	private Map<String,List<Constraint>> resourceId2Constraint = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(ConstraintHandler.class);
 	public  static final String AVERAGE_AGGREGATION = "Average";
 	public static final String PERCENTILE_AGGREGATION = "Percentile";
-	public void addConstraint(Constraint constraint){
-		constraints.add(constraint);
-	}	
 
+
+	/**
+	 * The Constraint handler should be accessed by its factory  
+	 */
+	public ConstraintHandler() {
+
+	}
 
 	/**
 	 * Parses the constraints from the xml file and initializes the handler
@@ -121,7 +129,7 @@ public class ConstraintHandler {
 			}else if(c instanceof ReplicasConstraint){
 				logger.info("\tmin: "+((ReplicasConstraint)c).getMin());
 				logger.info("\tmax: "+((ReplicasConstraint)c).getMax());
-				
+
 			}
 
 		}
@@ -186,9 +194,9 @@ public class ConstraintHandler {
 		result.addAll(resList);
 		for(Constraint c:constraints)
 			//if the constraint affected the original resource
-			if(c instanceof ArchitecturalConstraint && c.getResourceID().equals(tier.getId()))
+			if(c instanceof RamConstraint && c.getResourceID().equals(tier.getId()))
 				for(IaaS resource:resList){
-					if(!((ArchitecturalConstraint)c).checkConstraint(resource))
+					if(!((RamConstraint)c).checkConstraint(resource))
 						result.remove(resource);
 				}
 		//filter resources in the DB which have no number of cpus, this should not be necessary if the DB is good
@@ -205,6 +213,92 @@ public class ConstraintHandler {
 
 	}
 
+	/**
+	 * Remove from the tier list the tier for which the maximum replica constraint has been reached
+	 * @param affectedTiers
+	 * @return
+	 */
+	public Set<Tier> filterResourcesForScaleOut(Set<Tier> affectedTiers) {
+		Set<Tier> tiers = new HashSet<Tier>(affectedTiers);
+		for(Tier t:affectedTiers){
+			if(t.getCloudService() instanceof IaaS){
+				for(Constraint c:getConstraintByResourceId(t.getId(), ReplicasConstraint.class)){				
+					if(((ReplicasConstraint) c).hasMaxReplica(((IaaS)t.getCloudService()))){
+						tiers.remove(t);
+						continue;
+					}
+				}
+			}
+		}
+		return tiers;
+	}
+
+
+	/**
+	 * Remove resources that can not be scaled in, those are the resources with just 1 replica or with the minimum number according to the cosntraints
+	 * @param vettResTot
+	 * @param hour
+	 * @return 
+	 */
+	public List<ArrayList<Tier>> filterResourcesForScaleDown(List<ArrayList<Tier>> vettResTot, int hour) {
+
+		List<ArrayList<Tier>> resources = new ArrayList<>();
+		for(ArrayList<Tier> hourResource:vettResTot)
+			resources.add(new ArrayList<Tier>(hourResource));
+
+		for (Tier t:vettResTot.get(hour)){
+			if(t.getCloudService() instanceof IaaS ){
+				//filter resources with just 1 replica
+				if(((IaaS)t.getCloudService()).getReplicas() == 1)
+					resources.get(hour).remove(t);
+				else{
+					//filter resources with minimum number of replicas
+					for(Constraint c:getConstraintByResourceId(t.getId(), ReplicasConstraint.class)){
+						if(((ReplicasConstraint) c).hasMinReplica(((IaaS) t.getCloudService())))
+							resources.get(hour).remove(t);
+					}
+				}
+			}
+		}
+		return resources;		
+	}
+
+
+	private void addConstraint(Constraint constraint){
+		constraints.add(constraint);
+		if(!resourceId2Constraint.containsKey(constraint.getResourceID()))
+			resourceId2Constraint.put(constraint.getResourceID(),new ArrayList<Constraint>());
+		resourceId2Constraint.get(constraint.getResourceID()).add(constraint);
+	}	
+
+	/**
+	 * Get the list of constraints that affect the resource with the specified id, if no constraint has been defined returns an empty list
+	 * @param resourceId
+	 * @return
+	 */
+	public List<Constraint> getConstraintByResourceId(String resourceId){
+		if(resourceId2Constraint.containsKey(resourceId))
+			return resourceId2Constraint.get(resourceId);
+		return new ArrayList<>();
+
+	}
+
+	/**
+	 * Get the list of constraints of type clazz that affect the resource with the specified id, if no constraint has been defined returns an empty list
+	 * @param <clazz>
+	 * @param resourceId
+	 * @param clazz the class of the constraint
+	 * @return
+	 */
+	public  <clazz> List<Constraint> getConstraintByResourceId(String resourceId, Class<? extends Constraint> clazz){
+		List<Constraint> constraints = new ArrayList<Constraint>();
+		if(resourceId2Constraint.containsKey(resourceId)){
+			for(Constraint c:resourceId2Constraint.get(resourceId))
+				if(c.getClass() == clazz)					
+					constraints.add(c);
+		}
+		return constraints;
+	}
 
 
 }

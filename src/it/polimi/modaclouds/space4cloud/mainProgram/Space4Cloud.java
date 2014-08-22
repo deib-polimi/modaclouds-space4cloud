@@ -30,10 +30,10 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
-import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandler;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
@@ -316,7 +316,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 //		}
 
 		// Parse the constraints and initialize the handler
-		constraintHandler = new ConstraintHandler();
+		constraintHandler = ConstraintHandlerFactory.getConstraintHandler();
 		try {
 			constraintHandler.loadConstraints();
 		} catch (ParserConfigurationException | SAXException | IOException

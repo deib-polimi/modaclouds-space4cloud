@@ -43,6 +43,12 @@ public abstract class Constraint {
 		this.priority = (constraint.getPriority() == null ? 0 : constraint
 				.getPriority()).intValue();
 		this.range = constraint.getRange();
+		//if the range is invalid delete it so that the constraint is always fulfilled
+		//give a warning		
+		if(range.getHasMaxValue() != null && range.getHasMinValue() != null && range.getHasMaxValue() < range.getHasMaxValue()){
+			logger.warn("Constraint "+constraint.getId()+" has an invalidate range and will be ignored.");
+			range = null;
+		}
 	}
 
 	public Constraint(String id, String name, String resourceId, Metric metric,
@@ -84,15 +90,15 @@ public abstract class Constraint {
 		//if the value is over the max return the difference
 		if(upper>0)
 			return upper;
-		
+
 		//if the value is under the min return the difference
 		if(lower>0)
 			return lower;
-		
+
 		//if the value is in the range return the distance to the closest bound (max since these are negative numbers)
 		return Math.max(upper, lower);
-		
-		
+
+
 	}
 
 	public Metric getMetric() {

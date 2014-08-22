@@ -116,7 +116,7 @@ public class LQNSResultParser extends LqnResultParser implements Serializable {
 		try {
 			dBuilder = dbFactory.newDocumentBuilder();
 
-			// TODO: sometimes the temporary file has a name ending with a tilde
+			
 			Path normalPath = filePath;
 			Path tempPath = Paths.get(filePath+"~");
 			//wait for the generation of the result file
@@ -200,7 +200,7 @@ public class LQNSResultParser extends LqnResultParser implements Serializable {
 
 		}
 
-		// TODO: parse other stuff
+
 		dbFactory = null;
 		dBuilder = null;
 		resultDOM = null;

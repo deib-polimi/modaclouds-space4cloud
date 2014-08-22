@@ -546,28 +546,15 @@ public class Solution implements Cloneable, Serializable {
 		} else if (!isFeasible() && !sol.isFeasible()) {
 
 			/*
-			 * TODO: here we have to consider as better the solution with the
-			 * minimum number of violated constraints or something like this, we
-			 * could also consider the constraints according to their importance
+			 * here we  consider as better the solution with the
+			 * minimum number of violated constraints 
 			 */
 
-			ArrayList<Constraint> notVerifiedbyThis = new ArrayList<Constraint>();
-			for (Map<Constraint, Double> m : evaluation)
-				for (Constraint c : m.keySet())
-					if (m.get(c) > 0)
-						notVerifiedbyThis.add(c);
-
-			ArrayList<Constraint> notVerifiedbySol = new ArrayList<Constraint>();
-			for (Map<Constraint, Double> m : sol.getEvaluation())
-				for (Constraint c : m.keySet())
-					if (m.get(c) > 0)
-						notVerifiedbySol.add(c);
-			if (notVerifiedbyThis.size() > notVerifiedbySol.size())
-				return false;
-			else
+			if (getNumberOfViolatedConstraints() <= sol.getNumberOfViolatedConstraints())
 				return true;
-			// TODO in case it is equal we should check constraints by priority
-			// or by distance
+			else
+				return false;
+
 		} else {
 
 			return this.isFeasible();

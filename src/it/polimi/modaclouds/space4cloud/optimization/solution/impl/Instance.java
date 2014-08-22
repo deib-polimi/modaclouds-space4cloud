@@ -162,6 +162,12 @@ public class Instance implements Cloneable, Serializable {
 		if (getRegion() != null)
 			cloneInst.setRegion(new String(this.getRegion()));
 		cloneInst.setFather(null);
+		
+		//clone the constraints
+		cloneInst.violatedConstraints = new ArrayList<Constraint>(getNumerOfViolatedConstraints());
+		for(Constraint c:violatedConstraints)
+			cloneInst.incrementViolatedConstraints(c);
+		
 		return cloneInst;
 
 	}
