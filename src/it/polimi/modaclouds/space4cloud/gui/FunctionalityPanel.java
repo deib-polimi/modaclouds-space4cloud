@@ -165,6 +165,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		gbc_randomEnvironmentLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_randomEnvironmentLabel.gridx = 0;
 		gbc_randomEnvironmentLabel.gridy = 6;
+		randomEnvironmentLabel.setVisible(false);
 		add(randomEnvironmentLabel, gbc_randomEnvironmentLabel);
 
 		emptyLabel3 = new JLabel("");
@@ -181,6 +182,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		gbc_randomEnvironmentText.gridx = 0;
 		gbc_randomEnvironmentText.gridy = 7;
 		add(randomEnvironmentText, gbc_randomEnvironmentText);
+		randomEnvironmentText.setVisible(false);
 		randomEnvironmentText.setColumns(10);
 
 		randomEnvironmentButton = new JButton("Browse");
@@ -189,6 +191,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		gbc_randomEnvironmentButton.insets = new Insets(0, 0, 5, 0);
 		gbc_randomEnvironmentButton.gridx = 1;
 		gbc_randomEnvironmentButton.gridy = 7;
+		randomEnvironmentButton.setVisible(false);
 		add(randomEnvironmentButton, gbc_randomEnvironmentButton);
 
 		panel = new JPanel();
