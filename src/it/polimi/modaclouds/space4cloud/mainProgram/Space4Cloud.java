@@ -163,7 +163,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	public void  run(){
 
+		//clear singleton instances from previous runs
 		LineServerHandlerFactory.clearHandler();
+		ConstraintHandlerFactory.clearHandler();
 		//load the configuration
 		if (!batch) {
 			if(Configuration.PROJECT_BASE_FOLDER == null)

@@ -1193,6 +1193,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					* numberOfFeasibilityIterations
 					/ MAXFEASIBILITYITERATIONS;
 			for (int i = 0; i < 24; i++) {
+				
+				if(sol.getHourApplication().get(i).isFeasible())
+					continue;
 			
 				Set<Tier> affectedTiers = new HashSet<>();
 

@@ -9,5 +9,9 @@ public class ConstraintHandlerFactory {
 			handlerInstance = new ConstraintHandler();
 		return handlerInstance;
 	}
+	
+	public static void clearHandler(){
+		handlerInstance = null;
+	}
 
 }

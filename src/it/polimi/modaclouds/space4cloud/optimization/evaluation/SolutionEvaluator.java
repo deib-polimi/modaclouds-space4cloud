@@ -155,7 +155,10 @@ public class SolutionEvaluator implements Runnable {
 			return;
 		}		
 
-		handler.solve(filePath, null);
+		String randomEnvFile = null;
+		if(!Configuration.RANDOM_ENV_FILE.equals(""))
+			randomEnvFile = Configuration.RANDOM_ENV_FILE;
+		handler.solve(filePath,randomEnvFile);
 		// wait for the model to be solved
 		while (!handler.isSolved(filePath))
 			try {

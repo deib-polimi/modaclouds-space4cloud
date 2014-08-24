@@ -32,6 +32,11 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	private JButton lineConfButton;
 	private JLabel linePropLabel;
 	private JLabel emptyLabel2;
+	private JLabel randomEnvironmentLabel;
+	private JLabel emptyLabel3;
+	private JPanel panel;
+	private JTextField randomEnvironmentText;
+	private JButton randomEnvironmentButton;
 	/**
 	 * Create the panel.
 	 */
@@ -39,9 +44,9 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{201, 201, 0};
-		gridBagLayout.rowHeights = new int[]{40, 35, 35, 0, 35, 0, 0, 0};
+		gridBagLayout.rowHeights = new int[] {35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
 		JLabel operationLabel = new JLabel("Operation");
@@ -121,7 +126,6 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		linePropLabel = new JLabel("LINE Configuration File");
 		GridBagConstraints gbc_linePropLabel = new GridBagConstraints();
 		gbc_linePropLabel.fill = GridBagConstraints.HORIZONTAL;
-		gbc_linePropLabel.anchor = GridBagConstraints.WEST;
 		gbc_linePropLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_linePropLabel.gridx = 0;
 		gbc_linePropLabel.gridy = 4;
@@ -155,12 +159,44 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		lineConfButton.setVisible(false);
 		add(lineConfButton, gbc_lineConfButton);
 
-		JPanel panel = new JPanel();
+		randomEnvironmentLabel = new JLabel("Random Environment (Optional)");
+		GridBagConstraints gbc_randomEnvironmentLabel = new GridBagConstraints();
+		gbc_randomEnvironmentLabel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_randomEnvironmentLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_randomEnvironmentLabel.gridx = 0;
+		gbc_randomEnvironmentLabel.gridy = 6;
+		add(randomEnvironmentLabel, gbc_randomEnvironmentLabel);
+
+		emptyLabel3 = new JLabel("");
+		GridBagConstraints gbc_emptyLabel3 = new GridBagConstraints();
+		gbc_emptyLabel3.insets = new Insets(0, 0, 5, 0);
+		gbc_emptyLabel3.gridx = 1;
+		gbc_emptyLabel3.gridy = 6;
+		add(emptyLabel3, gbc_emptyLabel3);
+
+		randomEnvironmentText = new JTextField();
+		GridBagConstraints gbc_randomEnvironmentText = new GridBagConstraints();
+		gbc_randomEnvironmentText.insets = new Insets(0, 0, 5, 5);
+		gbc_randomEnvironmentText.fill = GridBagConstraints.HORIZONTAL;
+		gbc_randomEnvironmentText.gridx = 0;
+		gbc_randomEnvironmentText.gridy = 7;
+		add(randomEnvironmentText, gbc_randomEnvironmentText);
+		randomEnvironmentText.setColumns(10);
+
+		randomEnvironmentButton = new JButton("Browse");
+		randomEnvironmentButton.addActionListener(this);
+		GridBagConstraints gbc_randomEnvironmentButton = new GridBagConstraints();
+		gbc_randomEnvironmentButton.insets = new Insets(0, 0, 5, 0);
+		gbc_randomEnvironmentButton.gridx = 1;
+		gbc_randomEnvironmentButton.gridy = 7;
+		add(randomEnvironmentButton, gbc_randomEnvironmentButton);
+
+		panel = new JPanel();
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.insets = new Insets(0, 0, 0, 5);
 		gbc_panel.fill = GridBagConstraints.BOTH;
 		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 6;
+		gbc_panel.gridy = 8;
 		add(panel, gbc_panel);
 	}
 
@@ -188,6 +224,14 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 				lineConfText.setText(linePropFile.getAbsolutePath());
 			}
 		}
+		else if(e.getSource().equals(randomEnvironmentButton)){
+			File randomEnvFile = FileLoader.loadFile("Random Enviroment specification");
+			if(randomEnvFile!=null){
+				Configuration.RANDOM_ENV_FILE=randomEnvFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=randomEnvFile.getParent().toString();
+				randomEnvironmentText.setText(randomEnvFile.getAbsolutePath());
+			}
+		}
 	}
 
 	/**
@@ -198,6 +242,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		setSolver(Configuration.SOLVER);
 		dbConfText.setText(Configuration.DB_CONNECTION_FILE);
 		lineConfText.setText(Configuration.LINE_PROP_FILE);
+		randomEnvironmentText.setText(Configuration.RANDOM_ENV_FILE);
 	}
 
 
@@ -208,19 +253,33 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	private void setSolver(Solver solver){
 		solverBox.setSelectedItem(solver);
 		if(solver.equals(Solver.LINE)){
+			//show LINE configuration and random environment
 			lineConfButton.setVisible(true);
 			lineConfText.setVisible(true);
 			linePropLabel.setVisible(true);
 			emptyLabel2.setVisible(true);
-		}else{
+			
+			randomEnvironmentButton.setVisible(true);
+			randomEnvironmentText.setVisible(true);
+			randomEnvironmentLabel.setVisible(true);
+			emptyLabel3.setVisible(true);
+		}else{			
+			
+			//hide LINE configuration and random environment
 			lineConfButton.setVisible(false);
 			lineConfText.setVisible(false);
 			linePropLabel.setVisible(false);
 			emptyLabel2.setVisible(false);
+			
+			randomEnvironmentButton.setVisible(false);
+			randomEnvironmentText.setVisible(false);
+			randomEnvironmentLabel.setVisible(false);
+			emptyLabel3.setVisible(false);
+			
 		}
 	}
-	
-	
+
+
 	/**
 	 * Updates the selection of the functionality firing the change of the related property
 	 * @param functionality
@@ -239,7 +298,8 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		Configuration.SOLVER = (Solver) solverBox.getSelectedItem();
 		Configuration.DB_CONNECTION_FILE = dbConfText.getText();
 		Configuration.LINE_PROP_FILE = lineConfText.getText();
+		Configuration.RANDOM_ENV_FILE = randomEnvironmentText.getText();
 
 	}
-	
+
 }
