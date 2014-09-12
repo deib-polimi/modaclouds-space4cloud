@@ -72,7 +72,7 @@ public abstract class Constraint {
 	 * @return
 	 */
 	protected double checkConstraintDistance(Object measurement) {
-		double value = 0;
+		double value = -1;
 		if (measurement instanceof Double)
 			value = (Double) measurement;
 		else if (measurement instanceof Integer)

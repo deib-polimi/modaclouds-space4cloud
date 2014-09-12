@@ -23,6 +23,10 @@ public class UsageConstraint extends QoSConstraint {
 	public UsageConstraint(
 			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
+		//convert 0.x into x over 100
+		this.range.setHasMaxValue(this.range.getHasMaxValue()*100);
+		
+		
 	}
 
 	@Override

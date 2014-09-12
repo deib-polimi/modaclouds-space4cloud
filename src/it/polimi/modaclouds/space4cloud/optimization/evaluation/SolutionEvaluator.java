@@ -95,8 +95,11 @@ public class SolutionEvaluator implements Runnable {
 				throw new AnalysisFailureException(resultfilePath);
 			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
 		} else {
+			String randomEnvironmentName = "";						
+			if(!Configuration.RANDOM_ENV_FILE.equals(""))
+				randomEnvironmentName="+"+Paths.get(Configuration.RANDOM_ENV_FILE).getFileName().toString().replace(".xml","");
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
-					+ "_line.xml";
+					+randomEnvironmentName+Configuration.LINE_SOLUTION_TAG+".xml";
 			resultParser = new LINEResultParser(Paths.get(resultfilePath));
 		}
 
@@ -144,9 +147,7 @@ public class SolutionEvaluator implements Runnable {
 			logger.error("Error in the evaluation of model: "+e.getFilePath());
 			for(ActionListener l:listeners)
 				l.actionPerformed(new ActionEvent(this, 0, "EvaluationError"));
-		}
-		for (ActionListener l : listeners)
-			l.actionPerformed(new ActionEvent(this, 0, null));
+		}		
 	}
 
 	private void runWithLINE() {

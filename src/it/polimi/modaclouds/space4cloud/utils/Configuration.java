@@ -25,6 +25,8 @@ public class Configuration {
 	public static final String SOLUTION_LIGHT_FILE_NAME = "statistics";
 	public static final String SOLUTION_CSV_FILE_NAME = "solution.csv";
 	public static final String DEFAULT_DB_CONNECTION_FILE = "/config/DBConnection.properties";
+	public static final String RANDOM_ENVIRONMENT_SOLUTION_TAG = "+RandomEnvironments";
+	public static final String LINE_SOLUTION_TAG = "_line";
 
 
 
@@ -284,3 +286,4 @@ public class Configuration {
 
 
 }
+

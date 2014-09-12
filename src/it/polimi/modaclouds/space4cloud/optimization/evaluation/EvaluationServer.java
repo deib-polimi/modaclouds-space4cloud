@@ -105,6 +105,9 @@ public class EvaluationServer implements ActionListener {
 
 		if (e.getActionCommand() != null
 				&& e.getActionCommand().equals("ResultsUpdated")) {
+			Solution sol = ((SolutionEvaluator) e.getSource()).getSolution();
+			if(sol!=null)
+				counters.put(sol, counters.get(sol) + 1);
 			instanceEvaluationTerminated = true;
 		} else if (e.getActionCommand() != null
 				&& e.getActionCommand().equals("EvaluationError")) {
@@ -113,8 +116,7 @@ public class EvaluationServer implements ActionListener {
 		} 
 		else {
 
-			Solution sol = ((SolutionEvaluator) e.getSource()).getSolution();
-			counters.put(sol, counters.get(sol) + 1);
+			logger.warn("Unknown Action from: "+e.getSource());
 		}
 
 	}
@@ -140,19 +142,27 @@ public class EvaluationServer implements ActionListener {
 		return totalCost;
 	}
 
-	public void evaluateInstance(Instance instance) throws AnalysisFailureException {
+	public void evaluateInstance(Instance instance) {
 		instanceEvaluationTerminated = false;
 		if (!instance.isEvaluated()) {
 			SolutionEvaluator eval = new SolutionEvaluator(instance, null);
 			eval.addListener(this);
 			
+			//reset the logger for line server handler
+			if(Configuration.SOLVER!=Solver.LQNS){
+				lineHandler.clear();
+			}
+
+			executor.execute(eval);
+			
 			if (Configuration.SOLVER == Solver.LQNS)
-				eval.parseResults();
+				executor.execute(eval);
 			else {
 				eval.setLineServerHandler(lineHandler);
-				eval.parseResults();
+				executor.execute(eval);
 			}
-		}
+		} else
+			instanceEvaluationTerminated = true;
 		while (!instanceEvaluationTerminated)
 			try {
 				Thread.sleep(100);

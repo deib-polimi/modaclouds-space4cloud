@@ -151,6 +151,7 @@ public class RunConfigurationsHandler {
 		Path launchConfigPath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.LAUNCH_CONFIG);
 		IPath location = org.eclipse.core.runtime.Path.fromOSString(launchConfigPath.toString());
 		IFile ifile = workspace.getRoot().getFileForLocation(location);
+		logger.debug("launching from:"+location.toPortableString()+" ifile: "+ifile);
 		launchConfig = DebugPlugin.getDefault().getLaunchManager()
 				.getLaunchConfiguration(ifile);
 		try {

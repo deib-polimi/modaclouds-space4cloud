@@ -149,10 +149,12 @@ public class LQNSResultParser extends LqnResultParser implements Serializable {
 
 	}
 
-	private void parse() {
+	private void parse(){
 		// parse Processors
 		if(resultDOM==null){
 			logger.error("No DOM was produced by the LQNS result parser");
+			return;
+			//TODO: throw invalid evaluation exception
 		}
 		NodeList processors = resultDOM.getElementsByTagName("processor");
 		utilizations.clear();

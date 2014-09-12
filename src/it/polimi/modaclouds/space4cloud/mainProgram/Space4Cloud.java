@@ -79,6 +79,7 @@ import javax.swing.SwingWorker.StateValue;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -153,7 +154,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			engine.cancel(true);
 			engine = null;
 		}
-
+		DatabaseConnector.closeConnection();
 		//this.interrupt();
 		refreshProject();
 		compleated = true;
@@ -201,7 +202,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		//clean the folder used for the evaluation/optimization process
 		try{
-			cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY));
+			FileUtils.deleteDirectory(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY).toFile());
 		}	catch (NoSuchFileException e) {
 			if(e.getMessage().contains("space4cloud"))
 				logger.debug("Space4Cloud folder not present, nothing to clean");
@@ -231,8 +232,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				dbConfigurationStream = this.getClass().getResourceAsStream(Configuration.DEFAULT_DB_CONNECTION_FILE);				
 			}
 			DatabaseConnector.initConnection(dbConfigurationStream);		
+			DataHandlerFactory.getHandler();
 			dbConfigurationStream.close();
-		} catch (SQLException | IOException e) {
+		} catch (SQLException | IOException | DatabaseConnectionFailureExteption e) {
 			logger.error("Could not initialize database connection",e);
 			cleanExit();
 			return;
@@ -1155,26 +1157,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	}
 
-	public static void cleanFolders(Path path) throws IOException {			
-		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				//skip deleting hidden files and directories
-				if(!file.toString().contains(".svn"))
-					Files.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
 
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				//skip deleting hidden files and directories
-				if(!dir.toString().contains(".svn"))
-					Files.delete(dir);
-				return FileVisitResult.CONTINUE;
-			}
-
-		});
-	}
 
 
 	public static int getMaxPopulation(File usageModelExtension) {

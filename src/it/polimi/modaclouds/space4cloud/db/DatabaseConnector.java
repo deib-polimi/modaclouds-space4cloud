@@ -96,5 +96,14 @@ public class DatabaseConnector {
 	public static Connection getConnection(){
 		return conn;
 	}
+	
+	public static void closeConnection(){
+		try {
+			if(conn!=null)
+				conn.close();
+		} catch (SQLException e) {
+			logger.error("Error closing the connection to the database.",e);
+		}
+	}
 }
 

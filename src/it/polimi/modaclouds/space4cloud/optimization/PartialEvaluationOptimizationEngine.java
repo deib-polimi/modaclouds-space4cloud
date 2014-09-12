@@ -160,9 +160,8 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			}
 			
 			
-			//if there has been no improvement then signal it 
-			//It should not be necessary to re-evaluate it
-			//evalServer.EvaluateSolution(sol);
+			//if there has been no improvement then signal it 			
+			evalServer.EvaluateSolution(sol);
 			boolean improvement = updateBestSolution(sol);
 			if(!improvement){
 				numIterNoImprov++;				

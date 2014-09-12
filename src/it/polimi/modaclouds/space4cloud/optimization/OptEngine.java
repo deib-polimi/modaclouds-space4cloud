@@ -27,7 +27,6 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.AnalysisFailureException;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
@@ -696,7 +695,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		updateLocalBestSolution(sol);
 
 		optimLogger.info("costReduction phase");
-		IteratedRandomScaleInLS(sol);
+		if(sol.isFeasible()){
+			IteratedRandomScaleInLS(sol);
+		}
+		else{
+			logger.info("Solution not feasible, skipping scale in");
+		}
 		// optimLogger.trace("optimized solution"+sol.showStatus());
 
 	}
@@ -1133,11 +1137,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				// use the initial evaluation to initialize parser and
 				// structures
-				try {
-					evalServer.evaluateInstance(application);
-				} catch (AnalysisFailureException e) {
-					logger.error("Error evaluating an instance",e);
-				}								
+				
+				evalServer.evaluateInstance(application);
+											
 				// initialSolution.showStatus();
 			}
 
@@ -1758,8 +1760,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					bestSolution.getCost());
 			optimLogger.info("updated best solution");
-			sol.setGenerationIteration(numberOfIterations);
-			sol.setGenerationTime(timer.getSplitTime());
+			clone.setGenerationIteration(numberOfIterations);
+			clone.setGenerationTime(timer.getSplitTime());
+			bestSolution.setGenerationIteration(numberOfIterations);
+			bestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
 			return true;
 		}

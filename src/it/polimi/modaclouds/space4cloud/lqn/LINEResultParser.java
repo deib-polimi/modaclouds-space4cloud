@@ -118,7 +118,7 @@ public class LINEResultParser extends LqnResultParser implements Serializable {
 			doc = dBuilder.parse(solutionFile);
 
 		} catch (ParserConfigurationException | SAXException | IOException e) {
-			e.printStackTrace();
+			logger.error("Performance Result file not computed");
 		}
 		doc.getDocumentElement().normalize();
 		Element root = (Element) doc.getElementsByTagName("cmcqn-model")

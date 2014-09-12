@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Space 4 Cloud
 Bundle-SymbolicName: it.polimi.modaclouds.space4cloud;singleton:=true
-Bundle-Version: 1.0.1.qualifier
+Bundle-Version: 1.0.3.qualifier
 Bundle-Activator: it.polimi.modaclouds.space4cloud.plugin.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -37,12 +37,12 @@ Bundle-ClassPath: .,
  target/dependency/jcommon-1.0.21.jar,
  icons.jar,
  target/dependency/jsch-0.1.51.jar,
- target/dependency/qos-models-2.0.3.jar,
  target/dependency/resourcemodel-1.0.0.jar,
  target/dependency/commons-jxpath-1.3.jar,
  target/dependency/commons-lang-2.6.jar,
  log/,
- target/dependency/milp-0.0.8.jar
+ target/dependency/milp-0.0.8.jar,
+ target/dependency/qos-models-2.1.2.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.EMFHelper;
   uses:="org.eclipse.emf.ecore,

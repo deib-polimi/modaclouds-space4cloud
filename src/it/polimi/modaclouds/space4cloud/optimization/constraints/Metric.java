@@ -27,20 +27,26 @@ public enum Metric {
 			return REPLICATION;
 		case "RAM":
 			return RAM;
-		case "HardDisk":
+		//TODO:not supported
+		case"HardDisk":
 			return HDD;
+		//TODO:not supported
 		case "Cores":
 			return CORES;
 		case "CPUUtilization":
 			return CPU;
+		//TODO:not supported
 		case "MachineType":
 			return MACHINETYPE;
+		//TODO:not supported
 		case "ServiceType":
 			return SERVICETYPE;
 		case "ResponseTime":
 			return RESPONSETIME;
+		//TODO:not supported
 		case "Availability":
 			return AVAILABILITY;
+		//TODO:not supported
 		case "Reliability":
 			return RELIABILITY;
 		default:
