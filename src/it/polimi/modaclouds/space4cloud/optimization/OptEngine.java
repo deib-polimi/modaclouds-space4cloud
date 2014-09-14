@@ -1553,7 +1553,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		// try to performe the change until something has actually changed or we
 		// give up
 		while (!done && iterations < MAX_SCRAMBLE_NO_CHANGE) {
-			// Phase1: Select the resource to change Policy: RANDOM
+			// Phase1: Select the resource to change. Policy: RANDOM
 			List<Tier> tierList = sol.getApplication(0).getTiers();
 			Tier selectedTier = tierList.get(random.nextInt(tierList.size()));
 			scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
