@@ -2,6 +2,8 @@
 .classpath
 .DS_Store
 /target
+/src/it/polimi/modaclouds/space4cloud/line/*
+/src/META-INF/*
 /commons-beanutils-1.9.1.jar
 /commons-collections-3.2.1.jar
 /commons-io-2.4.jar
