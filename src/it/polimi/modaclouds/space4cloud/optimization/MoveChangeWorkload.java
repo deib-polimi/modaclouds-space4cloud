@@ -1,6 +1,7 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 import java.io.File;
@@ -42,16 +43,12 @@ public class MoveChangeWorkload extends AbsMove {
 
 		return currentSolution;
 	}
-
-	public IMove modifyWorkload(File usageModelExtension, double rate)
+	
+	public IMove modifyWorkload(double[] rates)
 			throws ParserConfigurationException, SAXException, IOException,
 			JAXBException {
-		double rates[] = new double[24];
-		for (int i = 0; i < 23; ++i)
-			rates[i] = rate;
-
-		return modifyWorkload(usageModelExtension, rates);
-
+		
+		return modifyWorkload(new File(Configuration.USAGE_MODEL_EXTENSION), rates);
 	}
 
 	public IMove modifyWorkload(File usageModelExtension, double[] rates)
@@ -69,8 +66,54 @@ public class MoveChangeWorkload extends AbsMove {
 			return this;
 
 		for (int i = 0; i < 24; ++i) {
+			if (rates[i] < 0.0)
+				rates[i] = 0.0;
+			else if (rates[i] > 1.0)
+				rates[i] = 1.0;
+			
 			hourly.get(i).modifyWorkload(populations[i], rates[i]);
 		}
+
+		apply();
+
+		return this;
+
+	}
+	
+	public IMove modifyWorkload(int hour, double rate)
+			throws ParserConfigurationException, SAXException, IOException,
+			JAXBException {
+		
+		return modifyWorkload(new File(Configuration.USAGE_MODEL_EXTENSION), hour, rate);
+	}
+	
+	public IMove modifyWorkload(File usageModelExtension, int hour, double rate)
+			throws ParserConfigurationException, SAXException, IOException,
+			JAXBException {
+		
+		if (hour < 0)
+			hour = 0;
+		else if (hour > 23)
+			hour = 23;
+		
+		if (rate < 0.0)
+			rate = 0.0;
+		else if (rate > 1.0)
+			rate = 1.0;
+		
+		
+		UsageModelExtensionParser usageModelParser = new UsageModelExtensionParser(
+				usageModelExtension);
+
+		Integer populations[];
+
+		if (usageModelParser.getPopulations().size() == 1)
+			populations = usageModelParser.getPopulations().values().iterator()
+					.next();
+		else
+			return this;
+
+		hourly.get(hour).modifyWorkload(populations[hour], rate);
 
 		apply();
 

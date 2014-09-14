@@ -30,6 +30,7 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
+import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
 import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
@@ -65,6 +66,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -72,12 +74,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker.StateValue;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang.time.StopWatch;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -101,24 +108,25 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 
 
-	/**
-	 * Robustness Variables
-	 * */
-	private int testFrom, testTo, step;
-	private int attempts = 5;
+//	/**
+//	 * Robustness Variables
+//	 * */
+//	private int testFrom, testTo, step;
+//	private int attempts = 5;
+	
 	private boolean compleated = false;
 
 	public Space4Cloud() {
-		this(false,100, 10000, 300 );
+		this(false); //,100, 10000, 300 );
 	}
 
-	public Space4Cloud(boolean batch, int testFrom, int testTo, int step) {
+	public Space4Cloud(boolean batch) { //, int testFrom, int testTo, int step) {
 		this.batch = batch;		
-		if (batch) {
-			this.testFrom = testFrom;
-			this.testTo = testTo;
-			this.step = step;			
-		}
+//		if (batch) {
+//			this.testFrom = testFrom;
+//			this.testTo = testTo;
+//			this.step = step;			
+//		}
 	}
 
 
@@ -149,6 +157,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			}
 		}
 		if(engine != null){
+			engine.exportSolution();
 			engine.cancel(true);
 			engine = null;
 		}
@@ -326,10 +335,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			if (providersInitialSolution.size() == 0)
 				askProvidersForInitialSolution();
 
-			// override any other value specified with the ones obtained by the
-			// initial optimization
-			Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
-			initialSolution = null;
+//			// override any other value specified with the ones obtained by the
+//			// initial optimization
+//			Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
+//			initialSolution = null;
 
 		} else if (Configuration.RELAXED_INITIAL_SOLUTION && Configuration.FUNCTIONALITY == Operation.Optimization) {
 			try {
@@ -366,15 +375,15 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			}
 			break;
 
-			/*case Robustness:
+		case Robustness:
 			try {
-				programLogger.info("Performing Robustness Analysis");
+				logger.info("Performing Robustness Analysis");
 				performRobustnessAnalysis();
 			} catch (ParserConfigurationException | SAXException | IOException
 					| JAXBException e) {
-				programLogger.error("Error in the robustness analysis", e);
+				logger.error("Error in the robustness analysis", e);
 			}
-			break;*/
+			break;
 
 		default:
 			logger.info("User exit at functionality choiche");
@@ -515,7 +524,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	private void performGenerateInitialSolution() {
 		// resourceEnvExtFile = null;
-		// programLogger.warn("Generation of the first solution disabled at the moment!");
+		// logger.warn("Generation of the first solution disabled at the moment!");
 
 		// ///////////////////////////
 		RussianEvaluator re = new RussianEvaluator();
@@ -619,7 +628,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	 * @throws IOException
 	 * @throws JAXBException
 	 */
-	/*
+	
 	private void performRobustnessAnalysis()
 			throws ParserConfigurationException, SAXException, IOException,
 			JAXBException {
@@ -627,90 +636,21 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		// if we want to check the robustness of the solution, a number of
 		// modifications of the usage model file must be created.
 		ArrayList<File> usageModelExtFiles = new ArrayList<File>();
-
-		String tmp = null;
-		boolean error;
+		File usageModelExtFile = new File(Configuration.USAGE_MODEL_EXTENSION);
 
 		int highestPeak = getMaxPopulation(usageModelExtFile);
-
-		if (!batch) {
-			error = true;
-			while (error) {
-				tmp = (String) JOptionPane.showInputDialog(null,
-						"Robustness test with a peak high from...:",
-						"Robustness test configuration (1/4)",
-						JOptionPane.PLAIN_MESSAGE, null, null, "100");
-
-				try {
-					if (tmp != null && tmp.length() > 0) {
-						testFrom = Integer.parseInt(tmp);
-						if (testFrom > 0)
-							error = false;
-					}
-				} catch (Exception e) {
-					error = true;
-				}
-			}
-
-			error = true;
-			while (error) {
-				tmp = (String) JOptionPane.showInputDialog(null, "...to:",
-						"Robustness test configuration (2/4)",
-						JOptionPane.PLAIN_MESSAGE, null, null, "10000");
-
-				try {
-					if (tmp != null && tmp.length() > 0) {
-						testTo = Integer.parseInt(tmp);
-						if (testTo > testFrom)
-							error = false;
-					}
-				} catch (Exception e) {
-					error = true;
-				}
-			}
-
-			error = true;
-			while (error) {
-				tmp = (String) JOptionPane.showInputDialog(null, "Step size?",
-						"Robustness test configuration (3/4)",
-						JOptionPane.PLAIN_MESSAGE, null, null, "300");
-
-				try {
-					if (tmp != null && tmp.length() > 0) {
-						step = Integer.parseInt(tmp);
-						if (step > 0)
-							error = false;
-					}
-				} catch (Exception e) {
-					error = true;
-				}
-			}
-
-			error = true;
-			while (error) {
-				tmp = (String) JOptionPane.showInputDialog(null, "Attempts?",
-						"Robustness test configuration (4/4)",
-						JOptionPane.PLAIN_MESSAGE, null, null, "5");
-
-				try {
-					if (tmp != null && tmp.length() > 0) {
-						attempts = Integer.parseInt(tmp);
-						if (attempts > 0)
-							error = false;
-					}
-				} catch (Exception e) {
-					error = true;
-				}
-			}
-		}
+		int testFrom = Configuration.ROBUSTNESS_PEAK_FROM;
+		int testTo = Configuration.ROBUSTNESS_PEAK_TO;
+		int stepSize = Configuration.ROBUSTNESS_STEP_SIZE;
+		int attempts = Configuration.ROBUSTNESS_ATTEMPTS;
 
 		double x = testFrom, basex = x;
 
 		usageModelExtFile = generateModifiedUsageModelExt(usageModelExtFile, x
 				/ highestPeak);
-		c.USAGE_MODEL_EXT_FILE = usageModelExtFile.getAbsolutePath();
+		Configuration.USAGE_MODEL_EXTENSION = usageModelExtFile.getAbsolutePath();
 
-		for (x += step; x <= testTo; x += step) {
+		for (x += stepSize; x <= testTo; x += stepSize) {
 			usageModelExtFiles.add(generateModifiedUsageModelExt(
 					usageModelExtFile, x / basex));
 		}
@@ -725,151 +665,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		RobustnessProgressWindow rpw = new RobustnessProgressWindow(
 				usageModelExtFiles.size() + 1);
 
-		// /////////////////////////////
-		// // Build a new Optimization Engine engine and an empty initial
-		// // solution
-		// programLogger.info("Loading the optimization engine and preparing the solver");
-		//
-		// OptEngine engine = new PartialEvaluationOptimizationEngine(
-		// constraintHandler, batch);
-		//
-		// // load the initial solution from the PCM specified in the
-		// // configuration and the extension
-		// programLogger.info("Parsing The Solution");
-		// try {
-		// engine.loadInitialSolution(resourceEnvExtFile, usageModelExtFile,
-		// initialSolution, initialMce);
-		// } catch (JAXBException e) {
-		// programLogger.error("Error in loading the initial solution", e);
-		// }
-		//
-		// // start the optimization
-		// programLogger.info("Starting the optimization");
-		// executor.execute(engine);
-		//
-		// List<File> solutions = new ArrayList<File>();
-		// int terminated = 0;
-		// {
-		// File f = Paths.get(c.PROJECT_PATH, resFolder,
-		// "solution.xml").toFile();
-		// solutions.add(f);
-		//
-		// boolean found = false;
-		// while (!found) {
-		// if (f.exists()) {
-		// terminated++;
-		// found = true;
-		//
-		// // to save space on hd I remove the results as soon as i get
-		// // the solution.xml file, because that's all I need
-		// ConfigurationHandler.cleanFolders(f.getParent()
-		// + File.separator + "performance_results");
-		// }
-		//
-		// if (!found) {
-		// try {
-		// Thread.sleep(1000);
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// }
-		// }
-		//
-		// rpw.add(usageModelExtFile, solutions.get(0));
-		// rpw.setValue(terminated);
-		// rpw.save2png(solutions.get(0).getParent());
-		//
-		// int testValue = testFrom;
-		//
-		// Path p = Paths.get(solutions.get(0).getParent(), "results");
-		// System.out.println(p.toString());
-		// int i = 0;
-		// while (Files.exists(p)) {
-		// p = Paths.get(solutions.get(0).getParent(), "results-" + i);
-		// ++i;
-		// }
-		// Files.createDirectory(p);
-		//
-		// try {
-		// Files.copy(Paths.get(usageModelExtFile.getAbsolutePath()),
-		// Paths.get(p.toString(), "ume-" + testValue + ".xml"));
-		// Files.copy(Paths.get(solutions.get(0).getAbsolutePath()),
-		// Paths.get(p.toString(), "solution-" + testValue + ".xml"));
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		//
-		// testValue += step;
-		//
-		// int el = 0;
-		// for (File f : usageModelExtFiles) {
-		// Space4Cloud s4c = new Space4Cloud(true, Operations.Optimization,
-		// resourceEnvironmentFile, resFolder + File.separator + el,
-		// usageFile, allocationFile, repositoryFile, solver, lineConfFile,
-		// f, initialSolution != null ? null : resourceEnvExtFile,
-		// constraintFile, testFrom, testTo, step);
-		// // if initialSolution isn't null, it was because we generated it! so
-		// we must keep generating them!
-		//
-		// Future<?> fut = executor.submit(s4c);
-		// try {
-		// fut.get();
-		// } catch (InterruptedException | ExecutionException e) {
-		// e.printStackTrace();
-		// }
-		//
-		// {
-		// File g = Paths.get(c.PROJECT_PATH, resFolder, "" + el,
-		// "solution.xml").toFile();
-		// solutions.add(g);
-		//
-		// boolean found = false;
-		// while (!found) {
-		// if (g.exists()) {
-		// terminated++;
-		// found = true;
-		//
-		// // to save space on hd I remove the results as soon as i get the
-		// solution.xml file, because that's all I need
-		// ConfigurationHandler.cleanFolders(g.getParent() + File.separator +
-		// "performance_results");
-		//
-		// try {
-		// Files.copy(Paths.get(f.getAbsolutePath()), Paths.get(p.toString(),
-		// "ume-" + testValue + ".xml"));
-		// Files.copy(Paths.get(g.getAbsolutePath()), Paths.get(p.toString(),
-		// "solution-" + testValue + ".xml"));
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		//
-		// testValue += step;
-		// }
-		//
-		// if (!found) {
-		// try {
-		// Thread.sleep(1000);
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// }
-		// }
-		//
-		// rpw.add(usageModelExtFiles.get(el), solutions.get(el+1));
-		// rpw.setValue(terminated);
-		// rpw.save2png(solutions.get(0).getParent());
-		//
-		// el++;
-		// }
-		// /////////////////////////////
-
 		String duration = "";
 		{
 			// an average of 5 minutes per attempt... maybe it's too little, but
 			// whatever...
-			int res = (attempts * (int) Math.ceil(((testTo - testFrom) / step))) * 5 * 60;
+			int res = (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60;
 			if (res > 60 * 60) {
 				duration += (res / (60 * 60)) + " h ";
 				res = res % (60 * 60);
@@ -880,7 +680,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			}
 			duration += res + " s";
 		}
-		programLogger
+		logger
 		.info("Starting the robustness test, considering each problem "
 				+ attempts + " times (it could take up to " + duration
 				+ ")...");
@@ -896,29 +696,67 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		int testValue = testFrom;
 		int terminated = 0;
 
-		Path p = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "results");
-		programLogger.info(p.toString());
+		Path resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "results");
 		int i = 0;
-		while (Files.exists(p)) {
-			p = Paths.get(c.ABSOLUTE_WORKING_DIRECTORY, "results-" + i);
+		while (Files.exists(resultsFolder) && !Configuration.sameConfiguration(Paths.get(resultsFolder.toString(), "space4cloud-bak.properties").toString())) {
+			resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "results-" + i);
 			++i;
 		}
-		Files.createDirectory(p);
-		int step=0;
+		Files.createDirectory(resultsFolder);
+		logger.info("The results will be put in this folder: " + resultsFolder.toString());
+		
+//		int step=0;
 		int el = 0;
+		
+		String bakConf = Paths.get(resultsFolder.toString(), "space4cloud-bak.properties").toString();  //Files.createTempFile("space4cloud", "-bak.properties").toString();
+		String baseWorkingDirectory = Paths.get(Configuration.WORKING_DIRECTORY).toString();
+		Configuration.saveConfiguration(bakConf);
+		cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "performance_results"));
+//		try {
+//			cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts"));
+//		} catch (Exception e) { }
+		
 		for (File f : usageModelExtFiles) {
-			step++;
+//			step++;
 			File bestSolution = null;
 			int bestCost = Integer.MAX_VALUE;
+			
+			Configuration.USAGE_MODEL_EXTENSION = f.getAbsolutePath();
+			Configuration.FUNCTIONALITY = Operation.Optimization;
+			
+			try {
+				Files.copy(Paths.get(f.getAbsolutePath()),
+						Paths.get(resultsFolder.toString(), "ume-" + testValue + ".xml"),
+						StandardCopyOption.REPLACE_EXISTING);
+			} catch (Exception e) { }
+			
+			if (initialSolution != null)
+				Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
 
-			for (int attempt = 1; attempt <= attempts; ++attempt) {
-				Space4Cloud s4c = new Space4Cloud(true,
-						Operation.Optimization, resourceEnvironmentFile,
-						Configuration. + File.separator + testValue + File.separator
-						+ attempt, usageFile, allocationFile,
-						repositoryFile, solver, lineConfFile, f,
-						initialSolution != null ? null : resourceEnvExtFile,
-								constraintFile, testFrom, testTo, step, dbConfigurationFile, optimizationConfigurationFile);
+			boolean alreadyThere = false;
+			{
+				Path p = Paths.get(resultsFolder.toString(), "solution-" + testValue + ".xml");
+				if (Files.exists(p)) {
+					alreadyThere = true;
+					bestSolution = p.toFile();
+				}
+			}
+			
+			for (int attempt = 1; attempt <= attempts && !alreadyThere; ++attempt) {
+				
+				Configuration.WORKING_DIRECTORY = Paths.get(baseWorkingDirectory, ""+testValue, ""+attempt).toString();
+				String tmpConf = Files.createTempFile("space4cloud", ".properties").toString();
+				Configuration.saveConfiguration(tmpConf);
+				
+				Space4Cloud s4c = new Space4Cloud(tmpConf);
+				
+//				Space4Cloud s4c = new Space4Cloud(true,
+//						Operation.Optimization, resourceEnvironmentFile,
+//						resFolder + File.separator + testValue + File.separator
+//						+ attempt, usageFile, allocationFile,
+//						repositoryFile, solver, lineConfFile, f,
+//						initialSolution != null ? null : resourceEnvExtFile,
+//								constraintFile, testFrom, testTo, step, dbConfigurationFile, optimizationConfigurationFile);
 				// if initialSolution isn't null, it was because we generated
 				// it! so we must keep generating them!
 
@@ -932,9 +770,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				}
 
 				{
-					File g = Paths.get(c.PROJECT_PATH, resFolder,
-							"" + testValue + File.separator + attempt,
-							"solution.xml").toFile();
+//					File g = Paths.get(c.PROJECT_PATH, resFolder,
+//							"" + testValue + File.separator + attempt,
+//							"solution.xml").toFile();
+					
+					File g = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
+							Configuration.SOLUTION_LIGHT_FILE_NAME + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 
 					boolean found = false;
 					while (!found) {
@@ -942,13 +783,32 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 							found = true;
 
 							//save the solution
-							Files.createDirectories(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,"attempts","step"+step));
-							Files.copy(Paths.get(g.getAbsolutePath()), Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,"attempts","step"+step,"solution"+attempt+".xml"));
+							
+							/////////
+							// Or don't, because we only need to save the best one.
+							
+//							Files.createDirectories(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts", "step"+step));
+//							Files.copy(
+//									Paths.get(g.getAbsolutePath()),
+//									Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts", "step"+step, Configuration.SOLUTION_LIGHT_FILE_NAME + attempt + Configuration.SOLUTION_FILE_EXTENSION)
+//									);
+							
+							
 							// to save space on hd I remove the results as soon
 							// as i get the solution.xml file, because that's
 							// all I need
-							ConfigurationHandler.cleanFolders(g.getParent()
-									+ File.separator + "performance_results");
+							
+							{
+								Path performanceResults = Paths.get(g.getParent(), "performance_results");
+							
+								while (performanceResults.toFile().exists()) {
+									try {
+										cleanFolders(performanceResults);
+//										cleanFolders(Paths.get(g.getParent(), "performance_results"));
+									} catch (Exception e) { }
+								}
+							
+							}
 
 							int cost = SolutionMulti.getCost(g);
 							if (bestSolution == null || cost < bestCost) {
@@ -956,6 +816,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 								// bestCost + " to " + cost);
 								bestCost = cost;
 								bestSolution = g;
+								
+								Files.copy(
+										Paths.get(bestSolution.getAbsolutePath()),
+										Paths.get(resultsFolder.toString(), "solution-" + testValue
+												+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 							}
 						}
 
@@ -969,37 +834,27 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 					}
 				}
 			}
-
-			try {
-				Files.copy(Paths.get(f.getAbsolutePath()),
-						Paths.get(p.toString(), "ume-" + testValue + ".xml"));
-				Files.copy(
-						Paths.get(bestSolution.getAbsolutePath()),
-						Paths.get(p.toString(), "solution-" + testValue
-								+ ".xml"));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			
+			Configuration.loadConfiguration(bakConf);
 
 			terminated++;
 			solutions.add(bestSolution);
 
 			rpw.add(usageModelExtFiles.get(el), solutions.get(el));
 			rpw.setValue(terminated);
-			rpw.save2png(c.ABSOLUTE_WORKING_DIRECTORY);
+			rpw.save2png(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory).toString());
 
 			el++;
 
-			ConfigurationHandler.cleanFolders(Paths.get(
-					c.ABSOLUTE_WORKING_DIRECTORY, testValue + "").toString());
-			testValue += step;
+			cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, testValue + ""));
+			testValue += stepSize;
 
 		}
 
 		executor.shutdown();
 		timer.stop();
 
-		programLogger.info("Check ended!");
+		logger.info("Check ended!");
 
 		String actualDuration = "";
 		{
@@ -1015,63 +870,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			actualDuration += res + " s";
 		}
 
-		programLogger.info("Expected time of execution: " + duration
+		logger.info("Expected time of execution: " + duration
 				+ ", actual time of execution: " + actualDuration);
 
-		executor.shutdown();
-
-		// ArrayList<File> solutions = new ArrayList<File>();
-		// {
-		// File sol = new File(c.PROJECT_PATH + File.separator + resFolder +
-		// File.separator + "solution.xml");
-		// solutions.add(sol);
-		// for (int i = 0; i < usageModelExtFiles.size(); i++) {
-		// File f = new File(c.PROJECT_PATH + File.separator + resFolder +
-		// File.separator + i + File.separator + "solution.xml");
-		// solutions.add(f);
-		// }
-		// }
-		//
-		// int terminated = 0;
-		// while (terminated != usageModelExtFiles.size() + 1) {
-		// terminated = 0;
-		//
-		// for (File f : solutions) {
-		// if (f.exists()) {
-		// terminated++;
-		//
-		// // to save space on hd I remove the results as soon as i get the
-		// solution.xml file, because that's all I need
-		// ConfigurationHandler.cleanFolders(f.getParent() + File.separator +
-		// "performance_results");
-		// }
-		// }
-		// rpw.setValue(terminated);
-		// if (terminated != usageModelExtFiles.size() + 1) {
-		// try {
-		// Thread.sleep(1000);
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// }
-		//
-		// try {
-		//
-		// rpw.add("Initial", usageModelExtFile, solutions.get(0));
-		//
-		// for (int i = 0; i < usageModelExtFiles.size(); ++i)
-		// rpw.add("Var " + i, usageModelExtFiles.get(i), solutions.get(i+1));
-		//
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-
-		programLogger.info("Check ended!");
-		// rpw.save2png(solutions.get(0).getParent());
+		logger.info("Check ended!");
 
 	}
-	 */
+	
 
 
 	//	private void refreshProject() throws CoreException {
@@ -1091,9 +896,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			providersInitialSolution.add(s);
 	}
 
-	public void setRobustnessAttempts(int attempts) {
-		this.attempts = attempts;
-	}
+//	public void setRobustnessAttempts(int attempts) {
+//		this.attempts = attempts;
+//	}
 
 
 
@@ -1242,8 +1047,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		//stop the optimization process if the user closes the window
 		else if(evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed")){
-			engine.exportSolution();
-			engine.cancel(true);
 			logger.info("Optimization Process cancelled by the user");
 			pcs.firePropertyChange("optimizationEnded", false, true);
 			cleanExit();

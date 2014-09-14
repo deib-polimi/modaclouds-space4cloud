@@ -37,11 +37,14 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	private JTextField scaleInConfText;
 	private JCheckBox initialSolutionBox;
 	private JLabel emptyLabel;
+	private JLabel sshHostLabel;
+	private JTextField sshHostText;
 	private JLabel sshNameLabel;
 	private JTextField sshNameText;
 	private JLabel sshPasswordLabel;
 	private JTextField sshPasswordText;
 	private JPanel panel;
+	private JCheckBox redistributeWorkloadBox;
 	/**
 	 * Create the panel.
 	 */
@@ -49,9 +52,9 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{201, 201, 0};
-		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
+		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
 		JLabel tabuMemoryLabel = new JLabel("Tabu Memory Size");
@@ -192,12 +195,46 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_emptyLabel.gridy = 7;
 		add(emptyLabel, gbc_emptyLabel);
 		
+		redistributeWorkloadBox = new JCheckBox("Optimized workload distribution if multiprovider problem");
+		redistributeWorkloadBox.addActionListener(this);
+		GridBagConstraints gbc_redistributeWorkloadBox = new GridBagConstraints();
+		gbc_redistributeWorkloadBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_redistributeWorkloadBox.insets = new Insets(0, 0, 5, 5);
+		gbc_redistributeWorkloadBox.gridx = 0;
+		gbc_redistributeWorkloadBox.gridy = 8;
+		add(redistributeWorkloadBox, gbc_redistributeWorkloadBox);
+		
+		GridBagConstraints gbc_emptyLabel2 = new GridBagConstraints();
+		gbc_emptyLabel2.insets = new Insets(0, 0, 5, 0);
+		gbc_emptyLabel2.gridx = 1;
+		gbc_emptyLabel2.gridy = 8;
+		add(emptyLabel, gbc_emptyLabel2);
+		
+		sshHostLabel = new JLabel("SSH Host");
+		GridBagConstraints gbc_lblHost = new GridBagConstraints();
+		gbc_lblHost.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblHost.insets = new Insets(0, 0, 5, 5);
+		gbc_lblHost.gridx = 0;
+		gbc_lblHost.gridy = 9;
+		sshHostLabel.setVisible(false);
+		add(sshHostLabel, gbc_lblHost);
+		
+		sshHostText = new JTextField();
+		GridBagConstraints gbc_textFieldHost = new GridBagConstraints();
+		gbc_textFieldHost.insets = new Insets(0, 0, 5, 0);
+		gbc_textFieldHost.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textFieldHost.gridx = 1;
+		gbc_textFieldHost.gridy = 9;
+		add(sshHostText, gbc_textFieldHost);
+		sshHostText.setVisible(false);
+		sshHostText.setColumns(10);
+		
 		sshNameLabel = new JLabel("SSH User Name");
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
-		gbc_lblNewLabel.gridy = 8;
+		gbc_lblNewLabel.gridy = 10;
 		sshNameLabel.setVisible(false);
 		add(sshNameLabel, gbc_lblNewLabel);
 		
@@ -206,7 +243,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_textField.insets = new Insets(0, 0, 5, 0);
 		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textField.gridx = 1;
-		gbc_textField.gridy = 8;
+		gbc_textField.gridy = 10;
 		add(sshNameText, gbc_textField);
 		sshNameText.setVisible(false);
 		sshNameText.setColumns(10);
@@ -216,7 +253,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_SSHpassword.fill = GridBagConstraints.HORIZONTAL;
 		gbc_SSHpassword.insets = new Insets(0, 0, 5, 5);
 		gbc_SSHpassword.gridx = 0;
-		gbc_SSHpassword.gridy = 9;
+		gbc_SSHpassword.gridy = 11;
 		sshPasswordLabel.setVisible(false);
 		add(sshPasswordLabel, gbc_SSHpassword);
 		
@@ -225,7 +262,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_textField_1.insets = new Insets(0, 0, 5, 0);
 		gbc_textField_1.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textField_1.gridx = 1;
-		gbc_textField_1.gridy = 9;
+		gbc_textField_1.gridy = 11;
 		add(sshPasswordText, gbc_textField_1);
 		sshPasswordText.setVisible(false);
 		sshPasswordText.setColumns(10);
@@ -235,7 +272,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_panel.insets = new Insets(0, 0, 0, 5);
 		gbc_panel.fill = GridBagConstraints.BOTH;
 		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 10;
+		gbc_panel.gridy = 12;
 		add(panel, gbc_panel);
 	}
 
@@ -243,7 +280,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource().equals(selectionPolicyBox)){
 			Configuration.SELECTION_POLICY= (Policy) selectionPolicyBox.getSelectedItem();
-		}else if(e.getSource().equals(initialSolutionBox)){
+		}else if(e.getSource().equals(initialSolutionBox) || e.getSource().equals(redistributeWorkloadBox)){
 			updateSSHVisibility();
 		}
 	}
@@ -252,10 +289,14 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	 * Updates the visibility of the ssh connection parameters according to the initial solution generation box selection
 	 */
 	private void updateSSHVisibility(){
-		sshNameLabel.setVisible(initialSolutionBox.isSelected());
-		sshNameText.setVisible(initialSolutionBox.isSelected());
-		sshPasswordLabel.setVisible(initialSolutionBox.isSelected());
-		sshPasswordText.setVisible(initialSolutionBox.isSelected());	
+		boolean shown = initialSolutionBox.isSelected() || redistributeWorkloadBox.isSelected();
+		
+		sshNameLabel.setVisible(shown);
+		sshNameText.setVisible(shown);
+		sshPasswordLabel.setVisible(shown);
+		sshPasswordText.setVisible(shown);
+		sshHostLabel.setVisible(shown);
+		sshHostText.setVisible(shown);
 	}
 
 	/**
@@ -271,8 +312,10 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		scaleInIterText.setText(Integer.toString(Configuration.SCALE_IN_ITERS));
 		scaleInConfText.setText(Integer.toString(Configuration.SCALE_IN_CONV_ITERS));
 		initialSolutionBox.setSelected(Configuration.RELAXED_INITIAL_SOLUTION);
+		redistributeWorkloadBox.setSelected(Configuration.REDISTRIBUTE_WORKLOAD);
 		sshPasswordText.setText(Configuration.SSH_PASSWORD);
 		sshNameText.setText(Configuration.SSH_USER_NAME);
+		sshHostText.setText(Configuration.SSH_HOST);
 		updateSSHVisibility();
 		
 	}
@@ -316,6 +359,9 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		Configuration.RELAXED_INITIAL_SOLUTION = initialSolutionBox.isSelected();
 		Configuration.SSH_PASSWORD = sshPasswordText.getText();
 		Configuration.SSH_USER_NAME = sshNameText.getText();
+		Configuration.SSH_HOST = sshHostText.getText();
+		
+		Configuration.REDISTRIBUTE_WORKLOAD = redistributeWorkloadBox.isSelected();
 	}
 
 	

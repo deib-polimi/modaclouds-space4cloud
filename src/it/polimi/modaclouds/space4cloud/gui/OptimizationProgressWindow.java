@@ -18,6 +18,7 @@ package it.polimi.modaclouds.space4cloud.gui;
 import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -63,7 +64,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	private static final Logger logger = LoggerFactory.getLogger(OptimizationProgressWindow.class);
 	
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
+	
 	/**
 	 * Create the application.
 	 */
@@ -78,7 +79,9 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 		frmOptimizationProgress = new JFrame();
 		frmOptimizationProgress.setTitle("Optimization");
-		frmOptimizationProgress.setBounds(100, 100, 450, 300);
+//		frmOptimizationProgress.setBounds(100, 100, 450, 300);
+		frmOptimizationProgress.setMinimumSize(new Dimension(950,600));
+		frmOptimizationProgress.setLocationRelativeTo(null);
 		frmOptimizationProgress
 				.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frmOptimizationProgress.getContentPane().setLayout(
@@ -137,7 +140,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		constraintLabel = new JLabel();
 		constraintLabel.setIcon(null);
 		constraintPanel.add(constraintLabel);
-
+		
 		// listener to resize images
 		frmOptimizationProgress.addComponentListener(new ComponentListener() {
 
@@ -258,4 +261,5 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		frmOptimizationProgress.dispose();
 		pcs.firePropertyChange("WindowClosed", false, true);
 	}
+
 }

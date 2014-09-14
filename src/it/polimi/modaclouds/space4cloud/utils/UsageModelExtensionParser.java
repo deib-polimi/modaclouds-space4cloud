@@ -84,7 +84,7 @@ public class UsageModelExtensionParser {
 				for (int j = 0; j < workloadElementList.getLength(); j++) {
 					Node n = workloadElementList.item(j);
 					int hour = Integer.parseInt(n.getAttributes()
-							.getNamedItem("hour").getNodeValue()) - 1;
+							.getNamedItem("hour").getNodeValue()); // - 1;
 					time[hour] = Double.parseDouble(n.getAttributes()
 							.getNamedItem("thinkTime").getNodeValue());
 					pop[hour] = Integer.parseInt(n.getAttributes()
