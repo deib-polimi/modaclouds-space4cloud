@@ -11,6 +11,7 @@ import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
@@ -479,7 +480,8 @@ public class RobustnessProgressWindow {
 	public void initialize() {
 		gui = new JFrame();
 		gui.setTitle("Robustness Progress");
-		gui.setBounds(100, 100, 650, 400);
+		gui.setMinimumSize(new Dimension(900, 600));
+		gui.setLocationRelativeTo(null);
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
 		gui.getContentPane().setLayout(new BorderLayout(0, 0));
 

@@ -4,6 +4,7 @@ import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,7 +14,9 @@ import java.io.File;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -37,6 +40,14 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	private JPanel panel;
 	private JTextField randomEnvironmentText;
 	private JButton randomEnvironmentButton;
+	
+	private JTextField cpus, cpuPower, ram, storage;
+	private JCheckBox usePrivateCloud;
+	private JLabel cpusLabel;
+	private JLabel cpuPowerLabel;
+	private JLabel ramLabel;
+	private JLabel storageLabel;
+	
 	/**
 	 * Create the panel.
 	 */
@@ -158,6 +169,70 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		gbc_lineConfButton.gridy = 5;
 		lineConfButton.setVisible(false);
 		add(lineConfButton, gbc_lineConfButton);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		
+		c.gridx = 0;
+		c.gridy = 6;
+		c.insets = new Insets(0, 0, 5, 5);
+		usePrivateCloud = new JCheckBox("Consider also a Private Cloud");
+		add(usePrivateCloud, c);
+		usePrivateCloud.addActionListener(this);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		add(new JLabel(""), c);
+		
+		c.gridx = 0;
+		c.gridy++;
+        c.insets = new Insets(0, 0, 5, 5);
+        cpusLabel = new JLabel("CPUs");
+		add(cpusLabel, c);
+        cpusLabel.setVisible(false);
+		cpus = new JTextField(10);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		add(cpus, c);
+		cpus.setVisible(false);
+		
+		c.gridx = 0;
+		c.gridy++;
+		c.insets = new Insets(0, 0, 5, 5);
+		cpuPowerLabel = new JLabel("CPU power for each CPU [MHz]");
+		add(cpuPowerLabel, c);
+		cpuPowerLabel.setVisible(false);
+		c.gridx = 1;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.insets = new Insets(0, 0, 5, 0);
+		cpuPower = new JTextField(10);
+		add(cpuPower, c);
+		cpuPower.setVisible(false);
+		
+		c.gridx = 0;
+		c.gridy++;
+		c.insets = new Insets(0, 0, 5, 5);
+		ramLabel = new JLabel("RAM [MB]");
+		add(ramLabel, c);
+		ramLabel.setVisible(false);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		ram = new JTextField(10);
+		add(ram, c);
+		ram.setVisible(false);
+		
+		c.gridx = 0;
+		c.gridy++;
+		c.insets = new Insets(0, 0, 5, 5);
+		storageLabel = new JLabel("Storage [GB]");
+		add(storageLabel, c);
+		storageLabel.setVisible(false);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		storage = new JTextField(10);
+		add(storage, c);
+		storage.setVisible(false);
+		
+		
 
 		randomEnvironmentLabel = new JLabel("Random Environment (Optional)");
 		GridBagConstraints gbc_randomEnvironmentLabel = new GridBagConstraints();
@@ -226,6 +301,8 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 				Configuration.PROJECT_BASE_FOLDER=linePropFile.getParent().toString();
 				lineConfText.setText(linePropFile.getAbsolutePath());
 			}
+		} else if(e.getSource().equals(usePrivateCloud)){
+			updatePrivateCloudVisibility();
 		}
 		else if(e.getSource().equals(randomEnvironmentButton)){
 			File randomEnvFile = FileLoader.loadFile("Random Enviroment specification");
@@ -240,12 +317,21 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	/**
 	 * Updates the values shown to the user according to those stored in the Configuration class
 	 */
-	public void loadConfiguration() {		
-		setFunctionality(Configuration.FUNCTIONALITY);
-		setSolver(Configuration.SOLVER);
+	public void loadConfiguration() {
+		if (Configuration.FUNCTIONALITY != null)
+			setFunctionality(Configuration.FUNCTIONALITY);
+		if (Configuration.SOLVER != null)
+			setSolver(Configuration.SOLVER);
 		dbConfText.setText(Configuration.DB_CONNECTION_FILE);
 		lineConfText.setText(Configuration.LINE_PROP_FILE);
 		randomEnvironmentText.setText(Configuration.RANDOM_ENV_FILE);
+		usePrivateCloud.setSelected(Configuration.USE_PRIVATE_CLOUD);
+		cpus.setText(Integer.toString(Configuration.PRIVATE_CPUS));
+		cpuPower.setText(Double.toString(Configuration.PRIVATE_CPUPOWER));
+		ram.setText(Integer.toString(Configuration.PRIVATE_RAM));
+		storage.setText(Integer.toString(Configuration.PRIVATE_STORAGE));
+		
+		updatePrivateCloudVisibility();
 	}
 
 
@@ -292,6 +378,22 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		operationBox.setSelectedItem(functionality);
 		firePropertyChange(functionalityProperty, oldFun, functionality);
 	}
+	
+	/**
+	 * Updates the visibility of the private cloud parameters according to the box selection
+	 */
+	private void updatePrivateCloudVisibility(){
+		boolean shown = usePrivateCloud.isSelected();
+		
+		cpus.setVisible(shown);
+		cpuPower.setVisible(shown);
+		ram.setVisible(shown);
+		storage.setVisible(shown);
+		cpusLabel.setVisible(shown);
+		cpuPowerLabel.setVisible(shown);
+		ramLabel.setVisible(shown);
+		storageLabel.setVisible(shown);
+	}
 
 	/**
 	 * Updates values in the Configuration class according to those selected in the panel
@@ -302,7 +404,40 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		Configuration.DB_CONNECTION_FILE = dbConfText.getText();
 		Configuration.LINE_PROP_FILE = lineConfText.getText();
 		Configuration.RANDOM_ENV_FILE = randomEnvironmentText.getText();
-
+		
+		try{
+			Configuration.PRIVATE_CPUS = Integer.parseInt(cpus.getText());
+		} catch (NumberFormatException e){
+			Configuration.PRIVATE_CPUS = -1;
+		}
+		try{
+			Configuration.PRIVATE_CPUPOWER = Double.parseDouble(cpuPower.getText());
+		} catch (NumberFormatException e){
+			Configuration.PRIVATE_CPUPOWER = -1;
+		}
+		try{
+			Configuration.PRIVATE_RAM = Integer.parseInt(ram.getText());
+		} catch (NumberFormatException e){
+			Configuration.PRIVATE_RAM = -1;
+		}
+		try{
+			Configuration.PRIVATE_STORAGE = Integer.parseInt(storage.getText());
+		} catch (NumberFormatException e){
+			Configuration.PRIVATE_STORAGE = -1;
+		}
+		Configuration.USE_PRIVATE_CLOUD = usePrivateCloud.isSelected();
+	}
+	
+	public static void main(String[] args) {
+		JFrame gui = new JFrame();
+		gui.setMinimumSize(new Dimension(900,500));
+		gui.setLocationRelativeTo(null);
+		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
+		
+		FunctionalityPanel panel = new FunctionalityPanel();
+		gui.add(panel);
+		
+		gui.setVisible(true);
 	}
 
 }

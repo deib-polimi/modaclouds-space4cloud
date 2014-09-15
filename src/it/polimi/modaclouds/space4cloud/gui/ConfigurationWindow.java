@@ -39,9 +39,11 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	private ExtensionModelSpecificationPanel extensionSelectionPane;
 	private FunctionalityPanel functionalityPane;
 	private OptimizationConfigurationPanel optimizationConfigurationPane;
+	private RobustnessConfigurationPanel robustnessConfigurationPane;
 	private static final Logger logger = LoggerFactory.getLogger(ConfigurationWindow.class);
 	private boolean disposed = false;
 	private boolean cancelled = true;
+	private static final String FRAME_NAME = "Space4Cloud Configuration Window";
 
 	/**
 	 * Launch the application.
@@ -71,8 +73,10 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 701, 431);		
-		frame.setMinimumSize(new Dimension(800,500));
+//		frame.setBounds(100, 100, 701, 431);		
+		frame.setMinimumSize(new Dimension(950,600));
+		frame.setLocationRelativeTo(null);
+		frame.setTitle(FRAME_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{685, 0};
 		gridBagLayout.rowHeights = new int[]{196, 60, 0};
@@ -156,7 +160,15 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		tabbedPane.addTab(optimizationConfigurationPane.getName(), optimizationConfigurationPane);
 		int tabNumber = tabbedPane.indexOfComponent(optimizationConfigurationPane);
 		tabbedPane.setEnabledAt(tabNumber, false);
+		
+		robustnessConfigurationPane = new RobustnessConfigurationPanel();
+		robustnessConfigurationPane.setPreferredSize(frame.getContentPane().getPreferredSize());
+		robustnessConfigurationPane.setEnabled(false);		
+		tabbedPane.addTab(robustnessConfigurationPane.getName(), robustnessConfigurationPane);
+		tabNumber = tabbedPane.indexOfComponent(robustnessConfigurationPane);
+		tabbedPane.setEnabledAt(tabNumber, false);
 
+		loadConfiguration();
 	}
 
 	@Override
@@ -165,8 +177,12 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			modelSelectionPane.updateConfiguration();
 			extensionSelectionPane.updateConfiguration();
 			functionalityPane.updateConfiguration();
-			if(Configuration.FUNCTIONALITY == Operation.Optimization)
-			optimizationConfigurationPane.updateConfiguration();			
+			if (Configuration.FUNCTIONALITY == Operation.Optimization)
+				optimizationConfigurationPane.updateConfiguration();
+			else if (Configuration.FUNCTIONALITY == Operation.Robustness) {
+				robustnessConfigurationPane.updateConfiguration();
+				optimizationConfigurationPane.updateConfiguration();
+			}
 			List<String> errors = Configuration.checkValidity();
 			if(!errors.isEmpty()){
 				String message="";
@@ -185,10 +201,12 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			if(configurationFile !=  null){
 				try {
 					Configuration.loadConfiguration(configurationFile.getAbsolutePath());					
-					modelSelectionPane.loadConfiguration();
-					extensionSelectionPane.loadConfiguration();	
-					functionalityPane.loadConfiguration();
-					optimizationConfigurationPane.loadConfiguration();
+//					modelSelectionPane.loadConfiguration();
+//					extensionSelectionPane.loadConfiguration();	
+//					functionalityPane.loadConfiguration();
+//					optimizationConfigurationPane.loadConfiguration();
+//					robustnessConfigurationPane.loadConfiguration();
+					loadConfiguration();
 				} catch (IOException ex) {
 					logger.error("Could not load the configuration from the file",e);
 				}
@@ -198,8 +216,10 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			modelSelectionPane.updateConfiguration();
 			extensionSelectionPane.updateConfiguration();
 			functionalityPane.updateConfiguration();		
-			if(Configuration.FUNCTIONALITY == Operation.Optimization)
+			if (Configuration.FUNCTIONALITY == Operation.Optimization)
 				optimizationConfigurationPane.updateConfiguration();
+			else if (Configuration.FUNCTIONALITY == Operation.Robustness)
+				robustnessConfigurationPane.updateConfiguration();
 			File configurationFile = FileLoader.saveFile("Load SPACE4Cloud Configuration");
 			if(configurationFile!=null){
 				try {					
@@ -216,13 +236,26 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		//when the user changes the selected functionality disable not relevant tabs
 		//The if should not be necessary
 		if(evt.getPropertyName().equals(FunctionalityPanel.functionalityProperty)){
-			if(Configuration.FUNCTIONALITY.equals(Operation.Optimization)){
-				optimizationConfigurationPane.setEnabled(true);	
+			if (Configuration.FUNCTIONALITY.equals(Operation.Optimization)){
+				optimizationConfigurationPane.setEnabled(true);
 				int tabNumber = tabbedPane.indexOfComponent(optimizationConfigurationPane);
 				tabbedPane.setEnabledAt(tabNumber, true);
-			}else{
+				robustnessConfigurationPane.setEnabled(false);
+				tabNumber = tabbedPane.indexOfComponent(robustnessConfigurationPane);
+				tabbedPane.setEnabledAt(tabNumber, false);
+			} else if (Configuration.FUNCTIONALITY.equals(Operation.Robustness)){
+				optimizationConfigurationPane.setEnabled(true);
+				int tabNumber = tabbedPane.indexOfComponent(optimizationConfigurationPane);
+				tabbedPane.setEnabledAt(tabNumber, true);
+				robustnessConfigurationPane.setEnabled(true);
+				tabNumber = tabbedPane.indexOfComponent(robustnessConfigurationPane);
+				tabbedPane.setEnabledAt(tabNumber, true);
+			} else{
 				optimizationConfigurationPane.setEnabled(false);
 				int tabNumber = tabbedPane.indexOfComponent(optimizationConfigurationPane);
+				tabbedPane.setEnabledAt(tabNumber, false);
+				robustnessConfigurationPane.setEnabled(false);
+				tabNumber = tabbedPane.indexOfComponent(robustnessConfigurationPane);
 				tabbedPane.setEnabledAt(tabNumber, false);
 			}
 		}
@@ -246,6 +279,14 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 
 	public void show() {
 		frame.setVisible(true);
+	}
+	
+	public void loadConfiguration() {
+		modelSelectionPane.loadConfiguration();
+		extensionSelectionPane.loadConfiguration();	
+		functionalityPane.loadConfiguration();
+		optimizationConfigurationPane.loadConfiguration();
+		robustnessConfigurationPane.loadConfiguration();
 	}
 
 }

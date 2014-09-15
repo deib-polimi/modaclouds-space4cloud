@@ -18,6 +18,7 @@ package it.polimi.modaclouds.space4cloud.chart;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +34,10 @@ import java.util.Properties;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
@@ -152,6 +156,23 @@ public class Logger2JFreeChartImage {
 			dim.height=1;
 		if(dim.getWidth()<=0)
 			dim.width=1;
+		
+		
+		////////////////////////
+		{
+			Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+			XYPlot plot = (XYPlot) chart.getPlot();
+
+			ValueAxis valueAxis = plot.getDomainAxis();
+			valueAxis.setLowerMargin(0.02);
+			valueAxis.setUpperMargin(0.02);
+			valueAxis.setTickLabelFont(font);
+
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setTickLabelFont(font);
+		}
+		////////////////////////
+		
 
 		return chart.createBufferedImage((int) (dim.getWidth() * 0.9),
 				(int) (dim.getHeight() * 0.9));

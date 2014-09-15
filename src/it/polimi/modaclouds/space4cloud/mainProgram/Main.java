@@ -66,8 +66,16 @@ public class Main {
 	public static void main(String[] args) {
 		// RobustnessProgressWindow.main(null);
 		//String configuration = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\NewGuiConfigurationLQNS.prop";				
+//		String configuration = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\NewGuiConfigurationLQNS.prop";
+
+		String configuration = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\";
+//		configuration += "conf-robustness.properties";
+//		configuration += "conf-robustness-ruski.properties";
+		configuration += "conf-optimization.properties";
+//		configuration += "conf-optimization-ruski.properties";
+		
 		Space4Cloud instance = new Space4Cloud();
-		//Space4Cloud instance = new Space4Cloud(configuration);
+//		Space4Cloud instance = new Space4Cloud(configuration);
 
 		/**
 		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\";
