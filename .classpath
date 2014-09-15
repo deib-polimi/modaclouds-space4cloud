@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="target/dependency/milp-0.0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/qos-models-2.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/xml-apis-1.4.01.jar"/>
-	<classpathentry exported="true" kind="lib" path="target/dependency/milp-0.0.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="log/"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/commons-jxpath-1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/commons-lang-2.6.jar"/>
