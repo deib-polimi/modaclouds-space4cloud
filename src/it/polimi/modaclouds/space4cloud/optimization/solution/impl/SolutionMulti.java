@@ -693,5 +693,22 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public Solution getPrivateCloudSolution() {
 		return privateCloudSolution;
 	}
+	
+	public String showWorkloadPercentages() {
+		String result = "SolutionMulti workload percentages";
+		
+		int size = Integer.MIN_VALUE;
+		for (Solution s : getAll()) {
+			if (size < s.getProvider().length())
+				size = s.getProvider().length();
+		}
+
+		for (Solution s : getAll()) {
+			result += "\n" + String.format("%1$"+ size + "s", s.getProvider()) + ":";
+			for (int h = 0; h < 24; ++h)
+				result += " " + s.getPercentageWorkload(h);
+		}
+		return result;
+	}
 
 }
