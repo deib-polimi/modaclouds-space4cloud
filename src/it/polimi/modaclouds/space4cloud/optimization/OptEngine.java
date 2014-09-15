@@ -821,7 +821,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				// STEP 1: load the resource environment
 				for (ResourceContainer c : resourceContainers) {
-					logger.info("Tier "+c.getId());
+					logger.trace("Tier "+c.getId());
 
 					CloudService service = null;
 					// switch over the type of cloud service
@@ -853,36 +853,36 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					if (serviceName == null)
 						logger.info("provider: " + provider + " default: "
 								+ defaultProvider);
-					logger.info("serviceType: " + serviceType);
+					logger.trace("serviceType: " + serviceType);
 					for (String st : dataHandler.getServices(provider, // cloudProvider,
 							serviceType))
-						logger.info("\tService Name: " + st);
+						logger.trace("\tService Name: " + st);
 					serviceName = dataHandler.getServices(provider, // cloudProvider,
 							serviceType).get(0);
 					// if the resource size has not been decided pick one
 					if (resourceSize == null){
-						logger.info("Defaulting on resource Size");
+						logger.trace("Defaulting on resource Size");
 						resourceSize = dataHandler
 								.getCloudResourceSizes(provider,/*
 								 * cloudProvider,
 								 */serviceName)
 								 .iterator().next();
 					}
-					logger.info("default size"+resourceSize);
+					logger.trace("default size"+resourceSize);
 
 
 					double speed = dataHandler.getProcessingRate(provider, // cloudProvider,
 							serviceName, resourceSize);
-					logger.info("processing rate "+speed);
+					logger.trace("processing rate "+speed);
 
 					int ram = dataHandler.getAmountMemory(provider, // cloudProvider,
 							serviceName, resourceSize);
-					logger.info("ram "+ram);
+					logger.trace("ram "+ram);
 
 					int numberOfCores = dataHandler.getNumberOfReplicas(
 							provider, /* cloudProvider, */serviceName,
 							resourceSize);
-					logger.info("cores "+numberOfCores);
+					logger.trace("cores "+numberOfCores);
 
 					/*
 					 * each tier has a certain kind of cloud resource and a

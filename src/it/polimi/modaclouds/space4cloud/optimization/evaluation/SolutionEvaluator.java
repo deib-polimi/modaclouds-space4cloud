@@ -186,7 +186,7 @@ public class SolutionEvaluator implements Runnable {
 			try{
 				exitVal = proc.waitFor();
 			}catch (InterruptedException e){
-				logger.debug("Evaluation was interrupted");
+				logger.debug("Evaluation of model: "+filePath+" was interrupted");
 			}
 			proc.destroy();
 

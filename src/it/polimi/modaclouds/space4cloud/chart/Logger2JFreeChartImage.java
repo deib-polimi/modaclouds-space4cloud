@@ -151,7 +151,7 @@ public class Logger2JFreeChartImage {
 		chart = ChartFactory.createXYLineChart(chartTitle, "Iterations", "Y",
 				dataSet, PlotOrientation.VERTICAL, true, true, false);
 		if (dim == null)
-			dim = new Dimension(100, 100);
+			dim = new Dimension(200, 200);
 		if(dim.getHeight()<=0)
 			dim.height=1;
 		if(dim.getWidth()<=0)
@@ -173,9 +173,22 @@ public class Logger2JFreeChartImage {
 		}
 		////////////////////////
 		
+		BufferedImage image = null;
+		if(chart == null || dim == null){
+			logger.warn("No chart");
+		} else{
+			try{
+				image = chart.createBufferedImage((int) (dim.getWidth() * 0.9),
+						(int) (dim.getHeight() * 0.9));
+			}catch(ArrayIndexOutOfBoundsException | NullPointerException e ){
+				logger.warn("Error in creating image",e);
+			}
+			
+		}
+			
 
-		return chart.createBufferedImage((int) (dim.getWidth() * 0.9),
-				(int) (dim.getHeight() * 0.9));
+			
+		return image;
 
 	}
 
