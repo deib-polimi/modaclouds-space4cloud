@@ -23,8 +23,8 @@ import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.gui.SolutionWindow;
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
@@ -45,6 +45,7 @@ import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
+import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
 import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
@@ -59,6 +60,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -1869,6 +1871,15 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		MAX_SCRUMBLE_ITERS = Configuration.SCRUMBLE_ITERS;
 		MAXMEMORYSIZE = Configuration.TABU_MEMORY_SIZE;
 		SELECTION_POLICY = Configuration.SELECTION_POLICY;
+	}
+	
+	private Solution privateCloudSolution = null;
+	
+	public void setPrivateCloudSolution(Solution privateCloudSolution) {
+		this.privateCloudSolution = privateCloudSolution;
+	}
+	public Solution getPrivateCloudSolution() {
+		return privateCloudSolution;
 	}
 
 	@Override

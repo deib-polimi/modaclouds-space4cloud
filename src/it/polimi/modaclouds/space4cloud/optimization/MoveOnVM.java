@@ -77,7 +77,7 @@ public class MoveOnVM extends AbsMoveHour {
 	 * @param res
 	 * @param numberOfReplicas
 	 */
-	private void scale(Tier tier, int numberOfReplicas) {
+	public void scale(Tier tier, int numberOfReplicas) {
 		// perform the move
 		// setCloudResource(resource);
 		setCloudResource(tier);

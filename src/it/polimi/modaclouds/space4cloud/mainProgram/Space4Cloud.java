@@ -30,6 +30,7 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
+import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
 import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
@@ -60,19 +61,21 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker.StateValue;
@@ -80,6 +83,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -720,7 +724,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		String bakConf = Paths.get(resultsFolder.toString(), "space4cloud-bak.properties").toString();  //Files.createTempFile("space4cloud", "-bak.properties").toString();
 		String baseWorkingDirectory = Paths.get(Configuration.WORKING_DIRECTORY).toString();
 		Configuration.saveConfiguration(bakConf);
-		cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "performance_results"));
+		FileUtils.deleteDirectory(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "performance_results").toFile());	
 //		try {
 //			cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts"));
 //		} catch (Exception e) { }
@@ -812,7 +816,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 							
 								while (performanceResults.toFile().exists()) {
 									try {
-										cleanFolders(performanceResults);
+										FileUtils.deleteDirectory(performanceResults.toFile());
 //										cleanFolders(Paths.get(g.getParent(), "performance_results"));
 									} catch (Exception e) { }
 								}
@@ -854,8 +858,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			rpw.save2png(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory).toString());
 
 			el++;
-
-			cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, testValue + ""));
+			FileUtils.deleteDirectory(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, testValue + "").toFile());		
 			testValue += stepSize;
 
 		}

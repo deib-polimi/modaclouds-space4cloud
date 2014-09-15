@@ -17,7 +17,6 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 
 import java.io.Serializable;
 import java.util.ArrayList;
