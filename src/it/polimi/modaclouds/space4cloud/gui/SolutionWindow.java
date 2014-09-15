@@ -114,7 +114,7 @@ public class SolutionWindow {
 		infoAll.append("<table style='width: 500px; border: 1px solid black; margin: 30px; padding: 2px' border=1>\n");
 		infoAll.append("<tr><th style='border: 0; background: black; color: white;'>Information</th><th style='border:0; background: black; color: white;'>Value</th></tr>\n");
 		infoAll.append("<tr><td>Total Cost</td><td>" + solutionMulti.getCost() + "</td></tr>\n");
-		infoAll.append("<tr><td>Evaluation Time</td><td>" + solutionMulti.getEvaluationTime() + " ms</td></tr>\n");
+		infoAll.append("<tr><td>Generation Time</td><td>" + solutionMulti.getGenerationTime() + " ms</td></tr>\n");
 		infoAll.append("<tr><td>Providers</td><td><ul>\n");
 		for (int i = 0; i < solutionMulti.size(); ++i) {
 			String provider = solutionMulti.get(i).getProvider();
@@ -168,7 +168,7 @@ public class SolutionWindow {
 			info.append("<table style='width: 500px; border: 1px solid black; margin: 30px; padding: 2px' border=1>\n");
 			info.append("<tr><th style='border: 0; background: black; color: white;'>Information</th><th style='border:0; background: black; color: white;'>Value</th></tr>\n");
 			info.append("<tr><td>Cost</td><td>" + solution.getCost() + "</td></tr>\n");
-			info.append("<tr><td>Evaluation Time</td><td>" + solution.getEvaluationTime() + " ms</td></tr>\n");
+			info.append("<tr><td>Generation Time</td><td>" + solution.getGenerationTime() + " ms</td></tr>\n");
 			info.append("<tr><td>Provider</td><td>" + provider + "</td></tr>\n");
 			if (solution.getRegion() != null)
 				info.append("<tr><td>Region</td><td>" + solution.getRegion() + "</td></tr>\n");
