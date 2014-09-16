@@ -391,101 +391,112 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return feasible;
 	}
 
-	public boolean setFrom(File initialSolution, File initialMce) {
-		if (initialSolution == null)
-			return false;
-
-		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(initialSolution);
-			doc.getDocumentElement().normalize();
-
-			{
-				Element root = (Element) doc.getElementsByTagName(
-						"SolutionMultiResult").item(0);
-
-				cost = (int) Math.round(Double.parseDouble(root
-						.getAttribute("cost")));
-			}
-
-			NodeList tiers = doc.getElementsByTagName("Tier");
-
-			for (int i = 0; i < tiers.getLength(); ++i) {
-				Node n = tiers.item(i);
-
-				if (n.getNodeType() != Node.ELEMENT_NODE)
-					continue;
-
-				Element tier = (Element) n;
-				String provider = tier.getAttribute("providerName");
-				String tierId = tier.getAttribute("id");
-				String resourceName = tier.getAttribute("resourceName");
-				String serviceName = tier.getAttribute("serviceName");
-
-				Solution solution = get(provider);
-				if (solution == null)
-					continue;
-
-				DataHandler dataHandler = DataHandlerFactory.getHandler();
-
-				double speed = dataHandler.getProcessingRate(provider,
-						serviceName, resourceName);
-				int ram = dataHandler.getAmountMemory(provider, serviceName,
-						resourceName);
-				int numberOfCores = dataHandler.getNumberOfReplicas(provider,
-						serviceName, resourceName);
-
-				// System.out.printf("DEBUG: %s, %s, %s <-> %f, %d, %d.\n",
-				// provider, serviceName, resourceName, (float)speed, ram,
-				// numberOfCores);
-
-				NodeList hourAllocations = tier
-						.getElementsByTagName("HourAllocation");
-
-				for (int j = 0; j < hourAllocations.getLength(); ++j) {
-					Node m = hourAllocations.item(j);
-
-					if (m.getNodeType() != Node.ELEMENT_NODE)
-						continue;
-
-					Element hourAllocation = (Element) m;
-					int hour = Integer.parseInt(hourAllocation
-							.getAttribute("hour"));
-					int allocation = Integer.parseInt(hourAllocation
-							.getAttribute("allocation"));
-
-					Instance app = solution.getApplication(hour);
-
-					ArrayList<String> propertyNames = new ArrayList<String>();
-					ArrayList<Object> propertyValues = new ArrayList<Object>();
-
-					propertyNames.add("replicas");
-					propertyValues.add(allocation);
-
-					propertyNames.add("resourceName");
-					propertyNames.add("speed");
-					propertyNames.add("ram");
-					propertyNames.add("numberOfCores");
-					propertyValues.add(resourceName);
-					propertyValues.add(speed);
-					propertyValues.add(ram);
-					propertyValues.add(numberOfCores);
-
-					app.changeValues(tierId, propertyNames, propertyValues);
+public boolean setFrom(File initialSolution, File initialMce) {
+		
+		boolean res = false;
+		
+		if (initialSolution != null) {
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(initialSolution);
+				doc.getDocumentElement().normalize();
+	
+				{
+					Element root = (Element) doc.getElementsByTagName(
+							"SolutionMultiResult").item(0);
+	
+					cost = (int) Math.round(Double.parseDouble(root
+							.getAttribute("cost")));
 				}
+	
+				NodeList tiers = doc.getElementsByTagName("Tier");
+	
+				for (int i = 0; i < tiers.getLength(); ++i) {
+					Node n = tiers.item(i);
+	
+					if (n.getNodeType() != Node.ELEMENT_NODE)
+						continue;
+	
+					Element tier = (Element) n;
+					String provider = tier.getAttribute("providerName");
+					String tierId = tier.getAttribute("id");
+					String resourceName = tier.getAttribute("resourceName");
+					String serviceName = tier.getAttribute("serviceName");
+	
+					Solution solution = get(provider);
+					if (solution == null)
+						continue;
+	
+					DataHandler dataHandler = DataHandlerFactory.getHandler();
+	
+					double speed = dataHandler.getProcessingRate(provider,
+							serviceName, resourceName);
+					int ram = dataHandler.getAmountMemory(provider, serviceName,
+							resourceName);
+					int numberOfCores = dataHandler.getNumberOfReplicas(provider,
+							serviceName, resourceName);
+	
+					// System.out.printf("DEBUG: %s, %s, %s <-> %f, %d, %d.\n",
+					// provider, serviceName, resourceName, (float)speed, ram,
+					// numberOfCores);
+	
+					NodeList hourAllocations = tier
+							.getElementsByTagName("HourAllocation");
+	
+					for (int j = 0; j < hourAllocations.getLength(); ++j) {
+						Node m = hourAllocations.item(j);
+	
+						if (m.getNodeType() != Node.ELEMENT_NODE)
+							continue;
+	
+						Element hourAllocation = (Element) m;
+						int hour = Integer.parseInt(hourAllocation
+								.getAttribute("hour"));
+						int allocation = Integer.parseInt(hourAllocation
+								.getAttribute("allocation"));
+	
+						Instance app = solution.getApplication(hour);
+	
+						ArrayList<String> propertyNames = new ArrayList<String>();
+						ArrayList<Object> propertyValues = new ArrayList<Object>();
+	
+						propertyNames.add("replicas");
+						propertyValues.add(allocation);
+	
+						propertyNames.add("resourceName");
+						propertyNames.add("speed");
+						propertyNames.add("ram");
+						propertyNames.add("numberOfCores");
+						propertyValues.add(resourceName);
+						propertyValues.add(speed);
+						propertyValues.add(ram);
+						propertyValues.add(numberOfCores);
+	
+						app.changeValues(tierId, propertyNames, propertyValues);
+					}
+				}
+				
+				res = true;
+				
+//				for (Solution s : getAll()) {
+//					System.out.println("DEBUG prima: " + s.getProvider());
+//					for (int i = 0; i < 24; ++i)
+//						System.out.printf("%d (%d) ", s.getApplication(i)
+//								.getWorkload(), (int) (s
+//								.getPercentageWorkload(i) * 100));
+//					System.out.println();
+//				}
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
 			}
-
-			// for (Solution s : getAll()) {
-			// System.out.println("DEBUG prima: " + s.getProvider());
-			// for (int i = 0; i < 24; ++i)
-			// System.out.printf("%d (%d) ", s.getApplication(i).getWorkload()
-			// ,(int)(s.getPercentageWorkload(i) * 100));
-			// System.out.println();
-			// }
-
-			if (initialMce != null) {
+		}
+		
+		if (initialMce != null) {
+			try {
 				MultiCloudExtensions mces = XMLHelper.deserialize(initialMce
 						.toURI().toURL(), MultiCloudExtensions.class);
 
@@ -562,21 +573,25 @@ public class SolutionMulti implements Cloneable, Serializable {
 					}
 
 				}
+			
+				res = true;
+
+//				for (Solution s : getAll()) {
+//					System.out.println("DEBUG dopo: " + s.getProvider());
+//					for (int i = 0; i < 24; ++i)
+//						System.out.printf("%d (%d) ", s.getApplication(i)
+//								.getWorkload(), (int) (s
+//								.getPercentageWorkload(i) * 100));
+//					System.out.println();
+//				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
 			}
-
-			// for (Solution s : getAll()) {
-			// System.out.println("DEBUG dopo: " + s.getProvider());
-			// for (int i = 0; i < 24; ++i)
-			// System.out.printf("%d (%d) ", s.getApplication(i).getWorkload()
-			// ,(int)(s.getPercentageWorkload(i) * 100));
-			// System.out.println();
-			// }
-
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
 		}
+		
+		return res;
 	}
 
 	/**
@@ -639,6 +654,23 @@ public class SolutionMulti implements Cloneable, Serializable {
 	}
 	public Solution getPrivateCloudSolution() {
 		return privateCloudSolution;
+	}
+	
+	public String showWorkloadPercentages() {
+		String result = "SolutionMulti workload percentages";
+		
+		int size = Integer.MIN_VALUE;
+		for (Solution s : getAll()) {
+			if (size < s.getProvider().length())
+				size = s.getProvider().length();
+		}
+
+		for (Solution s : getAll()) {
+			result += "\n" + String.format("%1$"+ size + "s", s.getProvider()) + ":";
+			for (int h = 0; h < 24; ++h)
+				result += " " + s.getPercentageWorkload(h);
+		}
+		return result;
 	}
 
 	public int getGenerationIteration() {
