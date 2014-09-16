@@ -25,6 +25,7 @@ import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.gui.SolutionWindow;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.mainProgram.InitializationException;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
@@ -44,7 +45,7 @@ import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
-import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
+import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentLoadingException;
 import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
 import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
@@ -106,9 +107,11 @@ import de.uka.ipd.sdq.pcm.seff.StartAction;
 import de.uka.ipd.sdq.pcm.usagemodel.AbstractUserAction;
 import de.uka.ipd.sdq.pcm.usagemodel.Branch;
 import de.uka.ipd.sdq.pcm.usagemodel.BranchTransition;
+import de.uka.ipd.sdq.pcm.usagemodel.ClosedWorkload;
 import de.uka.ipd.sdq.pcm.usagemodel.EntryLevelSystemCall;
 import de.uka.ipd.sdq.pcm.usagemodel.Loop;
 import de.uka.ipd.sdq.pcm.usagemodel.ScenarioBehaviour;
+import de.uka.ipd.sdq.pcm.usagemodel.UsageScenario;
 import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
 
 /**
@@ -695,8 +698,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @throws ParserConfigurationException
 	 * @throws JAXBException
 	 */
-	public void loadInitialSolution() throws ParserConfigurationException,
-	SAXException, IOException, JAXBException {
+	public void loadInitialSolution() throws InitializationException {
 		loadInitialSolution(null,null);
 	}
 
@@ -706,14 +708,27 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * 
 	 */
 	public void loadInitialSolution(File generatedInitialSolution,
-			File generatedInitialMce) throws ParserConfigurationException,
-			SAXException, IOException, JAXBException {
+			File generatedInitialMce) throws  InitializationException {
+		boolean closedWorkload = true;
 		// initialSolution = new Solution();
 		this.initialSolution = new SolutionMulti();
 
 		// parse the extension file
-		ResourceEnvironmentExtensionParser resourceEnvParser = new ResourceEnvironmentExtentionLoader(Paths.get(Configuration.RESOURCE_ENVIRONMENT_EXTENSION).toFile());
-		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
+		ResourceEnvironmentExtensionParser resourceEnvParser;
+		try {
+			resourceEnvParser = new ResourceEnvironmentExtensionParser();			
+		} catch (ResourceEnvironmentLoadingException e) {
+			throw new InitializationException("Error loading the resource environment extension",e);
+		}
+		
+		UsageModelExtensionParser usageModelParser;
+		try {
+			usageModelParser = new UsageModelExtensionParser(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
+		} catch (ParserConfigurationException | SAXException | IOException
+				| JAXBException e) {
+			throw new InitializationException("Error loading the usage model extension",e);
+		}
+		
 
 		// get the PCM from the launch configuration
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -732,6 +747,25 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		EList<ResourceContainer> resourceContainers = pcm
 				.getResourceEnvironment()
 				.getResourceContainer_ResourceEnvironment();
+		
+		EList<UsageScenario> scenarios = pcm.getUsageModel().getUsageScenario_UsageModel();
+		if(scenarios.size() >1){
+			logger.warn("Multiple user scenarios defined, Space4Cloud currently only support single scenarios");
+			throw new InitializationException("Multiple user scenarios defined in the PCM model");
+		} else if(scenarios.size() == 0){
+			throw new InitializationException("No usage scenario have been defined in the PCM");		
+		}
+		if(scenarios.get(0).getWorkload_UsageScenario() instanceof ClosedWorkload)
+			closedWorkload = true;
+		else
+			closedWorkload = false;
+		
+		if(!closedWorkload){
+			throw new InitializationException("No usage scenario have been defined in the PCM");
+		}
+		
+						
+		
 
 		// we need to create a Solution object for each one of the providers
 		ArrayList<String> providers = new ArrayList<String>();
@@ -756,18 +790,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 								"Compute").size() == 0)
 					defaultProviderName = null;
 			} while (defaultProviderName == null && iter.hasNext());
-			if (defaultProviderName == null)
+			if (defaultProviderName == null){
 				logger.error("No provider with services of type Compute has been found");
+				throw new InitializationException("No default provider could be found");
+			}
 			providers.add(defaultProviderName);
-			logger.info("No provider specified in the extension, defaulting on "
-					+ defaultProviderName);
+			logger.info("No provider specified in the extension, defaulting on "+ defaultProviderName);
 		}
 
 		for (String provider : providers) {
 
 			Solution initialSolution = new Solution();
 
-			initialSolution.buildFolderStructure(provider);
+			try {
+				initialSolution.buildFolderStructure(provider);
+			} catch (IOException e) {
+				throw new InitializationException("No default provider could be found");
+			}
 
 			// set the region
 			initialSolution.setRegion(resourceEnvParser.getRegion(provider));
@@ -795,24 +834,46 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// add population and think time from usage model extension
 				int population = -1;
 				double thinktime = -1;
+				double arrivalRate = -1;
+			
+				application.setClosedWorkload(closedWorkload);
+				if(closedWorkload && !usageModelParser.isClosedWorkload())
+					throw new InitializationException("The PCM model constains an closed workload while the usage model extension does not");
+				
+			
+				
 				if (usageModelParser.getPopulations().size() == 1)
 					population = usageModelParser.getPopulations().values()
 					.iterator().next()[i];
 				if (usageModelParser.getThinkTimes().size() == 1)
 					thinktime = usageModelParser.getThinkTimes().values()
 					.iterator().next()[i];
+				if (usageModelParser.getArrivalRates().size() == 1)
+					arrivalRate = usageModelParser.getArrivalRates().values()
+					.iterator().next()[i];
 
 				double percentage = (double) 1 / providers.size();
 
 				population = (int) Math.ceil(population * percentage);
 
-//				for (int hour = 0; hour < 24; ++hour)
-					initialSolution.setPercentageWorkload(/*hour*/ i, percentage);
+				initialSolution.setPercentageWorkload(i, percentage);
 
-				application.getLqnHandler().setPopulation(population);
-				application.getLqnHandler().setThinktime(thinktime);
-				application.getLqnHandler().saveToFile();
-				application.setWorkload(population);
+				if(application.isClosedWorkload()){
+					application.getLqnHandler().setPopulation(population);
+					application.getLqnHandler().setThinktime(thinktime);
+				}
+				else{
+					application.getLqnHandler().setArrivalRate(arrivalRate);
+				}
+				
+				application.getLqnHandler().saveToFile();	
+				if(application.isClosedWorkload()){
+					application.setWorkload(population);
+				}
+				else{
+					application.setWorkload((int)arrivalRate);
+				}
+				
 
 				// // create a tier for each resource container
 				// EList<ResourceContainer> resourceContainers = pcm
@@ -1011,8 +1072,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	}
 	/**
 	 * Loads the solution from a serliazed object
+	 * @throws InitializationException 
 	 * */
-	public void loadInitialSolutionObject(File file) {
+	public void loadInitialSolutionObject(File file) throws InitializationException {
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
 		try {
@@ -1022,9 +1084,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			in.close();
 			fis.close();
 		} catch (Exception e) {
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			logger.error(sw.toString());
+			throw new InitializationException("Error initializng the solution from: "+file.getAbsolutePath(),e);
 		}
 		logger.info("Deserialized: " + initialSolution);
 	}
@@ -1632,7 +1692,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 *         the maximum number of scramble iterations has been reached
 	 */
 	protected boolean scramble(Solution sol) {
-		/*
+		/**
 		 * 
 		 * 1) Choose the candidate tier for the VM change (possible strategies:
 		 * RANDOM, cost) 2) Retreive all the VM types that can substitute the
@@ -1880,10 +1940,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected boolean updateLocalBestSolution(Solution sol) {
 		if (sol.greaterThan(localBestSolution)) {
 
-			// updating the best solution
-			// bestSolution = sol.clone();
-			// String filename = bestTmpSol + bestTmpSolIndex+".xml";
-			// sol.exportLight(filename);
 			localBestSolution.add(sol.clone());
 			this.numIterNoImprov = 0;
 			timer.split();

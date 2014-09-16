@@ -251,6 +251,10 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		JOptionPane.showMessageDialog(frmOptimizationProgress, "Optimization process compleated");		
 	}
 	
+	public void signalError(String message) {
+		JOptionPane.showMessageDialog(frmOptimizationProgress, message, "Error",  JOptionPane.ERROR_MESSAGE);		
+	}
+	
 	public void addPropertyChangeListener(PropertyChangeListener listener){
 		pcs.addPropertyChangeListener(listener);
 	}

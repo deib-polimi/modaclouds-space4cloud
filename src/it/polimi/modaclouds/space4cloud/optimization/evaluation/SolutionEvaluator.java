@@ -55,7 +55,7 @@ public class SolutionEvaluator implements Runnable {
 
 	private LineServerHandler handler;
 	
-	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SolutionEvaluator.class);
+	public static final org.slf4j.Logger logger = LoggerFactory.getLogger(SolutionEvaluator.class);
 
 	String filePath;
 	String resultfilePath;
@@ -133,6 +133,7 @@ public class SolutionEvaluator implements Runnable {
 		instance.updateLqn();
 		lqnHandler.saveToFile();
 
+		logger.trace("Evaluating Model: "+filePath);
 		// run the evaluator
 		if (Configuration.SOLVER == Solver.LQNS)
 			runWithLQNS();
@@ -172,12 +173,11 @@ public class SolutionEvaluator implements Runnable {
 
 	private void runWithLQNS() {
 		try {
-			String solverProgram = "lqns";
+			String solverProgram = "lqns";			
 
 			String command = solverProgram + " " + filePath + /*" -f"+*/ " -z iteration-limit=1000";
 			// String command = solverProgram+" "+filePath; //without using the
-			// fast option
-
+			// fast option			
 			ProcessBuilder pb = new ProcessBuilder(splitToCommandArray(command));
 			Process proc = pb.start();
 			readStream(proc.getInputStream(), false);

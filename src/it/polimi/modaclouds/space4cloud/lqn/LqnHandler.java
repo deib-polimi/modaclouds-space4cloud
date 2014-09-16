@@ -68,16 +68,6 @@ public class LqnHandler implements Cloneable, Serializable {
 	private String lqnFilePathSerialization;
 	private static final Logger logger = LoggerFactory.getLogger(LqnHandler.class);
 
-	/**
-	 * Instantiates a new lqn handler.
-	 * 
-	 * @param lqnDOM
-	 *            the lqn dom
-	 */
-	public LqnHandler(Document lqnDOM) {
-
-		this.setLqnDOM(lqnDOM);
-	}
 
 	/**
 	 * Instantiates a new lqn handler.
@@ -132,7 +122,7 @@ public class LqnHandler implements Cloneable, Serializable {
 			lqnH.setLqnFilePath(lqnClone.toPath());
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error cloning the lqn handler",e);
 			lqnH = new LqnHandler(lqnClone);
 		}
 
@@ -160,8 +150,7 @@ public class LqnHandler implements Cloneable, Serializable {
 			// copy the content
 			Files.copy(lqnFilePath, pathTo, REPLACE_EXISTING);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error cloning the lqn file",e);
 		}
 		return pathTo.toFile();
 	}
@@ -353,6 +342,27 @@ public class LqnHandler implements Cloneable, Serializable {
 		}
 
 		return procId2FunId;
+	}
+
+	public void setArrivalRate(double arrivalRate) {
+		if (lqnDOM == null)
+			initDom();
+		NodeList processors = lqnDOM.getElementsByTagName("processor");
+		for (int i = 0; i < processors.getLength(); i++) {
+			Node processorNode = processors.item(i);
+			Node nameNode = processorNode.getAttributes().getNamedItem("name");
+			if (nameNode != null
+					&& nameNode.getNodeValue().contains("UsageScenario")
+					&& !nameNode.getNodeValue().contains("Loop")) {
+				// we assume there is only one task for usage scenario
+				Node taskNode = ((Element) processorNode).getElementsByTagName(
+						"task").item(0);
+				//and a single entry
+				Node entryNode = ((Element) taskNode).getElementsByTagName(
+						"entry").item(0);
+				((Element) entryNode).setAttribute("open-arrival-rate", "" + arrivalRate);
+			}
+		}
 	}
 
 }

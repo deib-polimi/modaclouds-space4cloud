@@ -50,6 +50,8 @@ public class Instance implements Cloneable, Serializable {
 
 	private boolean feasible = false;
 
+	private boolean closedWorkload = true;
+
 	private Map<String, IConstrainable> constrainableResources = new HashMap<String, IConstrainable>();
 
 	private List<Constraint> violatedConstraints= new ArrayList<Constraint>();
@@ -63,27 +65,27 @@ public class Instance implements Cloneable, Serializable {
 	private String region;
 
 	private Solution father;
-	
+
 	public Tier getTierByName(String name){
 		for(Tier t:tiers)
 			if(t.getName().equals(name))
-			 return t;
+				return t;
 		return null;
-		
+
 	}
-	
+
 	public Tier getTierById(String id){
 		for(Tier t:tiers)
 			if(t.getId().equals(id))
-			 return t;
+				return t;
 		return null;
-		
+
 	}
 
 	public void addTier(Tier tier) {
-			tiers.add(tier);
+		tiers.add(tier);
 	}
-	
+
 
 	public boolean changeValues(String tierId,
 			List<String> propertyNames, List<Object> propertyValues) {
@@ -162,12 +164,12 @@ public class Instance implements Cloneable, Serializable {
 		if (getRegion() != null)
 			cloneInst.setRegion(new String(this.getRegion()));
 		cloneInst.setFather(null);
-		
+
 		//clone the constraints
 		cloneInst.violatedConstraints = new ArrayList<Constraint>(getNumerOfViolatedConstraints());
 		for(Constraint c:violatedConstraints)
 			cloneInst.incrementViolatedConstraints(c);
-		
+
 		return cloneInst;
 
 	}
@@ -281,6 +283,14 @@ public class Instance implements Cloneable, Serializable {
 		this.father = father;
 	}
 
+	public boolean isClosedWorkload() {
+		return closedWorkload;
+	}
+
+	public void setClosedWorkload(boolean closedWorkload) {
+		this.closedWorkload = closedWorkload;
+	}
+
 	/**
 	 * @param feasible
 	 *            the feasible to set
@@ -356,7 +366,10 @@ public class Instance implements Cloneable, Serializable {
 			lqnHandler.updateElement(t);
 		}
 
-		lqnHandler.setPopulation(workload);
+		if(isClosedWorkload())
+			lqnHandler.setPopulation(workload);			
+		else
+			lqnHandler.setArrivalRate(workload);		
 
 	}
 
@@ -366,9 +379,9 @@ public class Instance implements Cloneable, Serializable {
 	 */
 	public void updateResults(LqnResultParser results) {
 		this.resultParser = results; /*
-									 * here we save the result to pass the
-									 * result to the proxy later on
-									 */
+		 * here we save the result to pass the
+		 * result to the proxy later on
+		 */
 		for (Tier t : tiers)
 			t.update(results);
 

@@ -153,8 +153,7 @@ public class EvaluationServer implements ActionListener {
 				lineHandler.clear();
 			}
 
-			executor.execute(eval);
-			
+			SolutionEvaluator.logger.trace("Evaluating instance "+instance);
 			if (Configuration.SOLVER == Solver.LQNS)
 				executor.execute(eval);
 			else {
@@ -193,6 +192,7 @@ public class EvaluationServer implements ActionListener {
 				// we need to reevaluate it only if something has changed.
 				if (!i.isEvaluated()) {
 					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
+					SolutionEvaluator.logger.trace("Evaluating instance "+sol.getHourApplication().indexOf(i)+" of solution "+sol);
 					eval.addListener(this);
 					if (Configuration.SOLVER == Solver.LQNS)
 						executor.execute(eval);

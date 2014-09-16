@@ -27,6 +27,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,9 +71,14 @@ public class ConstraintHandler {
 	 * @throws JAXBException
 	 */
 	public void loadConstraints()
-			throws ParserConfigurationException, SAXException, IOException, JAXBException {		
+			throws ConstraintLoadingException {		
 		//load from the XML
-		Constraints  loadedConstraints = XMLHelper.deserialize(Paths.get(Configuration.CONSTRAINTS).toUri().toURL(),Constraints.class);
+		Constraints loadedConstraints;
+		try {
+			loadedConstraints = XMLHelper.deserialize(Paths.get(Configuration.CONSTRAINTS).toUri().toURL(),Constraints.class);
+		} catch (MalformedURLException | JAXBException | SAXException e) {
+			throw new ConstraintLoadingException("Could not load the constraint file: "+Configuration.CONSTRAINTS,e);			
+		}
 		for(it.polimi.modaclouds.qos_models.schema.Constraint cons:loadedConstraints.getConstraints()){
 			//first get the metric
 			Metric metric = Metric.getMetricFromTag(cons.getMetric());			
