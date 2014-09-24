@@ -15,6 +15,10 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution;
 
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+
 public interface IQoSConstrainable extends IConstrainable {
+	
+	public void update(LqnResultParser parser);
 
 }

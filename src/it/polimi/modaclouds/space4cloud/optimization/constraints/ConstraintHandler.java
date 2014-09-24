@@ -19,6 +19,7 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 import it.polimi.modaclouds.qos_models.schema.Constraints;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
@@ -106,6 +107,8 @@ public class ConstraintHandler {
 				constraint = new ReplicasConstraint(cons);
 				break;
 				//add other constraints
+			case MACHINETYPE:
+				//TODO
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
 			}
@@ -185,10 +188,10 @@ public class ConstraintHandler {
 	 * @param resHasMap
 	 * @param origRes
 	 */
-	public void filterResources(List<IaaS> resList, Tier tier) {
+	public void filterResources(List<CloudService> resList, Tier tier) {
 
 		//remove the resource that is currently used
-		for(IaaS res:resList){
+		for(CloudService res:resList){
 			if(res.equals(tier.getCloudService())){
 				resList.remove(res);
 				break;
@@ -196,17 +199,17 @@ public class ConstraintHandler {
 		}
 
 		//check other resources against constraints
-		List<IaaS> result = new ArrayList<>();
+		List<CloudService> result = new ArrayList<>();
 		result.addAll(resList);
 		for(Constraint c:constraints)
 			//if the constraint affected the original resource
-			if(c instanceof RamConstraint && c.getResourceID().equals(tier.getId()))
-				for(IaaS resource:resList){
-					if(!((RamConstraint)c).checkConstraint(resource))
+			if(c instanceof ArchitecturalConstraint)
+				for(CloudService resource:resList){
+					if(!((ArchitecturalConstraint)c).checkConstraint(resource))
 						result.remove(resource);
-				}
+				}			
 		//filter resources in the DB which have no number of cpus, this should not be necessary if the DB is good
-		for(IaaS resource:resList)
+		for(CloudService resource:resList)
 			if(resource instanceof Compute && ((Compute)resource).getNumberOfCores()==0)
 				result.remove(resource);
 

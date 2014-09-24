@@ -32,12 +32,18 @@ public class UsageConstraint extends QoSConstraint {
 	@Override
 	public double checkConstraintDistance(IConstrainable resource) {
 		if(!(resource instanceof IUtilizationConstrainable)){
-			logger.error("Evaluating a RAM constraint on a wrong resource with id: "+resource.getId()+
+			logger.error("Evaluating a RAM constraint on a wrong resource with id: "+((IUtilizationConstrainable)resource).getId()+
 					" RAM constraints should be evaluated against "+IUtilizationConstrainable.class+
 					", the specified resource is of type: "+resource.getClass());
-			return -1;
+			return Double.POSITIVE_INFINITY;
 			}
 			return super.checkConstraintDistance(((IUtilizationConstrainable)resource).getUtilization());
+	}
+
+	@Override
+	protected boolean checkConstraintSet(IConstrainable resource) {
+		logger.error("Error evaluating a usage constraint on a in/outset range");
+		return false;
 	}
 
 }

@@ -2,7 +2,6 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 import it.polimi.modaclouds.qos_models.schema.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
@@ -17,15 +16,10 @@ public class ReplicasConstraint extends ArchitecturalConstraint {
 	}
 
 	@Override
-	public boolean checkConstraint(CloudService resource) {
-		return checkConstraintDistance(resource) <= 0;
-	}
-
-	@Override
 	public double checkConstraintDistance(IConstrainable resource) {
 		if(!(resource instanceof Tier && ((Tier)resource).getCloudService() instanceof IaaS)){
 			logger.error("Error evaluating replica constraint on a non IaaS resource");
-			return 1;
+			return Double.POSITIVE_INFINITY;
 		}
 		
 		IaaS iaasResource = (IaaS) ((Tier)resource).getCloudService();
@@ -55,6 +49,12 @@ public class ReplicasConstraint extends ArchitecturalConstraint {
 		if(range.getHasMinValue() == null)
 			return false;
 		return resource.getReplicas() <= range.getHasMinValue();
+	}
+
+	@Override
+	protected boolean checkConstraintSet(IConstrainable measurement) {
+		logger.error("Evaluating a replica constraint with an inset or outset");
+		return false;
 	}
 
 }

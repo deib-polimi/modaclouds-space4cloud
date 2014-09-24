@@ -16,7 +16,6 @@
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
@@ -25,14 +24,6 @@ public class RamConstraint extends ArchitecturalConstraint {
 	public RamConstraint(
 			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
-	}
-
-	@Override
-	public boolean checkConstraint(CloudService resource) {
-		if (resource instanceof Compute
-				&& checkConstraintDistance(((Compute) resource).getRam()) < 0)
-			return true;
-		return false;
 	}
 
 	public double getMax() {
@@ -46,11 +37,17 @@ public class RamConstraint extends ArchitecturalConstraint {
 	@Override
 	public double checkConstraintDistance(IConstrainable resource) {
 		if(!(resource instanceof Tier && (((Tier)resource).getCloudService()) instanceof Compute)){
-			logger.error("Evaluating a RAM constraint on a wrong resource with id: "+resource.getId()+
+			logger.error("Evaluating a RAM constraint on a wrong resource with id: "+((Tier)resource).getId()+
 					" RAM constraints should be evaluated against "+Tier.class+" with a "+Compute.class+
 					"resource, the specified resource is of type: "+resource.getClass());
-			return -1;
+			return Double.POSITIVE_INFINITY;
 			}
 			return super.checkConstraintDistance(((Compute)((Tier)resource).getCloudService()).getRam());
+	}
+
+	@Override
+	protected boolean checkConstraintSet(IConstrainable measurement) {
+		logger.error("Evaluating a ram constraint with an inset or outset");
+		return false;
 	}
 }

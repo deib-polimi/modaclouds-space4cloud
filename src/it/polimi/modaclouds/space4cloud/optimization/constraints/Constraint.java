@@ -59,12 +59,41 @@ public abstract class Constraint {
 		this.metric = metric;
 		this.priority = priority;
 	}
+
+	
 	/**
-	 * Checks the fulfillment of the constraint against the specified resource. The id of the resource should be the same as the one specified in the constraint and the resource should have been evaluated
+	 * Checks if the constraint is fulfilled. 
 	 * @param measurement
-	 * @return Positive distance in case the constraint was not fulfilled, negative otherwise.
+	 * @return
 	 */
-	public abstract double checkConstraintDistance(IConstrainable resource);	
+	protected boolean checkConstraint(IConstrainable resource){
+		//if the constraint is not defined on the given resource then it is true
+		if(!resource.getId().equals(resourceId))
+			return true;
+		//if it has a numerical range then check if the distance is positive
+		if(hasNumericalRange())
+			return checkConstraintDistance(resource) < 0;
+		return checkConstraintSet(resource);
+		
+		
+	}
+	
+	protected abstract double checkConstraintDistance(IConstrainable resource);
+	protected abstract boolean checkConstraintSet(IConstrainable resource);
+	
+	/**
+	 * Checks if the measurement is inside the inset and outside the inset 
+	 * @param measurement
+	 * @return
+	 */
+	protected boolean checkConstraintSet(String measurement) {			
+		 boolean result = true;		 
+			 if(range.getInSet()!=null)
+				 result = result && range.getInSet().getValues().contains(measurement);
+			 if(range.getOutSet()!=null)
+				 result = result && !range.getOutSet().getValues().contains(measurement);			 		 
+		 return result;
+	}
 
 	/**
 	 * Checks the distance between the constraint and the provided value. Positive distance if the constraint has not been fulfilled, negative if it has been fulfilled

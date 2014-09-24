@@ -34,27 +34,34 @@ public class PercentileRTconstraint extends RTConstraint {
 	@Override
 	public double checkConstraintDistance(IConstrainable resource) {
 		if(!(resource instanceof IPercentileRTConstrainable)){
-			logger.error("Evaluating a RAM constraint on a wrong resource with id: "+resource.getId()+
-					" RAM constraints should be evaluated against "+IPercentileRTConstrainable.class+
+			logger.error("Evaluating a Percentile constraint on a wrong resource with id: "+resource.getId()+
+					" PErcentile constraints should be evaluated against "+IPercentileRTConstrainable.class+
 					", the specified resource is of type: "+resource.getClass());
-			return -1;
+			return Double.POSITIVE_INFINITY;
 		}
 		if(((IPercentileRTConstrainable)resource).getRtPercentiles() == null){
 			logger.warn("No percentile was derived by the LQN evaluation, ignoring percentile response time constraint");
-			return -1;
+			return Double.NEGATIVE_INFINITY;
 		}
 		if(!((IPercentileRTConstrainable)resource).getRtPercentiles().containsKey(level)){
 			String errorMessage = "The evaluation of the resource did not produce the desired percentile, the percentile level specified in the constraint is: "+level+"\n";
 			errorMessage += "Available percentiles are: ";
-			errorMessage += "\nIgnoring percentile response time constraint";
+			errorMessage += "\n";
 			for(Integer i:((IPercentileRTConstrainable)resource).getRtPercentiles().keySet())
 				errorMessage += "\t"+i;
 			logger.warn(errorMessage);
-			return -1;
+			return Double.POSITIVE_INFINITY;
 		}
 
 		double percentileValue = ((IPercentileRTConstrainable)resource).getRtPercentiles().get(level);
 		return super.checkConstraintDistance(percentileValue);
+	}
+
+
+	@Override
+	protected boolean checkConstraintSet(IConstrainable resource) {
+		logger.error("Error evaluating a Percentile Response time constraint on an in/out set range");
+		return false;
 	}
 
 }
