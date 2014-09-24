@@ -59,23 +59,26 @@ public class Configuration {
 	public static String RANDOM_ENV_FILE = "";
 
 
-	
+
 	// For the robustness test:
 	public static int ROBUSTNESS_PEAK_FROM 	= 100;
 	public static int ROBUSTNESS_PEAK_TO 	= 10000;
 	public static int ROBUSTNESS_STEP_SIZE 	= 300;
 	public static int ROBUSTNESS_ATTEMPTS 	= 5;
-	
+
 	public static boolean REDISTRIBUTE_WORKLOAD = false;
-	
-	
+
+
 	// For the Private Cloud part:
 	public static boolean USE_PRIVATE_CLOUD = false;
 	public static int PRIVATE_CPUS 			= 10; 			// number
 	public static double PRIVATE_CPUPOWER 	= 3.0 * 1000; 	// MHz
 	public static int PRIVATE_RAM 			= 16 * 1024; 	// MB
 	public static int PRIVATE_STORAGE		= 1 * 1024; 	// GB
-	
+
+	//Used to start or stop the optimization process
+	public static boolean run = true;
+
 	//Operations
 	public static enum Operation {
 		Assessment, Optimization, Robustness;
@@ -162,59 +165,59 @@ public class Configuration {
 		prop.put("SSH_USER_NAME", SSH_USER_NAME);
 		prop.put("SSH_PASSWORD", SSH_PASSWORD);
 		prop.put("RANDOM_SEED", Integer.toString(RANDOM_SEED));
-		
+
 		prop.put("ROBUSTNESS_PEAK_FROM", Integer.toString(ROBUSTNESS_PEAK_FROM));
 		prop.put("ROBUSTNESS_PEAK_TO", Integer.toString(ROBUSTNESS_PEAK_TO));
 		prop.put("ROBUSTNESS_STEP_SIZE", Integer.toString(ROBUSTNESS_STEP_SIZE));
 		prop.put("ROBUSTNESS_ATTEMPTS", Integer.toString(ROBUSTNESS_ATTEMPTS));
-		
+
 		prop.put("REDISTRIBUTE_WORKLOAD", Boolean.toString(REDISTRIBUTE_WORKLOAD));
-		
+
 		prop.put("USE_PRIVATE_CLOUD", Boolean.toString(USE_PRIVATE_CLOUD));
 		prop.put("PRIVATE_CPUS", Integer.toString(PRIVATE_CPUS));
 		prop.put("PRIVATE_CPUPOWER", Double.toString(PRIVATE_CPUPOWER));
 		prop.put("PRIVATE_RAM", Integer.toString(PRIVATE_RAM));
 		prop.put("PRIVATE_STORAGE", Integer.toString(PRIVATE_STORAGE));
-		
+
 		prop.store(fos, "SPACE4Clouds configuration properties");
 		fos.flush();
 	}
 
-//	public static void loadConfiguration(String filePath) throws IOException {
-//		Properties prop = new Properties();
-//		FileInputStream fis = new FileInputStream(filePath);
-//		prop.load(fis);
-//		PALLADIO_REPOSITORY_MODEL = prop.getProperty("PALLADIO_REPOSITORY_MODEL");
-//		PALLADIO_SYSTEM_MODEL = prop.getProperty("PALLADIO_SYSTEM_MODEL");
-//		PALLADIO_ALLOCATION_MODEL = prop.getProperty("PALLADIO_ALLOCATION_MODEL");
-//		PALLADIO_USAGE_MODEL = prop.getProperty("PALLADIO_USAGE_MODEL");
-//		PALLADIO_RESOURCE_MODEL = prop.getProperty("PALLADIO_RESOURCE_MODEL");
-//		USAGE_MODEL_EXTENSION = prop.getProperty("USAGE_MODEL_EXTENSION");
-//		RESOURCE_ENVIRONMENT_EXTENSION = prop.getProperty("RESOURCE_ENVIRONMENT_EXTENSION");
-//		CONSTRAINTS = prop.getProperty("CONSTRAINTS");
-//		PROJECT_BASE_FOLDER = prop.getProperty("PROJECT_BASE_FOLDER");
-//		DB_CONNECTION_FILE= prop.getProperty("DB_CONNECTION_FILE");
-//		FUNCTIONALITY = Operation.valueOf(prop.getProperty("FUNCTIONALITY"));
-//		SOLVER = Solver.valueOf(prop.getProperty("SOLVER"));
-//		LINE_PROP_FILE= prop.getProperty("LINE_PROP_FILE");		
-//		TABU_MEMORY_SIZE= Integer.parseInt(prop.getProperty("TABU_MEMORY_SIZE"));
-//		SCRUMBLE_ITERS= Integer.parseInt(prop.getProperty("SCRUMBLE_ITERS"));
-//		FEASIBILITY_ITERS= Integer.parseInt(prop.getProperty("FEASIBILITY_ITERS"));
-//		SCALE_IN_CONV_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_CONV_ITERS"));
-//		SCALE_IN_FACTOR= Double.parseDouble(prop.getProperty("SCALE_IN_FACTOR"));
-//		SCALE_IN_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_ITERS"));
-//		SELECTION_POLICY= Policy.valueOf(prop.getProperty("SELECTION_POLICY"));
-//		RELAXED_INITIAL_SOLUTION= Boolean.parseBoolean(prop.getProperty("RELAXED_INITIAL_SOLUTION"));
-//		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
-//		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
-//		RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
-//		
-//		ROBUSTNESS_PEAK_FROM = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_FROM"));
-//		ROBUSTNESS_PEAK_TO = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_TO"));
-//		ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE"));
-//		ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS"));
-//	}
-	
+	//	public static void loadConfiguration(String filePath) throws IOException {
+	//		Properties prop = new Properties();
+	//		FileInputStream fis = new FileInputStream(filePath);
+	//		prop.load(fis);
+	//		PALLADIO_REPOSITORY_MODEL = prop.getProperty("PALLADIO_REPOSITORY_MODEL");
+	//		PALLADIO_SYSTEM_MODEL = prop.getProperty("PALLADIO_SYSTEM_MODEL");
+	//		PALLADIO_ALLOCATION_MODEL = prop.getProperty("PALLADIO_ALLOCATION_MODEL");
+	//		PALLADIO_USAGE_MODEL = prop.getProperty("PALLADIO_USAGE_MODEL");
+	//		PALLADIO_RESOURCE_MODEL = prop.getProperty("PALLADIO_RESOURCE_MODEL");
+	//		USAGE_MODEL_EXTENSION = prop.getProperty("USAGE_MODEL_EXTENSION");
+	//		RESOURCE_ENVIRONMENT_EXTENSION = prop.getProperty("RESOURCE_ENVIRONMENT_EXTENSION");
+	//		CONSTRAINTS = prop.getProperty("CONSTRAINTS");
+	//		PROJECT_BASE_FOLDER = prop.getProperty("PROJECT_BASE_FOLDER");
+	//		DB_CONNECTION_FILE= prop.getProperty("DB_CONNECTION_FILE");
+	//		FUNCTIONALITY = Operation.valueOf(prop.getProperty("FUNCTIONALITY"));
+	//		SOLVER = Solver.valueOf(prop.getProperty("SOLVER"));
+	//		LINE_PROP_FILE= prop.getProperty("LINE_PROP_FILE");		
+	//		TABU_MEMORY_SIZE= Integer.parseInt(prop.getProperty("TABU_MEMORY_SIZE"));
+	//		SCRUMBLE_ITERS= Integer.parseInt(prop.getProperty("SCRUMBLE_ITERS"));
+	//		FEASIBILITY_ITERS= Integer.parseInt(prop.getProperty("FEASIBILITY_ITERS"));
+	//		SCALE_IN_CONV_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_CONV_ITERS"));
+	//		SCALE_IN_FACTOR= Double.parseDouble(prop.getProperty("SCALE_IN_FACTOR"));
+	//		SCALE_IN_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_ITERS"));
+	//		SELECTION_POLICY= Policy.valueOf(prop.getProperty("SELECTION_POLICY"));
+	//		RELAXED_INITIAL_SOLUTION= Boolean.parseBoolean(prop.getProperty("RELAXED_INITIAL_SOLUTION"));
+	//		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
+	//		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
+	//		RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
+	//		
+	//		ROBUSTNESS_PEAK_FROM = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_FROM"));
+	//		ROBUSTNESS_PEAK_TO = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_TO"));
+	//		ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE"));
+	//		ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS"));
+	//	}
+
 	public static void loadConfiguration(String filePath) throws IOException {
 		Properties prop = new Properties();
 		FileInputStream fis = new FileInputStream(filePath);
@@ -243,21 +246,21 @@ public class Configuration {
 			SCALE_IN_FACTOR= Double.parseDouble(prop.getProperty("SCALE_IN_FACTOR"));
 			SCALE_IN_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_ITERS"));
 			SELECTION_POLICY= Policy.valueOf(prop.getProperty("SELECTION_POLICY"));
-		SSH_HOST = prop.getProperty("SSH_HOST", SSH_HOST);
+			SSH_HOST = prop.getProperty("SSH_HOST", SSH_HOST);
 			RELAXED_INITIAL_SOLUTION= Boolean.parseBoolean(prop.getProperty("RELAXED_INITIAL_SOLUTION"));
 			RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
-		ROBUSTNESS_PEAK_FROM = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_FROM", String.valueOf(ROBUSTNESS_PEAK_FROM)));
-		ROBUSTNESS_PEAK_TO = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_TO", String.valueOf(ROBUSTNESS_PEAK_FROM)));
-		ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE", String.valueOf(ROBUSTNESS_STEP_SIZE)));
-		ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS", String.valueOf(ROBUSTNESS_ATTEMPTS)));
-		
-		REDISTRIBUTE_WORKLOAD = Boolean.parseBoolean(prop.getProperty("REDISTRIBUTE_WORKLOAD", String.valueOf(REDISTRIBUTE_WORKLOAD)));
-		
-		USE_PRIVATE_CLOUD = Boolean.parseBoolean(prop.getProperty("USE_PRIVATE_CLOUD", String.valueOf(USE_PRIVATE_CLOUD)));
-		PRIVATE_CPUS = Integer.parseInt(prop.getProperty("PRIVATE_CPUS", String.valueOf(PRIVATE_CPUS)));
-		PRIVATE_CPUPOWER = Double.parseDouble(prop.getProperty("PRIVATE_CPUPOWER", String.valueOf(PRIVATE_CPUPOWER)));
-		PRIVATE_RAM = Integer.parseInt(prop.getProperty("PRIVATE_RAM", String.valueOf(PRIVATE_RAM)));
-		PRIVATE_STORAGE = Integer.parseInt(prop.getProperty("PRIVATE_STORAGE", String.valueOf(PRIVATE_STORAGE)));
+			ROBUSTNESS_PEAK_FROM = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_FROM", String.valueOf(ROBUSTNESS_PEAK_FROM)));
+			ROBUSTNESS_PEAK_TO = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_TO", String.valueOf(ROBUSTNESS_PEAK_FROM)));
+			ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE", String.valueOf(ROBUSTNESS_STEP_SIZE)));
+			ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS", String.valueOf(ROBUSTNESS_ATTEMPTS)));
+
+			REDISTRIBUTE_WORKLOAD = Boolean.parseBoolean(prop.getProperty("REDISTRIBUTE_WORKLOAD", String.valueOf(REDISTRIBUTE_WORKLOAD)));
+
+			USE_PRIVATE_CLOUD = Boolean.parseBoolean(prop.getProperty("USE_PRIVATE_CLOUD", String.valueOf(USE_PRIVATE_CLOUD)));
+			PRIVATE_CPUS = Integer.parseInt(prop.getProperty("PRIVATE_CPUS", String.valueOf(PRIVATE_CPUS)));
+			PRIVATE_CPUPOWER = Double.parseDouble(prop.getProperty("PRIVATE_CPUPOWER", String.valueOf(PRIVATE_CPUPOWER)));
+			PRIVATE_RAM = Integer.parseInt(prop.getProperty("PRIVATE_RAM", String.valueOf(PRIVATE_RAM)));
+			PRIVATE_STORAGE = Integer.parseInt(prop.getProperty("PRIVATE_STORAGE", String.valueOf(PRIVATE_STORAGE)));
 		}catch(NumberFormatException e){
 			logger.warn("Part of the configuration was invalid, reverted the invalid value to the default one.",e);
 		}
@@ -331,7 +334,7 @@ public class Configuration {
 				if(SSH_HOST==null|| SSH_HOST.isEmpty())
 					errors.add("The host for SSH connection has to be provided to perform the initial solution generation");
 			}
-			
+
 			if (USE_PRIVATE_CLOUD) {
 				if (PRIVATE_CPUS < 1)
 					errors.add("The CPU number for the private cloud solution should be at least 1.");
@@ -374,22 +377,22 @@ public class Configuration {
 		logger.debug("SSH_USER_NAME: "+ SSH_USER_NAME);
 		logger.debug("SSH_PASSWORD: "+ SSH_PASSWORD);
 		logger.debug("RANDOM_SEED: "+ Integer.toString(RANDOM_SEED));
-		
+
 		logger.debug("ROBUSTNESS_PEAK_FROM: " + Integer.toString(ROBUSTNESS_PEAK_FROM));
 		logger.debug("ROBUSTNESS_PEAK_TO: " + Integer.toString(ROBUSTNESS_PEAK_TO));
 		logger.debug("ROBUSTNESS_STEP_SIZE: " + Integer.toString(ROBUSTNESS_STEP_SIZE));
 		logger.debug("ROBUSTNESS_ATTEMPTS: " + Integer.toString(ROBUSTNESS_ATTEMPTS));
-		
+
 		logger.debug("REDISTRIBUTE_WORKLOAD: " + Boolean.toString(REDISTRIBUTE_WORKLOAD));
-		
+
 		logger.debug("USE_PRIVATE_CLOUD: " + Boolean.toString(USE_PRIVATE_CLOUD));
 		logger.debug("PRIVATE_CPUS: " + Integer.toString(PRIVATE_CPUS));
 		logger.debug("PRIVATE_CPUPOWER: " + Double.toString(PRIVATE_CPUPOWER));
 		logger.debug("PRIVATE_RAM: " + Integer.toString(PRIVATE_RAM));
 		logger.debug("PRIVATE_STORAGE: " + Integer.toString(PRIVATE_STORAGE));
 	}
-	
-	
+
+
 	/**
 	 * Checks if the configuration in the given properties file is the same as the actual configuration.
 	 * 
@@ -400,7 +403,7 @@ public class Configuration {
 		// Notice that the method only checks the values in the properties file, thus if only one property is set
 		// with the same value, the result is true. This is because I suppose that the properties file was
 		// first generated using our tool.
-		
+
 		Properties prop = new Properties();
 		FileInputStream fis;
 		try {
@@ -409,21 +412,33 @@ public class Configuration {
 		} catch (Exception e) {
 			return false;
 		}
-		
+
 
 		for (Object o : prop.keySet()) {
 			String key = (String) o;
-			
+
 			try {
 				if (!(String.valueOf(Configuration.class.getField(key).get(null))).equals(prop.getProperty(key)))
 					return false;
 			} catch (Exception e) {
 				return false;
 			}
-			
+
 		}
-		
+
 		return true;
+	}
+
+	public static synchronized boolean isPaused(){
+		return !run;
+	}
+
+	public static synchronized void pause(){
+		run = false;
+	}
+
+	public static synchronized void resume(){
+		run = true;
 	}
 
 }

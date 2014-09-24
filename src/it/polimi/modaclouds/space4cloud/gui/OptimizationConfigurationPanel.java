@@ -37,6 +37,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	private JTextField scaleInConfText;
 	private JCheckBox initialSolutionBox;
 	private JLabel emptyLabel;
+	private JLabel emptyLabel2;
 	private JLabel sshHostLabel;
 	private JTextField sshHostText;
 	private JLabel sshNameLabel;
@@ -195,7 +196,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_emptyLabel.gridy = 7;
 		add(emptyLabel, gbc_emptyLabel);
 		
-		redistributeWorkloadBox = new JCheckBox("Optimized workload distribution if multiprovider problem");
+		redistributeWorkloadBox = new JCheckBox("Optimized workload distribution");
 		redistributeWorkloadBox.addActionListener(this);
 		GridBagConstraints gbc_redistributeWorkloadBox = new GridBagConstraints();
 		gbc_redistributeWorkloadBox.fill = GridBagConstraints.HORIZONTAL;
@@ -204,11 +205,13 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_redistributeWorkloadBox.gridy = 8;
 		add(redistributeWorkloadBox, gbc_redistributeWorkloadBox);
 		
+		
+		emptyLabel2 = new JLabel("");
 		GridBagConstraints gbc_emptyLabel2 = new GridBagConstraints();
 		gbc_emptyLabel2.insets = new Insets(0, 0, 5, 0);
 		gbc_emptyLabel2.gridx = 1;
 		gbc_emptyLabel2.gridy = 8;
-		add(emptyLabel, gbc_emptyLabel2);
+		add(emptyLabel2, gbc_emptyLabel2);
 		
 		sshHostLabel = new JLabel("SSH Host");
 		GridBagConstraints gbc_lblHost = new GridBagConstraints();

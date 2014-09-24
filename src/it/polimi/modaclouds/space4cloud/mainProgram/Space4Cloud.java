@@ -1121,6 +1121,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				progressWindow.signalCompletion();
 			cleanResources();
 		}
+		//forward progress to window
+		else if (evt.getSource().equals(engine) && evt.getPropertyName().equals("progress")) {
+			logger.info("Progress: "+(int) evt.getNewValue());			
+		}
 		//stop the optimization process if the user closes the window
 		else if(evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed")){
 			if(engine != null){
@@ -1130,8 +1134,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			logger.info("Optimization Process cancelled by the user");
 			pcs.firePropertyChange("optimizationEnded", false, true);
 			cleanResources();
-		}else if (evt.getSource().equals(engine) && evt.getPropertyName().equals("progress")) {
-			logger.info("Progress: "+(int) evt.getNewValue());			
+		}else if (evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("InspectSolution")){
+			if(engine!=null)
+				engine.inspect();
 		}
 
 	}

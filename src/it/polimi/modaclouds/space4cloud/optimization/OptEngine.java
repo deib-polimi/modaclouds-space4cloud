@@ -23,9 +23,11 @@ import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
 import it.polimi.modaclouds.space4cloud.gui.SolutionWindow;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.mainProgram.InitializationException;
+import it.polimi.modaclouds.space4cloud.mainProgram.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
@@ -126,6 +128,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected SolutionMulti currentSolution = null;
 
 	protected SolutionMulti localBestSolution = null;
+	
+	private List<SolutionMulti> bestSolutions = new ArrayList<SolutionMulti>();
 
 	protected ConstraintHandler constraintHandler;
 
@@ -181,7 +185,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	protected Logger2JFreeChartImage logVm;
 	protected Logger2JFreeChartImage logConstraints;
-	
+
 	private boolean batch = false;
 
 	public OptEngine(ConstraintHandler handler)
@@ -235,7 +239,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		evalServer.addPropertyChangeListener(this);
 
 		// this.evalProxy.setEnabled(false);
-		
+
 		this.batch = batch;
 	}
 
@@ -284,8 +288,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		}
 
 	}
-	
-/**
+
+	/**
 	 * This method should allow the change of workload at runtime!
 	 * 
 	 * @param sol
@@ -328,6 +332,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			optimizeMultiprovider();
 		else
 			optimize();
+		
+		BestSolutionExplorer.show(bestSolutions);
 		return null;
 	}
 
@@ -720,7 +726,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		} catch (ResourceEnvironmentLoadingException e) {
 			throw new InitializationException("Error loading the resource environment extension",e);
 		}
-		
+
 		UsageModelExtensionParser usageModelParser;
 		try {
 			usageModelParser = new UsageModelExtensionParser(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
@@ -728,7 +734,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				| JAXBException e) {
 			throw new InitializationException("Error loading the usage model extension",e);
 		}
-		
+
 
 		// get the PCM from the launch configuration
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -747,7 +753,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		EList<ResourceContainer> resourceContainers = pcm
 				.getResourceEnvironment()
 				.getResourceContainer_ResourceEnvironment();
-		
+
 		EList<UsageScenario> scenarios = pcm.getUsageModel().getUsageScenario_UsageModel();
 		if(scenarios.size() >1){
 			logger.warn("Multiple user scenarios defined, Space4Cloud currently only support single scenarios");
@@ -759,13 +765,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			closedWorkload = true;
 		else
 			closedWorkload = false;
-		
+
 		if(!closedWorkload){
 			throw new InitializationException("No usage scenario have been defined in the PCM");
 		}
-		
-						
-		
+
+
+
 
 		// we need to create a Solution object for each one of the providers
 		ArrayList<String> providers = new ArrayList<String>();
@@ -835,13 +841,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				int population = -1;
 				double thinktime = -1;
 				double arrivalRate = -1;
-			
+
 				application.setClosedWorkload(closedWorkload);
 				if(closedWorkload && !usageModelParser.isClosedWorkload())
 					throw new InitializationException("The PCM model constains an closed workload while the usage model extension does not");
-				
-			
-				
+
+
+
 				if (usageModelParser.getPopulations().size() == 1)
 					population = usageModelParser.getPopulations().values()
 					.iterator().next()[i];
@@ -865,7 +871,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				else{
 					application.getLqnHandler().setArrivalRate(arrivalRate);
 				}
-				
+
 				application.getLqnHandler().saveToFile();	
 				if(application.isClosedWorkload()){
 					application.setWorkload(population);
@@ -873,7 +879,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				else{
 					application.setWorkload((int)arrivalRate);
 				}
-				
+
 
 				// // create a tier for each resource container
 				// EList<ResourceContainer> resourceContainers = pcm
@@ -1057,9 +1063,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				// use the initial evaluation to initialize parser and
 				// structures
-				
+
 				evalServer.evaluateInstance(application);
-											
+
 				// initialSolution.showStatus();
 			}
 
@@ -1114,10 +1120,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					* numberOfFeasibilityIterations
 					/ MAXFEASIBILITYITERATIONS;
 			for (int i = 0; i < 24; i++) {
-				
+
 				if(sol.getHourApplication().get(i).isFeasible())
 					continue;
-			
+
 				Set<Tier> affectedTiers = new HashSet<>();
 
 				// for each constraint find the IaaS affected resource and add
@@ -1125,14 +1131,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// resource are ignored since we use a Set as memory
 				for (Constraint c : sol.getApplication(i).getViolatedConstraints())
 					affectedTiers.add(findResource(sol.getApplication(i),c.getResourceID()));
-				
+
 				//remove resources that have reached the maximum replica constraint
 				affectedTiers = constraintHandler.filterResourcesForScaleOut(affectedTiers);
 				// this is the list of the
 				// resouces that doesn't
 				// satisfy the constraints
 				// now we will scaleout the resources
-				
+
 
 				if (affectedTiers.size() > 0) {
 					MoveOnVM moveVM_i = new MoveOnVM(sol, i);
@@ -1151,14 +1157,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		else
 			logger.info("Max number of feasibility iterations reached");
 	}
-	
+
 	private void considerPrivateCloud(SolutionMulti solutionMulti) {
 		Solution s = PrivateCloud.getSolution(solutionMulti, dataHandler, evalServer);
 		if (s == null) {
 			logger.error("Error! No suitable solution found!");
 			return;
 		}
-		
+
 		Path p = null;
 		try {
 			p = Files.createTempFile("sol", ".xml");
@@ -1166,23 +1172,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			e.printStackTrace();
 			p = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "soltmp.xml");
 		}
-		
+
 		s.exportLight(p);
 		logger.info("Private Cloud Solution exported in %s.", p.toString());
-		
+
 		double rates[] = new double[24];
-		
+
 		for (int hour = 0; hour < 24; ++hour)
 			rates[hour] = Math.ceil((1.0 - s.getPercentageWorkload(hour)) / solutionMulti.size());
-		
+
 		for (Solution sol : solutionMulti.getAll())
 			changeWorkload(sol, rates);
-		
+
 		logger.info("The solution was modified:");
 		logger.info(solutionMulti.showStatus());
-		
+
 		solutionMulti.setPrivateCloudSolution(s);
-		
+
 		bestSolution = solutionMulti.clone();
 		localBestSolution = solutionMulti.clone();
 	}
@@ -1194,8 +1200,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * problem.
 	 * 
 	 * @return the integer -1 an error has happened.
+	 * @throws OptimizationException 
 	 */
-	public Integer optimize() {
+	public Integer optimize() throws OptimizationException {
 
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
@@ -1231,10 +1238,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		// this is one possibility, I however prefer using the execution time as
 		// a stopping criterion. Mich
 		boolean solutionChanged = true;
-		
+
 		if (Configuration.USE_PRIVATE_CLOUD)
 			considerPrivateCloud(currentSolution);
-		
+
 		while (!isMaxNumberOfIterations()) {
 
 			optimLogger.info("Iteration: " + numberOfIterations);
@@ -1242,6 +1249,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			// 2: Internal Optimization process
 
+			if(Configuration.isPaused())
+				waitForResume();
 			InternalOptimization(currentSolution);
 
 			// 3: check whether the best solution has changed
@@ -1259,6 +1268,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// 4 Scrambling the current solution.
 			optimLogger.info("Scramble");
 			optimLogger.info("Tabu List Size: " + tabuSolutionList.size());
+			if(Configuration.isPaused())
+				waitForResume();
 			solutionChanged = scramble(currentSolution);
 			// if the local optima with respect to the type of machine has been
 			// found we need to perform some diversification (using the
@@ -1274,7 +1285,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 							+ longTermFrequencyMemory.get(t.getId()).size());
 				}
 				localBestSolution = currentSolution.clone();
-			}			
+			}
 			setProgress((numberOfIterations*100/MAX_SCRUMBLE_ITERS));
 			// increment the number of iterations
 			numberOfIterations += 1;
@@ -1298,25 +1309,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		exportSolution();
 		evalServer.showStatistics();		
-
-		// ////
-		// evalProxy.showStatistics();
-		// System.out.println("End!");
-		//
-		// try {
-		// Files.copy(Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
-		// "generated-solution.xml") , Paths.get(c.ABSOLUTE_WORKING_DIRECTORY,
-		// "solution.xml"));
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// ////
-		
-		if (!batch)
-			SolutionWindow.show(bestSolution);
-
 		return -1;
 
+	}
+
+	private void waitForResume() throws OptimizationException {
+		boolean fired = false;
+		while(Configuration.isPaused())
+			if(!fired){
+				firePropertyChange("Stopped", false, true);
+				fired=true;
+			}
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			throw new OptimizationException("Error waiting for resume", e);
+		}
+		firePropertyChange("Stopped", true, false);
 	}
 
 	/**
@@ -1377,12 +1386,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return sol;
 
 	}
-	
+
 	private SolutionMulti setWorkloadPercentagesFromMILP(SolutionMulti currentSolution) {
 		RussianEvaluator reval = new RussianEvaluator();
-		
+
 		SolutionMulti tempSolution = currentSolution.clone();
-		
+
 		Path p = null;
 		try {
 			p = Files.createTempFile("sol", ".xml");
@@ -1391,29 +1400,29 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			p = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "soltmp.xml");
 		}
 		currentSolution.exportLight(p);
-		
+
 		reval.setStartingSolution(p.toFile());
 		try {
 			reval.eval();
-			
+
 			currentSolution.setFrom(null, reval.getMultiCloudExt());
 		} catch (Exception e) {
 			e.printStackTrace();
-			
+
 			currentSolution = tempSolution.clone();
 		}
-			
+
 		return currentSolution;
 	}
-	
+
 	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour) {
 		return maximizeWorkloadPercentagesForLeastUsedTier(currentSolution, hour, 0.2);
 	}
-	
+
 	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour, double wpMin) {
 		Tier leastUsedTier = null;
 		String leastUsedProvider = null;
-		
+
 		for (Solution sol : currentSolution.getAll()) {
 			for (Tier i : sol.getApplication(hour).getTiers()) {
 				if (leastUsedTier == null) {
@@ -1427,20 +1436,20 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 			}
 		}
-		
-//		double inc = 0.05;
+
+		//		double inc = 0.05;
 		double inc = 0.1;
 		SolutionMulti lastSolution = null;
 		boolean keepGoing = true;
-		
+
 		do {
 			lastSolution = currentSolution.clone();
-			
+
 			double wpStar = currentSolution.get(leastUsedProvider).getPercentageWorkload(hour);
 			double diff = 1 - wpStar;
 			double rate = inc;
 			double remainder = 0.0;
-			
+
 			if (diff < rate) {
 				rate = diff;
 				if (inc == 0.1)
@@ -1448,55 +1457,55 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				else
 					keepGoing = false;
 			}
-			
-//			System.out.println(currentSolution.showWorkloadPercentages());
+
+			//			System.out.println(currentSolution.showWorkloadPercentages());
 			changeWorkload(currentSolution.get(leastUsedProvider), hour, wpStar + rate);
-//			System.out.println(currentSolution.showWorkloadPercentages());
-			
+			//			System.out.println(currentSolution.showWorkloadPercentages());
+
 			wpStar = currentSolution.get(leastUsedProvider).getPercentageWorkload(hour);
-			
+
 			for (Solution sol : currentSolution.getAll()) {
 				if (!sol.getProvider().equals(leastUsedProvider)) {
 					double wp = sol.getPercentageWorkload(hour);
-					
+
 					if (wp < wpMin) {
 						remainder += wpMin - wp + rate;
-						
+
 						changeWorkload(sol, hour, wpMin);
 					} else {
-	//					double wpMin = 0.0;
+						//					double wpMin = 0.0;
 						diff = wp - wpMin;
 						double dec = rate / (currentSolution.size() - 1) + remainder;
-						
+
 						if (diff < dec) {
 							remainder = dec - diff;
 							dec = diff;
 						}
-						
-	//					System.out.println(currentSolution.showWorkloadPercentages());
+
+						//					System.out.println(currentSolution.showWorkloadPercentages());
 						changeWorkload(sol, hour, wp - dec);
-	//					System.out.println(currentSolution.showWorkloadPercentages());
+						//					System.out.println(currentSolution.showWorkloadPercentages());
 					}
 				}
 			}
-			
+
 			if (remainder != 0.0) {
-//				System.out.println(currentSolution.showWorkloadPercentages());
+				//				System.out.println(currentSolution.showWorkloadPercentages());
 				changeWorkload(currentSolution.get(leastUsedProvider), hour, wpStar - remainder);
-//				System.out.println(currentSolution.showWorkloadPercentages());
-				
+				//				System.out.println(currentSolution.showWorkloadPercentages());
+
 				if (inc == 0.1)
 					inc = 0.05;
 				else
 					keepGoing = false;
 			}
-			
+
 			evalServer.EvaluateSolution(currentSolution);
 		} while (currentSolution.isFeasible() && keepGoing);
-		
+
 		if (!currentSolution.isFeasible())
 			currentSolution = lastSolution.clone();
-		
+
 		return currentSolution;
 	}
 
@@ -1505,9 +1514,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * problem.
 	 * 
 	 * @return the integer -1 an error has happened.
+	 * @throws OptimizationException 
 	 */
-	public Integer optimizeMultiprovider() {
-		
+	public Integer optimizeMultiprovider() throws OptimizationException {
+
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
 			return -1;
@@ -1541,61 +1551,66 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		// this is one possibility, I however prefer using the execution time as
 		// a stopping criterion. Mich
 		boolean solutionChanged = true;
-		
+		if(Configuration.isPaused())
+			waitForResume();
 		if (Configuration.RELAXED_INITIAL_SOLUTION) {
 			// make feasible:
 			for (Solution s : currentSolution.getAll())
 				makeFeasible(s);
-			
+
 			// scale in:
 			InternalOptimization(currentSolution);
 
 			bestSolution = currentSolution.clone();
 			localBestSolution = currentSolution.clone();
 		}
-		
+
 		while (!isMaxNumberOfIterations()) {
 
 			optimLogger.info("Iteration: " + numberOfIterations);
 			// optimLogger.trace( currentSolution.showStatus());
-			
+
 			////////////////////
 			if (bestSolutionUpdated) {
-				
+
 				optimLogger.info("The best solution did change, so let's redistribuite the workload...");
-				
+
 				currentSolution = bestSolution.clone();
-				
+
 				System.out.println(currentSolution.showWorkloadPercentages());
 				setWorkloadPercentagesFromMILP(currentSolution);
 				System.out.println("MILP:\n" + currentSolution.showWorkloadPercentages());
-				
+				if(Configuration.isPaused())
+					waitForResume();
 				for (int hour = 0; hour < 24; ++hour) {
-//					System.out.println(currentSolution.showWorkloadPercentages());
+					//					System.out.println(currentSolution.showWorkloadPercentages());
 					maximizeWorkloadPercentagesForLeastUsedTier(currentSolution, hour);
-//					System.out.println(currentSolution.showWorkloadPercentages());
+					//					System.out.println(currentSolution.showWorkloadPercentages());
 				}
-				
+
 				System.out.println("My method:\n" + currentSolution.showWorkloadPercentages());
-				
+
 				optimLogger.info("Updating best solutions");
-				
+
 				bestSolution = currentSolution.clone();
 				localBestSolution = currentSolution.clone();
-				
+
 				// scale in:
+				if(Configuration.isPaused())
+					waitForResume();
 				InternalOptimization(currentSolution);
 				updateLocalBestSolution(currentSolution);
 				updateBestSolution(currentSolution);
-				
+
 				bestSolutionUpdated = false;
-				
+
 			}
 			////////////////////
-			
+
 
 			// 2: Internal Optimization process
-
+			if(Configuration.isPaused())
+				waitForResume();
 			InternalOptimization(currentSolution);
 
 			// 3: check whether the best solution has changed
@@ -1613,6 +1628,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// 4 Scrambling the current solution.
 			optimLogger.info("Scramble");
 			optimLogger.info("Tabu List Size: " + tabuSolutionList.size());
+			if(Configuration.isPaused())
+				waitForResume();
 			solutionChanged = scramble(currentSolution);
 			// if the local optima with respect to the type of machine has been
 			// found we need to perform some diversification (using the
@@ -1668,9 +1685,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		if (!batch)
 			SolutionWindow.show(bestSolution);
-		
+
 		return -1;
-		
+
 	}
 
 	protected void resetNoImprovementCounter() {
@@ -1775,19 +1792,19 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			IaaS newRes = resList.get(index);
 
 			// debugging
-//			scrambleLogger.debug("Sorted Resources");
-//			for (IaaS res : resList) {
-//				if (newRes.equals(res))
-//					scrambleLogger.debug("Index: " + resList.indexOf(res)
-//							+ " res: " + res.getResourceName() + " value: "
-//							+ getEfficiency(res, sol.getRegion())
-//							+ " <--- SELECTED");
-//				else
-//					scrambleLogger.debug("Index: " + resList.indexOf(res)
-//							+ " res:" + res.getResourceName() + " value: "
-//							+ getEfficiency(res, sol.getRegion()));
-//			}
-//			scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
+			//			scrambleLogger.debug("Sorted Resources");
+			//			for (IaaS res : resList) {
+			//				if (newRes.equals(res))
+			//					scrambleLogger.debug("Index: " + resList.indexOf(res)
+			//							+ " res: " + res.getResourceName() + " value: "
+			//							+ getEfficiency(res, sol.getRegion())
+			//							+ " <--- SELECTED");
+			//				else
+			//					scrambleLogger.debug("Index: " + resList.indexOf(res)
+			//							+ " res:" + res.getResourceName() + " value: "
+			//							+ getEfficiency(res, sol.getRegion()));
+			//			}
+			//			scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
 
 			// Phase4: performs the change and evaluate the solution
 			// add the new configuration in the memory
@@ -1900,7 +1917,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	public void setInitialSolution(SolutionMulti initialSolution) {
 		this.initialSolution = initialSolution;
 	}
-	
+
 	/**
 	 * Indicates if the bestSolution did change or not.
 	 */
@@ -1917,6 +1934,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 */
 	protected boolean updateBestSolution(Solution sol) {
 		if (sol.greaterThan(bestSolution)) {
+			if(bestSolution !=  null)
+				bestSolutions.add(bestSolution.clone());
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
 			timer.split();
@@ -1962,9 +1981,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	}
 
 	protected void updateBestSolution(SolutionMulti sol) {
-		for (Solution s : sol.getAll())
+		for (Solution s : sol.getAll())			
 			updateBestSolution(s);
-
 	}
 
 	protected void loadConfiguration() {
@@ -1973,9 +1991,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		MAXMEMORYSIZE = Configuration.TABU_MEMORY_SIZE;
 		SELECTION_POLICY = Configuration.SELECTION_POLICY;
 	}
-	
+
 	private Solution privateCloudSolution = null;
-	
+
 	public void setPrivateCloudSolution(Solution privateCloudSolution) {
 		this.privateCloudSolution = privateCloudSolution;
 	}
@@ -1996,12 +2014,19 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.warn("The solution has not been created yet!");
 			return;
 		}
-		
+
 		logger.info(bestSolution.showStatus());
 		bestSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+Configuration.SOLUTION_FILE_EXTENSION));
 		for(Solution sol:bestSolution.getAll())
 			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
 		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
+	}
+
+	public void inspect() {
+		if(bestSolutions != null && bestSolutions.size() >0)
+			BestSolutionExplorer.show(bestSolutions);
+		/*if(bestSolution != null)
+			SolutionWindow.show(bestSolution);*/
 	}
 
 }
