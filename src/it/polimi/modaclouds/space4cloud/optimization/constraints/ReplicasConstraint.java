@@ -15,6 +15,8 @@ public class ReplicasConstraint extends ArchitecturalConstraint {
 		super(constraint);		
 	}
 
+	
+	
 	@Override
 	public double checkConstraintDistance(IConstrainable resource) {
 		if(!(resource instanceof Tier && ((Tier)resource).getCloudService() instanceof IaaS)){

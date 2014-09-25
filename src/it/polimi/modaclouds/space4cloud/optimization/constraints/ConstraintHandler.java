@@ -108,7 +108,8 @@ public class ConstraintHandler {
 				break;
 				//add other constraints
 			case MACHINETYPE:
-				//TODO
+				constraint = new MachineTypeConstraint(cons);
+				break;
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
 			}
@@ -185,10 +186,12 @@ public class ConstraintHandler {
 
 	/**
 	 * Filters the applicable resources against the constraints defined on the original resource
+	 * @param <T>
+	 * @param <T>
 	 * @param resHasMap
 	 * @param origRes
 	 */
-	public void filterResources(List<CloudService> resList, Tier tier) {
+	public <T extends CloudService> void filterResources(List<T> resList, Tier tier) {
 
 		//remove the resource that is currently used
 		for(CloudService res:resList){
@@ -199,11 +202,11 @@ public class ConstraintHandler {
 		}
 
 		//check other resources against constraints
-		List<CloudService> result = new ArrayList<>();
+		List<T> result = new ArrayList<>();
 		result.addAll(resList);
 		for(Constraint c:constraints)
 			//if the constraint affected the original resource
-			if(c instanceof ArchitecturalConstraint)
+			if(c instanceof ArchitecturalConstraint && c.getResourceID().equals(tier.getId()))
 				for(CloudService resource:resList){
 					if(!((ArchitecturalConstraint)c).checkConstraint(resource))
 						result.remove(resource);

@@ -18,6 +18,8 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 import it.polimi.modaclouds.qos_models.schema.AggregateFunction;
 import it.polimi.modaclouds.qos_models.schema.Range;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,39 +62,41 @@ public abstract class Constraint {
 		this.priority = priority;
 	}
 
-	
+
 	/**
 	 * Checks if the constraint is fulfilled. 
 	 * @param measurement
 	 * @return
 	 */
 	protected boolean checkConstraint(IConstrainable resource){
-		//if the constraint is not defined on the given resource then it is true
-		if(!resource.getId().equals(resourceId))
-			return true;
+		//if the resource is no a cloud service 
+		//TODO check conditions...	
 		//if it has a numerical range then check if the distance is positive
-		if(hasNumericalRange())
-			return checkConstraintDistance(resource) < 0;
-		return checkConstraintSet(resource);
-		
-		
+		if(CloudService.class.isAssignableFrom(resource.getClass()) || resource.getId().equals(resourceId)){	
+			if(hasNumericalRange())
+				return checkConstraintDistance(resource) < 0;
+			return checkConstraintSet(resource);
+		}
+		return false;
+
+
 	}
-	
+
 	protected abstract double checkConstraintDistance(IConstrainable resource);
 	protected abstract boolean checkConstraintSet(IConstrainable resource);
-	
+
 	/**
 	 * Checks if the measurement is inside the inset and outside the inset 
 	 * @param measurement
 	 * @return
 	 */
 	protected boolean checkConstraintSet(String measurement) {			
-		 boolean result = true;		 
-			 if(range.getInSet()!=null)
-				 result = result && range.getInSet().getValues().contains(measurement);
-			 if(range.getOutSet()!=null)
-				 result = result && !range.getOutSet().getValues().contains(measurement);			 		 
-		 return result;
+		boolean result = true;		 
+		if(range.getInSet()!=null)
+			result = result && range.getInSet().getValues().contains(measurement);
+		if(range.getOutSet()!=null)
+			result = result && !range.getOutSet().getValues().contains(measurement);			 		 
+		return result;
 	}
 
 	/**

@@ -33,6 +33,12 @@ public class RamConstraint extends ArchitecturalConstraint {
 	public double getMin() {
 		return range.getHasMinValue();
 	}
+	
+	@Override
+	protected boolean checkConstraint(IConstrainable resource) {
+		
+		return super.checkConstraint(resource);
+	}
 
 	@Override
 	public double checkConstraintDistance(IConstrainable resource) {
