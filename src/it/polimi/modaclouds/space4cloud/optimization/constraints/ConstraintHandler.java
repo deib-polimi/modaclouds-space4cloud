@@ -18,6 +18,7 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 import it.polimi.modaclouds.qos_models.schema.Constraints;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
@@ -154,9 +155,10 @@ public class ConstraintHandler {
 	 * evaluate the feasibility the solution against the constrained loaded in the initialization of the handler. 
 	 * @param sol the solution to be evaluated
 	 * @return a list of maps, each element in the list represent one hourly solution and the map contains all the constrained and their evaluation value
+	 * @throws ConstraintEvaluationException 
 	 */
-	public  ArrayList<HashMap<Constraint, Double>> evaluateFeasibility(Solution sol){
-		ArrayList<HashMap<Constraint,Double>> result = new ArrayList<>();
+	public  List<HashMap<Constraint, Boolean>> evaluateFeasibility(Solution sol) throws ConstraintEvaluationException{
+		List<HashMap<Constraint,Boolean>> result = new ArrayList<HashMap<Constraint,Boolean>>();
 		for(Instance i:sol.getApplications())
 			result.add(evaluateApplication(i));
 		return result;
@@ -166,16 +168,17 @@ public class ConstraintHandler {
 	 * evaluates the feasibility of an application against the constrained loaded in the initialization of the handler.  
 	 * @param app the application to be evaluated
 	 * @return a map containing all the loaded constraints and their evaluation value
+	 * @throws ConstraintEvaluationException 
 	 */
-	public HashMap<Constraint,Double> evaluateApplication(Instance app){
-		HashMap<Constraint, Double> result = new HashMap<>();
+	public HashMap<Constraint,Boolean> evaluateApplication(Instance app) throws ConstraintEvaluationException{
+		HashMap<Constraint, Boolean> result = new HashMap<>();
 		for(Constraint c:constraints){
 			if(app.getConstrainableResources().containsKey(c.getResourceID())){
 				//evaluate the constraint
 				IConstrainable resource = app.getConstrainableResources().get(c.getResourceID());
-				result.put(c, c.checkConstraintDistance(resource));
+				result.put(c, c.checkConstraint(resource));
 			}else
-				logger.error("No resource found with id: "+c.getResourceID()+" while evaluating constraints.");
+				logger.warn("No resource found with id: "+c.getResourceID()+" while evaluating constraints. It will be ignored");
 		}
 
 		return result;
@@ -190,8 +193,9 @@ public class ConstraintHandler {
 	 * @param <T>
 	 * @param resHasMap
 	 * @param origRes
+	 * @throws ConstraintEvaluationException 
 	 */
-	public <T extends CloudService> void filterResources(List<T> resList, Tier tier) {
+	public <T extends CloudService> void filterResources(List<T> resList, Tier tier) throws ConstraintEvaluationException {
 
 		//remove the resource that is currently used
 		for(CloudService res:resList){

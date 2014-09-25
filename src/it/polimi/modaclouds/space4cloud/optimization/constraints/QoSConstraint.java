@@ -35,12 +35,4 @@ public abstract class QoSConstraint extends Constraint {
 		super(constraint);
 	}
 
-	public double getMax() {
-		return range.getHasMaxValue();
-	}
-
-	public double getMin() {
-		return range.getHasMinValue();
-	}
-
 }

@@ -19,6 +19,9 @@ package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -35,6 +38,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -171,7 +175,7 @@ public class EvaluationServer implements ActionListener {
 
 	}
 
-	public void EvaluateSolution(Solution sol) {
+	public void EvaluateSolution(Solution sol) throws EvaluationException {
 		long startTime = -1;		
 		requestedEvaluations++;
 		logger.debug("Starting evaluation");
@@ -231,8 +235,15 @@ public class EvaluationServer implements ActionListener {
 		
 		
 		// evaluate feasibility
-		if (constraintHandler != null)
-			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+		if (constraintHandler != null){
+			List<HashMap<Constraint, Boolean>> evaluations;
+			try {
+				evaluations = constraintHandler.evaluateFeasibility(sol);
+			} catch (ConstraintEvaluationException e) {
+				throw new EvaluationException("An error occured in the constraint evaluation",e);
+			}
+			sol.setEvaluation(evaluations);
+		}
 		sol.updateEvaluation();
 
 		
@@ -392,7 +403,7 @@ public class EvaluationServer implements ActionListener {
 			executor.shutdownNow();
 	}
 
-	public void EvaluateSolution(SolutionMulti sol) {
+	public void EvaluateSolution(SolutionMulti sol) throws EvaluationException {
 		for (Solution s : sol.getAll())
 			EvaluateSolution(s);
 		sol.updateEvaluation();

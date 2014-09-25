@@ -16,6 +16,8 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
@@ -63,7 +65,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 		optimLogger.info("Max Scale In Convergence Iterations: "+MAX_SCALE_IN_CONV_ITERATIONS);
 	};
 	@Override
-	protected void IteratedRandomScaleInLS(Solution sol) {
+	protected void IteratedRandomScaleInLS(Solution sol) throws OptimizationException {
 		for(Constraint constraint:sol.getViolatedConstraints()){
 			if(constraint instanceof RamConstraint){
 				logger.info("Wrong type of VM selected, scale in will not be executed");
@@ -94,8 +96,9 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	 * @param sol
 	 * @return true is the solution has been improved, false if no resources
 	 *         could be scaled
+	 * @throws OptimizationException 
 	 */
-	private boolean noImprovementPhase(Solution sol) {
+	private boolean noImprovementPhase(Solution sol) throws OptimizationException {
 
 		// initialize the factors (one for each hour) to the default value
 		//we should use a factor for each hour and for each tier but if the number 
@@ -146,7 +149,11 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			}
 
 			// evaluate the solution
-			evalServer.EvaluateSolution(sol);	
+			try {
+				evalServer.EvaluateSolution(sol);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("","scaleIn",e);
+			}	
 
 			// if an application has become feasible, revert it and try again
 			// with a smaller factor
@@ -161,14 +168,22 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			
 			
 			//if there has been no improvement then signal it 			
-			evalServer.EvaluateSolution(sol);
+			try {
+				evalServer.EvaluateSolution(sol);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("","scaleIn",e);
+			}
 			boolean improvement = updateBestSolution(sol);
 			if(!improvement){
 				numIterNoImprov++;				
 			}
 
 		}
-		evalServer.EvaluateSolution(sol);	
+		try {
+			evalServer.EvaluateSolution(sol);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","scaleIn",e);
+		}	
 		return true;
 
 	}

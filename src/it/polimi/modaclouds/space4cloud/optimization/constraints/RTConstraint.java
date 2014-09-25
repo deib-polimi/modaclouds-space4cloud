@@ -15,7 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 
 public abstract class RTConstraint extends QoSConstraint {
 
@@ -29,9 +28,5 @@ public abstract class RTConstraint extends QoSConstraint {
 			range.setHasMinValue(range.getHasMinValue()/1000);
 	}
 	
-	//TODO: if the responsetime constrainable resource is a funcitonality and it has not been evaluated 
-	//(because it is not present in the result output of the evaluation tool) we should warn the user that we will not consider the constraint. 
-	// by default response time of those functionalities are lower than zero so the constraint will aslways be true. Neveretheless, a warning should be raised.
-	public abstract double checkConstraintDistance(IConstrainable resource);
 
 }

@@ -27,10 +27,16 @@ import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
+import it.polimi.modaclouds.space4cloud.exceptions.AssesmentException;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
+import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
+import it.polimi.modaclouds.space4cloud.exceptions.RobustnessException;
 import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
+import it.polimi.modaclouds.space4cloud.gui.SolutionWindow;
 import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
@@ -466,7 +472,16 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		// evaluate the solution
 		logger.info("Evaluating the solution");
-		engine.evaluate();
+		try {
+			engine.evaluate();
+		} catch (EvaluationException e) {
+			logger.error("Error in evaluating the initial solution",e);
+			String message = "An error occured during the evaluation of the initial soluton: "+e.getLocalizedMessage();
+			consoleLogger.error(message);
+			progressWindow.signalError(message);
+			cleanResources();
+			return;
+		}
 
 		// print the results
 		SolutionMulti providedSolutions = engine.getInitialSolution();
@@ -541,7 +556,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		assesmentWindow.updateImages();
 
 		// export the solution
-		providedSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME));
+		providedSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME,Configuration.SOLUTION_FILE_EXTENSION));
+		SolutionWindow.show(providedSolutions);
 	}
 
 

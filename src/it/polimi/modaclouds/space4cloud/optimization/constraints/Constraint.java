@@ -17,9 +17,8 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 import it.polimi.modaclouds.qos_models.schema.AggregateFunction;
 import it.polimi.modaclouds.qos_models.schema.Range;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,23 +66,19 @@ public abstract class Constraint {
 	 * Checks if the constraint is fulfilled. 
 	 * @param measurement
 	 * @return
+	 * @throws ConstraintEvaluationException 
 	 */
-	protected boolean checkConstraint(IConstrainable resource){
+	protected boolean checkConstraint(IConstrainable resource) throws ConstraintEvaluationException{
 		//if the resource is no a cloud service 
 		//TODO check conditions...	
 		//if it has a numerical range then check if the distance is positive
-		if(CloudService.class.isAssignableFrom(resource.getClass()) || resource.getId().equals(resourceId)){	
-			if(hasNumericalRange())
-				return checkConstraintDistance(resource) < 0;
-			return checkConstraintSet(resource);
-		}
-		return false;
-
-
+		if(hasNumericalRange())
+			return checkConstraintDistance(resource) <= 0;
+		return checkConstraintSet(resource);
 	}
 
-	protected abstract double checkConstraintDistance(IConstrainable resource);
-	protected abstract boolean checkConstraintSet(IConstrainable resource);
+	protected abstract double checkConstraintDistance(IConstrainable resource) throws ConstraintEvaluationException;
+	protected abstract boolean checkConstraintSet(IConstrainable resource) throws ConstraintEvaluationException;
 
 	/**
 	 * Checks if the measurement is inside the inset and outside the inset 
@@ -105,7 +100,7 @@ public abstract class Constraint {
 	 * @return
 	 */
 	protected double checkConstraintDistance(Object measurement) {
-		double value = -1;
+		double value = Double.NEGATIVE_INFINITY;
 		if (measurement instanceof Double)
 			value = (Double) measurement;
 		else if (measurement instanceof Integer)
@@ -114,22 +109,25 @@ public abstract class Constraint {
 			value = ((Float) measurement).doubleValue();
 		else
 			logger.error("Error in casting the value to check");
-		double upper = -1; //if upper is negative the constraint of max is fulfilled
-		double lower = -1; //if lower is negative the constraint of min is fulfilled
+		double upper = -Double.MIN_VALUE; //if upper is negative the constraint of max is fulfilled
+		double lower = -Double.MIN_VALUE; //if lower is negative the constraint of min is fulfilled
 		if (range.getHasMaxValue() != null)
 			upper = value - range.getHasMaxValue();
 		if(range.getHasMinValue() != null)
 			lower = range.getHasMinValue() - value;
 		//if the value is over the max return the difference
-		if(upper>0)
+		if(upper>=0)
 			return upper;
 
 		//if the value is under the min return the difference
-		if(lower>0)
+		if(lower>=0)
 			return lower;
 
 		//if the value is in the range return the distance to the closest bound (max since these are negative numbers)
-		return Math.max(upper, lower);
+		if(Math.abs(upper) > Math.abs(lower))
+			return upper;
+		return lower;
+		
 
 
 	}
@@ -151,5 +149,11 @@ public abstract class Constraint {
 			return true;
 		return false;
 	}
+
+
+	protected boolean sameId(IConstrainable resource) {
+		return resource.getId().equals(resourceId);		
+	}
+
 
 }

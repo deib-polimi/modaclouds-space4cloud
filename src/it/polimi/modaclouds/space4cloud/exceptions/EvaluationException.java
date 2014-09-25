@@ -1,4 +1,4 @@
-package it.polimi.modaclouds.space4cloud.mainProgram;
+package it.polimi.modaclouds.space4cloud.exceptions;
 
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
@@ -14,6 +14,14 @@ public class EvaluationException extends ExecutionException {
 	 * 
 	 */
 	private static final long serialVersionUID = 52078430229581390L;
+
+	public EvaluationException(String string) {
+		super(string);
+	}
+	
+	public EvaluationException(String string, Exception e) {
+		super(string,e);
+	}
 
 	public Solver getSolver() {
 		return solver;

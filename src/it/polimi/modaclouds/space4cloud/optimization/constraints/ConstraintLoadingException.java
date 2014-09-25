@@ -1,6 +1,6 @@
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
-import it.polimi.modaclouds.space4cloud.mainProgram.InitializationException;
+import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
 
 
 public class ConstraintLoadingException extends InitializationException {

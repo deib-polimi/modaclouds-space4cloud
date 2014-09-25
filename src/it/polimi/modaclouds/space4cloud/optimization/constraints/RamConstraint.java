@@ -15,6 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -26,34 +27,36 @@ public class RamConstraint extends ArchitecturalConstraint {
 		super(constraint);
 	}
 
-	public double getMax() {
-		return range.getHasMaxValue();
+	public int getMax() {
+		return Math.round(range.getHasMaxValue());
 	}
 
-	public double getMin() {
-		return range.getHasMinValue();
+	public int getMin() {
+		return Math.round(range.getHasMinValue());
 	}
 	
+
 	@Override
-	protected boolean checkConstraint(IConstrainable resource) {
-		
-		return super.checkConstraint(resource);
+	public double checkConstraintDistance(IConstrainable resource) throws ConstraintEvaluationException {
+		//if the resource is a Tier with a Compute then get inside and check the resource ram
+		if(resource instanceof Tier){
+			//if the constraint is not defined on the resource then it is ok
+			if(!sameId(resource))
+				return Double.NEGATIVE_INFINITY;
+			return checkConstraintDistance(((Tier) resource).getCloudService());
+			//if the tier is hosted on a compute resource							
+		}else if(resource instanceof Compute){
+			Compute computeResource = (Compute) resource;
+			return checkConstraintDistance(computeResource.getRam());			
+		}else{
+			throw new ConstraintEvaluationException("Evaluating a RAM constraint on a wrong resource with id: "+resource.getId()+
+					" RAM constraints should be evaluated against "+Tier.class+" hosted on a Compute resource or "+Compute.class+
+					"resources, the specified resource is of type: "+resource.getClass());	
+		}
 	}
 
 	@Override
-	public double checkConstraintDistance(IConstrainable resource) {
-		if(!(resource instanceof Tier && (((Tier)resource).getCloudService()) instanceof Compute)){
-			logger.error("Evaluating a RAM constraint on a wrong resource with id: "+((Tier)resource).getId()+
-					" RAM constraints should be evaluated against "+Tier.class+" with a "+Compute.class+
-					"resource, the specified resource is of type: "+resource.getClass());
-			return Double.POSITIVE_INFINITY;
-			}
-			return super.checkConstraintDistance(((Compute)((Tier)resource).getCloudService()).getRam());
-	}
-
-	@Override
-	protected boolean checkConstraintSet(IConstrainable measurement) {
-		logger.error("Evaluating a ram constraint with an inset or outset");
-		return false;
+	protected boolean checkConstraintSet(IConstrainable measurement) throws ConstraintEvaluationException {
+		throw new ConstraintEvaluationException("Evaluating a Ram constraint as a set constraint");
 	}
 }

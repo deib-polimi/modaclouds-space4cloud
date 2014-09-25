@@ -2,6 +2,7 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 import it.polimi.modaclouds.qos_models.schema.Constraint;
 import it.polimi.modaclouds.qos_models.schema.Parameter;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IPercentileRTConstrainable;
 
@@ -13,7 +14,7 @@ public class PercentileRTconstraint extends RTConstraint {
 
 	public PercentileRTconstraint(Constraint constraint) {
 		super(constraint);
-		//We have just 1 parameter for constraint
+		//We have just one parameter for constraint
 		Parameter parameter = constraint.getMetricAggregation().getParameters().get(0); 
 		if(parameter.getName().equals(PARAMETER_NAME))
 			try{
@@ -32,36 +33,46 @@ public class PercentileRTconstraint extends RTConstraint {
 
 
 	@Override
-	public double checkConstraintDistance(IConstrainable resource) {
-		if(!(resource instanceof IPercentileRTConstrainable)){
-			logger.error("Evaluating a Percentile constraint on a wrong resource with id: "+resource.getId()+
-					" PErcentile constraints should be evaluated against "+IPercentileRTConstrainable.class+
-					", the specified resource is of type: "+resource.getClass());
-			return Double.POSITIVE_INFINITY;
-		}
-		if(((IPercentileRTConstrainable)resource).getRtPercentiles() == null){
-			logger.warn("No percentile was derived by the LQN evaluation, ignoring percentile response time constraint");
-			return Double.NEGATIVE_INFINITY;
-		}
-		if(!((IPercentileRTConstrainable)resource).getRtPercentiles().containsKey(level)){
-			String errorMessage = "The evaluation of the resource did not produce the desired percentile, the percentile level specified in the constraint is: "+level+"\n";
-			errorMessage += "Available percentiles are: ";
-			errorMessage += "\n";
-			for(Integer i:((IPercentileRTConstrainable)resource).getRtPercentiles().keySet())
-				errorMessage += "\t"+i;
-			logger.warn(errorMessage);
-			return Double.POSITIVE_INFINITY;
+	public double checkConstraintDistance(IConstrainable resource) throws ConstraintEvaluationException {
+		//if the resource type is correct
+		if(resource instanceof IPercentileRTConstrainable){
+			//if the constraint is not defined on the resource then it is ok
+			if(!sameId(resource))
+				return Double.NEGATIVE_INFINITY;
+			IPercentileRTConstrainable constResource = (IPercentileRTConstrainable) resource;
+			//if constraints have been evaluated
+			if(constResource.getRtPercentiles() != null){
+				//if the desired percentile has been produced
+				if(constResource.getRtPercentiles().containsKey(level)){
+					double percentileValue = ((IPercentileRTConstrainable)resource).getRtPercentiles().get(level);
+					return checkConstraintDistance(percentileValue);
+				}else{
+					String errorMessage = "The evaluation of the resource did not produce the desired percentile, the percentile level specified in the constraint is: "+level+"\n";
+					errorMessage += "Available percentiles are: ";
+					errorMessage += "\n";
+					for(Integer i:((IPercentileRTConstrainable)resource).getRtPercentiles().keySet())
+						errorMessage += "\t"+i;
+					throw new ConstraintEvaluationException(errorMessage);
+				}				
+			}else{				
+				logger.warn("No percentile was derived by the LQN evaluation, ignoring percentile response time constraint");
+				return Double.NEGATIVE_INFINITY;
+			}
+		}else{
+			throw new ConstraintEvaluationException("Evaluating a percentile ResponseTime constraint on the wrong type of resouce"+resource);
 		}
 
-		double percentileValue = ((IPercentileRTConstrainable)resource).getRtPercentiles().get(level);
-		return super.checkConstraintDistance(percentileValue);
 	}
 
 
 	@Override
-	protected boolean checkConstraintSet(IConstrainable resource) {
-		logger.error("Error evaluating a Percentile Response time constraint on an in/out set range");
-		return false;
+	protected boolean checkConstraintSet(IConstrainable resource) throws ConstraintEvaluationException {
+		throw new ConstraintEvaluationException("Evaluating a Percentile response time constraint as a set constraint");
+	}
+
+
+	public double getMax() {
+		return range.getHasMaxValue();
 	}
 
 }

@@ -23,11 +23,13 @@ import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
+import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
 import it.polimi.modaclouds.space4cloud.gui.SolutionWindow;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.mainProgram.InitializationException;
-import it.polimi.modaclouds.space4cloud.mainProgram.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
@@ -128,7 +130,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected SolutionMulti currentSolution = null;
 
 	protected SolutionMulti localBestSolution = null;
-	
+
 	private List<SolutionMulti> bestSolutions = new ArrayList<SolutionMulti>();
 
 	protected ConstraintHandler constraintHandler;
@@ -332,15 +334,17 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			optimizeMultiprovider();
 		else
 			optimize();
-		
+
 		BestSolutionExplorer.show(bestSolutions);
 		return null;
 	}
 
-	public void evaluate() {
+	public void evaluate() throws EvaluationException  {
 
 		timer.start();
+
 		evalServer.EvaluateSolution(initialSolution);
+
 		logger.trace(initialSolution.showStatus());
 	}
 
@@ -524,8 +528,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * 
 	 * @param sol
 	 *            is the current solution
+	 * @throws OptimizationException 
 	 */
-	protected void InternalOptimization(Solution sol) {
+	protected void InternalOptimization(Solution sol) throws OptimizationException {
 
 		/*
 		 * 
@@ -573,7 +578,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	}
 
-	protected void InternalOptimization(SolutionMulti sol) {
+	protected void InternalOptimization(SolutionMulti sol) throws OptimizationException {
 		for (Solution s : sol.getAll())
 			InternalOptimization(s);
 	}
@@ -594,7 +599,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return true;
 	}
 
-	protected void IteratedRandomScaleInLS(Solution sol) {
+	protected void IteratedRandomScaleInLS(Solution sol) throws OptimizationException {
 		for(Constraint constraint:sol.getViolatedConstraints()){
 			if(constraint instanceof RamConstraint){
 				logger.info("Wron type of VM selected, make feasible will not be executed");
@@ -646,7 +651,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 
 
-				evalServer.EvaluateSolution(sol);
+				try {
+					evalServer.EvaluateSolution(sol);
+				} catch (EvaluationException e) {
+					throw new OptimizationException("","scaleIn",e);
+				}
 				updateBestSolution(sol);
 
 				if (!sol.isFeasible()) {
@@ -1099,8 +1108,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * Make the solution feseable by performing scale out operations
 	 * 
 	 * @param sol
+	 * @throws OptimizationException 
 	 */
-	protected void makeFeasible(Solution sol) {
+	protected void makeFeasible(Solution sol) throws OptimizationException {
 		final double MAX_FACTOR = 5;
 		final double MIN_FACTOR = 1.2;
 		numberOfFeasibilityIterations = 0;
@@ -1148,7 +1158,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			}
 			// it shouldn't be necessary to set the solution to unEvaluated.
-			evalServer.EvaluateSolution(sol);
+			try {
+				evalServer.EvaluateSolution(sol);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("","makeFeasible",e);
+			}
 			numberOfFeasibilityIterations += 1;
 		}
 		// optimLogger.trace(sol.showStatus());
@@ -1209,7 +1223,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			return -1;
 		optimLogger.trace("starting the optimization");
 		timer.start();
-		evalServer.EvaluateSolution(initialSolution);// evaluate the current
+		try {
+			evalServer.EvaluateSolution(initialSolution);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","initialEvaluation",e);
+		}// evaluate the current
 		// solution
 		// initialSolution.showStatus();
 		// Debugging constraintHandler
@@ -1335,8 +1353,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @param solMulti
 	 *            the corrent solution
 	 * @return the changed solution
+	 * @throws OptimizationException 
 	 */
-	private SolutionMulti longTermMemoryRestart(SolutionMulti solMulti) {
+	private SolutionMulti longTermMemoryRestart(SolutionMulti solMulti) throws OptimizationException {
 		for (Solution s : solMulti.getAll()) {
 			Solution sol = longTermMemoryRestart(s);
 			solMulti.add(sol);
@@ -1351,8 +1370,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @param solver
 	 *            the current solution
 	 * @return the changed solution
+	 * @throws OptimizationException 
 	 */
-	private Solution longTermMemoryRestart(Solution sol) {
+	private Solution longTermMemoryRestart(Solution sol) throws OptimizationException {
 
 		if (longTermFrequencyMemory == null)
 			longTermFrequencyMemory = evalServer.getLongTermFrequencyMemory();
@@ -1382,7 +1402,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			}
 			moveVM.changeMachine(t.getId(), (Compute) newRes);
 		}
-		evalServer.EvaluateSolution(sol);
+		try {
+			evalServer.EvaluateSolution(sol);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","longTermMemoryRestart",e);
+		}
 		return sol;
 
 	}
@@ -1415,11 +1439,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return currentSolution;
 	}
 
-	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour) {
+	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour) throws OptimizationException {
 		return maximizeWorkloadPercentagesForLeastUsedTier(currentSolution, hour, 0.2);
 	}
 
-	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour, double wpMin) {
+	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour, double wpMin) throws OptimizationException {
 		Tier leastUsedTier = null;
 		String leastUsedProvider = null;
 
@@ -1500,7 +1524,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					keepGoing = false;
 			}
 
-			evalServer.EvaluateSolution(currentSolution);
+			try {
+				evalServer.EvaluateSolution(currentSolution);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("","workloadDistribution",e);
+			}
 		} while (currentSolution.isFeasible() && keepGoing);
 
 		if (!currentSolution.isFeasible())
@@ -1524,7 +1552,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		optimLogger.trace("starting the optimization");
 		timer.start();
 		timer.split();
-		evalServer.EvaluateSolution(initialSolution);// evaluate the current
+		try {
+			evalServer.EvaluateSolution(initialSolution);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","initialEvaluation(multiprovider)",e);
+		}// evaluate the current
 		// solution
 		// initialSolution.showStatus();
 		// Debugging constraintHandler
@@ -1707,8 +1739,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 *            current solution
 	 * @return returns true if the scramble has changed the solution, false if
 	 *         the maximum number of scramble iterations has been reached
+	 * @throws OptimizationException 
+	 * @throws ConstraintEvaluationException 
 	 */
-	protected boolean scramble(Solution sol) {
+	protected boolean scramble(Solution sol) throws OptimizationException {
 		/**
 		 * 
 		 * 1) Choose the candidate tier for the VM change (possible strategies:
@@ -1742,7 +1776,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			List<IaaS> resList = dataHandler.getSameServiceResource(origRes,
 					sol.getRegion());
 			// filter resources according to architectural constraints
-			constraintHandler.filterResources(resList, selectedTier);
+			try {
+				constraintHandler.filterResources(resList, selectedTier);
+			} catch (ConstraintEvaluationException e) {
+				throw new OptimizationException("Error filtering resources for scramble",e);
+			}
 			// if no resource can substitute the current one increase the number
 			// of iterations without a change and try again
 			if (resList.size() == 0) {
@@ -1809,7 +1847,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// Phase4: performs the change and evaluate the solution
 			// add the new configuration in the memory
 			moveVM.changeMachine(selectedTier.getId(), (Compute) newRes);
-			evalServer.EvaluateSolution(sol);
+			try {
+				evalServer.EvaluateSolution(sol);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("","scramble",e);
+			}
 			tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
 			scrambleLogger.debug("Memory size " + tabuSolutionList.size());
 			done = true;
@@ -1881,7 +1923,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	}
 
-	protected boolean scramble(SolutionMulti sol) {
+	protected boolean scramble(SolutionMulti sol) throws OptimizationException {
 		boolean change = false;
 		for (Solution s : sol.getAll())
 			change = change || scramble(s);

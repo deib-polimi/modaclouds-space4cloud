@@ -1,6 +1,7 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
@@ -269,7 +270,7 @@ public class PrivateCloud {
 
 	private final static int MAX_STEPUP_ITERATIONS = 10;
 
-	private void fixWorkload() {
+	private void fixWorkload() throws EvaluationException {
 		double stepDown = 0.1, stepUp = 0.01;
 		boolean goOn = true;
 

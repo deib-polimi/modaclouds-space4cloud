@@ -1,4 +1,4 @@
-package it.polimi.modaclouds.space4cloud.optimization.evaluation;
+package it.polimi.modaclouds.space4cloud.exceptions;
 
 public class AnalysisFailureException extends Exception {
 

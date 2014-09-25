@@ -1,6 +1,6 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.space4cloud.mainProgram.InitializationException;
+import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
 
 public class ResourceEnvironmentLoadingException extends InitializationException {
 

@@ -94,7 +94,7 @@ public class Solution implements Cloneable, Serializable {
 	private String region;
 
 	/** The evaluation. */
-	private ArrayList<HashMap<Constraint, Double>> evaluation;
+	private List<HashMap<Constraint, Boolean>> evaluation;
 
 	private double[] percentageWorkload = new double[24];
 
@@ -229,12 +229,12 @@ public class Solution implements Cloneable, Serializable {
 		for (Instance instance : this.getHourApplication())
 			cloneSolution.addApplication(instance.clone());
 
-		ArrayList<HashMap<Constraint, Double>> clonedEval = new ArrayList<HashMap<Constraint, Double>>();
+		List<HashMap<Constraint, Boolean>> clonedEval = new ArrayList<HashMap<Constraint, Boolean>>();
 		// fill the evaluation cloning the maps
-		for (Map<Constraint, Double> m : evaluation) {
-			HashMap<Constraint, Double> map = new HashMap<Constraint, Double>();
+		for (Map<Constraint, Boolean> m : evaluation) {
+			HashMap<Constraint, Boolean> map = new HashMap<Constraint, Boolean>();
 			for (Constraint c : m.keySet())
-				map.put(c, new Double(m.get(c)));
+				map.put(c, new Boolean(m.get(c)));
 			clonedEval.add(map);
 		}
 		cloneSolution.setEvaluation(clonedEval);
@@ -438,7 +438,7 @@ public class Solution implements Cloneable, Serializable {
 	 * 
 	 * @return the evaluation
 	 */
-	public ArrayList<HashMap<Constraint, Double>> getEvaluation() {
+	public List<HashMap<Constraint, Boolean>> getEvaluation() {
 		return evaluation;
 	}
 
@@ -630,8 +630,7 @@ public class Solution implements Cloneable, Serializable {
 	 * @param evaluateSolution
 	 *            the evaluate solution
 	 */
-	public void setEvaluation(
-			ArrayList<HashMap<Constraint, Double>> evaluateSolution) {
+	public void setEvaluation(List<HashMap<Constraint, Boolean>> evaluateSolution) {
 		this.evaluation = evaluateSolution;
 		setFeasible(true);
 
@@ -643,11 +642,11 @@ public class Solution implements Cloneable, Serializable {
 
 		int i = 0;
 		//suppose that evaluations and applications are in the same order!
-		for (Map<Constraint, Double> m : evaluation) {
+		for (Map<Constraint, Boolean> feasibilities : evaluation) {
 			Instance app = getApplication(i);
 
-			for (Constraint c : m.keySet())
-				if (m.get(c) > 0) {
+			for (Constraint c : feasibilities.keySet())
+				if (!feasibilities.get(c)) {
 					app.incrementViolatedConstraints(c);
 					app.setFeasible(false);
 					setFeasible(false);
