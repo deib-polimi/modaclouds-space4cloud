@@ -22,6 +22,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.Cost;
 import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
+import it.polimi.modaclouds.resourcemodel.cloud.Region;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Memory;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
@@ -260,13 +261,13 @@ public class DataHandler {
 	}
 
 	/**
-	 * returns a list of IaaS services with the provider and sarvice name equals
-	 * to those of provided CloudService
+	 * returns a list of IaaS services with the provider and service name equals
+	 * to those of provided CloudService that are offered in the specified region.
 	 * 
 	 * @param service
 	 *            - the original cloud service
 	 * @param region
-	 *            - the region
+	 *            - the region. If no region is specified all IaaS services with the same service name are retrieved
 	 * @return a list of IaaS services
 	 */
 	public List<IaaS> getSameServiceResource(CloudService service, String region) {
@@ -275,15 +276,17 @@ public class DataHandler {
 				.get(service.getProvider()) // provider
 				.getIaaSServicesHashMap().get(service.getServiceName()) // service
 				.getComposedOf()) {
-
 			IaaS iaas = getIaaSfromCloudResource(service, cr);
-			for (Cost cost : cr.getHasCost()) {
-				// if the iaas has not been already inserted AND (the region has
-				// not been specified OR it has the same region)
-				if (!resources.contains(iaas)
-						&& (region == null || cost.getRegion() == null || cost
-						.getRegion().equals(region))) {
-					resources.add(iaas);
+			//check that the resource exist in the same region
+			if(region == null)
+				resources.add(iaas);
+			else{
+				for (Region crRegion:cr.getInLocation()){
+					if(crRegion.getName().equals(region)){
+						resources.add(iaas);
+						break;
+					}
+
 				}
 			}
 		}
@@ -329,5 +332,13 @@ public class DataHandler {
 		}
 		return filteredServices;
 	}
-	
+	public double getAvailability(String provider, String region) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	public double getAvailability(String provider) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

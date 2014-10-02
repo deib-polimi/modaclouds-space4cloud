@@ -7,6 +7,7 @@ import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -45,6 +46,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	private static final long serialVersionUID = -9050926347950168327L;
 	private static final Logger logger = LoggerFactory.getLogger(SolutionMulti.class);
+	private double availability;
+
+
 	private int generationIteration = 0;	
 	private long generationTime =0;
 
@@ -687,6 +691,25 @@ public boolean setFrom(File initialSolution, File initialMce) {
 
 	public void setGenerationTime(long generationTime) {
 		this.generationTime = generationTime;
+	}
+	
+	public double getAvailability() {
+		return availability;
+	}
+
+	/**
+	 * Updates the availability of the solution by using the parallel formula over all the single cloud solutions
+	 * @throws DatabaseConnectionFailureExteption 
+	 */
+	public void updateAvailability() throws DatabaseConnectionFailureExteption {		
+		double unavailability =1;
+		for(Solution sol:solutions.values()){
+			sol.updateAvailability();
+			unavailability *= (1-sol.getAvailability());
+		}
+		if(privateCloudSolution != null)
+			unavailability *= privateCloudSolution.getAvailability();		
+		availability = 1-unavailability;
 	}
 
 }

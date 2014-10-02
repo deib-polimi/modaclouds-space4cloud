@@ -26,6 +26,8 @@ import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
 import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
@@ -78,6 +80,8 @@ public class Solution implements Cloneable, Serializable {
 	private int generationIteration = 0;
 	
 	private long generationTime =0;
+	
+	private double availability;
 
 	/**
 	 * if the solution has been evaluated or not.
@@ -817,6 +821,23 @@ public class Solution implements Cloneable, Serializable {
 			logger.error("Error exporting the solution",e);
 		}
 		
+	}
+
+	public double getAvailability() {
+		return availability;
+	}
+
+	/**
+	 * updates the availability of the solution by looking at the availability of the provider/region in which the application is deployed
+	 * @throws DatabaseConnectionFailureExteption 
+	 * 
+	 */
+	public void updateAvailability() throws DatabaseConnectionFailureExteption {
+		
+		if(region != null)
+			availability = DataHandlerFactory.getHandler().getAvailability(getProvider(),region);
+		else
+			availability = DataHandlerFactory.getHandler().getAvailability(getProvider());
 	}
 
 

@@ -25,6 +25,9 @@ public abstract class IaaS extends CloudService {
 	/** The number of replicas of the cloud resource. */
 	int replicas;
 
+
+
+
 	public IaaS(String provider, String serviceType,
 			String serviceName, String resourceName) {
 		super(provider, serviceType, serviceName, resourceName);
@@ -50,4 +53,5 @@ public abstract class IaaS extends CloudService {
 	public String showStatus(String prefix) {
 		return super.showStatus(prefix) + "\t Replicas: " + replicas;
 	}
+
 }

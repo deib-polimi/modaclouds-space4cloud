@@ -914,7 +914,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					String resourceSize = resourceEnvParser.getInstanceSize()
 							.get(c.getId() + (defaultProvider ? "" : provider));
 					String serviceName = resourceEnvParser.getServiceName()
-							.get(c.getId() + (defaultProvider ? "" : provider));
+							.get(c.getId() + (defaultProvider ? "" : provider));					
 					int replicas = resourceEnvParser.getInstanceReplicas().get(
 							c.getId() + (defaultProvider ? "" : provider))[i];
 

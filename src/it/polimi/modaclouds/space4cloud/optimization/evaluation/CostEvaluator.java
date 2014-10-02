@@ -80,12 +80,12 @@ public class CostEvaluator {
 
 				lc.clear();
 				// filter by region
-				for (Cost c : onDemandLc)
-					if (c.getRegion() == null || c.getRegion() == ""
-					|| application.getRegion() == null
-					|| c.getRegion().equals(application.getRegion()))
+				for (Cost c : onDemandLc){
+					if (c.getAppliesTo() == null || c.getAppliesTo().getName().isEmpty()
+							|| application.getRegion() == null || application.getRegion().isEmpty()
+							|| c.getAppliesTo().getName().equals(application.getRegion()))
 						lc.add(c);
-
+				}
 				CostProfile cp = cloudResource.getHasCostProfile();
 				cost += deriveCosts(lc, cp, iaasResource.getReplicas(), hour);
 			}
@@ -115,11 +115,12 @@ public class CostEvaluator {
 
 		lc.clear();
 		// filter by region
-		for (Cost c : onDemandLc)
-			if (c.getRegion() == null || c.getRegion() == ""
-			|| region == null
-			|| c.getRegion().equals(region))
+		for (Cost c : onDemandLc){
+			if (c.getAppliesTo() == null || c.getAppliesTo().getName().isEmpty()
+					||region == null || region.isEmpty()
+					|| c.getAppliesTo().getName().equals(region))
 				lc.add(c);
+		}
 
 		CostProfile cp = cloudResource.getHasCostProfile();
 		for(int i=0;i<24;i++)

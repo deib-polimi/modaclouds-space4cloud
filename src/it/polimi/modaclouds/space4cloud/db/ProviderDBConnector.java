@@ -43,6 +43,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.Middleware;
 import it.polimi.modaclouds.resourcemodel.cloud.NoSQL_DB;
 import it.polimi.modaclouds.resourcemodel.cloud.OSType;
 import it.polimi.modaclouds.resourcemodel.cloud.PaaS_Service;
+import it.polimi.modaclouds.resourcemodel.cloud.Region;
 import it.polimi.modaclouds.resourcemodel.cloud.RelationalDB;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Memory;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
@@ -88,7 +89,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	/** The paas dictionary**/
 	private Map<String, PaaS_Service> paasMap;
 	
-//	private static final Logger logger = LoggerHelper.getLogger(ProviderDBConnector.class);
+
 	private static final Logger logger = LoggerFactory.getLogger(ProviderDBConnector.class);
 
 
@@ -491,8 +492,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 				if (rs.getObject(8) != null)
 					cost.setUpperBound(rs.getInt(8));
 				else
-					cost.setUpperBound(-1);				
-				cost.setRegion(rs.getString(9));					
+					cost.setUpperBound(-1);
+				cost.setAppliesTo(getRegionByID(rs.getInt(9)));					
 				list.add(cost);				
 			}
 			rs.close();
@@ -502,6 +503,32 @@ public class ProviderDBConnector implements GenericDBConnector {
 			return null;
 		}
 	}
+
+	/**
+	 * Retrieves the region identified by the given id
+	 * @param id, the if of the region
+	 * @return the region
+	 */
+	private Region getRegionByID(int id) {
+		try {
+			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
+					"select * from regions where id=" + id);
+			CloudFactory cf = emf.getCloudFactory();
+			Region r = null;
+			while (rs.next()) {
+				r = cf.createRegion();
+				r.setId(rs.getInt(1));
+				r.setName(rs.getString(2));
+				r.setAvailability(rs.getDouble(3));			
+			}
+			rs.close();
+			return r;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 
 	/**
 	 * Retrieves from the database the list of Virtual Hardware Resources
@@ -681,7 +708,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	public List<CloudResource> getCloudResources(IaaS_Service iaas) {
 		try {
 
-			/*TODO: Non capisco questo codice, perchè accedere di nuovo al db? abbiamo già caricato le 
+			/*TODO: Non capisco questo codice, perchï¿½ accedere di nuovo al db? abbiamo giï¿½ caricato le 
 			 * risorse cloud quando abbiamo caricato i servizi anche se effettivamente non ne abbiamo definito il tipo*/
 			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from iaas_service_composedof I, cloudresource CR where I.IaaS_id="
