@@ -33,6 +33,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -339,6 +340,27 @@ public class DataHandler {
 	public double getAvailability(String provider) {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	public Set<String> getRegionsFromService(String provider, String serviceName, String resourceSize) {
+		Set<String> regions = new HashSet<String>();
+		for (CloudResource cr : cloudProviders.getProviderDBConnectors()
+				.get(provider) // provider
+				.getIaaSServicesHashMap().get(serviceName) // service
+				.getComposedOf()) {
+
+			//find the service with the correct name
+			if(cr.getName().equals(resourceSize)){
+				//if it has any region add it to the list
+				for(Region r:cr.getInLocation()){
+					regions.add(r.getName());
+				}
+			}
+		}
+		
+		
+		
+		
+		return regions;
 	}
 
 }

@@ -823,9 +823,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				throw new InitializationException("No default provider could be found");
 			}
 
-			// set the region
-			initialSolution.setRegion(resourceEnvParser.getRegion(provider));
-
 			for (int i = 0; i < 24; i++) {
 				logger.info("Initializing hour " + i);
 				Instance application = new Instance();
@@ -914,7 +911,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					String resourceSize = resourceEnvParser.getInstanceSize()
 							.get(c.getId() + (defaultProvider ? "" : provider));
 					String serviceName = resourceEnvParser.getServiceName()
-							.get(c.getId() + (defaultProvider ? "" : provider));					
+							.get(c.getId() + (defaultProvider ? "" : provider));	
+					// set the region
+					String region = resourceEnvParser.getRegion(provider);						
 					int replicas = resourceEnvParser.getInstanceReplicas().get(
 							c.getId() + (defaultProvider ? "" : provider))[i];
 
@@ -930,11 +929,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 						logger.info("provider: " + provider + " default: "
 								+ defaultProvider);
 					logger.trace("serviceType: " + serviceType);
-					for (String st : dataHandler.getServices(provider, // cloudProvider,
-							serviceType))
+					for (String st : dataHandler.getServices(provider, serviceType))
 						logger.trace("\tService Name: " + st);
-					serviceName = dataHandler.getServices(provider, // cloudProvider,
-							serviceType).get(0);
+					serviceName = dataHandler.getServices(provider, serviceType).get(0);
 					// if the resource size has not been decided pick one
 					if (resourceSize == null){
 						logger.trace("Defaulting on resource Size");
@@ -943,6 +940,17 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 								 * cloudProvider,
 								 */serviceName)
 								 .iterator().next();
+					}
+					//if the region has not bees specified pick one
+					if(region == null){
+						Set<String> regions = dataHandler.getRegionsFromService(provider,serviceName,resourceSize);
+						if(regions.isEmpty())
+							throw new InitializationException("Could not locate a region for the specified service. Provider: "+provider+"Service Type: "+serviceType+" Service Name: "+serviceName+" resource size: "+resourceSize);
+						region = regions.iterator().next();
+					}			
+					//set the region just for the first container.
+					if(initialSolution.getRegion()==null){
+						initialSolution.setRegion(region);
 					}
 					logger.trace("default size"+resourceSize);
 
@@ -970,7 +978,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					/* creation of a Compute type resource */
 					service = new Compute(provider, /* cloudProvider, */
 							serviceType, serviceName, resourceSize, replicas,
-							numberOfCores, speed, ram);
+							numberOfCores, speed, ram);					
 
 					t.setService(service);
 

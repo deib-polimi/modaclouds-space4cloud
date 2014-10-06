@@ -429,6 +429,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 						cost.setUpperBound(rs1.getInt(10));
 					else
 						cost.setUpperBound(-1);
+					//TODO: Add regions?? (check database structure as well)
 					cp.getComposedOf().add(cost);
 				}
 				rs1.close();
@@ -713,6 +714,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from iaas_service_composedof I, cloudresource CR where I.IaaS_id="
 							+ iaas.getId() + " and I.CloudResource_id=CR.id order by name");
+			
+			
 
 			CloudFactory cf = emf.getCloudFactory();
 			List<CloudResource> list = new ArrayList<CloudResource>();
@@ -761,6 +764,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 				if (rs.getObject(8) != null)
 					i.setHasCostProfile(getCostProfile(i, rs.getInt(8)));
 
+				addLocations(i);				
 				defineCosts(i);
 				list.add(i);
 			}
@@ -771,6 +775,30 @@ public class ProviderDBConnector implements GenericDBConnector {
 			return new ArrayList<CloudResource>();
 		}
 	}
+
+	/**
+	 * Add to the given CloudResource the regions in which it is hosted
+	 * @param i
+	 */
+	private void addLocations(CloudResource i) {
+		try {
+			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
+					"select * from cloudresource CR, cloudresource_regions CR_R, regions R where CR.id="+i.getId()+" and CR_R.cloudresource_id=CR.id and CR_R.region_id=R.id order by R.name");
+			CloudFactory cf = emf.getCloudFactory();
+			while(rs.next()){
+				Region r=cf.createRegion();
+				r.setId(rs.getInt(8));
+				r.setName(rs.getString(10));
+				r.setAvailability(rs.getDouble(11));
+				i.getInLocation().add(r);
+			}		
+			rs.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 
 	/* (non-Javadoc)
 	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getComputeCloudResources(cloud.IaaS_Service)
