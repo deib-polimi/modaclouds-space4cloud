@@ -40,7 +40,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class LQNSResultParser implements LqnResultParser, Serializable {
+public class LQNSResultParser extends LqnResultParser implements Serializable {
 
 	/**
 	 * 
@@ -116,7 +116,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 		try {
 			dBuilder = dbFactory.newDocumentBuilder();
 
-			// TODO: sometimes the temporary file has a name ending with a tilde
+			
 			Path normalPath = filePath;
 			Path tempPath = Paths.get(filePath+"~");
 			//wait for the generation of the result file
@@ -149,10 +149,12 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 	}
 
-	private void parse() {
+	private void parse(){
 		// parse Processors
 		if(resultDOM==null){
-			logger.debug("");
+			logger.error("No DOM was produced by the LQNS result parser");
+			return;
+			//TODO: throw invalid evaluation exception
 		}
 		NodeList processors = resultDOM.getElementsByTagName("processor");
 		utilizations.clear();
@@ -161,7 +163,7 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 
 			// search for the result element
 			Element processor = (Element) processors.item(i);
-			String id = processor.getAttribute("name");
+			String processorName = processor.getAttribute("name");
 			int cores = 1;
 			if (!processor.getAttribute("multiplicity").isEmpty())
 				cores = Integer
@@ -177,31 +179,30 @@ public class LQNSResultParser implements LqnResultParser, Serializable {
 			// add the processor utilization to the hashmap	
 			if(utilization > 1){
 				logger.debug("Utilization greater than one!");
-				logger.debug("file: "+filePath+" utilization: "+utilization+" id: "+id);
+				logger.debug("file: "+filePath+" utilization: "+utilization+" id: "+processorName);
 				utilization=1;
 			}
-			utilizations.put(id, utilization);
+			utilizations.put(processorName, utilization);
 
-			String seffID=id.split("_")[2];
-			NodeList resultActivities = null;
-			resultActivities = processor.getElementsByTagName("result-activity");
+			NodeList resultActivities = processor.getElementsByTagName("result-activity");
 			if(resultActivities.getLength() == 0)
 				resultActivities = processor.getElementsByTagName("resultActivity");
 
 			double serviceTime = 0;
 			for(int j=0; j<resultActivities.getLength(); j++){
-
 				Node serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("service-time");
 				if(serviceTimeNode == null)
 					serviceTimeNode = resultActivities.item(j).getAttributes().getNamedItem("serviceTime");	
 				if(serviceTimeNode!=null)
 					serviceTime += Double.parseDouble(serviceTimeNode.getTextContent());
+				
 			}
-			responseTimes.put(seffID, serviceTime);
+			if(idSubstitutionMap.containsKey(processorName))
+				responseTimes.put(idSubstitutionMap.get(processorName), serviceTime);
 
 		}
 
-		// TODO: parse other stuff
+
 		dbFactory = null;
 		dBuilder = null;
 		resultDOM = null;

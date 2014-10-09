@@ -11,5 +11,9 @@ public class LineServerHandlerFactory {
 		}
 		return handler;
 	}
+	
+	public static void clearHandler(){
+		handler = null;
+	}
 
 }

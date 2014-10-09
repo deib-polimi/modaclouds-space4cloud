@@ -15,8 +15,10 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 public class RamConstraint extends ArchitecturalConstraint {
 
@@ -25,19 +27,36 @@ public class RamConstraint extends ArchitecturalConstraint {
 		super(constraint);
 	}
 
+	public int getMax() {
+		return Math.round(range.getHasMaxValue());
+	}
+
+	public int getMin() {
+		return Math.round(range.getHasMinValue());
+	}
+	
+
 	@Override
-	public boolean checkConstraint(CloudService resource) {
-		if (resource instanceof Compute
-				&& checkConstraintDistance(((Compute) resource).getRam()) < 0)
-			return true;
-		return false;
+	public double checkConstraintDistance(IConstrainable resource) throws ConstraintEvaluationException {
+		//if the resource is a Tier with a Compute then get inside and check the resource ram
+		if(resource instanceof Tier){
+			//if the constraint is not defined on the resource then it is ok
+			if(!sameId(resource))
+				return Double.NEGATIVE_INFINITY;
+			return checkConstraintDistance(((Tier) resource).getCloudService());
+			//if the tier is hosted on a compute resource							
+		}else if(resource instanceof Compute){
+			Compute computeResource = (Compute) resource;
+			return checkConstraintDistance(computeResource.getRam());			
+		}else{
+			throw new ConstraintEvaluationException("Evaluating a RAM constraint on a wrong resource with id: "+resource.getId()+
+					" RAM constraints should be evaluated against "+Tier.class+" hosted on a Compute resource or "+Compute.class+
+					"resources, the specified resource is of type: "+resource.getClass());	
+		}
 	}
 
-	public double getMax() {
-		return range.getHasMaxValue();
-	}
-
-	public double getMin() {
-		return range.getHasMinValue();
+	@Override
+	protected boolean checkConstraintSet(IConstrainable measurement) throws ConstraintEvaluationException {
+		throw new ConstraintEvaluationException("Evaluating a Ram constraint as a set constraint");
 	}
 }

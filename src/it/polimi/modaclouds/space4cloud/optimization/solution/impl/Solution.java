@@ -94,9 +94,7 @@ public class Solution implements Cloneable, Serializable {
 	private String region;
 
 	/** The evaluation. */
-	private ArrayList<HashMap<Constraint, Double>> evaluation;
-
-	private long evaluationTime;
+	private List<HashMap<Constraint, Boolean>> evaluation;
 
 	private double[] percentageWorkload = new double[24];
 
@@ -231,12 +229,12 @@ public class Solution implements Cloneable, Serializable {
 		for (Instance instance : this.getHourApplication())
 			cloneSolution.addApplication(instance.clone());
 
-		ArrayList<HashMap<Constraint, Double>> clonedEval = new ArrayList<HashMap<Constraint, Double>>();
+		List<HashMap<Constraint, Boolean>> clonedEval = new ArrayList<HashMap<Constraint, Boolean>>();
 		// fill the evaluation cloning the maps
-		for (Map<Constraint, Double> m : evaluation) {
-			HashMap<Constraint, Double> map = new HashMap<Constraint, Double>();
+		for (Map<Constraint, Boolean> m : evaluation) {
+			HashMap<Constraint, Boolean> map = new HashMap<Constraint, Boolean>();
 			for (Constraint c : m.keySet())
-				map.put(c, new Double(m.get(c)));
+				map.put(c, new Boolean(m.get(c)));
 			clonedEval.add(map);
 		}
 		cloneSolution.setEvaluation(clonedEval);
@@ -440,12 +438,8 @@ public class Solution implements Cloneable, Serializable {
 	 * 
 	 * @return the evaluation
 	 */
-	public ArrayList<HashMap<Constraint, Double>> getEvaluation() {
+	public List<HashMap<Constraint, Boolean>> getEvaluation() {
 		return evaluation;
-	}
-
-	public long getEvaluationTime() {
-		return evaluationTime;
 	}
 
 	/**
@@ -510,6 +504,9 @@ public class Solution implements Cloneable, Serializable {
 		return vms;
 	}
 
+	/**
+	 * @return the number of the scramble iteration in which the solution have been generated
+	 */
 	public int getGenerationIteration() {
 		return generationIteration;
 	}
@@ -518,6 +515,9 @@ public class Solution implements Cloneable, Serializable {
 		this.generationIteration = generationIteration;
 	}
 
+	/**
+	 * @return the time elapsed from the starting of the optimization and the generation of the solution
+	 */
 	public long getGenerationTime() {
 		return generationTime;
 	}
@@ -546,28 +546,15 @@ public class Solution implements Cloneable, Serializable {
 		} else if (!isFeasible() && !sol.isFeasible()) {
 
 			/*
-			 * TODO: here we have to consider as better the solution with the
-			 * minimum number of violated constraints or something like this, we
-			 * could also consider the constraints according to their importance
+			 * here we  consider as better the solution with the
+			 * minimum number of violated constraints 
 			 */
 
-			ArrayList<Constraint> notVerifiedbyThis = new ArrayList<Constraint>();
-			for (Map<Constraint, Double> m : evaluation)
-				for (Constraint c : m.keySet())
-					if (m.get(c) > 0)
-						notVerifiedbyThis.add(c);
-
-			ArrayList<Constraint> notVerifiedbySol = new ArrayList<Constraint>();
-			for (Map<Constraint, Double> m : sol.getEvaluation())
-				for (Constraint c : m.keySet())
-					if (m.get(c) > 0)
-						notVerifiedbySol.add(c);
-			if (notVerifiedbyThis.size() > notVerifiedbySol.size())
-				return false;
-			else
+			if (getNumberOfViolatedConstraints() <= sol.getNumberOfViolatedConstraints())
 				return true;
-			// TODO in case it is equal we should check constraints by priority
-			// or by distance
+			else
+				return false;
+
 		} else {
 
 			return this.isFeasible();
@@ -643,24 +630,24 @@ public class Solution implements Cloneable, Serializable {
 	 * @param evaluateSolution
 	 *            the evaluate solution
 	 */
-	public void setEvaluation(
-			ArrayList<HashMap<Constraint, Double>> evaluateSolution) {
+	public void setEvaluation(List<HashMap<Constraint, Boolean>> evaluateSolution) {
 		this.evaluation = evaluateSolution;
 		setFeasible(true);
 
 		// initialize solutions as feasible and counters to 0
 		for (Instance tmp : hourApplication) {
 			tmp.setFeasible(true);
-			tmp.resetConstraintCounter();
+			tmp.resetViolatedConstraints();
 		}
 
 		int i = 0;
-		for (Map<Constraint, Double> m : evaluation) {
+		//suppose that evaluations and applications are in the same order!
+		for (Map<Constraint, Boolean> feasibilities : evaluation) {
 			Instance app = getApplication(i);
 
-			for (Constraint c : m.keySet())
-				if (m.get(c) > 0) {
-					app.incrementViolatedConstraints();
+			for (Constraint c : feasibilities.keySet())
+				if (!feasibilities.get(c)) {
+					app.incrementViolatedConstraints(c);
 					app.setFeasible(false);
 					setFeasible(false);
 				}
@@ -668,9 +655,6 @@ public class Solution implements Cloneable, Serializable {
 		}
 	}
 
-	public void setEvaluationTime(long splitTime) {
-		evaluationTime = splitTime;
-	}
 
 	/**
 	 * Sets the feasibility.
@@ -703,6 +687,13 @@ public class Solution implements Cloneable, Serializable {
 		this.region = region;
 		for (Instance app : hourApplication)
 			app.setRegion(region);
+	}
+	public List<Constraint> getViolatedConstraints(){
+		List<Constraint> violatedConstraints = new ArrayList<>();
+		for(Instance application:hourApplication){
+			violatedConstraints.addAll(application.getViolatedConstraints());
+		}
+		return violatedConstraints;
 	}
 
 	/**

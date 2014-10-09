@@ -15,16 +15,27 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.lqn;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public interface LqnResultParser {
+public abstract class LqnResultParser {
 
-	double getResponseTime(String resourceID);
+	static Map<String,String> idSubstitutionMap = new HashMap<String,String>();
+	
+	public static Map<String, String> getIdSubstitutionMap() {
+		return idSubstitutionMap;
+	}
 
-	Map<String, Double> getResponseTimes();
+	public static void setIdSubstitutionMap(Map<String, String> idSubstitutionMap) {
+		LqnResultParser.idSubstitutionMap = idSubstitutionMap;
+	}
 
-	double getUtilization(String resourceID);
+	public abstract double getResponseTime(String resourceID);
 
-	Map<String, Double> getUtilizations();
+	public abstract Map<String, Double> getResponseTimes();
+
+	public abstract double getUtilization(String resourceID);
+
+	public abstract Map<String, Double> getUtilizations();
 
 }

@@ -15,9 +15,10 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
-public class ResponseTimeConstraint extends QoSConstraint {
 
-	public ResponseTimeConstraint(
+public abstract class RTConstraint extends QoSConstraint {
+
+	public RTConstraint(
 			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
 		//transform constraints on milliseconds to seconds
@@ -26,5 +27,6 @@ public class ResponseTimeConstraint extends QoSConstraint {
 		if(range.getHasMinValue() != null)
 			range.setHasMinValue(range.getHasMinValue()/1000);
 	}
+	
 
 }

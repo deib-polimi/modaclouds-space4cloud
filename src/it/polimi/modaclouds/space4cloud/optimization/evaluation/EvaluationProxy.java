@@ -16,6 +16,7 @@
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -52,7 +53,7 @@ public class EvaluationProxy extends EvaluationServer {
 	}
 
 	@Override
-	public void EvaluateSolution(Solution sol) {
+	public void EvaluateSolution(Solution sol) throws EvaluationException {
 		logger.debug("Entering Proxy");
 		this.ProxyIn(sol);
 		super.EvaluateSolution(sol);

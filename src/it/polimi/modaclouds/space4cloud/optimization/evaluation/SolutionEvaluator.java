@@ -15,6 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
+import it.polimi.modaclouds.space4cloud.exceptions.AnalysisFailureException;
 import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LQNSResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LqnHandler;
@@ -55,7 +56,7 @@ public class SolutionEvaluator implements Runnable {
 
 	private LineServerHandler handler;
 	
-	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SolutionEvaluator.class);
+	public static final org.slf4j.Logger logger = LoggerFactory.getLogger(SolutionEvaluator.class);
 
 	String filePath;
 	String resultfilePath;
@@ -95,8 +96,11 @@ public class SolutionEvaluator implements Runnable {
 				throw new AnalysisFailureException(resultfilePath);
 			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
 		} else {
+			String randomEnvironmentName = "";						
+			if(!Configuration.RANDOM_ENV_FILE.equals(""))
+				randomEnvironmentName="+"+Paths.get(Configuration.RANDOM_ENV_FILE).getFileName().toString().replace(".xml","");
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
-					+ "_line.xml";
+					+randomEnvironmentName+Configuration.LINE_SOLUTION_TAG+".xml";
 			resultParser = new LINEResultParser(Paths.get(resultfilePath));
 		}
 
@@ -130,6 +134,7 @@ public class SolutionEvaluator implements Runnable {
 		instance.updateLqn();
 		lqnHandler.saveToFile();
 
+		logger.trace("Evaluating Model: "+filePath);
 		// run the evaluator
 		if (Configuration.SOLVER == Solver.LQNS)
 			runWithLQNS();
@@ -144,9 +149,7 @@ public class SolutionEvaluator implements Runnable {
 			logger.error("Error in the evaluation of model: "+e.getFilePath());
 			for(ActionListener l:listeners)
 				l.actionPerformed(new ActionEvent(this, 0, "EvaluationError"));
-		}
-		for (ActionListener l : listeners)
-			l.actionPerformed(new ActionEvent(this, 0, null));
+		}		
 	}
 
 	private void runWithLINE() {
@@ -155,7 +158,10 @@ public class SolutionEvaluator implements Runnable {
 			return;
 		}		
 
-		handler.solve(filePath, null);
+		String randomEnvFile = null;
+		if(!Configuration.RANDOM_ENV_FILE.equals(""))
+			randomEnvFile = Configuration.RANDOM_ENV_FILE;
+		handler.solve(filePath,randomEnvFile);
 		// wait for the model to be solved
 		while (!handler.isSolved(filePath))
 			try {
@@ -168,12 +174,11 @@ public class SolutionEvaluator implements Runnable {
 
 	private void runWithLQNS() {
 		try {
-			String solverProgram = "lqns";
+			String solverProgram = "lqns";			
 
 			String command = solverProgram + " " + filePath + /*" -f"+*/ " -z iteration-limit=1000";
 			// String command = solverProgram+" "+filePath; //without using the
-			// fast option
-
+			// fast option			
 			ProcessBuilder pb = new ProcessBuilder(splitToCommandArray(command));
 			Process proc = pb.start();
 			readStream(proc.getInputStream(), false);
@@ -182,7 +187,7 @@ public class SolutionEvaluator implements Runnable {
 			try{
 				exitVal = proc.waitFor();
 			}catch (InterruptedException e){
-				logger.debug("Evaluation was interrupted");
+				logger.debug("Evaluation of model: "+filePath+" was interrupted");
 			}
 			proc.destroy();
 

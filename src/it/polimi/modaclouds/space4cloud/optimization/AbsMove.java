@@ -22,6 +22,9 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author Michele Ciavotta
  * 
@@ -31,6 +34,7 @@ public abstract class AbsMove implements IMove {
 	/** The current solution. */
 	protected Solution currentSolution = null;
 
+	protected static final Logger logger = LoggerFactory.getLogger(AbsMove.class);
 	/*
 	 * the generic move can change a set of properties at once as, for example,
 	 * in the case of changing the type of VM

@@ -15,11 +15,43 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
+
 public class UsageConstraint extends QoSConstraint {
 
 	public UsageConstraint(
 			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
+		//convert 0.x into x over 100
+		this.range.setHasMaxValue(this.range.getHasMaxValue()*100);
+
+	}
+
+	@Override
+	public double checkConstraintDistance(IConstrainable resource) throws ConstraintEvaluationException {
+		///if the resource is utilization constrainbale then get  the utilization
+		if(resource instanceof IUtilizationConstrainable){
+			//if the constraint is not defined on the resource then it is ok
+			if(!sameId(resource))
+				return Double.NEGATIVE_INFINITY;
+			return checkConstraintDistance(((IUtilizationConstrainable)resource).getUtilization());			
+		}else  {						
+			throw new ConstraintEvaluationException("Evaluating a Utilization constraint on a wrong resource with id: "+((IUtilizationConstrainable)resource).getId()+
+					" Utilization constraints should be evaluated against "+IUtilizationConstrainable.class+
+					", the specified resource is of type: "+resource.getClass()); 
+		}
+
+	}
+
+	@Override
+	protected boolean checkConstraintSet(IConstrainable resource) throws ConstraintEvaluationException {
+		throw new ConstraintEvaluationException("Evaluating a Usage constraint as a set constraint");
+	}
+
+	public double getMax() {
+		return range.getHasMaxValue();
 	}
 
 }

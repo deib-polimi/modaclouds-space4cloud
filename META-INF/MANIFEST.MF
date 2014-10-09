@@ -2,15 +2,15 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Space 4 Cloud
 Bundle-SymbolicName: it.polimi.modaclouds.space4cloud;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.3.qualifier
 Bundle-Activator: it.polimi.modaclouds.space4cloud.plugin.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.debug.core;bundle-version="3.8.0",
- de.uka.ipd.sdq.pcmsolver;bundle-version="3.0.0",
+ org.eclipse.debug.core;bundle-version="3.6.1",
  org.eclipse.emf.ecore;bundle-version="2.9.2",
  org.junit,
- org.eclipse.ui.console;bundle-version="3.5.200"
+ org.eclipse.ui.console;bundle-version="3.5.200",
+ de.uka.ipd.sdq.pcmsolver;bundle-version="3.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: de.uka.ipd.sdq.identifier,
@@ -37,14 +37,20 @@ Bundle-ClassPath: .,
  target/dependency/jcommon-1.0.21.jar,
  icons.jar,
  target/dependency/jsch-0.1.51.jar,
- target/dependency/qos-models-2.0.3.jar,
  target/dependency/resourcemodel-1.0.0.jar,
  target/dependency/commons-jxpath-1.3.jar,
  target/dependency/commons-lang-2.6.jar,
  log/,
- target/dependency/xml-apis-1.4.01.jar,
- target/dependency/milp-0.0.9.jar
+ target/dependency/milp-0.0.9.jar,
+ target/dependency/qos-models-2.1.2.jar,
+ target/dependency/xml-apis-1.4.01.jar
 Export-Package: icons,
+ it.polimi.modaclouds.space4cloud.EMFHelper;
+  uses:="org.eclipse.emf.ecore,
+   de.uka.ipd.sdq.pcm.allocation,
+   org.eclipse.emf.ecore.resource,
+   de.uka.ipd.sdq.pcm.core.entity",
+ it.polimi.modaclouds.space4cloud.chart;uses:="org.jfree.data.xy,org.jfree.ui,org.jfree.chart",
  it.polimi.modaclouds.space4cloud.db;
   uses:="it.polimi.modaclouds.space4cloud.optimization.solution.impl,
    it.polimi.modaclouds.space4cloud.utils,
@@ -52,19 +58,44 @@ Export-Package: icons,
    org.slf4j,
    it.polimi.modaclouds.resourcemodel.cloud,
    it.polimi.modaclouds.space4cloud.iterfaces",
+ it.polimi.modaclouds.space4cloud.exceptions,
  it.polimi.modaclouds.space4cloud.gui;
   uses:="it.polimi.modaclouds.space4cloud.chart,
-   it.polimi.modaclouds.space4cloud.optimization,
-   it.polimi.modaclouds.space4cloud.utils,
    org.jfree.data.category,
    javax.swing.event,
    javax.swing",
  it.polimi.modaclouds.space4cloud.handlers;uses:="org.eclipse.core.commands",
  it.polimi.modaclouds.space4cloud.impl;uses:="org.w3c.dom,it.polimi.modaclouds.space4cloud.iterfaces",
  it.polimi.modaclouds.space4cloud.iterfaces;uses:="org.w3c.dom,it.polimi.modaclouds.resourcemodel.cloud",
+ it.polimi.modaclouds.space4cloud.line;uses:="org.jvnet.jaxb2_commons.locator,org.jvnet.jaxb2_commons.lang",
+ it.polimi.modaclouds.space4cloud.lqn;uses:="it.polimi.modaclouds.space4cloud.optimization.solution.impl,org.w3c.dom",
  it.polimi.modaclouds.space4cloud.mainProgram,
+ it.polimi.modaclouds.space4cloud.optimization;
+  uses:="it.polimi.modaclouds.space4cloud.chart,
+   org.slf4j,
+   de.uka.ipd.sdq.pcm.usagemodel,
+   it.polimi.modaclouds.space4cloud.optimization.evaluation,
+   it.polimi.modaclouds.resourcemodel.cloud,
+   it.polimi.modaclouds.space4cloud.optimization.constraints,
+   it.polimi.modaclouds.space4cloud.db,
+   it.polimi.modaclouds.space4cloud.optimization.solution.impl,
+   it.polimi.modaclouds.space4cloud.utils,
+   org.apache.commons.lang.time,
+   javax.swing",
+ it.polimi.modaclouds.space4cloud.optimization.constraints;uses:="it.polimi.modaclouds.space4cloud.optimization.solution.impl,it.polimi.modaclouds.qos_models.schema",
+ it.polimi.modaclouds.space4cloud.optimization.evaluation;
+  uses:="it.polimi.modaclouds.space4cloud.chart,
+   org.slf4j,
+   it.polimi.modaclouds.space4cloud.optimization.constraints,
+   it.polimi.modaclouds.space4cloud.db,
+   it.polimi.modaclouds.space4cloud.lqn,
+   it.polimi.modaclouds.space4cloud.optimization.solution.impl,
+   org.apache.commons.lang.time",
+ it.polimi.modaclouds.space4cloud.optimization.solution;uses:="it.polimi.modaclouds.space4cloud.lqn",
+ it.polimi.modaclouds.space4cloud.optimization.solution.impl;uses:="it.polimi.modaclouds.space4cloud.optimization.solution,it.polimi.modaclouds.space4cloud.lqn",
  it.polimi.modaclouds.space4cloud.plugin;uses:="org.osgi.framework,org.eclipse.jface.resource,org.eclipse.ui.plugin",
  it.polimi.modaclouds.space4cloud.types,
  it.polimi.modaclouds.space4cloud.types.palladio;uses:="org.w3c.dom,it.polimi.modaclouds.space4cloud.types",
- it.polimi.modaclouds.space4cloud.utils
+ it.polimi.modaclouds.space4cloud.utils,
+ launch_configs
 Bundle-Vendor: deib-polimi

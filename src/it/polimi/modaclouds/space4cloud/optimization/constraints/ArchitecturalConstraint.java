@@ -18,9 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
-
-import java.util.Set;
 
 /**
  * @author Michele Ciavotta
@@ -37,29 +34,7 @@ public abstract class ArchitecturalConstraint extends Constraint {
 	public ArchitecturalConstraint(
 			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
 		super(constraint);
-		// TODO Auto-generated constructor stub
 	}
 
-	public abstract boolean checkConstraint(CloudService resource);
-
-	public String getInSet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String getOutSet() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setInSet(Set<String> set) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void setOutSet(Set<String> set) {
-		// TODO Auto-generated method stub
-
-	}
-
+	
 }

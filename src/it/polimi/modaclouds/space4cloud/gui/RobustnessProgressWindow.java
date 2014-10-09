@@ -518,7 +518,7 @@ public class RobustnessProgressWindow {
 							.getNamedItem("feasibility").getNodeValue());
 			
 			long duration = Long.parseLong(solutionResult.getAttributes()
-					.getNamedItem("time").getNodeValue());
+					.getNamedItem("generationTime").getNodeValue());
 
 			costs.addValue(cost, "Solution"/* name */, "" + "" + maxPopulation);
 			feasibilities.addValue(feasibility ? 1 : 0, "Solution"/* name */, ""

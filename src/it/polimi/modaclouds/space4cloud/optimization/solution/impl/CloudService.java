@@ -15,13 +15,15 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+
 import java.io.Serializable;
 
 /**
  * @author MODAClouds The abstract class CloudService define the general Cloud
  *         Resource type.
  */
-public abstract class CloudService implements Cloneable, Serializable {
+public abstract class CloudService implements Cloneable, Serializable, IConstrainable{
 	/**
 	 * 
 	 */
@@ -93,6 +95,11 @@ public abstract class CloudService implements Cloneable, Serializable {
 
 	private void setServiceType(String serviceType) {
 		this.serviceType = serviceType;
+	}
+	
+	@Override
+	public String getId() {
+		return resourceName;
 	}
 
 	public String showStatus(String prefix) {

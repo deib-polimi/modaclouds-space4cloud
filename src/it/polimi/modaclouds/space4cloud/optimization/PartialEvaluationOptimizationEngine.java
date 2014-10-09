@@ -16,8 +16,11 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
@@ -43,6 +46,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
 		super(handler, batch);
+		logger.debug("loading configuration");
 		loadConfiguration();
 	}
 	
@@ -61,7 +65,13 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 		optimLogger.info("Max Scale In Convergence Iterations: "+MAX_SCALE_IN_CONV_ITERATIONS);
 	};
 	@Override
-	protected void IteratedRandomScaleInLS(Solution sol) {
+	protected void IteratedRandomScaleInLS(Solution sol) throws OptimizationException {
+		for(Constraint constraint:sol.getViolatedConstraints()){
+			if(constraint instanceof RamConstraint){
+				logger.info("Wrong type of VM selected, scale in will not be executed");
+				return;
+			}
+		}
 		logger.info("initializing scale in phase");
 
 	//	logger.info(sol.showStatus());
@@ -86,8 +96,9 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 	 * @param sol
 	 * @return true is the solution has been improved, false if no resources
 	 *         could be scaled
+	 * @throws OptimizationException 
 	 */
-	private boolean noImprovementPhase(Solution sol) {
+	private boolean noImprovementPhase(Solution sol) throws OptimizationException {
 
 		// initialize the factors (one for each hour) to the default value
 		//we should use a factor for each hour and for each tier but if the number 
@@ -113,16 +124,14 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			for (int hour = 0; hour < 24; hour++) {
 				Tier tier = null;
 				// remove resources with minimum number of replicas
-				for (int j = 0; j < vettResTot.get(hour).size(); j++)
-					if (((IaaS)vettResTot.get(hour).get(j).getCloudService()).getReplicas() == 1)
-						vettResTot.get(hour).remove(j);
-
+				vettResTot=constraintHandler.filterResourcesForScaleDown(vettResTot,hour);
+				
 				// if no resource can be scaled in in this hour then jump to the
 				// next one
 				if (vettResTot.get(hour).size() == 0)
 					continue;
 
-				// if there are tiers that can be scale then chose one
+				// if there are tiers that can be scaled then chose one
 				// randomly
 				tier = vettResTot.get(hour).get(random.nextInt(vettResTot.get(hour).size()));
 
@@ -140,37 +149,46 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			}
 
 			// evaluate the solution
-			evalServer.EvaluateSolution(sol);
-			boolean improvement = updateBestSolution(sol);
-			
-			//if there has been no improvement then signal it 
-			if(!improvement){
-				numIterNoImprov++;				
-			}
+			try {
+				evalServer.EvaluateSolution(sol);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("","scaleIn",e);
+			}	
 
 			// if an application has become feasible, revert it and try again
 			// with a smaller factor
-			boolean reverted = false;
 			for (int i = 0; i < 24; i++) {
 				if (!sol.getApplication(i).isFeasible()) {
 					sol.copyApplication(previousSol.getApplication(i), i);
 					factors[i] = DEFAULT_SCALE_IN_FACTOR
-							- ((iterations + 1) / MAX_SCALE_IN_ITERATIONS)
+							- ((double)(iterations + 1) / MAX_SCALE_IN_ITERATIONS)
 							* (DEFAULT_SCALE_IN_FACTOR - 1);
-					reverted = true;
 				}
 			}
-			//this should not be necessary since hourly solutions are independent
-			if(reverted){
-				// evaluate the solution
+			
+			
+			//if there has been no improvement then signal it 			
+			try {
 				evalServer.EvaluateSolution(sol);
-				updateBestSolution(sol);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("","scaleIn",e);
+			}
+			boolean improvement = updateBestSolution(sol);
+			if(!improvement){
+				numIterNoImprov++;				
 			}
 
 		}
+		try {
+			evalServer.EvaluateSolution(sol);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","scaleIn",e);
+		}	
 		return true;
 
 	}
+
+
 
 
 }

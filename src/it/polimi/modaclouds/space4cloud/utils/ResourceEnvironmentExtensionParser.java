@@ -15,30 +15,24 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.utils;
 
-import java.io.File;
-import java.io.IOException;
+import it.polimi.modaclouds.qos_models.schema.IaasService;
+import it.polimi.modaclouds.qos_models.schema.PaasService;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
+
+import java.net.MalformedURLException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
+import javax.xml.bind.JAXBException;
 
-import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class ResourceEnvironmentExtensionParser {
-	protected File resourceEnvExtension;
+public class ResourceEnvironmentExtensionParser {	
 	protected Map<String, String> serviceTypes = new HashMap<>();
 	protected Map<String, String> providers = new HashMap<>();
 	protected Map<String, String> serviceNames = new HashMap<>();
@@ -46,73 +40,60 @@ public class ResourceEnvironmentExtensionParser {
 	protected Map<String, int[]> instanceReplicas = new HashMap<>();
 	protected Map<String, String> serviceLocations = new HashMap<>();
 	protected static final int HOURS = 24;
-	private static final Logger logger = Logger.getLogger(ResourceEnvironmentExtensionParser.class);
+	//private static final Logger logger = Logger.getLogger(ResourceEnvironmentExtensionParser.class);
 
-	DocumentBuilderFactory dbFactory;
-	DocumentBuilder dBuilder;
-	Document doc;
 
-	public ResourceEnvironmentExtensionParser(File resourceEnvExtension)
-			throws ParserConfigurationException, SAXException, IOException {
-		this(resourceEnvExtension,true);
-	}
+	public ResourceEnvironmentExtensionParser() throws ResourceEnvironmentLoadingException {
 
-	public ResourceEnvironmentExtensionParser(File resourceEnvExtension,boolean parse)
-			throws ParserConfigurationException, SAXException, IOException {
-		this.resourceEnvExtension = resourceEnvExtension;
-		if (parse)
-			parse();
-	}
 
-	public void addResourceContainer(String id, String ServiceType,
-			boolean IaaS, String InstanceType, String provider) {
-
-		NodeList list = doc.getElementsByTagName("ResourceContainerExtensions");
-
-		// create the resource container
-		Element resourceContainer = doc.createElement("ResourceContainer");
-		list.item(0).appendChild(resourceContainer);
-
-		// fill the attributes
-		resourceContainer.setAttribute("id", id);
-		resourceContainer.setAttribute("Provider", provider);
-
-		// add the servicetype
-		if (IaaS) {
-			Element service = doc.createElement("Infrastructure");
-			service.appendChild(doc.createTextNode(ServiceType));
-			resourceContainer.appendChild(service);
-		} else {
-			Element service = doc.createElement("Platform");
-			service.appendChild(doc.createTextNode(ServiceType));
-			resourceContainer.appendChild(service);
-		}
-
-		// add the instanceType
-		Element instance = doc.createElement("ResourceSizeID");
-		instance.appendChild(doc.createTextNode(InstanceType));
-		resourceContainer.appendChild(instance);
-
-		// TODO: what if the container is already there?
-
-		// write the content into xml file
-		TransformerFactory transformerFactory = TransformerFactory
-				.newInstance();
+		// load the model
+		ResourceModelExtension loadedExtension;
 		try {
-			Transformer transformer = transformerFactory.newTransformer();
+			loadedExtension = XMLHelper.deserialize(Paths.get(Configuration.RESOURCE_ENVIRONMENT_EXTENSION).toUri().toURL(),ResourceModelExtension.class);
+		} catch (MalformedURLException | JAXBException | SAXException e) {
+			throw new ResourceEnvironmentLoadingException("Could not load the resource enviroment extension file: "+Configuration.RESOURCE_ENVIRONMENT_EXTENSION,e);
+		}
 
-			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(resourceEnvExtension);
-										
+		// fill structures
+		for (ResourceContainer container : loadedExtension
+				.getResourceContainer()) {
+			// String id = container.getId();
+			String provider = container.getProvider();
+			String id = container.getId() + (provider!=null?provider:"");
+			providers.put(id, provider);
+			if (container.getCloudResource() != null) {
+				IaasService resource = container.getCloudResource();
+				serviceTypes.put(id, resource.getServiceType());
+				serviceNames.put(id, resource.getServiceName());
+				instanceSizes.put(id, resource.getResourceSizeID());
 
-			// Output to console for testing
-			// StreamResult result = new StreamResult(System.out);
+				if (resource.getLocation() != null) {
+					String location = resource.getLocation().getRegion();
+					if (resource.getLocation().getZone() != null)
+						location += resource.getLocation().getZone();
+					setRegion(container.getProvider(), location);
+				}
 
-			transformer.transform(source, result);
-		} catch (TransformerException e) {
-			logger.error("Error in transforming the xml",e);
+				int[] replicas = new int[HOURS];
+				for (int i = 0; i < HOURS; i++) {
+					replicas[i] = 1;
+				}
+				if (resource.getReplicas() != null) {
+					for (ReplicaElement element : resource.getReplicas()
+							.getReplicaElement()) {
+						replicas[element.getHour()] = element.getValue();
+					}
+				}
+				instanceReplicas.put(id, replicas);
+			} else {
+				PaasService resource = container.getCloudPlatform();
+				serviceTypes.put(id, resource.getServiceType());
+				serviceNames.put(id, resource.getServiceName());
+			}
+
 		}
 	}
+
 
 	public Map<String, int[]> getInstanceReplicas() {
 		return instanceReplicas;
@@ -156,101 +137,9 @@ public class ResourceEnvironmentExtensionParser {
 	public Map<String, String> getServiceType() {
 		return serviceTypes;
 	}
-
-	private void parse() throws ParserConfigurationException, SAXException,
-			IOException {
-		dbFactory = DocumentBuilderFactory.newInstance();
-		dBuilder = dbFactory.newDocumentBuilder();
-		doc = dBuilder.parse(resourceEnvExtension);
-		doc.getDocumentElement().normalize();
-		// parse resource containers
-		NodeList list = doc.getElementsByTagName("resourceContainer");
-		for (int i = 0; i < list.getLength(); i++) {
-			Node n = list.item(i);
-			Element n_elem = (Element) n;
-
-			// get the resource ID
-			String resourceId = n_elem.getAttribute("id");
-
-			// get the provider
-			String provider = null;
-			if (n_elem.hasAttribute("provider"))
-				provider = n_elem.getAttribute("provider");
-
-			// get the service type
-			String type = null;
-			String serviceName = null;
-			if (n_elem.getElementsByTagName("cloudResource").getLength() == 1) {
-				Element cloudResourceElement = (Element) n_elem
-						.getElementsByTagName("cloudResource").item(0);
-				type = cloudResourceElement.getAttributes()
-						.getNamedItem("serviceType").getNodeValue();
-				if (cloudResourceElement.hasAttribute("serviceName")) {
-					serviceName = cloudResourceElement.getAttributes()
-							.getNamedItem("serviceName").getNodeValue();
-				}
-				// get the location if provided
-				if (cloudResourceElement.hasChildNodes()) {
-					NodeList resourceElementChilds = cloudResourceElement
-							.getChildNodes();
-					for (int j = 0; j < resourceElementChilds.getLength(); j++)
-						if (resourceElementChilds.item(j).getNodeName()
-								.equals("location"))
-							serviceLocations.put(
-									resourceId,
-									resourceElementChilds.item(j)
-											.getAttributes()
-											.getNamedItem("region")
-											.getNodeValue());
-				}
-
-			} else {
-				Node cloudPlatformElement = n_elem.getElementsByTagName(
-						"cloudPlatform").item(0);
-				type = cloudPlatformElement.getAttributes()
-						.getNamedItem("serviceType").getNodeValue();
-				serviceName = cloudPlatformElement.getAttributes()
-						.getNamedItem("serviceName").getNodeValue();
-			}
-
-			// get the instance size
-			String size = null;
-			if (n_elem.getElementsByTagName("resourceSizeID").getLength() == 1)
-				size = n_elem.getElementsByTagName("resourceSizeID").item(0)
-						.getTextContent();
-
-			// get the number of replicas if specified
-			int[] replicas = new int[HOURS];
-			for (int j = 0; j < HOURS; j++)
-				replicas[j] = 1;
-
-			if (n_elem.getElementsByTagName("replicas").getLength() == HOURS) {
-				NodeList replicaNodes = ((Element) n_elem.getElementsByTagName(
-						"replicas").item(0)).getElementsByTagName("replica");
-				for (int j = 0; j < replicaNodes.getLength(); j++) {
-					int hour = Integer.parseInt(replicaNodes.item(j)
-							.getAttributes().getNamedItem("hour")
-							.getTextContent());
-					int value = Integer.parseInt(replicaNodes.item(j)
-							.getAttributes().getNamedItem("value")
-							.getTextContent());
-					replicas[hour - 1] = value;
-				}
-			}
-			instanceReplicas.put(resourceId, replicas);
-			providers.put(resourceId, provider);
-			serviceTypes.put(resourceId, type);
-			serviceNames.put(resourceId, serviceName);
-			instanceSizes.put(resourceId, size);
-		}
-	}
+	
 
 	public void setRegion(String provider, String value) {
-		// String old = serviceLocations.get(provider);
-		// if (old != null && !old.equals(value))
-		// serviceLocations.put(provider, "us-east");
-		// // serviceLocations.put(provider, "not-valid");
-		// else
 		serviceLocations.put(provider, value);
 	}
 

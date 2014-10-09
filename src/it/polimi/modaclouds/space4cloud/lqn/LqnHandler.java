@@ -28,6 +28,8 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -39,11 +41,15 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+
 
 /**
  * @author Michele Ciavotta The aim of this class is to have a wrapper around
@@ -60,17 +66,8 @@ public class LqnHandler implements Cloneable, Serializable {
 	private transient Document lqnDOM = null;
 	private transient Path lqnFilePath = null;
 	private String lqnFilePathSerialization;
+	private static final Logger logger = LoggerFactory.getLogger(LqnHandler.class);
 
-	/**
-	 * Instantiates a new lqn handler.
-	 * 
-	 * @param lqnDOM
-	 *            the lqn dom
-	 */
-	public LqnHandler(Document lqnDOM) {
-
-		this.setLqnDOM(lqnDOM);
-	}
 
 	/**
 	 * Instantiates a new lqn handler.
@@ -89,9 +86,15 @@ public class LqnHandler implements Cloneable, Serializable {
 		initDom();
 
 	}
-
+	/**
+	 * Changes the value of attribute with name {@attref elementAttribute} to the value {@attref value}. The element to look for is identified by element type and its name attribute
+	 * @param elementType type of the element to change
+	 * @param name name of the element to change
+	 * @param elementAttribute name of the attribute to change
+	 * @param multiplicity new double value
+	 */
 	private void changeElementbyName(String elementType, String name,
-			String elementAttribute, double multiplicity) {
+			String elementAttribute, double value) {
 		if (lqnDOM == null)
 			initDom();
 		NodeList elements = lqnDOM.getElementsByTagName(elementType);
@@ -102,7 +105,7 @@ public class LqnHandler implements Cloneable, Serializable {
 			// we found the right element
 			if (element_id.equals(name)) {
 				if (e.getAttribute(elementAttribute) != null) {
-					e.setAttribute(elementAttribute, "" + multiplicity);
+					e.setAttribute(elementAttribute, "" + value);
 				}
 			}
 		}
@@ -119,7 +122,7 @@ public class LqnHandler implements Cloneable, Serializable {
 			lqnH.setLqnFilePath(lqnClone.toPath());
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error cloning the lqn handler",e);
 			lqnH = new LqnHandler(lqnClone);
 		}
 
@@ -147,8 +150,7 @@ public class LqnHandler implements Cloneable, Serializable {
 			// copy the content
 			Files.copy(lqnFilePath, pathTo, REPLACE_EXISTING);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error cloning the lqn file",e);
 		}
 		return pathTo.toFile();
 	}
@@ -161,17 +163,15 @@ public class LqnHandler implements Cloneable, Serializable {
 	}
 
 	/**
-	 * @return the lqnDOM
+	 * @return the path to the lqn model file
 	 */
-	//
-	// public Document getLqnDOM() {
-	// return lqnDOM;
-	// }
-	//
 	public Path getLqnFilePath() {
 		return lqnFilePath;
 	}
 
+	/**
+	 * Initialized the Dom from the lqnFilePath
+	 * */
 	private void initDom() {
 		try {
 
@@ -182,16 +182,23 @@ public class LqnHandler implements Cloneable, Serializable {
 			lqnDOM.getDocumentElement().normalize();
 
 		} catch (IOException | SAXException | ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error initializing lqn dom",e);
 		}
 	}
 
+	/**
+	 * sets the lqn file path
+	 * */
 	private void initLQN(Path lqnFilePath) {
 		this.lqnFilePath = lqnFilePath;
 	}
 
-	// reconstruct the Path from the string
+	/**
+	 *  reconstruct the Path from the string
+	 * @param in the input stream to read the path from
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	private void readObject(ObjectInputStream in) throws IOException,
 			ClassNotFoundException {
 		in.defaultReadObject();
@@ -199,6 +206,9 @@ public class LqnHandler implements Cloneable, Serializable {
 		initDom();
 	}
 
+	/**
+	 * Saves the LQN model file
+	 */
 	public void saveToFile() {
 		if (lqnDOM == null)
 			initDom();
@@ -211,8 +221,7 @@ public class LqnHandler implements Cloneable, Serializable {
 			StreamResult result = new StreamResult(lqnFilePath.toFile());
 			transformer.transform(source, result);
 		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error saving the lqn file",e);
 		}
 	}
 
@@ -284,8 +293,7 @@ public class LqnHandler implements Cloneable, Serializable {
 		// TODO add other cloud resource types.
 
 		else
-			System.err
-					.println("Error! No Code found for this type of resource");
+			logger.error("resource type "+service.getClass()+" not supported.");
 
 	}
 
@@ -295,4 +303,67 @@ public class LqnHandler implements Cloneable, Serializable {
 		out.defaultWriteObject();
 	}
 
+	/**
+	 * Build a map between the processorId in the lqn model and the corresponding functionality ID in the Palladio model, using a mapping between the start action id of a functionality and the id of the functionality itself
+	 * @param startActionId2FunId mapping between the start action id of a functionality and its functionality id
+	 * @return
+	 */
+	public Map<String, String> getProcessorIdMap(Map<String, String> startActionId2FunId) {
+		
+		Map<String,String> procId2FunId = new HashMap<String, String>();
+		Map<String,String> activityName2procId = new HashMap<String, String>();
+		//get from the lqn model the mapping between procerssor name and startActivity names
+		NodeList processors = lqnDOM.getElementsByTagName("processor");
+		for (int i = 0; i < processors.getLength(); i++) {
+			Element processor = (Element) processors.item(i);
+			String processorId = processor.getAttribute("name");				
+			NodeList activities = processor.getElementsByTagName("activity");
+			String functionalityId = null;
+			for(int j=0; j<activities.getLength(); j++){
+				String activityName = activities.item(j).getAttributes().getNamedItem("name").getNodeValue();
+				if(activityName.startsWith("StartAction")){
+					functionalityId = activityName;
+				}
+
+			}
+			if(processorId != null && functionalityId != null)
+				activityName2procId.put(functionalityId,processorId);
+		}
+		
+		//merge the mapping according to the fact that the activityName contains the activity ID
+		for(String startActivityID:startActionId2FunId.keySet()){
+			for(String activityName:activityName2procId.keySet()){
+				if(activityName.contains(startActivityID)){
+					String procId = activityName2procId.get(activityName);
+					String funId = startActionId2FunId.get(startActivityID);
+					procId2FunId.put(procId,funId);
+				}
+			}
+		}
+
+		return procId2FunId;
+	}
+
+	public void setArrivalRate(double arrivalRate) {
+		if (lqnDOM == null)
+			initDom();
+		NodeList processors = lqnDOM.getElementsByTagName("processor");
+		for (int i = 0; i < processors.getLength(); i++) {
+			Node processorNode = processors.item(i);
+			Node nameNode = processorNode.getAttributes().getNamedItem("name");
+			if (nameNode != null
+					&& nameNode.getNodeValue().contains("UsageScenario")
+					&& !nameNode.getNodeValue().contains("Loop")) {
+				// we assume there is only one task for usage scenario
+				Node taskNode = ((Element) processorNode).getElementsByTagName(
+						"task").item(0);
+				//and a single entry
+				Node entryNode = ((Element) taskNode).getElementsByTagName(
+						"entry").item(0);
+				((Element) entryNode).setAttribute("open-arrival-rate", "" + arrivalRate);
+			}
+		}
+	}
+
 }
+

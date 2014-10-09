@@ -19,6 +19,9 @@ package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -35,6 +38,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -105,6 +109,9 @@ public class EvaluationServer implements ActionListener {
 
 		if (e.getActionCommand() != null
 				&& e.getActionCommand().equals("ResultsUpdated")) {
+			Solution sol = ((SolutionEvaluator) e.getSource()).getSolution();
+			if(sol!=null)
+				counters.put(sol, counters.get(sol) + 1);
 			instanceEvaluationTerminated = true;
 		} else if (e.getActionCommand() != null
 				&& e.getActionCommand().equals("EvaluationError")) {
@@ -113,8 +120,7 @@ public class EvaluationServer implements ActionListener {
 		} 
 		else {
 
-			Solution sol = ((SolutionEvaluator) e.getSource()).getSolution();
-			counters.put(sol, counters.get(sol) + 1);
+			logger.warn("Unknown Action from: "+e.getSource());
 		}
 
 	}
@@ -140,19 +146,26 @@ public class EvaluationServer implements ActionListener {
 		return totalCost;
 	}
 
-	public void evaluateInstance(Instance instance) throws AnalysisFailureException {
+	public void evaluateInstance(Instance instance) {
 		instanceEvaluationTerminated = false;
 		if (!instance.isEvaluated()) {
 			SolutionEvaluator eval = new SolutionEvaluator(instance, null);
 			eval.addListener(this);
 			
+			//reset the logger for line server handler
+			if(Configuration.SOLVER!=Solver.LQNS){
+				lineHandler.clear();
+			}
+
+			SolutionEvaluator.logger.trace("Evaluating instance "+instance);
 			if (Configuration.SOLVER == Solver.LQNS)
-				eval.parseResults();
+				executor.execute(eval);
 			else {
 				eval.setLineServerHandler(lineHandler);
-				eval.parseResults();
+				executor.execute(eval);
 			}
-		}
+		} else
+			instanceEvaluationTerminated = true;
 		while (!instanceEvaluationTerminated)
 			try {
 				Thread.sleep(100);
@@ -162,14 +175,12 @@ public class EvaluationServer implements ActionListener {
 
 	}
 
-	public void EvaluateSolution(Solution sol) {
+	public void EvaluateSolution(Solution sol) throws EvaluationException {
 		long startTime = -1;		
 		requestedEvaluations++;
 		logger.debug("Starting evaluation");
 		error = false;
 		if (!sol.isEvaluated()) {
-
-			startTime = System.nanoTime();
 
 			ArrayList<Instance> instanceList = sol.getHourApplication();
 			counters.put(sol, 0);
@@ -181,10 +192,11 @@ public class EvaluationServer implements ActionListener {
 			}
 
 			// evaluate hourly solutions
-			for (Instance i : instanceList) {
+			for (Instance i : instanceList) {				
 				// we need to reevaluate it only if something has changed.
 				if (!i.isEvaluated()) {
 					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
+					SolutionEvaluator.logger.trace("Evaluating instance "+sol.getHourApplication().indexOf(i)+" of solution "+sol);
 					eval.addListener(this);
 					if (Configuration.SOLVER == Solver.LQNS)
 						executor.execute(eval);
@@ -220,22 +232,32 @@ public class EvaluationServer implements ActionListener {
 			incrementTotalNumberOfEvaluations();
 		}
 
+		
+		
 		// evaluate feasibility
-		if (constraintHandler != null)
-			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+		if (constraintHandler != null){
+			List<HashMap<Constraint, Boolean>> evaluations;
+			try {
+				evaluations = constraintHandler.evaluateFeasibility(sol);
+			} catch (ConstraintEvaluationException e) {
+				throw new EvaluationException("An error occured in the constraint evaluation",e);
+			}
+			sol.setEvaluation(evaluations);
+		}
 		sol.updateEvaluation();
 
+		
+		
+		
 		// evaluate costs		
 		deriveCosts(sol);
-
+		timer.split();
 		logger.trace("" + sol.getCost() + ", "
 				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
 				+ sol.isFeasible());
-
 		long middleTime = System.nanoTime();
 		if (log2png != null && logVm != null && logConstraint != null
 				&& timer != null) {
-			timer.split();
 			log2png.addPoint2Series(seriesHandleExecution,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getCost());
@@ -255,6 +277,7 @@ public class EvaluationServer implements ActionListener {
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getNumberOfViolatedConstraints());
 		}
+		timer.unsplit();
 		long endTime = System.nanoTime();
 		if (startTime != -1) {
 			evaluationTime += (middleTime - startTime);
@@ -263,7 +286,6 @@ public class EvaluationServer implements ActionListener {
 			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
 		}else
 			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
-		sol.setEvaluationTime(timer.getSplitTime());
 		
 		
 		
@@ -381,7 +403,7 @@ public class EvaluationServer implements ActionListener {
 			executor.shutdownNow();
 	}
 
-	public void EvaluateSolution(SolutionMulti sol) {
+	public void EvaluateSolution(SolutionMulti sol) throws EvaluationException {
 		for (Solution s : sol.getAll())
 			EvaluateSolution(s);
 		sol.updateEvaluation();
