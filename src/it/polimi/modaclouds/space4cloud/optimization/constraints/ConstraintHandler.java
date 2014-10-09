@@ -78,6 +78,9 @@ public class ConstraintHandler {
 			case RAM:
 				constraint = new RamConstraint(cons);
 				break;
+			case WORKLOADPERCENTAGE:
+				constraint = new WorkloadPercentageConstraint(cons);
+				break;
 				//add other constraints
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
@@ -93,12 +96,14 @@ public class ConstraintHandler {
 			logger.info("\tpriority: "+c.getPriority());
 
 			logger.info("\tmetric: "+c.getMetric());
-			if(c instanceof ResponseTimeConstraint){
+			if (c instanceof ResponseTimeConstraint) {
 				logger.info("\tmax: "+((ResponseTimeConstraint)c).getMax());			
-			}else if(c instanceof UsageConstraint){
+			} else if(c instanceof UsageConstraint) {
 				logger.info("\tmax: "+((UsageConstraint)c).getMax());			
-			}else if(c instanceof RamConstraint){
+			} else if(c instanceof RamConstraint) {
 				logger.info("\tmin: "+((RamConstraint)c).getMin());			
+			} else if (c instanceof WorkloadPercentageConstraint) {
+				logger.info("\tmin: "+((WorkloadPercentageConstraint)c).getMin());
 			}
 
 		}
@@ -182,6 +187,14 @@ public class ConstraintHandler {
 
 
 
+	}
+	
+	public double getWorkloadPercentageConstraint() {
+		for (Constraint c : constraints) {
+			if (c instanceof WorkloadPercentageConstraint)
+				return ((WorkloadPercentageConstraint)c).range.getHasMinValue();
+		}
+		return 0.0;
 	}
 
 

@@ -557,7 +557,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
     @Override
     protected Void doInBackground() throws Exception {
-        if (initialSolution.size() > 1 && Configuration.REDISTRIBUTE_WORKLOAD)
+    	if (initialSolution.size() > 1 && Configuration.REDISTRIBUTE_WORKLOAD)
             optimizeMultiprovider();
         else
             optimize();
@@ -1555,10 +1555,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
     }
     
     private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour) {
-        return maximizeWorkloadPercentagesForLeastUsedTier(currentSolution, hour, 0.2);
-    }
-    
-    private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour, double wpMin) {
+    	double wpMin = constraintHandler.getWorkloadPercentageConstraint();
+    	
         Tier leastUsedTier = null;
         String leastUsedProvider = null;
         
