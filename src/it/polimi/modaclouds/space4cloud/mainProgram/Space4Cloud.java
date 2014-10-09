@@ -167,9 +167,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		compleated = true;
 	}
 
+	private StopWatch duration;
+	
 	@Override
-
 	public void  run(){
+		duration = new StopWatch();
+		duration.start();
+		duration.split();
 
 		//load the configuration
 		if (!batch) {
@@ -399,6 +403,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				logger.error("Waiting for space4cloud completion error",e);
 			}
 		}
+		
+		duration.stop();
 		return;
 	}
 
@@ -596,6 +602,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			return;
 
 		}
+		
+		engine.setDuration(duration);
 
 		// create the progress window
 		if (!batch) {
@@ -665,21 +673,23 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		RobustnessProgressWindow rpw = new RobustnessProgressWindow(
 				usageModelExtFiles.size() + 1);
 
-		String duration = "";
-		{
-			// an average of 5 minutes per attempt... maybe it's too little, but
-			// whatever...
-			int res = (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60;
-			if (res > 60 * 60) {
-				duration += (res / (60 * 60)) + " h ";
-				res = res % (60 * 60);
-			}
-			if (res > 60) {
-				duration += (res / 60) + " m ";
-				res = res % 60;
-			}
-			duration += res + " s";
-		}
+//		String duration = "";
+//		{
+//			// an average of 5 minutes per attempt... maybe it's too little, but
+//			// whatever...
+//			int res = (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60;
+//			if (res > 60 * 60) {
+//				duration += (res / (60 * 60)) + " h ";
+//				res = res % (60 * 60);
+//			}
+//			if (res > 60) {
+//				duration += (res / 60) + " m ";
+//				res = res % 60;
+//			}
+//			duration += res + " s";
+//		}
+		String duration = durationToString((attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60);
+		
 		logger
 		.info("Starting the robustness test, considering each problem "
 				+ attempts + " times (it could take up to " + duration
@@ -745,6 +755,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			for (int attempt = 1; attempt <= attempts && !alreadyThere; ++attempt) {
 				
 				Configuration.WORKING_DIRECTORY = Paths.get(baseWorkingDirectory, ""+testValue, ""+attempt).toString();
+				Configuration.RANDOM_SEED = attempt;
+				
 				String tmpConf = Files.createTempFile("space4cloud", ".properties").toString();
 				Configuration.saveConfiguration(tmpConf);
 				
@@ -856,9 +868,32 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		logger.info("Check ended!");
 
+//		String actualDuration = "";
+//		{
+//			int res = (int) timer.getTime() / 1000;
+//			if (res > 60 * 60) {
+//				actualDuration += (res / (60 * 60)) + " h ";
+//				res = res % (60 * 60);
+//			}
+//			if (res > 60) {
+//				actualDuration += (res / 60) + " m ";
+//				res = res % 60;
+//			}
+//			actualDuration += res + " s";
+//		}
+		String actualDuration = durationToString(timer.getTime());
+
+		logger.info("Expected time of execution: " + duration
+				+ ", actual time of execution: " + actualDuration);
+
+		logger.info("Check ended!");
+
+	}
+	
+	public static String durationToString(long duration) {
 		String actualDuration = "";
 		{
-			int res = (int) timer.getTime() / 1000;
+			int res = (int) duration / 1000;
 			if (res > 60 * 60) {
 				actualDuration += (res / (60 * 60)) + " h ";
 				res = res % (60 * 60);
@@ -869,12 +904,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			}
 			actualDuration += res + " s";
 		}
-
-		logger.info("Expected time of execution: " + duration
-				+ ", actual time of execution: " + actualDuration);
-
-		logger.info("Check ended!");
-
+		return actualDuration;
 	}
 	
 

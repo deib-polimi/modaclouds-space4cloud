@@ -711,4 +711,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return result;
 	}
 
+	public void setEvaluationTime(long time) {
+		evaluationTime = time;
+	}
+
 }

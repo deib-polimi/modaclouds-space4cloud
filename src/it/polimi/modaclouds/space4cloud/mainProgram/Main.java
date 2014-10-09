@@ -18,6 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
+import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
+
 
 
 
@@ -92,6 +94,11 @@ public class Main {
 		// instance.setProvidersInitialSolution("Flexiscale");
 
 		instance.start();		
+	}
+	
+	public static void main2(String[] args) {
+		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\argh-new\\results");
+		
 	}
 
 }

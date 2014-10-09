@@ -18,8 +18,11 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
@@ -209,9 +212,9 @@ public class RobustnessProgressWindow {
 
 	@SuppressWarnings("unused")
 	public static void main(String args[]) {
-		String basePath = "C:\\Users\\Riccardo\\Desktop\\tmp\\russo\\results-multi";
+		String basePath = "C:\\Users\\Riccardo\\Desktop\\tmp\\argh\\results";
 
-		int testFrom = 100, testTo = 10000, step = 300;
+		int testFrom = 100, testTo = 4300, step = 300;
 		// int testFrom = 30, testTo = 3000, step = 90;
 
 		if (args != null && args.length > 0) {
@@ -242,7 +245,7 @@ public class RobustnessProgressWindow {
 
 		// redraw(basePath, testFrom, testTo, step);
 
-		RobustnessProgressWindow rpw1 = redraw(basePath, testFrom, testTo, step);
+		RobustnessProgressWindow rpw1 = redraw(basePath); //, testFrom, testTo, step);
 		// rpw1.gui.dispose();
 
 		// RobustnessProgressWindow rpw2 =
@@ -263,8 +266,55 @@ public class RobustnessProgressWindow {
 		// "costsDiffs-generated2-non2.png");
 
 	}
-	public static RobustnessProgressWindow redraw(String basePath,
-			int testFrom, int testTo, int step) {
+	public static RobustnessProgressWindow redraw(String basePath) { //,	int testFrom, int testTo, int step) {
+		RobustnessProgressWindow rpw = null;
+		
+		Path p = Paths.get(basePath);
+		if (Files.exists(p) && Files.isDirectory(p)) {
+			File[] umes = p.toFile().listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return (name.indexOf("ume-") == 0) && (name.indexOf(".xml") == name.length() - 4);
+				}
+			});
+			
+			File[] solutions = p.toFile().listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return (name.indexOf("solution-") == 0) && (name.indexOf(".xml") == name.length() - 4);
+				}
+			});
+			
+			rpw = new RobustnessProgressWindow(solutions.length);
+			
+			int j = 0;
+			for (int i = 0; i < umes.length; ++i) {
+				String ume = umes[i].getName();
+				String solution = solutions[j].getName();
+				
+				String test = ume.substring(ume.indexOf("-"), ume.indexOf("xml"));
+				
+				if (solution.indexOf(test) != -1) {
+					try {
+						rpw.add(umes[i], solutions[j++]);
+					} catch (MalformedURLException | JAXBException
+							| SAXException e) {
+						e.printStackTrace();
+					}
+					rpw.setValue(rpw.getValue() + 1);
+				}
+				
+			}
+			
+			try {
+				rpw.save2png(basePath);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		
+		/*
 		int total = (testTo - testFrom) / step;
 
 		RobustnessProgressWindow rpw = new RobustnessProgressWindow(total);
@@ -283,6 +333,7 @@ public class RobustnessProgressWindow {
 		}
 
 		rpw.setValue(total);
+		*/
 
 		return rpw;
 	}
@@ -308,7 +359,7 @@ public class RobustnessProgressWindow {
 								dataset.getValue((Comparable<?>) o, key),
 								(Comparable<?>) o, "tmp");
 					}
-					dataset.removeColumn(i);
+					dataset.removeColumn(i--);
 
 					for (Object o : dataset.getRowKeys()) {
 						dataset.addValue(
@@ -339,18 +390,23 @@ public class RobustnessProgressWindow {
 
 	private JPanel tiersPanel2;
 	private JLabel tiersLabel2;
+	
 	private JFreeChart tiersBasicGraph;
-
 	private JPanel tiersBasicPanel;
 	private JLabel tiersBasicLabel;
+	
 	private JFreeChart feasibilitiesGraph;
-
 	private JPanel feasibilitiesPanel;
-
 	private JLabel feasibilitiesLabel;
+	
 	private JFreeChart costsGraph;
 	private JPanel costsPanel;
 	private JLabel costsLabel;
+	
+	private JFreeChart durationsGraph;
+	private JPanel durationsPanel;
+	private JLabel durationsLabel;
+	
 	private int total;
 	private DefaultCategoryDataset populations = new DefaultCategoryDataset();
 
@@ -363,6 +419,8 @@ public class RobustnessProgressWindow {
 	private DefaultCategoryDataset feasibilities = new DefaultCategoryDataset();
 
 	private DefaultCategoryDataset costs = new DefaultCategoryDataset();
+	
+	private DefaultCategoryDataset durations = new DefaultCategoryDataset();
 
 	private boolean alreadyUpdating = false;
 
@@ -458,16 +516,23 @@ public class RobustnessProgressWindow {
 			boolean feasibility = Boolean
 					.parseBoolean(solutionResult.getAttributes()
 							.getNamedItem("feasibility").getNodeValue());
+			
+			long duration = Long.parseLong(solutionResult.getAttributes()
+					.getNamedItem("time").getNodeValue());
 
 			costs.addValue(cost, "Solution"/* name */, "" + "" + maxPopulation);
 			feasibilities.addValue(feasibility ? 1 : 0, "Solution"/* name */, ""
 					+ "" + maxPopulation);
+			
+			durations.addValue(duration, "Solution"/* name */, "" + "" + maxPopulation);
 		}
 
 		sortDataset(solutions);
 		sortDataset(tiers);
 		sortDataset(costs);
 		sortDataset(feasibilities);
+		sortDataset(durations);
+		sortDataset(tiersBasic);
 
 		updateGraph();
 		updateImages();
@@ -581,6 +646,15 @@ public class RobustnessProgressWindow {
 		feasibilitiesLabel = new JLabel();
 		feasibilitiesLabel.setIcon(null);
 		feasibilitiesPanel.add(feasibilitiesLabel);
+		
+		lowerPanel = new JPanel();
+		lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+		tabbedPane.addTab("Durations", lowerPanel);
+		durationsPanel = new JPanel();
+		lowerPanel.add(durationsPanel);
+		durationsLabel = new JLabel();
+		durationsLabel.setIcon(null);
+		durationsPanel.add(durationsLabel);
 
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
@@ -631,6 +705,9 @@ public class RobustnessProgressWindow {
 		ChartUtilities.writeChartAsPNG(
 				new FileOutputStream(Paths.get(path, "feasibilities.png")
 						.toFile()), feasibilitiesGraph, 1350, 700);
+		ChartUtilities.writeChartAsPNG(
+				new FileOutputStream(Paths.get(path, "durations.png")
+						.toFile()), durationsGraph, 1350, 700);
 	}
 
 	public void setValue(int value) {
@@ -905,6 +982,48 @@ public class RobustnessProgressWindow {
 			renderer2.setItemLabelsVisible(true);
 			renderer2.setItemLabelFont(font);
 		}
+		
+		durationsGraph = ChartFactory.createLineChart(null, "Max Population",
+				"Duration", durations, PlotOrientation.VERTICAL, true, true, false);
+		{
+			CategoryPlot plot = (CategoryPlot) durationsGraph.getPlot();
+			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+					.getRenderer();
+			renderer.setShapesVisible(true);
+			renderer.setDrawOutlines(true);
+			renderer.setUseFillPaint(true);
+			renderer.setFillPaint(Color.white);
+
+			CategoryAxis categoryAxis = plot.getDomainAxis();
+			categoryAxis.setLowerMargin(0.02);
+			categoryAxis.setUpperMargin(0.02);
+			categoryAxis.setTickLabelFont(font);
+
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setTickLabelFont(font);
+
+			CategoryItemRenderer renderer2 = plot
+					.getRenderer();
+			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+					"{2}", new DecimalFormat("0") {
+
+						/**
+                 *
+                 */
+						private static final long serialVersionUID = 1L;
+
+						@Override
+						public StringBuffer format(double number,
+								StringBuffer result, FieldPosition fieldPosition) {
+							result = new StringBuffer(Space4Cloud.durationToString((long)number));  //"" + number);
+							return result;
+						}
+
+					});
+			renderer2.setItemLabelGenerator(generator);
+			renderer2.setItemLabelsVisible(true);
+			renderer2.setItemLabelFont(font);
+		}
 
 	}
 
@@ -1033,6 +1152,23 @@ public class RobustnessProgressWindow {
 					.getPreferredSize());
 
 			feasibilitiesLabel.validate();
+		}
+		
+		if (durationsGraph != null) {
+			ImageIcon icon;
+			try {
+				icon = new ImageIcon(
+						durationsGraph.createBufferedImage(
+								durationsPanel.getSize().width,
+								durationsPanel.getSize().height));
+			} catch (NullPointerException e) {
+				icon = new ImageIcon();
+			}
+			durationsLabel.setIcon(icon);
+			durationsLabel.setVisible(true);
+			durationsPanel.setPreferredSize(durationsLabel.getPreferredSize());
+
+			durationsLabel.validate();
 		}
 
 		alreadyUpdating = false;
