@@ -19,7 +19,7 @@ public enum Metric {
 	REPLICATION("Replication"), RAM("RAM"), HDD("HardDisk"), CORES("Cores"), CPU(
 			"CPUUtilization"), MACHINETYPE("MachineType"), SERVICETYPE(
 			"ServiceType"), RESPONSETIME("ResponseTime"), AVAILABILITY(
-			"Availability"), RELIABILITY("Reliability");
+			"Availability"), RELIABILITY("Reliability"), WORKLOADPERCENTAGE("WorkloadPercentage");
 
 	public static Metric getMetricFromTag(String tag) {
 		switch (tag) {
@@ -43,6 +43,8 @@ public enum Metric {
 			return AVAILABILITY;
 		case "Reliability":
 			return RELIABILITY;
+		case "WorkloadPercentage":
+			return WORKLOADPERCENTAGE;
 		default:
 			return null;
 		}
@@ -58,9 +60,9 @@ public enum Metric {
 		return xmlTag;
 	}
 	
-		public static String getSupportedMetricNames() {
+	public static String getSupportedMetricNames() {
 		String value="";
-		for(Metric m:Metric.values()){
+		for (Metric m : Metric.values()) {
 			value 	+= m.getXmlTag()+" ";
 		}
 		return value;
