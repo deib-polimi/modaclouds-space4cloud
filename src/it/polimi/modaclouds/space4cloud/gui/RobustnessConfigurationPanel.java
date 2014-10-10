@@ -20,7 +20,7 @@ public class RobustnessConfigurationPanel extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 2986951359583819299L;
-	private static final String PANEL_NAME = "Robustness Configuration Panel";
+	private static final String PANEL_NAME = "Robustness Configuration";
 	private JTextField peakFrom, peakTo, stepSize, attempts;
 	private JCheckBox initialSolution;
 	

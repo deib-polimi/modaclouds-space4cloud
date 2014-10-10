@@ -25,7 +25,7 @@ public class ExtensionModelSpecificationPanel extends JPanel implements ActionLi
 	private static final long serialVersionUID = -804310895749263278L;
 
 	
-	private static final String PANEL_NAME = "Extension Model Panel";
+	private static final String PANEL_NAME = "Extension Model";
 	private JTextField usageExtensionTextField;
 	private JTextField resourceEnvironmentTextField;
 	private JTextField constraintTextField;

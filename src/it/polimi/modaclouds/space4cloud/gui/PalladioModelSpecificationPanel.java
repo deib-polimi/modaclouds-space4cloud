@@ -21,7 +21,7 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 	 * 
 	 */
 	private static final long serialVersionUID = 5018880486991183723L;
-	private static final String PANEL_NAME = "Model Specification Panel";
+	private static final String PANEL_NAME = "Model Specification";
 	private JTextField reposirotyTextField;
 	private JTextField systemTextField;
 	private JTextField allocationTextField;

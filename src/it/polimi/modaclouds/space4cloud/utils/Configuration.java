@@ -66,10 +66,7 @@ public class Configuration {
 	
 	// For the Private Cloud part:
 	public static boolean USE_PRIVATE_CLOUD = false;
-	public static int PRIVATE_CPUS 			= 10; 			// number
-	public static double PRIVATE_CPUPOWER 	= 3.0 * 1000; 	// MHz
-	public static int PRIVATE_RAM 			= 16 * 1024; 	// MB
-	public static int PRIVATE_STORAGE		= 1 * 1024; 	// GB
+	public static String PRIVATE_CLOUD_HOSTS;
 	
 	//Operations
 	public static enum Operation {
@@ -165,10 +162,7 @@ public class Configuration {
 		prop.put("REDISTRIBUTE_WORKLOAD", Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		
 		prop.put("USE_PRIVATE_CLOUD", Boolean.toString(USE_PRIVATE_CLOUD));
-		prop.put("PRIVATE_CPUS", Integer.toString(PRIVATE_CPUS));
-		prop.put("PRIVATE_CPUPOWER", Double.toString(PRIVATE_CPUPOWER));
-		prop.put("PRIVATE_RAM", Integer.toString(PRIVATE_RAM));
-		prop.put("PRIVATE_STORAGE", Integer.toString(PRIVATE_STORAGE));
+		prop.put("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
 		
 		prop.store(fos, "SPACE4Clouds configuration properties");
 		fos.flush();
@@ -247,10 +241,7 @@ public class Configuration {
 		REDISTRIBUTE_WORKLOAD = Boolean.parseBoolean(prop.getProperty("REDISTRIBUTE_WORKLOAD", String.valueOf(REDISTRIBUTE_WORKLOAD)));
 		
 		USE_PRIVATE_CLOUD = Boolean.parseBoolean(prop.getProperty("USE_PRIVATE_CLOUD", String.valueOf(USE_PRIVATE_CLOUD)));
-		PRIVATE_CPUS = Integer.parseInt(prop.getProperty("PRIVATE_CPUS", String.valueOf(PRIVATE_CPUS)));
-		PRIVATE_CPUPOWER = Double.parseDouble(prop.getProperty("PRIVATE_CPUPOWER", String.valueOf(PRIVATE_CPUPOWER)));
-		PRIVATE_RAM = Integer.parseInt(prop.getProperty("PRIVATE_RAM", String.valueOf(PRIVATE_RAM)));
-		PRIVATE_STORAGE = Integer.parseInt(prop.getProperty("PRIVATE_STORAGE", String.valueOf(PRIVATE_STORAGE)));
+		PRIVATE_CLOUD_HOSTS = prop.getProperty("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
 	}
 
 	/**
@@ -323,14 +314,8 @@ public class Configuration {
 			}
 			
 			if (USE_PRIVATE_CLOUD) {
-				if (PRIVATE_CPUS < 1)
-					errors.add("The CPU number for the private cloud solution should be at least 1.");
-				if (PRIVATE_CPUPOWER < 1)
-					errors.add("The CPU power for the private cloud solution should be at least 1 MHz.");
-				if (PRIVATE_RAM < 1)
-					errors.add("The RAM for the private cloud solution should be at least 1 MB.");
-				if (PRIVATE_STORAGE < 1)
-					errors.add("The storage for the private cloud solution should be at least 1 GB.");
+				if (PRIVATE_CLOUD_HOSTS == null || PRIVATE_CLOUD_HOSTS.length() == 0)
+					errors.add("You need to specify the file describing the private hosts.");
 			}
 		}
 
@@ -372,10 +357,7 @@ public class Configuration {
 		logger.debug("REDISTRIBUTE_WORKLOAD: " + Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		
 		logger.debug("USE_PRIVATE_CLOUD: " + Boolean.toString(USE_PRIVATE_CLOUD));
-		logger.debug("PRIVATE_CPUS: " + Integer.toString(PRIVATE_CPUS));
-		logger.debug("PRIVATE_CPUPOWER: " + Double.toString(PRIVATE_CPUPOWER));
-		logger.debug("PRIVATE_RAM: " + Integer.toString(PRIVATE_RAM));
-		logger.debug("PRIVATE_STORAGE: " + Integer.toString(PRIVATE_STORAGE));
+		logger.debug("PRIVATE_CLOUD_HOSTS: " + PRIVATE_CLOUD_HOSTS);
 	}
 	
 	

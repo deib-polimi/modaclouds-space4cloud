@@ -1,39 +1,24 @@
-package it.polimi.modaclouds.space4cloud.optimization;
+package it.polimi.modaclouds.space4cloud.optimization.bursting;
 
+import it.polimi.modaclouds.qos_models.monitoring_ontology.CloudProvider;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-public class PrivateCloud {
-	private int cpus; 			// number
-	private double cpuPower; 	// MHz
-	private int ram; 			// MB
-	private int storage; 		// GB
+public class PrivateCloud extends CloudProvider {
+	
+	public List<Host> owns;
 	
 	private Solution solution;
 	private double[] rates;
@@ -45,15 +30,8 @@ public class PrivateCloud {
 	private SolutionMulti solutionMulti;
 	private EvaluationServer evalServer;
 	
-	// As a first approximation, we'll consider the Amazon instance sizes.
-	private final static String PROVIDER = "Amazon";
-	private final static String SERVICE_TYPE ="Compute";
-	private final static String SERVICE_NAME = "Elastic Compute Cloud (EC2)";
-	private final static String REGION = "eu-ireland";
-	
 	public static Solution getSolution(SolutionMulti solutionMulti, DataHandler dataHandler, EvaluationServer evalServer) {
-		PrivateCloud pc = new PrivateCloud(solutionMulti, dataHandler, evalServer,
-				Configuration.PRIVATE_CPUS, Configuration.PRIVATE_CPUPOWER, Configuration.PRIVATE_RAM, Configuration.PRIVATE_STORAGE);
+		PrivateCloud pc = new PrivateCloud(solutionMulti, dataHandler, evalServer);
 		
 		Solution s = pc.getSolution();
 		
@@ -61,18 +39,17 @@ public class PrivateCloud {
 	}
 	
 	public PrivateCloud(SolutionMulti solutionMulti,
-			/*ConstraintHandler constraintHandler,*/ DataHandler dataHandler, EvaluationServer evalServer,
-			int cpus, double cpuPower, int ram, int storage) {
-		this.cpus = cpus;
-		this.cpuPower = cpuPower;
-		this.ram = ram;
-		this.storage = storage;
-		logger.info("Private cloud with %d cpus of %d MHz each, with %d MB of RAM and %d GB of storage initialized.", cpus, cpuPower, ram, storage);
-		
+			/*ConstraintHandler constraintHandler,*/
+			DataHandler dataHandler, EvaluationServer evalServer) {
 		this.solutionMulti = solutionMulti;
 		this.dataHandler = dataHandler;
 //		this.constraintHandler = constraintHandler;
 		this.evalServer = evalServer;
+		
+		if (Configuration.USE_PRIVATE_CLOUD)
+			this.owns = Host.getFromFile(new File(Configuration.PRIVATE_CLOUD_HOSTS));
+		else
+			this.owns = new ArrayList<Host>();
 		
 		reset();
 	}
@@ -81,6 +58,7 @@ public class PrivateCloud {
 		solution = null;
 	}
 	
+	/*
 	private void initSolution() throws IOException, ParserConfigurationException, SAXException, JAXBException {
 		Solution origSolution = solutionMulti.get(PROVIDER);
 		
@@ -393,6 +371,7 @@ public class PrivateCloud {
 			}
 		}
 	}
+	*/
 	
 	public Solution getSolution() {
 		if (solution != null)
@@ -412,9 +391,9 @@ public class PrivateCloud {
 		}
 		
 		try {
-			initSolution();
-			maximizeUsage();
-			fixWorkload();
+//			initSolution();
+//			maximizeUsage();
+//			fixWorkload();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

@@ -26,7 +26,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	//the property that can be listened when a change in the functionality is detected
 	public static final String functionalityProperty = "functionality";
 	private static final long serialVersionUID = -5356951769849277734L;
-	private static final String PANEL_NAME = "Functionality Selection Panel";
+	private static final String PANEL_NAME = "Functionality Selection";
 	private JComboBox<Operation> operationBox;
 	private JComboBox<Solver> solverBox;
 	private JTextField dbConfText;
@@ -36,17 +36,14 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	private JLabel linePropLabel;
 	private JLabel emptyLabel2;
 	
-	private JTextField cpus, cpuPower, ram, storage;
 	private JCheckBox usePrivateCloud;
-	private JLabel cpusLabel;
-	private JLabel cpuPowerLabel;
-	private JLabel ramLabel;
-	private JLabel storageLabel;
+	
+	private ConfigurationWindow configurationWindow;
 	
 	/**
 	 * Create the panel.
 	 */
-	public FunctionalityPanel() {
+	public FunctionalityPanel(ConfigurationWindow configurationWindow) {
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{201, 201, 0};
@@ -179,57 +176,6 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		c.insets = new Insets(0, 0, 5, 0);
 		add(new JLabel(""), c);
 		
-		c.gridx = 0;
-		c.gridy++;
-        c.insets = new Insets(0, 0, 5, 5);
-        cpusLabel = new JLabel("CPUs");
-		add(cpusLabel, c);
-        cpusLabel.setVisible(false);
-		cpus = new JTextField(10);
-		c.gridx = 1;
-		c.insets = new Insets(0, 0, 5, 0);
-		add(cpus, c);
-		cpus.setVisible(false);
-		
-		c.gridx = 0;
-		c.gridy++;
-		c.insets = new Insets(0, 0, 5, 5);
-		cpuPowerLabel = new JLabel("CPU power for each CPU [MHz]");
-		add(cpuPowerLabel, c);
-		cpuPowerLabel.setVisible(false);
-		c.gridx = 1;
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.insets = new Insets(0, 0, 5, 0);
-		cpuPower = new JTextField(10);
-		add(cpuPower, c);
-		cpuPower.setVisible(false);
-		
-		c.gridx = 0;
-		c.gridy++;
-		c.insets = new Insets(0, 0, 5, 5);
-		ramLabel = new JLabel("RAM [MB]");
-		add(ramLabel, c);
-		ramLabel.setVisible(false);
-		c.gridx = 1;
-		c.insets = new Insets(0, 0, 5, 0);
-		ram = new JTextField(10);
-		add(ram, c);
-		ram.setVisible(false);
-		
-		c.gridx = 0;
-		c.gridy++;
-		c.insets = new Insets(0, 0, 5, 5);
-		storageLabel = new JLabel("Storage [GB]");
-		add(storageLabel, c);
-		storageLabel.setVisible(false);
-		c.gridx = 1;
-		c.insets = new Insets(0, 0, 5, 0);
-		storage = new JTextField(10);
-		add(storage, c);
-		storage.setVisible(false);
-		
-		
-
 		JPanel panel = new JPanel();
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.insets = new Insets(0, 0, 0, 5);
@@ -237,6 +183,8 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 6;
 		add(panel, gbc_panel);
+		
+		this.configurationWindow = configurationWindow;
 	}
 
 	@Override
@@ -279,11 +227,6 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		lineConfText.setText(Configuration.LINE_PROP_FILE);
 		
 		usePrivateCloud.setSelected(Configuration.USE_PRIVATE_CLOUD);
-		cpus.setText(Integer.toString(Configuration.PRIVATE_CPUS));
-		cpuPower.setText(Double.toString(Configuration.PRIVATE_CPUPOWER));
-		ram.setText(Integer.toString(Configuration.PRIVATE_RAM));
-		storage.setText(Integer.toString(Configuration.PRIVATE_STORAGE));
-		
 		updatePrivateCloudVisibility();
 	}
 
@@ -321,17 +264,10 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	/**
 	 * Updates the visibility of the private cloud parameters according to the box selection
 	 */
-	private void updatePrivateCloudVisibility(){
+	private void updatePrivateCloudVisibility() {
 		boolean shown = usePrivateCloud.isSelected();
-		
-		cpus.setVisible(shown);
-		cpuPower.setVisible(shown);
-		ram.setVisible(shown);
-		storage.setVisible(shown);
-		cpusLabel.setVisible(shown);
-		cpuPowerLabel.setVisible(shown);
-		ramLabel.setVisible(shown);
-		storageLabel.setVisible(shown);
+		if (configurationWindow != null)
+			configurationWindow.setVisibilityCloudBurstingPanel(shown);
 	}
 
 	/**
@@ -342,27 +278,6 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		Configuration.SOLVER = (Solver) solverBox.getSelectedItem();
 		Configuration.DB_CONNECTION_FILE = dbConfText.getText();
 		Configuration.LINE_PROP_FILE = lineConfText.getText();
-		
-		try{
-			Configuration.PRIVATE_CPUS = Integer.parseInt(cpus.getText());
-		} catch (NumberFormatException e){
-			Configuration.PRIVATE_CPUS = -1;
-		}
-		try{
-			Configuration.PRIVATE_CPUPOWER = Double.parseDouble(cpuPower.getText());
-		} catch (NumberFormatException e){
-			Configuration.PRIVATE_CPUPOWER = -1;
-		}
-		try{
-			Configuration.PRIVATE_RAM = Integer.parseInt(ram.getText());
-		} catch (NumberFormatException e){
-			Configuration.PRIVATE_RAM = -1;
-		}
-		try{
-			Configuration.PRIVATE_STORAGE = Integer.parseInt(storage.getText());
-		} catch (NumberFormatException e){
-			Configuration.PRIVATE_STORAGE = -1;
-		}
 		Configuration.USE_PRIVATE_CLOUD = usePrivateCloud.isSelected();
 	}
 	
@@ -372,7 +287,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		gui.setLocationRelativeTo(null);
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
 		
-		FunctionalityPanel panel = new FunctionalityPanel();
+		FunctionalityPanel panel = new FunctionalityPanel(null);
 		gui.add(panel);
 		
 		gui.setVisible(true);
