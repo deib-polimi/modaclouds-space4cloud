@@ -651,6 +651,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		int testTo = Configuration.ROBUSTNESS_PEAK_TO;
 		int stepSize = Configuration.ROBUSTNESS_STEP_SIZE;
 		int attempts = Configuration.ROBUSTNESS_ATTEMPTS;
+		int variability = Configuration.ROBUSTNESS_VARIABILITY;
 
 		double x = testFrom, basex = x;
 
@@ -659,8 +660,17 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		Configuration.USAGE_MODEL_EXTENSION = usageModelExtFile.getAbsolutePath();
 
 		for (x += stepSize; x <= testTo; x += stepSize) {
-			usageModelExtFiles.add(generateModifiedUsageModelExt(
-					usageModelExtFile, x / basex));
+			File ume = generateModifiedUsageModelExt(
+					usageModelExtFile, x / basex);
+			if (variability > 0) {
+				usageModelExtFiles.add(generateModifiedUsageModelExt(
+						ume, (100.0 - variability)/100 ));
+			}
+			usageModelExtFiles.add(ume);
+			if (variability > 0) {
+				usageModelExtFiles.add(generateModifiedUsageModelExt(
+						ume, (100.0 + variability)/100 ));
+			}
 		}
 
 		// We're checking the robustness of the solution here!
@@ -688,7 +698,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 //			}
 //			duration += res + " s";
 //		}
-		String duration = durationToString((attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60);
+		String duration = durationToString(1000 * (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60);
 		
 		logger
 		.info("Starting the robustness test, considering each problem "
@@ -700,6 +710,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		timer.split();
 
 		usageModelExtFiles.add(0, usageModelExtFile);
+		
+		if (variability > 0) {
+			usageModelExtFiles.add(0, generateModifiedUsageModelExt(
+					usageModelExtFile, (100.0 - variability)/100 ));
+			usageModelExtFiles.add(2, generateModifiedUsageModelExt(
+					usageModelExtFile, (100.0 + variability)/100 ));
+		}
 
 		List<File> solutions = new ArrayList<File>();
 

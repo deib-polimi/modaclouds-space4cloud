@@ -60,13 +60,14 @@ public class Configuration {
 	public static int ROBUSTNESS_PEAK_TO 	= 10000;
 	public static int ROBUSTNESS_STEP_SIZE 	= 300;
 	public static int ROBUSTNESS_ATTEMPTS 	= 5;
+	public static int ROBUSTNESS_VARIABILITY= 0;
 	
 	public static boolean REDISTRIBUTE_WORKLOAD = false;
 	
 	
 	// For the Private Cloud part:
 	public static boolean USE_PRIVATE_CLOUD = false;
-	public static String PRIVATE_CLOUD_HOSTS;
+	public static String PRIVATE_CLOUD_HOSTS = "";
 	
 	//Operations
 	public static enum Operation {
@@ -158,6 +159,7 @@ public class Configuration {
 		prop.put("ROBUSTNESS_PEAK_TO", Integer.toString(ROBUSTNESS_PEAK_TO));
 		prop.put("ROBUSTNESS_STEP_SIZE", Integer.toString(ROBUSTNESS_STEP_SIZE));
 		prop.put("ROBUSTNESS_ATTEMPTS", Integer.toString(ROBUSTNESS_ATTEMPTS));
+		prop.put("ROBUSTNESS_VARIABILITY", Integer.toString(ROBUSTNESS_VARIABILITY));
 		
 		prop.put("REDISTRIBUTE_WORKLOAD", Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		
@@ -237,6 +239,7 @@ public class Configuration {
 		ROBUSTNESS_PEAK_TO = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_TO", String.valueOf(ROBUSTNESS_PEAK_FROM)));
 		ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE", String.valueOf(ROBUSTNESS_STEP_SIZE)));
 		ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS", String.valueOf(ROBUSTNESS_ATTEMPTS)));
+		ROBUSTNESS_VARIABILITY = Integer.parseInt(prop.getProperty("ROBUSTNESS_VARIABILITY", String.valueOf(ROBUSTNESS_VARIABILITY)));
 		
 		REDISTRIBUTE_WORKLOAD = Boolean.parseBoolean(prop.getProperty("REDISTRIBUTE_WORKLOAD", String.valueOf(REDISTRIBUTE_WORKLOAD)));
 		
@@ -289,7 +292,7 @@ public class Configuration {
 			errors.add("The LINE configuration file has not been specified");
 		
 		//check the optimization if it has been selected
-		if(FUNCTIONALITY==Operation.Optimization){
+		if(FUNCTIONALITY==Operation.Optimization || FUNCTIONALITY == Operation.Robustness) {
 			if(TABU_MEMORY_SIZE < 1)
 				errors.add("The tabu memory size must be a positive number");
 			if(SCRUMBLE_ITERS < 1)
@@ -317,6 +320,18 @@ public class Configuration {
 				if (PRIVATE_CLOUD_HOSTS == null || PRIVATE_CLOUD_HOSTS.length() == 0)
 					errors.add("You need to specify the file describing the private hosts.");
 			}
+		}
+		if (FUNCTIONALITY == Operation.Robustness) {
+			if(ROBUSTNESS_ATTEMPTS < 1)
+				errors.add("The number of robustness attempts must be at least 1");
+			if(ROBUSTNESS_PEAK_FROM < 1)
+				errors.add("The minimum peak for the robustness test should be at least 1");
+			if(ROBUSTNESS_PEAK_TO < ROBUSTNESS_PEAK_FROM)
+				errors.add("The maximum peak for the robustness test has to be higher than the minimum peak");
+			if(ROBUSTNESS_STEP_SIZE < 1)
+				errors.add("The step size for the robustness test should be at least 1");
+			if(ROBUSTNESS_VARIABILITY < 0 || ROBUSTNESS_VARIABILITY > 100)
+				errors.add("The variability for the robustness test should be a number from 0 to 100");
 		}
 
 		return errors;
@@ -353,6 +368,7 @@ public class Configuration {
 		logger.debug("ROBUSTNESS_PEAK_TO: " + Integer.toString(ROBUSTNESS_PEAK_TO));
 		logger.debug("ROBUSTNESS_STEP_SIZE: " + Integer.toString(ROBUSTNESS_STEP_SIZE));
 		logger.debug("ROBUSTNESS_ATTEMPTS: " + Integer.toString(ROBUSTNESS_ATTEMPTS));
+		logger.debug("ROBUSTNESS_VARIABILITY: " + Integer.toString(ROBUSTNESS_VARIABILITY));
 		
 		logger.debug("REDISTRIBUTE_WORKLOAD: " + Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		

@@ -21,16 +21,16 @@ public class RobustnessConfigurationPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 2986951359583819299L;
 	private static final String PANEL_NAME = "Robustness Configuration";
-	private JTextField peakFrom, peakTo, stepSize, attempts;
+	private JTextField peakFrom, peakTo, stepSize, attempts, variability;
 	private JCheckBox initialSolution;
 	
 	public RobustnessConfigurationPanel() {
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{201, 201, 0};
-		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
+		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridBagLayout);
 		
@@ -67,6 +67,15 @@ public class RobustnessConfigurationPanel extends JPanel {
 		c.gridx = 0;
 		c.gridy++;
 		c.insets = new Insets(0, 0, 5, 5);
+		add(new JLabel("Variability (%)"), c);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		variability = new JTextField(10);
+		add(variability, c);
+		
+		c.gridx = 0;
+		c.gridy++;
+		c.insets = new Insets(0, 0, 5, 5);
 		add(new JLabel("Attempts per test"), c);
 		c.gridx = 1;
 		c.insets = new Insets(0, 0, 5, 0);
@@ -93,6 +102,7 @@ public class RobustnessConfigurationPanel extends JPanel {
 		stepSize.setText(Integer.toString(Configuration.ROBUSTNESS_STEP_SIZE));
 		attempts.setText(Integer.toString(Configuration.ROBUSTNESS_ATTEMPTS));
 		initialSolution.setSelected(Configuration.RELAXED_INITIAL_SOLUTION);
+		variability.setText(Integer.toString(Configuration.ROBUSTNESS_VARIABILITY));
 	}
 	
 	/**
@@ -118,6 +128,11 @@ public class RobustnessConfigurationPanel extends JPanel {
 			Configuration.ROBUSTNESS_ATTEMPTS = Integer.parseInt(attempts.getText());
 		} catch (NumberFormatException e){
 			Configuration.ROBUSTNESS_ATTEMPTS = -1;
+		}
+		try{
+			Configuration.ROBUSTNESS_VARIABILITY = Integer.parseInt(variability.getText());
+		} catch (NumberFormatException e){
+			Configuration.ROBUSTNESS_VARIABILITY = -1;
 		}
 		Configuration.RELAXED_INITIAL_SOLUTION = initialSolution.isSelected();
 	}
