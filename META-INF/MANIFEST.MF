@@ -43,7 +43,7 @@ Bundle-ClassPath: .,
  target/dependency/commons-lang-2.6.jar,
  log/,
  target/dependency/xml-apis-1.4.01.jar,
- target/dependency/milp-0.0.9.jar
+ target/dependency/milp-0.0.10.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.db;
   uses:="it.polimi.modaclouds.space4cloud.optimization.solution.impl,
