@@ -482,9 +482,19 @@ public class RobustnessProgressWindow {
 					.getNodeValue();
 
 			Size s = Size.parse(size);
+			
+			String tierName = null;
+			try {
+				tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
+			} catch (Exception e) {
+				tierName = null;
+			}
+			if (tierName == null || tierName.length() == 0)
+				tierName = "Tier " + i;
+			
 
-			tiers.addValue(s.ordinal(), "Tier " + i, "" + maxPopulation);
-			tiersBasic.addValue(s.basicId, "Tier " + i, "" + maxPopulation);
+			tiers.addValue(s.ordinal(), /*"Tier " + i*/ tierName, "" + maxPopulation);
+			tiersBasic.addValue(s.basicId, /*"Tier " + i*/ tierName, "" + maxPopulation);
 
 			Element tierEl = (Element) tier;
 			NodeList hours = tierEl.getElementsByTagName("HourAllocation");
@@ -499,7 +509,7 @@ public class RobustnessProgressWindow {
 							.addValue(
 									Integer.valueOf(hour.getAttributes()
 											.getNamedItem("allocation")
-											.getNodeValue()), "Tier " + i, ""
+											.getNodeValue()), /*"Tier " + i*/ tierName, ""
 											+ maxPopulation);
 				}
 
