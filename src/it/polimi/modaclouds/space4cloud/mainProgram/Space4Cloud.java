@@ -685,7 +685,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				.newFixedThreadPool(1);
 
 		RobustnessProgressWindow rpw = new RobustnessProgressWindow(
-				usageModelExtFiles.size() + 1);
+				usageModelExtFiles.size() + (variability > 0 ? 3 : 1));
 
 //		String duration = "";
 //		{
