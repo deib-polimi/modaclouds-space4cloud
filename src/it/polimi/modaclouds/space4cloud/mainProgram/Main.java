@@ -97,7 +97,7 @@ public class Main {
 	}
 	
 	public static void main2(String[] args) {
-		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\argh-new\\results");
+		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\variability\\1000");
 		
 	}
 

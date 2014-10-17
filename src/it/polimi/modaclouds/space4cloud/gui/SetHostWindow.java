@@ -39,6 +39,8 @@ public class SetHostWindow {
 	
 	private CloudBurstingPanel cbp;
 	
+	public static final double DEFAULT_HOURLY_COST = 0.01;
+	
 	public SetHostWindow(CloudBurstingPanel cbp) {
 		this(cbp, null);
 	}
@@ -63,7 +65,7 @@ public class SetHostWindow {
 				hourlyCosts[i] = c.getValue();
 			}
 			for (; i < hourlyCosts.length; ++i)
-				hourlyCosts[i] = 10.0;
+				hourlyCosts[i] = DEFAULT_HOURLY_COST;
 				
 		} else {
 			this.host = null;
@@ -76,7 +78,7 @@ public class SetHostWindow {
 			
 			hourlyCosts = new double[24];
 			for (int i = 0; i < hourlyCosts.length; ++i)
-				hourlyCosts[i] = 10.0;
+				hourlyCosts[i] = DEFAULT_HOURLY_COST;
 		}
 		
 		initialize();

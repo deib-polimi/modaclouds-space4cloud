@@ -341,6 +341,9 @@ public class RobustnessProgressWindow {
 	public static void sortDataset(DefaultCategoryDataset dataset) {
 		for (int i = 0; i < dataset.getColumnCount() - 1; ++i) {
 			for (int j = i + 1; j < dataset.getColumnCount(); ++j) {
+				if (i < 0)
+					continue;
+				
 				boolean bigger = false;
 				try {
 					bigger = (Integer
