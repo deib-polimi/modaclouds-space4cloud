@@ -74,6 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -643,7 +644,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		// if we want to check the robustness of the solution, a number of
 		// modifications of the usage model file must be created.
-		ArrayList<File> usageModelExtFiles = new ArrayList<File>();
+//		ArrayList<File> usageModelExtFiles = new ArrayList<File>();
+		TreeMap<Integer, File> usageModelExtFiles = new TreeMap<Integer, File>();
 		File usageModelExtFile = new File(Configuration.USAGE_MODEL_EXTENSION);
 
 		int highestPeak = getMaxPopulation(usageModelExtFile);
@@ -660,16 +662,18 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		Configuration.USAGE_MODEL_EXTENSION = usageModelExtFile.getAbsolutePath();
 
 		for (x += stepSize; x <= testTo; x += stepSize) {
-			File ume = generateModifiedUsageModelExt(
-					usageModelExtFile, x / basex);
 			if (variability > 0) {
-				usageModelExtFiles.add(generateModifiedUsageModelExt(
-						ume, (100.0 - variability)/100 ));
+				usageModelExtFiles.put(
+						(int)(x * (100.0 - variability)/100),
+						generateModifiedUsageModelExt(usageModelExtFile, x / basex * (100.0 - variability)/100 )
+						);
 			}
-			usageModelExtFiles.add(ume);
+			usageModelExtFiles.put((int)x, generateModifiedUsageModelExt(usageModelExtFile, x / basex));
 			if (variability > 0) {
-				usageModelExtFiles.add(generateModifiedUsageModelExt(
-						ume, (100.0 + variability)/100 ));
+				usageModelExtFiles.put(
+						(int)(x * (100.0 + variability)/100),
+						generateModifiedUsageModelExt(usageModelExtFile, x / basex * (100.0 + variability)/100 )
+						);
 			}
 		}
 
@@ -709,12 +713,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		timer.start();
 		timer.split();
 
-		usageModelExtFiles.add(0, usageModelExtFile);
+		usageModelExtFiles.put(highestPeak, usageModelExtFile);
 		
 		if (variability > 0) {
-			usageModelExtFiles.add(0, generateModifiedUsageModelExt(
+			usageModelExtFiles.put((int)(highestPeak * (100.0 - variability)/100 ), generateModifiedUsageModelExt(
 					usageModelExtFile, (100.0 - variability)/100 ));
-			usageModelExtFiles.add(2, generateModifiedUsageModelExt(
+			usageModelExtFiles.put((int)(highestPeak * (100.0 + variability)/100 ), generateModifiedUsageModelExt(
 					usageModelExtFile, (100.0 + variability)/100 ));
 		}
 
@@ -743,7 +747,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 //			cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts"));
 //		} catch (Exception e) { }
 		
-		for (File f : usageModelExtFiles) {
+		for (int key : usageModelExtFiles.keySet()) {
+			File f = usageModelExtFiles.get(key);
+			
 //			step++;
 			File bestSolution = null;
 			int bestCost = Integer.MAX_VALUE;
@@ -869,7 +875,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			terminated++;
 			solutions.add(bestSolution);
 
-			rpw.add(usageModelExtFiles.get(el), solutions.get(el));
+			rpw.add(usageModelExtFiles.get(key), solutions.get(el));
 			rpw.setValue(terminated);
 			rpw.save2png(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory).toString());
 
