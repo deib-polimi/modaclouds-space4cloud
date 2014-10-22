@@ -94,7 +94,7 @@ public class Solution implements Cloneable, Serializable {
 	private String region;
 
 	/** The evaluation. */
-	private ArrayList<HashMap<Constraint, Double>> evaluation;
+	private ArrayList<HashMap<Constraint, Double>> evaluation = new ArrayList<HashMap<Constraint, Double>>();
 
 	private long evaluationTime;
 
@@ -732,7 +732,8 @@ public class Solution implements Cloneable, Serializable {
 	@Override
 	public String toString() {
 		String result = "Solution@" + Integer.toHexString(super.hashCode());
-		result += "[Cost: " + cost;
+		result += "[Provider: " + getProvider();
+		result += ", Cost: " + cost;
 		result += ", Evaluated: " + evaluated;
 		result += ", Feasible: " + isFeasible();
 		result += "]";
