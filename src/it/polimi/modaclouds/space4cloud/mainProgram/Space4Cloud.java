@@ -79,6 +79,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker.StateValue;
@@ -916,7 +917,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	public static String durationToString(long duration) {
 		String actualDuration = "";
 		{
-			int res = (int) duration / 1000;
+			int res = (int) TimeUnit.MILLISECONDS.toSeconds(duration);
 			if (res > 60 * 60) {
 				actualDuration += (res / (60 * 60)) + " h ";
 				res = res % (60 * 60);

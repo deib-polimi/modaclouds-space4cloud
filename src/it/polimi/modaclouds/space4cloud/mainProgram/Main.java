@@ -18,7 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
-import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
 
 
 
@@ -64,41 +63,25 @@ public class Main {
 	/**
 	 * Main method.
 	 **/
-	public static void main(String[] args) {
-//		String configuration = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\NewGuiConfigurationLQNS.prop";
-
-		String configuration = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\";
-//		configuration += "conf-robustness.properties";
-//		configuration += "conf-robustness-ruski.properties";
-		configuration += "conf-optimization.properties";
-//		configuration += "conf-optimization-ruski.properties";
-		
+	public static void mainStandard(String[] args) {
 		Space4Cloud instance = new Space4Cloud();
-//		Space4Cloud instance = new Space4Cloud(configuration);
-
-		/**
-		String basePath = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\";
-		Operations operation = Operations.Optimization;
-		File usageModelExtension = new File(basePath + "OfBiz-UsageExtension.xml");
-		File resourceModelExtension = new File(basePath + "OfBiz-ContainerExtension.xml");
-		File constraintsFile =  new File(basePath + "OfBiz-Constraint.xml");
-		int startPopulation = 2000;
-		int endPopulation = 3000;
-		int step = 500;
-		String dbConfigurationFilePath = Paths.get(basePath,"DBConnection.properties").toString();
-		File optimizationConfigurationFile = new File(basePath+"OptEngine.properties");
-		Space4Cloud instance = new Space4Cloud(	operation, basePath, usageModelExtension, resourceModelExtension,constraintsFile, startPopulation, endPopulation, step, dbConfigurationFilePath, optimizationConfigurationFile);
-		// instance.setRobustnessAttempts(10);
-		 */
-		// instance.setProvidersInitialSolution("Amazon", "Microsoft");
-		// instance.setProvidersInitialSolution("Flexiscale");
-
 		instance.start();		
 	}
 	
-	public static void main2(String[] args) {
-		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\variability\\1000");
+	public static void mainBatch(String[] args) {
+		String folder = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\OfBiz\\";
+		String configuration = folder + "conf-private-1p.properties";
 		
+		Space4Cloud instance = new Space4Cloud(configuration);
+		instance.start();
+	}
+	
+//	public static void mainRedrawRobustness(String[] args) {
+//		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\variability\\1000");
+//	}
+	
+	public static void main(String[] args) {
+		mainBatch(args);
 	}
 
 }

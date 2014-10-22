@@ -25,6 +25,8 @@ import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.Host;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
@@ -52,7 +54,53 @@ public class CostEvaluator {
 		dataHandler = DataHandlerFactory.getHandler();
 	}
 
+//	public double deriveCosts(Instance application, int hour) {
+//		double cost = 0;
+//		// sum up costs for each tier
+//		for (Tier t : application.getTiers()) {
+//			CloudService service = t.getCloudService();
+//			if (service instanceof IaaS) {
+//				IaaS iaasResource = (IaaS) service;
+//				it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler
+//						.getCloudResource(iaasResource.getProvider(),
+//								iaasResource.getServiceName(),
+//								iaasResource.getResourceName());
+//
+//				if (cloudResource == null) {
+//					logger.error("ERROR: The found resource is null!");
+//					cost += 1;
+//					continue;
+//				}
+//
+//				List<Cost> lc = cloudResource.getHasCost();
+//				List<Cost> onDemandLc = new ArrayList<Cost>();
+//
+//				// filter only on-demand
+//				for (Cost c : lc)
+//					if (!c.getDescription().contains("Reserved"))
+//						onDemandLc.add(c);
+//
+//				lc.clear();
+//				// filter by region
+//				for (Cost c : onDemandLc)
+//					if (c.getRegion() == null || c.getRegion() == ""
+//					|| application.getRegion() == null
+//					|| c.getRegion().equals(application.getRegion()))
+//						lc.add(c);
+//
+//				CostProfile cp = cloudResource.getHasCostProfile();
+//				cost += deriveCosts(lc, cp, iaasResource.getReplicas(), hour);
+//			}
+//			// TODO Add Platform costs
+//		}
+//		return cost;
+//	}
+	
 	public double deriveCosts(Instance application, int hour) {
+		if (application.getFather().getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
+			return derivePrivateCosts(application, hour);
+		}
+		
 		double cost = 0;
 		// sum up costs for each tier
 		for (Tier t : application.getTiers()) {
@@ -88,6 +136,28 @@ public class CostEvaluator {
 
 				CostProfile cp = cloudResource.getHasCostProfile();
 				cost += deriveCosts(lc, cp, iaasResource.getReplicas(), hour);
+			}
+			// TODO Add Platform costs
+		}
+		return cost;
+	}
+	
+	public double derivePrivateCosts(Instance application, int hour) {
+		if (application.getFather().getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1) {
+			return deriveCosts(application, hour);
+		}
+		
+		double cost = 0;
+		// sum up costs for each tier
+		for (Tier t : application.getTiers()) {
+			CloudService service = t.getCloudService();
+			if (service instanceof IaaS) {
+				IaaS iaasResource = (IaaS) service;
+				Host h = PrivateCloud.getInstance().getHost(application.getFather().getProvider());
+				
+				CostProfile cp = h.energyCost;
+				
+				cost += deriveCosts(null, cp, iaasResource.getReplicas(), hour);
 			}
 			// TODO Add Platform costs
 		}
@@ -265,7 +335,8 @@ public class CostEvaluator {
 			}
 
 		// Consider the Cost Profile
-		if (cp != null && cp != null) {
+//		if (cp != null && cp != null) {
+		if (lc == null && cp != null) {
 			lc = cp.getComposedOf();
 			if (lc != null)
 				for (Cost c : lc) {

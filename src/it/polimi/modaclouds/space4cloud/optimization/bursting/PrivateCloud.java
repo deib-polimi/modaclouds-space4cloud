@@ -1,407 +1,398 @@
 package it.polimi.modaclouds.space4cloud.optimization.bursting;
 
-import it.polimi.modaclouds.qos_models.monitoring_ontology.CloudProvider;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
-import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
+import it.polimi.modaclouds.space4cloud.optimization.UsageModelExtensionLoader;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.emf.common.notify.Adapter;
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EOperation;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PrivateCloud extends CloudProvider {
+public class PrivateCloud implements CloudProvider {
 	
 	public List<Host> owns;
 	
-	private Solution solution;
-	private double[] rates;
+	private SolutionMulti solution;
 	
 	private static final Logger logger = LoggerFactory.getLogger(PrivateCloud.class);
 	
-	private DataHandler dataHandler;
-//	private ConstraintHandler constraintHandler;
-	private SolutionMulti solutionMulti;
-	private EvaluationServer evalServer;
+	private SolutionMulti startingSolution;
 	
-	public static Solution getSolution(SolutionMulti solutionMulti, DataHandler dataHandler, EvaluationServer evalServer) {
-		PrivateCloud pc = new PrivateCloud(solutionMulti, dataHandler, evalServer);
+	private DataHandler dataHandler;
+	
+	public static final String BASE_PROVIDER_NAME = "PrivateHost";
+	
+	public static PrivateCloud instance = null;
+	
+	public static PrivateCloud getInstance() {
+		return instance;
+	}
+	
+	public static PrivateCloud getInstance(SolutionMulti solutionMulti, DataHandler dataHandler) {
+		if (instance == null)
+			instance = new PrivateCloud(solutionMulti, dataHandler);
 		
-		Solution s = pc.getSolution();
+		return instance;
+	}
+	
+	public static SolutionMulti getSolution(SolutionMulti solutionMulti, DataHandler dataHandler) throws Exception {
+		PrivateCloud pc = getInstance(solutionMulti, dataHandler);
+		
+		SolutionMulti s = pc.getSolution();
 		
 		return s;
 	}
 	
-	public PrivateCloud(SolutionMulti solutionMulti,
-			/*ConstraintHandler constraintHandler,*/
-			DataHandler dataHandler, EvaluationServer evalServer) {
-		this.solutionMulti = solutionMulti;
-		this.dataHandler = dataHandler;
-//		this.constraintHandler = constraintHandler;
-		this.evalServer = evalServer;
+	private PrivateCloud(SolutionMulti solutionMulti, DataHandler dataHandler) {
+		this.startingSolution = solutionMulti;
 		
 		if (Configuration.USE_PRIVATE_CLOUD)
 			this.owns = Host.getFromFile(new File(Configuration.PRIVATE_CLOUD_HOSTS));
 		else
 			this.owns = new ArrayList<Host>();
 		
+		this.dataHandler = dataHandler;
+		
 		reset();
+		
+		logger.info("PrivateCloud initialized.");
 	}
 	
 	public void reset() {
 		solution = null;
 	}
 	
-	/*
-	private void initSolution() throws IOException, ParserConfigurationException, SAXException, JAXBException {
-		Solution origSolution = solutionMulti.get(PROVIDER);
-		
-		String fakeProvider = "PrivateCloud";
-		
-		if (origSolution == null)
-			origSolution = solutionMulti.get(0);
-		
-//		solution = new Solution();
-		
-		solution = origSolution.clone();
-		
-		String resourceSize = dataHandler.getCloudResourceSizes(PROVIDER, SERVICE_NAME).iterator().next();
-		solution.setRegion(REGION);
-		
-		solution.buildFolderStructure(fakeProvider);
-		
-		rates = new double[24];
-		
-		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
-		
-		for (int hour = 0; hour < 24; ++hour) {
-//			Instance application = new Instance();
-//			solution.addApplication(application);
-			
-			Instance application = solution.getApplication(hour);
-			
-			File[] models = Paths
-					.get(Configuration.PROJECT_BASE_FOLDER, 
-							Configuration.WORKING_DIRECTORY, 
-							Configuration.PERFORMANCE_RESULTS_FOLDER, 
-							fakeProvider,
-							Configuration.FOLDER_PREFIX + hour).toFile()
-							.listFiles(new FilenameFilter() {
-								@Override
-								public boolean accept(File dir, String name) {
-									return name.endsWith(".xml");
-								}
-							});
-			// suppose there is just 1 model
-			Path lqnModelPath = models[0].toPath();
-			application.initLqnHandler(lqnModelPath);
-			
-			Instance origApplication = origSolution.getApplication(hour);
-			
-			int population = (int)Math.round(origApplication.getWorkload() / origSolution.getPercentageWorkload(hour));
-			double thinkTime = -1.0;
-			if (usageModelParser.getThinkTimes().size() == 1)
-				thinkTime = usageModelParser.getThinkTimes().values()
-				.iterator().next()[hour];
-			
-			application.setWorkload(population);
-			application.getLqnHandler().setPopulation(population);
-			application.getLqnHandler().setThinktime(thinkTime);
-			solution.setPercentageWorkload(hour, 1.0);
-			rates[hour] = 1.0;
-			
-			application.getLqnHandler().saveToFile();
-			
-			if (!origSolution.getProvider().equals(PROVIDER)) {
-				for (Tier origT : origApplication.getTiers()) {
-					CloudService origService = origT.getCloudService();
-					if (!origService.getServiceType().equals(SERVICE_TYPE))
-						continue;
-					
-					Resource r = new Resource(dataHandler, resourceSize);
-					
-					double speed = r.getSpeed(); //dataHandler.getProcessingRate(PROVIDER, SERVICE_NAME, resourceSize);
-					int ram = r.getRam(); // dataHandler.getAmountMemory(PROVIDER, SERVICE_NAME, resourceSize);
-					int numberOfCores = r.getNumberOfCores(); // dataHandler.getNumberOfReplicas(PROVIDER, SERVICE_NAME, resourceSize);
-					int replicas = r.getReplicas(); //1;
-	
-//					Tier t = new Tier(origT.getId(), origT.getName());
-					
-					Tier t = application.getTierById(origT.getId());
-					
-					CloudService service = new Compute(PROVIDER, SERVICE_TYPE, SERVICE_NAME, resourceSize, replicas, numberOfCores, speed, ram);
-					t.setService(service);
-//					application.addTier(t);
-					
-//					for (Component comp : origT.getComponents())
-//						t.addComponent(comp);
-					
-				}
-			}
-		}
+	public boolean isEvaluated() {
+		return solution != null;
 	}
 	
-	private class Resource {
-		private double resourceSpeed;
-		private int resourceRam;
-		private int resourceNumberOfCores;
-		private int resourceReplicas;
-		
-		public Resource(DataHandler dataHandler, String resourceSize) {
-			resourceSpeed = dataHandler.getProcessingRate(PROVIDER, SERVICE_NAME, resourceSize);
-			resourceRam = dataHandler.getAmountMemory(PROVIDER, SERVICE_NAME, resourceSize);
-			resourceNumberOfCores = dataHandler.getNumberOfReplicas(PROVIDER, SERVICE_NAME, resourceSize);
-			resourceReplicas = 1;
-		}
-		
-		public Resource(Compute compute) {
-			resourceSpeed = compute.getSpeed() * compute.getSpeedFactor();
-			resourceRam = compute.getRam();
-			resourceNumberOfCores = compute.getNumberOfCores();
-			resourceReplicas = compute.getReplicas();
-		}
-		
-		public double getTotalSpeed() {
-			return resourceSpeed * resourceNumberOfCores * resourceReplicas;
-		}
-		public int getTotalRam() {
-			return resourceRam * resourceReplicas * resourceReplicas;
-		}
-		
-		public double getSpeed() {
-			return resourceSpeed;
-		}
-		public int getNumberOfCores() {
-			return resourceNumberOfCores;
-		}
-		public int getRam() {
-			return resourceRam;
-		}
-		public int getReplicas() {
-			return resourceReplicas;
-		}
-		public void setReplicas(int replicas) {
-			if (replicas > 1)
-				this.resourceReplicas = replicas;
-		}
-		
-		public double remainingResources() {
-			double res = (cpus * cpuPower) - getTotalSpeed() + ram - getTotalRam();
-			if (res < 0.0)
-				res = -1.0;
-			return res;
-		}
-	}
-	
-	private int maxNumberOfReplicas(String resourceSize) {
-		double totalSpeed[] = new double[24];
-		int totalRam[] = new int[24];
-		double maxTotalSpeed = Double.MIN_VALUE;
-		int maxTotalRam = Integer.MIN_VALUE;
-		
-		for (int hour = 0; hour < 24; ++hour) {
-			Instance app = solution.getApplication(hour);
-			totalSpeed[hour] = 0.0;
-			totalRam[hour] = 0;
-			
-			for (Tier t : app.getTiers()) {
-//				Compute compute = (Compute)t.getCloudService();
-//				
-//				totalSpeed[hour] += compute.getReplicas() * compute.getSpeed() * compute.getSpeedFactor() * compute.getNumberOfCores();
-//				totalRam[hour] += compute.getReplicas() * compute.getRam();
-				
-//				Resource r = new Resource((Compute)t.getCloudService());
-				Resource r = new Resource(dataHandler, resourceSize);
-				
-				totalSpeed[hour] += r.getTotalSpeed();
-				totalRam[hour] += r.getTotalRam();
-			}
-			
-			if (maxTotalSpeed < totalSpeed[hour])
-				maxTotalSpeed = totalSpeed[hour];
-			if (maxTotalRam < totalRam[hour])
-				maxTotalRam = totalRam[hour];
-			
-		}
-		
-		return (int)Math.min(Math.floor(cpus * cpuPower / maxTotalSpeed), Math.floor(ram / maxTotalRam));
-	}
-	
-	private int maxNumberOfReplicas() {
-		Tier t = solution.getApplication(0).getTiers().get(0);
-		Compute compute = (Compute)t.getCloudService();
-		
-		return maxNumberOfReplicas(compute.getResourceName());
-	}
-	
-	private final static int MAX_STEPUP_ITERATIONS = 10;
-	
-	private void fixWorkload() {
-		double stepDown = 0.1, stepUp = 0.01;
-		boolean goOn = true;
-		
-		for (int iteration = 1; goOn; ++iteration) {
-			evalServer.EvaluateSolution(solution);
-			if (solution.isFeasible() || iteration > MAX_STEPUP_ITERATIONS * 2) {
-				goOn = false;
-				continue;
-			}
-			
-			double[] rates = new double[24];
-			for (int i = 0; i < rates.length; ++i)
-				rates[i] = 1.0;
-			
-			for (int hour = 0; hour < 24; ++hour) {
-				Instance app = solution.getApplication(hour);
-				if (app.isFeasible()) {
-					if (iteration <= MAX_STEPUP_ITERATIONS) {
-						rates[hour] += stepUp;
-						if (rates[hour] > 1.0)
-							rates[hour] = 1.0;
-					}
-				} else {
-					rates[hour] -= stepDown;
-					if (rates[hour] < 0.0)
-						rates[hour] = 0.0;
-				}
-			}
-			
-			MoveChangeWorkload move = new MoveChangeWorkload(solution);
-
-			try {
-				move.modifyWorkload(rates);
-				logger.debug("done!\nThe new values are: ");
-				for (Instance i : solution.getApplications())
-					logger.debug("%d ", i.getWorkload());
-
-			} catch (ParserConfigurationException | SAXException | IOException
-					| JAXBException e) {
-				logger.debug("error!\n");
-				e.printStackTrace();
-				logger.error("Error performing the change of the workload.\n"
-						+ e.getMessage());
-			}
-		}
-	}
-	
-	private void maximizeUsage() throws Exception {
-		Instance app = solution.getApplication(0);
-		
-		IaaS newRes = null;
-		List<Tier> tiers = app.getTiers();
-			
-		for (Tier t : tiers) {
-			
-			if (newRes == null) {
-				List<IaaS> resources = dataHandler.getSameServiceResource(t.getCloudService(), solution.getRegion());
-				
-				Resource maxR = null;
-//				String newResType = null;
-				
-				List<String> resourceSizes =
-						new ArrayList<>(new LinkedHashSet<>(dataHandler.getCloudResourceSizes(PROVIDER, SERVICE_NAME)));
-//						dataHandler.getCloudResourceSizes(PROVIDER, SERVICE_NAME);
-				for (String resourceSize : resourceSizes) {
-					Resource r = new Resource(dataHandler, resourceSize);
-					r.setReplicas(maxNumberOfReplicas(resourceSize));
-					
-					if ((r.remainingResources() > -1.0 && r.getReplicas() >= tiers.size()) &&
-							(maxR == null || maxR.remainingResources() > r.remainingResources())) {
-//						maxR = r;
-//						newResType = resourceSize;
-						
-						for (IaaS res : resources) {
-							if (res.getResourceName().equals(resourceSize)) {
-								newRes = res;
-								maxR = r;
-//								newResType = resourceSize;
-								break;
-							}
-						}
-					}
-				}
-	
-//				for (IaaS res : resources) {
-//					if (res.getResourceName().equals(newResType)) {
-//						newRes = res;
-//						break;
-//					}
-//				}
-			}
-			
-			if (newRes == null)
-				throw new Exception("Impossible to find a solution.");
-			
-			MoveOnVM moveArray[] = new MoveOnVM[24];
-			MoveTypeVM moveVM = new MoveTypeVM(solution);
-			
-			for (int hour = 0; hour < 24; ++hour) {
-				for (Tier tier : solution.getApplication(hour).getTiers()) {
-					moveVM.changeMachine(tier.getId(), (Compute) newRes);
-				}
-			}
-			
-			int replicas = maxNumberOfReplicas();
-			
-			for (int hour = 0; hour < 24; ++hour) {
-				
-				moveArray[hour] = new MoveOnVM(solution, hour);
-				
-//				List<Tier> tiers = solution.getApplication(hour).getTiers();
-				int usedReplicas = 0;
-				
-				for (Tier tier : tiers) {
-					int replicasTier = (int)Math.round(replicas / (double)tiers.size());
-					
-					if (usedReplicas + replicasTier > replicas) {
-						replicasTier = replicas - usedReplicas;
-						if (replicasTier < 0)
-							replicasTier = 0;
-					}
-					usedReplicas += replicasTier;
-					
-					moveArray[hour].scale(tier, replicasTier);
-				}
-			}
-		}
-	}
-	*/
-	
-	public Solution getSolution() {
-		if (solution != null)
+	public SolutionMulti getSolution() throws Exception {
+		if (solution != null) {
+			logger.info("Solution already computed, returned that.");
 			return solution;
+		}
 		
 		logger.info("Computing the solution that will be allocated in the private cloud...");
 		
-		if (solutionMulti.size() < 1) {
+		if (this.startingSolution.size() < 1) {
 			logger.error("The SolutionMulti object has no Solution! Aborting.");
 			return null;
+		} else if (this.startingSolution.size() > 1) {
+			
+			Solution solutionMax = this.startingSolution.get(0);
+			double costMax = solutionMax.getCost();
+			
+			for (int i = 1; i < this.startingSolution.size(); ++i) {
+				Solution s = this.startingSolution.get(i);
+				if (s.getCost() > costMax) {
+					costMax = s.getCost();
+					solutionMax = s;
+				}
+			}
+			
+			solution = new SolutionMulti();
+			solution.add(solutionMax);
+			
+		} else {
+			solution = this.startingSolution.clone();
 		}
 		
-		int maxPopulation = Space4Cloud.getMaxPopulation(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
-		if (maxPopulation == -1) {
-			logger.error("Error met while reading the usage model extension file! Aborting.");
-			return null;
+		Path tempSol = Files.createTempFile("solution", ".xml"), tempConf = Files.createTempFile("conf", ".properties");
+		solution.exportLight(tempSol);
+		Configuration.saveConfiguration(tempConf.toString());
+		
+		it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud pc =
+				new it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud(tempConf.toString(), tempSol.toString());
+		
+		pc.compute();
+		
+		List<File> solutions = pc.getSolutions();
+		solution.setFrom(solutions.get(0), null);
+		
+		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
+		
+		for (int i = 1; i < solutions.size(); ++i) {
+			if (SolutionMulti.isEmpty(solutions.get(i)))
+				continue;
+			SolutionMulti tmp = new SolutionMulti();
+			tmp.add(solution.get(0).clone());
+			
+			for (Solution sol : tmp.getAll()) {
+				for (Instance inst : sol.getApplications()) {
+					for (Tier tier : inst.getTiers()) {
+						IaaS res = (IaaS) tier.getCloudService();
+						res.setReplicas(0);
+					}
+				}
+			}
+			
+			tmp.setFrom(solutions.get(i), null);
+			
+			Host h = owns.get(i-1); // TODO: this should be checked
+			
+//			TODO: if we prefer to add the hash code of the host in the name of the provider,
+//			      we could enable this other piece of code
+			
+//			for (int ih = 0; ih < owns.size() && h == null; ++ih) {
+//				if (tmp.get(0).getProvider().indexOf(Integer.toHexString(h.hashCode())) > -1) {
+//					h = owns.get(ih);
+//				}
+//			}
+			
+			for (Solution s : tmp.getAll()) {
+				s.setRegion(null);
+				String provider = BASE_PROVIDER_NAME + i + " (" + h.name + ")";
+				
+				for (Tier t : s.getApplication(0).getTiers()) {
+					CloudService service = t.getCloudService();
+					
+					CloudResource res = dataHandler.getCloudResource(
+							service.getProvider(),
+							service.getServiceName(),
+							service.getResourceName());
+					
+					h.addResource(res);
+					
+					ArrayList<String> propertyNames = new ArrayList<String>();
+					ArrayList<Object> propertyValues = new ArrayList<Object>();
+					propertyNames.add("provider");
+					propertyValues.add(provider);
+					s.changeValues(t.getId(), propertyNames, propertyValues);
+				}
+				
+				s.buildFolderStructure();
+				for (int hour = 0; hour < 24; ++hour) {
+	                Instance application = new Instance();
+	                s.getApplication(hour);
+	                File[] models = Paths
+	                        .get(Configuration.PROJECT_BASE_FOLDER, 
+	                                Configuration.WORKING_DIRECTORY, 
+	                                Configuration.PERFORMANCE_RESULTS_FOLDER, 
+	                                provider,
+	                                Configuration.FOLDER_PREFIX + hour).toFile()
+	                                .listFiles(new FilenameFilter() {
+	                                    @Override
+	                                    public boolean accept(File dir, String name) {
+	                                        return name.endsWith(".xml");
+	                                    }
+	                                });
+	                // suppose there is just 1 model
+	                Path lqnModelPath = models[0].toPath();
+	                application.initLqnHandler(lqnModelPath);
+
+	                // add population and think time from usage model extension
+	                int population = -1;
+	                double thinktime = -1;
+	                if (usageModelParser.getPopulations().size() == 1)
+	                    population = usageModelParser.getPopulations().values()
+	                    .iterator().next()[i];
+	                if (usageModelParser.getThinkTimes().size() == 1)
+	                    thinktime = usageModelParser.getThinkTimes().values()
+	                    .iterator().next()[i];
+
+	                double percentage = 1.0; //(double) 1 / providers.size();
+
+	                population = (int) Math.ceil(population * percentage);
+	                
+	                s.setPercentageWorkload(hour, percentage);
+
+	                application.getLqnHandler().setPopulation(population);
+	                application.getLqnHandler().setThinktime(thinktime);
+	                application.getLqnHandler().saveToFile();
+				}
+				
+				solution.add(s);
+			}
 		}
 		
-		try {
-//			initSolution();
-//			maximizeUsage();
-//			fixWorkload();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+		for (Solution s : startingSolution.getAll()) {
+			if (solution.get(s.getProvider()) == null)
+				solution.add(s);
 		}
 		
 		logger.info("Solution computed!");
-		logger.info(solution.showStatus());
 		return solution;
+	}
+	
+	public Host getHost(String provider) {
+		if (provider.indexOf(BASE_PROVIDER_NAME) == -1)
+			return null;
+		int i = Integer.parseInt(provider.substring(BASE_PROVIDER_NAME.length(), provider.indexOf(" "))) - 1;
+		if (i >= owns.size() || i < 0)
+			return null;
+		return owns.get(i);
+	}
+
+	@Override
+	public int getId() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setId(int arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setName(String arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public EClass eClass() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Resource eResource() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public EObject eContainer() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public EStructuralFeature eContainingFeature() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public EReference eContainmentFeature() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public EList<EObject> eContents() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public TreeIterator<EObject> eAllContents() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean eIsProxy() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public EList<EObject> eCrossReferences() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object eGet(EStructuralFeature feature) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object eGet(EStructuralFeature feature, boolean resolve) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void eSet(EStructuralFeature feature, Object newValue) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean eIsSet(EStructuralFeature feature) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void eUnset(EStructuralFeature feature) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Object eInvoke(EOperation operation, EList<?> arguments)
+			throws InvocationTargetException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public EList<Adapter> eAdapters() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean eDeliver() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void eSetDeliver(boolean deliver) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void eNotify(Notification notification) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public EList<it.polimi.modaclouds.resourcemodel.cloud.CloudService> getProvidesCloudService() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

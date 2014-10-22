@@ -19,6 +19,7 @@ package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
@@ -162,7 +163,142 @@ public class EvaluationServer implements ActionListener {
 
 	}
 
+//	public void EvaluateSolution(Solution sol) {
+//		long startTime = -1;		
+//		requestedEvaluations++;
+//		logger.debug("Starting evaluation");
+//		error = false;
+//		if (!sol.isEvaluated()) {
+//
+//			startTime = System.nanoTime();
+//
+//			ArrayList<Instance> instanceList = sol.getHourApplication();
+//			counters.put(sol, 0);
+//			
+//			
+//			//reset the logger for line server handler
+//			if(Configuration.SOLVER!=Solver.LQNS){
+//				lineHandler.clear();
+//			}
+//
+//			// evaluate hourly solutions
+//			for (Instance i : instanceList) {
+//				// we need to reevaluate it only if something has changed.
+//				if (!i.isEvaluated()) {
+//					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
+//					eval.addListener(this);
+//					if (Configuration.SOLVER == Solver.LQNS)
+//						executor.execute(eval);
+//					else {
+//						eval.setLineServerHandler(lineHandler);
+//						executor.execute(eval);
+//					}
+//				} else
+//					counters.put(sol, counters.get(sol) + 1);// if the
+//																// application
+//																// has already
+//																// been
+//																// evaluated
+//																// increment the
+//																// counter
+//			}
+//
+//			while (counters.get(sol) < 24 && !error)
+//				try {
+//					Thread.sleep(100);
+//				} catch (InterruptedException e) {
+//					logger.error("Error waiting for the evaluation of a solution",e);
+//				} // loop until everything has been evaluated
+//
+//			if(error){
+//				logger.error("Error evaluating a solution");
+//				pcs.firePropertyChange("EvaluationError", false, true);
+//				return;
+//			}
+//			
+//			// remove the counters for the evaluated solution
+//			counters.remove(sol);
+//			incrementTotalNumberOfEvaluations();
+//		}
+//
+//		// evaluate feasibility
+//		if (constraintHandler != null)
+//			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+//		sol.updateEvaluation();
+//
+//		// evaluate costs		
+//		deriveCosts(sol);
+//
+//		logger.trace("" + sol.getCost() + ", "
+//				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
+//				+ sol.isFeasible());
+//
+//		long middleTime = System.nanoTime();
+//		if (log2png != null && logVm != null && logConstraint != null
+//				&& timer != null) {
+//			timer.split();
+//			log2png.addPoint2Series(seriesHandleExecution,
+//					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+//					sol.getCost());
+//			if(seriesHandleTiers==null){
+//				seriesHandleTiers = new HashMap<>();
+//				for(Tier t:sol.getApplication(0).getTiers()){					
+//					seriesHandleTiers.put(t.getId(),logVm.newSeries(t.getName()));					
+//				}
+//			}
+//				
+//			for(Tier t:sol.getApplication(0).getTiers()){
+//			logVm.addPoint2Series(seriesHandleTiers.get(t.getId()),
+//					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+//					sol.getVmNumberPerTier(t.getId()));			
+//			}
+//			logConstraint.addPoint2Series(seriesHandleConstraint,
+//					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+//					sol.getNumberOfViolatedConstraints());
+//		}
+//		long endTime = System.nanoTime();
+//		if (startTime != -1) {
+//			evaluationTime += (middleTime - startTime);
+//			plottingTime += (endTime - middleTime);
+//			fullEvaluationTime += (endTime - startTime);
+//			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
+//		}else
+//			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
+//		sol.setEvaluationTime(timer.getSplitTime());
+//		
+//		
+//		
+//		logger.debug("Update long term memory");
+//		if(longTermFrequencyMemory==null){
+//			longTermFrequencyMemory = new HashMap<String, Cache<String,Integer>>();			
+//		}
+//		
+//		for(Tier t:sol.getApplication(0).getTiers()){			
+//			Cache<String, Integer> tierMemory = longTermFrequencyMemory.get(t.getId());
+//			if(tierMemory == null){
+//				tierMemory = new Cache<String, Integer>(DEFAULT_TIER_MEMORY_MAX_SIZE);
+//				longTermFrequencyMemory.put(t.getId(), tierMemory);
+//			}
+//			//get the tierTypeID
+//			String tierTypeID = SolutionHelper.buildTierTypeID(t);
+//			int counter = 0;
+//			//if the tierTypeID already appears in the memory get the counter and update it
+//			if(tierMemory.get(tierTypeID)!= null)
+//				counter = tierMemory.get(tierTypeID);
+//			counter++;
+//			//if the tier is does not appear a new entry is created otherwise the old one is overritten.
+//			tierMemory.put(tierTypeID, counter);
+//		}
+//		logger.debug("Evaluation ended");
+//
+//	}
+	
 	public void EvaluateSolution(Solution sol) {
+		if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
+			EvaluatePrivateSolution(sol);
+			return;
+		}
+		
 		long startTime = -1;		
 		requestedEvaluations++;
 		logger.debug("Starting evaluation");
@@ -224,6 +360,141 @@ public class EvaluationServer implements ActionListener {
 		if (constraintHandler != null)
 			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
 		sol.updateEvaluation();
+
+		// evaluate costs		
+		deriveCosts(sol);
+
+		logger.trace("" + sol.getCost() + ", "
+				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
+				+ sol.isFeasible());
+
+		long middleTime = System.nanoTime();
+		if (log2png != null && logVm != null && logConstraint != null
+				&& timer != null) {
+			timer.split();
+			log2png.addPoint2Series(seriesHandleExecution,
+					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+					sol.getCost());
+			if(seriesHandleTiers==null){
+				seriesHandleTiers = new HashMap<>();
+				for(Tier t:sol.getApplication(0).getTiers()){					
+					seriesHandleTiers.put(t.getId(),logVm.newSeries(t.getName()));					
+				}
+			}
+				
+			for(Tier t:sol.getApplication(0).getTiers()){
+			logVm.addPoint2Series(seriesHandleTiers.get(t.getId()),
+					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+					sol.getVmNumberPerTier(t.getId()));			
+			}
+			logConstraint.addPoint2Series(seriesHandleConstraint,
+					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+					sol.getNumberOfViolatedConstraints());
+		}
+		long endTime = System.nanoTime();
+		if (startTime != -1) {
+			evaluationTime += (middleTime - startTime);
+			plottingTime += (endTime - middleTime);
+			fullEvaluationTime += (endTime - startTime);
+			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
+		}else
+			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
+		sol.setEvaluationTime(timer.getSplitTime());
+		
+		
+		
+		logger.debug("Update long term memory");
+		if(longTermFrequencyMemory==null){
+			longTermFrequencyMemory = new HashMap<String, Cache<String,Integer>>();			
+		}
+		
+		for(Tier t:sol.getApplication(0).getTiers()){			
+			Cache<String, Integer> tierMemory = longTermFrequencyMemory.get(t.getId());
+			if(tierMemory == null){
+				tierMemory = new Cache<String, Integer>(DEFAULT_TIER_MEMORY_MAX_SIZE);
+				longTermFrequencyMemory.put(t.getId(), tierMemory);
+			}
+			//get the tierTypeID
+			String tierTypeID = SolutionHelper.buildTierTypeID(t);
+			int counter = 0;
+			//if the tierTypeID already appears in the memory get the counter and update it
+			if(tierMemory.get(tierTypeID)!= null)
+				counter = tierMemory.get(tierTypeID);
+			counter++;
+			//if the tier is does not appear a new entry is created otherwise the old one is overritten.
+			tierMemory.put(tierTypeID, counter);
+		}
+		logger.debug("Evaluation ended");
+
+	}
+	
+	public void EvaluatePrivateSolution(Solution sol) {
+		if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1) {
+			EvaluateSolution(sol);
+			return;
+		}
+		
+		long startTime = -1;
+		requestedEvaluations++;
+		logger.debug("Starting evaluation");
+		error = false;
+//		if (!sol.isEvaluated()) {
+//
+//			startTime = System.nanoTime();
+//
+//			ArrayList<Instance> instanceList = sol.getHourApplication();
+//			counters.put(sol, 0);
+//			
+//			
+//			//reset the logger for line server handler
+//			if(Configuration.SOLVER!=Solver.LQNS){
+//				lineHandler.clear();
+//			}
+//
+//			// evaluate hourly solutions
+//			for (Instance i : instanceList) {
+//				// we need to reevaluate it only if something has changed.
+//				if (!i.isEvaluated()) {
+//					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
+//					eval.addListener(this);
+//					if (Configuration.SOLVER == Solver.LQNS)
+//						executor.execute(eval);
+//					else {
+//						eval.setLineServerHandler(lineHandler);
+//						executor.execute(eval);
+//					}
+//				} else
+//					counters.put(sol, counters.get(sol) + 1);// if the
+//																// application
+//																// has already
+//																// been
+//																// evaluated
+//																// increment the
+//																// counter
+//			}
+//
+//			while (counters.get(sol) < 24 && !error)
+//				try {
+//					Thread.sleep(100);
+//				} catch (InterruptedException e) {
+//					logger.error("Error waiting for the evaluation of a solution",e);
+//				} // loop until everything has been evaluated
+//
+//			if(error){
+//				logger.error("Error evaluating a solution");
+//				pcs.firePropertyChange("EvaluationError", false, true);
+//				return;
+//			}
+//			
+//			// remove the counters for the evaluated solution
+//			counters.remove(sol);
+//			incrementTotalNumberOfEvaluations();
+//		}
+//
+//		// evaluate feasibility
+//		if (constraintHandler != null)
+//			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+//		sol.updateEvaluation();
 
 		// evaluate costs		
 		deriveCosts(sol);
