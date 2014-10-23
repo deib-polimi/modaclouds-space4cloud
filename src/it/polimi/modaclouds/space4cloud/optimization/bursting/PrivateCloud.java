@@ -3,6 +3,7 @@ package it.polimi.modaclouds.space4cloud.optimization.bursting;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.optimization.MoveChangeWorkload;
 import it.polimi.modaclouds.space4cloud.optimization.UsageModelExtensionLoader;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
@@ -15,12 +16,16 @@ import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
@@ -34,6 +39,7 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 public class PrivateCloud implements CloudProvider {
 	
@@ -133,13 +139,30 @@ public class PrivateCloud implements CloudProvider {
 		
 		pc.compute();
 		
-		List<File> solutions = pc.getSolutions();
-		solution.setFrom(solutions.get(0), null);
+		int[] startingHourlyMachines = getTotalHourlyMachines(solution.get(0));
+		double[] startingPercentages = new double[24];
+		{
+			Solution s = solution.get(0);
+			for (int h = 0; h < startingPercentages.length; ++h) {
+				startingPercentages[h] = s.getPercentageWorkload(h);
+			}
+		}
+		
+		List<File> solutionFiles = pc.getSolutions();
+		solution.setFrom(solutionFiles.get(0), null);
+		
+		{
+			Solution s = solution.get(0);
+			int[] hourlyMachines = getTotalHourlyMachines(s);
+			for (int h = 0; h < hourlyMachines.length; ++h) {
+				changeWorkload(s, h, ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h]);
+			}
+		}
 		
 		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
 		
-		for (int i = 1; i < solutions.size(); ++i) {
-			if (SolutionMulti.isEmpty(solutions.get(i)))
+		for (int i = 1; i < solutionFiles.size(); ++i) {
+			if (SolutionMulti.isEmpty(solutionFiles.get(i)))
 				continue;
 			SolutionMulti tmp = new SolutionMulti();
 			tmp.add(solution.get(0).clone());
@@ -153,7 +176,7 @@ public class PrivateCloud implements CloudProvider {
 				}
 			}
 			
-			tmp.setFrom(solutions.get(i), null);
+			tmp.setFrom(solutionFiles.get(i), null);
 			
 			Host h = owns.get(i-1); // TODO: this should be checked
 			
@@ -189,8 +212,7 @@ public class PrivateCloud implements CloudProvider {
 				
 				s.buildFolderStructure();
 				for (int hour = 0; hour < 24; ++hour) {
-	                Instance application = new Instance();
-	                s.getApplication(hour);
+	                Instance application = s.getApplication(hour);
 	                File[] models = Paths
 	                        .get(Configuration.PROJECT_BASE_FOLDER, 
 	                                Configuration.WORKING_DIRECTORY, 
@@ -217,7 +239,9 @@ public class PrivateCloud implements CloudProvider {
 	                    thinktime = usageModelParser.getThinkTimes().values()
 	                    .iterator().next()[i];
 
-	                double percentage = 1.0; //(double) 1 / providers.size();
+//	                double percentage = 1.0; //(double) 1 / providers.size();
+	                
+	                double percentage = ((double)getTotalHourlyMachines(s, hour) / startingHourlyMachines[hour]) * startingPercentages[hour];
 
 	                population = (int) Math.ceil(population * percentage);
 	                
@@ -240,6 +264,63 @@ public class PrivateCloud implements CloudProvider {
 		logger.info("Solution computed!");
 		return solution;
 	}
+	
+	private int[] getTotalHourlyMachines(Solution s) {
+		int[] res = new int[24];
+		
+		for (int h = 0; h < res.length; ++h) {
+			res[h] = getTotalHourlyMachines(s, h);
+		}
+			
+		return res;
+	}
+	
+	private int getTotalHourlyMachines(Solution s, int h) {
+		int res = 0;
+			
+		for (Tier t : s.getApplication(h).getTiers()) {
+			IaaS service = (IaaS) t.getCloudService();
+			res += service.getReplicas();
+		}
+			
+		return res;
+	}
+	
+	/**
+     * This method should allow the change of workload at runtime!
+     * 
+     * @param sol
+     *            the current solution that is going to be modified by the
+     *            method.
+     * @param hour
+     *            the hour for which we are going to modify the workload
+     * @param rate
+     *            the rate by which we'll multiply the actual workload, taken
+     *            from the usage model extension file.
+     */
+    protected void changeWorkload(Solution sol, int hour, double rate) {
+        logger.debug("The hourly values of the workload are: ");
+        for (Instance i : sol.getApplications())
+            logger.debug("%d ", i.getWorkload());
+        logger.debug("\nTrying to change the %d hour using this rate: %f", hour, rate);
+
+        MoveChangeWorkload move = new MoveChangeWorkload(sol);
+
+        try {
+            move.modifyWorkload(hour, rate);
+            logger.debug("done!\nThe new values are: ");
+            for (Instance i : sol.getApplications())
+                logger.debug("%d ", i.getWorkload());
+
+        } catch (ParserConfigurationException | SAXException | IOException
+                | JAXBException e) {
+            logger.debug("error!\n");
+            e.printStackTrace();
+            logger.error("Error performing the change of the workload.\n"
+                    + e.getMessage());
+            return;
+        }
+    }
 	
 	public Host getHost(String provider) {
 		if (provider.indexOf(BASE_PROVIDER_NAME) == -1)

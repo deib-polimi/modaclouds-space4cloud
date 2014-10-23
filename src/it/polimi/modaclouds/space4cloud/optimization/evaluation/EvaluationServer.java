@@ -438,63 +438,63 @@ public class EvaluationServer implements ActionListener {
 		requestedEvaluations++;
 		logger.debug("Starting evaluation");
 		error = false;
-//		if (!sol.isEvaluated()) {
-//
-//			startTime = System.nanoTime();
-//
-//			ArrayList<Instance> instanceList = sol.getHourApplication();
-//			counters.put(sol, 0);
-//			
-//			
-//			//reset the logger for line server handler
-//			if(Configuration.SOLVER!=Solver.LQNS){
-//				lineHandler.clear();
-//			}
-//
-//			// evaluate hourly solutions
-//			for (Instance i : instanceList) {
-//				// we need to reevaluate it only if something has changed.
-//				if (!i.isEvaluated()) {
-//					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
-//					eval.addListener(this);
-//					if (Configuration.SOLVER == Solver.LQNS)
-//						executor.execute(eval);
-//					else {
-//						eval.setLineServerHandler(lineHandler);
-//						executor.execute(eval);
-//					}
-//				} else
-//					counters.put(sol, counters.get(sol) + 1);// if the
-//																// application
-//																// has already
-//																// been
-//																// evaluated
-//																// increment the
-//																// counter
-//			}
-//
-//			while (counters.get(sol) < 24 && !error)
-//				try {
-//					Thread.sleep(100);
-//				} catch (InterruptedException e) {
-//					logger.error("Error waiting for the evaluation of a solution",e);
-//				} // loop until everything has been evaluated
-//
-//			if(error){
-//				logger.error("Error evaluating a solution");
-//				pcs.firePropertyChange("EvaluationError", false, true);
-//				return;
-//			}
-//			
-//			// remove the counters for the evaluated solution
-//			counters.remove(sol);
-//			incrementTotalNumberOfEvaluations();
-//		}
-//
-//		// evaluate feasibility
-//		if (constraintHandler != null)
-//			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
-//		sol.updateEvaluation();
+		if (!sol.isEvaluated()) {
+
+			startTime = System.nanoTime();
+
+			ArrayList<Instance> instanceList = sol.getHourApplication();
+			counters.put(sol, 0);
+			
+			
+			//reset the logger for line server handler
+			if(Configuration.SOLVER!=Solver.LQNS){
+				lineHandler.clear();
+			}
+
+			// evaluate hourly solutions
+			for (Instance i : instanceList) {
+				// we need to reevaluate it only if something has changed.
+				if (!i.isEvaluated()) {
+					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
+					eval.addListener(this);
+					if (Configuration.SOLVER == Solver.LQNS)
+						executor.execute(eval);
+					else {
+						eval.setLineServerHandler(lineHandler);
+						executor.execute(eval);
+					}
+				} else
+					counters.put(sol, counters.get(sol) + 1);// if the
+																// application
+																// has already
+																// been
+																// evaluated
+																// increment the
+																// counter
+			}
+
+			while (counters.get(sol) < 24 && !error)
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					logger.error("Error waiting for the evaluation of a solution",e);
+				} // loop until everything has been evaluated
+
+			if(error){
+				logger.error("Error evaluating a solution");
+				pcs.firePropertyChange("EvaluationError", false, true);
+				return;
+			}
+			
+			// remove the counters for the evaluated solution
+			counters.remove(sol);
+			incrementTotalNumberOfEvaluations();
+		}
+
+		// evaluate feasibility
+		if (constraintHandler != null)
+			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+		sol.updateEvaluation();
 
 		// evaluate costs		
 		deriveCosts(sol);
