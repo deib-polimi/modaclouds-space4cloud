@@ -261,6 +261,8 @@ public class PrivateCloud implements CloudProvider {
 				solution.add(s);
 		}
 		
+		solution.removeUselessSolutions();
+		
 		logger.info("Solution computed!");
 		return solution;
 	}

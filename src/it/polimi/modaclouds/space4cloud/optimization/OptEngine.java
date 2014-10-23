@@ -1307,17 +1307,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
     private SolutionMulti considerPrivateCloud(SolutionMulti solutionMulti) throws Exception {
     	SolutionMulti sol = PrivateCloud.getSolution(solutionMulti, dataHandler);
 		if (sol != null) {
-			System.out.println(sol.showStatus());
-			sol.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+Configuration.SOLUTION_FILE_EXTENSION));
-			
-			// TODO: fix the workload, and make the evaluation work
+			logger.info("Solution found!");
 			evalServer.EvaluateSolution(sol);
-			
-			System.out.println(sol.showStatus());
-			sol.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+ "-evaluated" + Configuration.SOLUTION_FILE_EXTENSION));
+			logger.info("Solution evaluated!");
+			logger.info(sol.showStatus());
+//			sol.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+ "-evaluated" + Configuration.SOLUTION_FILE_EXTENSION));
 		}
 		else
-			System.out.println("No solution!");
+			logger.info("No solution!");
 		
 		return sol;
     	

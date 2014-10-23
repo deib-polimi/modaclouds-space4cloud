@@ -431,8 +431,8 @@ public class Solution implements Cloneable, Serializable {
 	 * 
 	 * @return the cost
 	 */
-	public double getCost() {
-		return cost;
+	public float getCost() {
+		return (float)cost;
 	}
 
 	/**
@@ -829,5 +829,15 @@ public class Solution implements Cloneable, Serializable {
 		
 	}
 
+	public boolean hasAtLeastOneReplicaInOneHour() {
+		for (Instance i : hourApplication) {
+			for (Tier t : i.getTiers()) {
+				IaaS res = (IaaS) t.getCloudService();
+				if (res.getReplicas() > 0)
+					return true;
+			}
+		}
+		return false;
+	}
 
 }

@@ -70,7 +70,7 @@ public class Main {
 	
 	public static void mainBatch(String[] args) {
 		String folder = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\OfBiz\\";
-		String configuration = folder + "conf-private-1p.properties";
+		String configuration = folder + "conf-private-1p-microsoft.properties";
 		
 		Space4Cloud instance = new Space4Cloud(configuration);
 		instance.start();
