@@ -43,6 +43,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
+import it.polimi.modaclouds.space4cloud.utils.DataExporter;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
 import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;

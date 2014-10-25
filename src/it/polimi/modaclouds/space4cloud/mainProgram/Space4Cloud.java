@@ -46,6 +46,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
+import it.polimi.modaclouds.space4cloud.utils.DataExporter;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
 import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
@@ -909,6 +910,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		logger.info("Expected time of execution: " + duration
 				+ ", actual time of execution: " + actualDuration);
+		
+		if (Configuration.ROBUSTNESS_VARIABILITY > 0) {
+			logger.info("Exporting the data in the simplified output format...");
+			DataExporter.perform(resultsFolder);
+		}
+		
 
 		logger.info("Check ended!");
 

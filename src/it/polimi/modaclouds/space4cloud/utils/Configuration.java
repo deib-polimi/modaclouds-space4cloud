@@ -61,6 +61,9 @@ public class Configuration {
 	public static int ROBUSTNESS_STEP_SIZE 	= 300;
 	public static int ROBUSTNESS_ATTEMPTS 	= 5;
 	public static int ROBUSTNESS_VARIABILITY= 0;
+	public static double ROBUSTNESS_Q = 0.15;
+	public static int ROBUSTNESS_G = 24;
+	public static int ROBUSTNESS_H = 1080;
 	
 	public static boolean REDISTRIBUTE_WORKLOAD = false;
 	
@@ -160,6 +163,9 @@ public class Configuration {
 		prop.put("ROBUSTNESS_STEP_SIZE", Integer.toString(ROBUSTNESS_STEP_SIZE));
 		prop.put("ROBUSTNESS_ATTEMPTS", Integer.toString(ROBUSTNESS_ATTEMPTS));
 		prop.put("ROBUSTNESS_VARIABILITY", Integer.toString(ROBUSTNESS_VARIABILITY));
+		prop.put("ROBUSTNESS_Q", Double.toString(ROBUSTNESS_Q));
+		prop.put("ROBUSTNESS_G", Integer.toString(ROBUSTNESS_G));
+		prop.put("ROBUSTNESS_H", Integer.toString(ROBUSTNESS_H));
 		
 		prop.put("REDISTRIBUTE_WORKLOAD", Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		
@@ -240,6 +246,9 @@ public class Configuration {
 		ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE", String.valueOf(ROBUSTNESS_STEP_SIZE)));
 		ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS", String.valueOf(ROBUSTNESS_ATTEMPTS)));
 		ROBUSTNESS_VARIABILITY = Integer.parseInt(prop.getProperty("ROBUSTNESS_VARIABILITY", String.valueOf(ROBUSTNESS_VARIABILITY)));
+		ROBUSTNESS_Q = Double.parseDouble(prop.getProperty("ROBUSTNESS_Q", String.valueOf(ROBUSTNESS_Q)));
+		ROBUSTNESS_G= Integer.parseInt(prop.getProperty("ROBUSTNESS_G", String.valueOf(ROBUSTNESS_G)));
+		ROBUSTNESS_H= Integer.parseInt(prop.getProperty("ROBUSTNESS_H", String.valueOf(ROBUSTNESS_H)));
 		
 		REDISTRIBUTE_WORKLOAD = Boolean.parseBoolean(prop.getProperty("REDISTRIBUTE_WORKLOAD", String.valueOf(REDISTRIBUTE_WORKLOAD)));
 		
@@ -369,6 +378,9 @@ public class Configuration {
 		logger.debug("ROBUSTNESS_STEP_SIZE: " + Integer.toString(ROBUSTNESS_STEP_SIZE));
 		logger.debug("ROBUSTNESS_ATTEMPTS: " + Integer.toString(ROBUSTNESS_ATTEMPTS));
 		logger.debug("ROBUSTNESS_VARIABILITY: " + Integer.toString(ROBUSTNESS_VARIABILITY));
+		logger.debug("ROBUSTNESS_Q: " + Double.toString(ROBUSTNESS_Q));
+		logger.debug("ROBUSTNESS_G: " + Integer.toString(ROBUSTNESS_G));
+		logger.debug("ROBUSTNESS_H: " + Integer.toString(ROBUSTNESS_H));
 		
 		logger.debug("REDISTRIBUTE_WORKLOAD: " + Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		
