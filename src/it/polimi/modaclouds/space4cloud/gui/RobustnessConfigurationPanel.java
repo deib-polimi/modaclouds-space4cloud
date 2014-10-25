@@ -21,16 +21,16 @@ public class RobustnessConfigurationPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 2986951359583819299L;
 	private static final String PANEL_NAME = "Robustness Configuration";
-	private JTextField peakFrom, peakTo, stepSize, attempts, variability;
+	private JTextField peakFrom, peakTo, stepSize, attempts, variability, q, g, h;
 	private JCheckBox initialSolution;
 	
 	public RobustnessConfigurationPanel() {
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{201, 201, 0};
-		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
+		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		GridBagConstraints c = new GridBagConstraints();
 		setLayout(gridBagLayout);
 		
@@ -91,6 +91,33 @@ public class RobustnessConfigurationPanel extends JPanel {
 		c.insets = new Insets(0, 0, 5, 0);
 		add(new JLabel(""), c);
 		
+		c.gridx = 0;
+		c.gridy++;
+		c.insets = new Insets(0, 0, 5, 5);
+		add(new JLabel("Q"), c);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		q = new JTextField(10);
+		add(q, c);
+		
+		c.gridx = 0;
+		c.gridy++;
+		c.insets = new Insets(0, 0, 5, 5);
+		add(new JLabel("G"), c);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		g = new JTextField(10);
+		add(g, c);
+		
+		c.gridx = 0;
+		c.gridy++;
+		c.insets = new Insets(0, 0, 5, 5);
+		add(new JLabel("H"), c);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		h = new JTextField(10);
+		add(h, c);
+		
 	}
 	
 	/**
@@ -103,6 +130,10 @@ public class RobustnessConfigurationPanel extends JPanel {
 		attempts.setText(Integer.toString(Configuration.ROBUSTNESS_ATTEMPTS));
 		initialSolution.setSelected(Configuration.RELAXED_INITIAL_SOLUTION);
 		variability.setText(Integer.toString(Configuration.ROBUSTNESS_VARIABILITY));
+		
+		q.setText(Double.toString(Configuration.ROBUSTNESS_Q));
+		g.setText(Integer.toString(Configuration.ROBUSTNESS_G));
+		h.setText(Integer.toString(Configuration.ROBUSTNESS_H));
 	}
 	
 	/**
@@ -135,6 +166,22 @@ public class RobustnessConfigurationPanel extends JPanel {
 			Configuration.ROBUSTNESS_VARIABILITY = -1;
 		}
 		Configuration.RELAXED_INITIAL_SOLUTION = initialSolution.isSelected();
+		
+		try{
+			Configuration.ROBUSTNESS_Q = Double.parseDouble(q.getText());
+		} catch (NumberFormatException e){
+			Configuration.ROBUSTNESS_Q = -1;
+		}
+		try{
+			Configuration.ROBUSTNESS_G= Integer.parseInt(g.getText());
+		} catch (NumberFormatException e){
+			Configuration.ROBUSTNESS_G= -1;
+		}
+		try{
+			Configuration.ROBUSTNESS_H= Integer.parseInt(h.getText());
+		} catch (NumberFormatException e){
+			Configuration.ROBUSTNESS_H= -1;
+		}
 	}
 	
 	@Override
