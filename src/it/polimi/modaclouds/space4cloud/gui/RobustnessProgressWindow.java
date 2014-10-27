@@ -39,6 +39,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
@@ -1233,13 +1234,18 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 	}
 
 	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void propertyChange(PropertyChangeEvent evt) { }
 	
 	public void addPropertyChangeListener(PropertyChangeListener listener){
 		pcs.addPropertyChangeListener(listener);
+	}
+	
+	public void signalCompletion() {
+		JOptionPane.showMessageDialog(gui, "Robustness process completed");		
+	}
+	
+	public void testEnded() {
+		pcs.firePropertyChange("RobustnessEnded", false, true);
 	}
 
 }

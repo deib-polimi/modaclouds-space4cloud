@@ -100,6 +100,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	private static OptimizationProgressWindow progressWindow;
 	private static AssesmentWindow assesmentWindow;
+	private static RobustnessProgressWindow robustnessWindow;
 	private OptEngine engine = null;	
 	private static final Logger logger = LoggerFactory.getLogger(Space4Cloud.class);
 	private boolean batch;
@@ -662,8 +663,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		usageModelExtFile = generateModifiedUsageModelExt(usageModelExtFile, x
 				/ highestPeak);
 		Configuration.USAGE_MODEL_EXTENSION = usageModelExtFile.getAbsolutePath();
-
-		for (x += stepSize; x <= testTo; x += stepSize) {
+		
+		for (; x <= testTo; x += stepSize) {
 			if (variability > 0) {
 				usageModelExtFiles.put(
 						(int)(x * (100.0 - variability)/100),
@@ -686,24 +687,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
 				.newFixedThreadPool(1);
 
-		RobustnessProgressWindow rpw = new RobustnessProgressWindow(
+		robustnessWindow = new RobustnessProgressWindow(
 				usageModelExtFiles.size() + (variability > 0 ? 3 : 1));
-
-//		String duration = "";
-//		{
-//			// an average of 5 minutes per attempt... maybe it's too little, but
-//			// whatever...
-//			int res = (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60;
-//			if (res > 60 * 60) {
-//				duration += (res / (60 * 60)) + " h ";
-//				res = res % (60 * 60);
-//			}
-//			if (res > 60) {
-//				duration += (res / 60) + " m ";
-//				res = res % 60;
-//			}
-//			duration += res + " s";
-//		}
+		
+		robustnessWindow.addPropertyChangeListener(this);
+		
 		String duration = durationToString(1000 * (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60);
 		
 		logger
@@ -714,15 +702,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		StopWatch timer = new StopWatch();
 		timer.start();
 		timer.split();
-
-		usageModelExtFiles.put(highestPeak, usageModelExtFile);
-		
-		if (variability > 0) {
-			usageModelExtFiles.put((int)(highestPeak * (100.0 - variability)/100 ), generateModifiedUsageModelExt(
-					usageModelExtFile, (100.0 - variability)/100 ));
-			usageModelExtFiles.put((int)(highestPeak * (100.0 + variability)/100 ), generateModifiedUsageModelExt(
-					usageModelExtFile, (100.0 + variability)/100 ));
-		}
 
 		List<File> solutions = new ArrayList<File>();
 
@@ -877,9 +856,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			terminated++;
 			solutions.add(bestSolution);
 
-			rpw.add(usageModelExtFiles.get(key), solutions.get(el));
-			rpw.setValue(terminated);
-			rpw.save2png(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory).toString());
+			robustnessWindow.add(usageModelExtFiles.get(key), solutions.get(el));
+			robustnessWindow.setValue(terminated);
+			robustnessWindow.save2png(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory).toString());
 
 			el++;
 
@@ -916,6 +895,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			DataExporter.perform(resultsFolder);
 		}
 		
+		robustnessWindow.testEnded();
 
 		logger.info("Check ended!");
 
@@ -1113,6 +1093,16 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			cleanExit();
 		}else if (evt.getSource().equals(engine) && evt.getPropertyName().equals("progress")) {
 			logger.info("Progress: "+(int) evt.getNewValue());			
+		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed")){
+			logger.info("Robustness Process cancelled by the user");
+			pcs.firePropertyChange("robustnessEnded", false, true);
+			cleanExit();
+		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")){
+			logger.info("Robustness ended");
+			pcs.firePropertyChange("robustnessEnded", false, true);
+			if(!batch)
+				robustnessWindow.signalCompletion();
+			cleanExit();
 		}
 
 	}
