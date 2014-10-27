@@ -421,7 +421,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	static {
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
 		otherSymbols.setDecimalSeparator('.');
-		costFormatter = new DecimalFormat("0.#####", otherSymbols);
+		costFormatter = new DecimalFormat("0.###", otherSymbols);
 	}
 
 	public long getEvaluationTime() {
