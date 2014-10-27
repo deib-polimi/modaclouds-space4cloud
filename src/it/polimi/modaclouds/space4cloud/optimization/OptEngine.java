@@ -1146,11 +1146,21 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
             for (Solution s : currentSolution.getAll())
                 makeFeasible(s);
             
-            // scale in:
-            InternalOptimization(currentSolution);
+//            // scale in:
+//            InternalOptimization(currentSolution);
+//
+//            bestSolution = currentSolution.clone();
+//            localBestSolution = currentSolution.clone();
+            
+            optimLogger.info("Updating best solutions");
 
-            bestSolution = currentSolution.clone();
-            localBestSolution = currentSolution.clone();
+			bestSolution = currentSolution.clone();
+			localBestSolution = currentSolution.clone();
+
+			// scale in:
+			InternalOptimization(currentSolution);
+			updateLocalBestSolution(currentSolution, true);
+			updateBestSolution(currentSolution, true);
         }
         
 //        if (Configuration.USE_PRIVATE_CLOUD) {
@@ -1726,8 +1736,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
      *            new solution
      * @return true if sol has become the new best solution
      */
-    protected boolean updateBestSolution(Solution sol) {
-        if (sol.greaterThan(bestSolution)) {
+    protected boolean updateBestSolution(Solution sol, boolean force) {
+        if (force || sol.greaterThan(bestSolution)) {
             Solution clone = sol.clone();
             bestSolution.add(clone);
             logger.warn("" + bestSolution.getCost() + ", "
@@ -1748,8 +1758,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
         return false;
     }
 
-    protected boolean updateLocalBestSolution(Solution sol) {
-        if (sol.greaterThan(localBestSolution)) {
+    protected boolean updateLocalBestSolution(Solution sol, boolean force) {
+        if (force || sol.greaterThan(localBestSolution)) {
 
             // updating the best solution
             // bestSolution = sol.clone();
@@ -1770,13 +1780,21 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
     }
 
     protected void updateLocalBestSolution(SolutionMulti sol) {
+        updateLocalBestSolution(sol, false);
+    }
+    
+    protected void updateLocalBestSolution(SolutionMulti sol, boolean force) {
         for (Solution s : sol.getAll())
-            updateLocalBestSolution(s);
+            updateLocalBestSolution(s, force);
     }
 
     protected void updateBestSolution(SolutionMulti sol) {
+    	updateBestSolution(sol, false);
+    }
+
+    protected void updateBestSolution(SolutionMulti sol, boolean force) {
         for (Solution s : sol.getAll())
-            updateBestSolution(s);
+            updateBestSolution(s, force);
     }
 
     protected void loadConfiguration() {
