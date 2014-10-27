@@ -754,7 +754,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			
 //			step++;
 			File bestSolution = null;
-			int bestCost = Integer.MAX_VALUE;
+			double bestCost = Double.MAX_VALUE;
 			
 			Configuration.USAGE_MODEL_EXTENSION = f.getAbsolutePath();
 			Configuration.FUNCTIONALITY = Operation.Optimization;
@@ -847,7 +847,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 							
 							}
 
-							int cost = SolutionMulti.getCost(g);
+							double cost = SolutionMulti.getCost(g);
 							if (bestSolution == null || cost < bestCost) {
 								// System.out.println("DEBUG: Best cost from " +
 								// bestCost + " to " + cost);
