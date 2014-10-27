@@ -423,7 +423,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 				
 				String tierName = null;
 				try {
-					tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
+					tierName = tier.getAttributes().getNamedItem("name").getNodeValue() + "@" + provider.substring(0, 3);
 				} catch (Exception e) {
 					tierName = null;
 				}
