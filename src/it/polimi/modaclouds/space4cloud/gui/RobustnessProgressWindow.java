@@ -7,6 +7,7 @@ import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 import java.awt.BorderLayout;
@@ -16,6 +17,11 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -26,6 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
+import java.util.LinkedHashMap;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -54,7 +61,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class RobustnessProgressWindow {
+public class RobustnessProgressWindow extends WindowAdapter implements PropertyChangeListener {
 
 	public static enum Size {
 
@@ -210,63 +217,7 @@ public class RobustnessProgressWindow {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	public static void main(String args[]) {
-		String basePath = "C:\\Users\\Riccardo\\Desktop\\tmp\\argh\\results";
-
-		int testFrom = 100, testTo = 4300, step = 300;
-		// int testFrom = 30, testTo = 3000, step = 90;
-
-		if (args != null && args.length > 0) {
-			basePath = args[0];
-
-			if (args.length > 1) {
-				try {
-					testFrom = Integer.parseInt(args[1]);
-				} catch (Exception e) {
-				}
-
-				if (args.length > 2) {
-					try {
-						testTo = Integer.parseInt(args[2]);
-					} catch (Exception e) {
-					}
-
-					if (args.length > 3) {
-						try {
-							step = Integer.parseInt(args[3]);
-						} catch (Exception e) {
-						}
-
-					}
-				}
-			}
-		}
-
-		// redraw(basePath, testFrom, testTo, step);
-
-		RobustnessProgressWindow rpw1 = redraw(basePath); //, testFrom, testTo, step);
-		// rpw1.gui.dispose();
-
-		// RobustnessProgressWindow rpw2 =
-		// redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\russo\\bipicco3", 100,
-		// 10000, 300);
-		// rpw2.gui.dispose();
-		//
-		// RobustnessProgressWindow rpw3 =
-		// redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\russo\\results-amazon2",
-		// 100, 10000, 300);
-		// rpw3.gui.dispose();
-		//
-		// compare(rpw1, rpw2, basePath + File.separator +
-		// "costsDiffs-generated-non2.png");
-		// compare(rpw1, rpw3, basePath + File.separator +
-		// "costsDiffs-generated-generated2.png");
-		// compare(rpw3, rpw2, basePath + File.separator +
-		// "costsDiffs-generated2-non2.png");
-
-	}
-	public static RobustnessProgressWindow redraw(String basePath) { //,	int testFrom, int testTo, int step) {
+	public static RobustnessProgressWindow redraw(String basePath) {
 		RobustnessProgressWindow rpw = null;
 		
 		Path p = Paths.get(basePath);
@@ -312,28 +263,6 @@ public class RobustnessProgressWindow {
 				e.printStackTrace();
 			}
 		}
-		
-		
-		/*
-		int total = (testTo - testFrom) / step;
-
-		RobustnessProgressWindow rpw = new RobustnessProgressWindow(total);
-
-		try {
-			for (int i = testFrom; i <= testTo; i += step) {
-				rpw.add(Paths.get(basePath, "ume-" + i + ".xml").toFile(),
-						Paths.get(basePath, "solution-" + i + ".xml").toFile());
-
-				rpw.setValue(rpw.getValue() + 1);
-			}
-
-			rpw.save2png(basePath);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		rpw.setValue(total);
-		*/
 
 		return rpw;
 	}
@@ -377,55 +306,56 @@ public class RobustnessProgressWindow {
 
 	private JFrame gui;
 	private JProgressBar progressBar;
+	
 	private JFreeChart populationsGraph;
 	private JPanel populationsPanel;
 	private JLabel populationsLabel;
+	private DefaultCategoryDataset populations = new DefaultCategoryDataset();
 
 	private JFreeChart solutionsGraph;
 	private JPanel solutionsPanel;
 	private JLabel solutionsLabel;
 	private JPanel solutionsPanel2;
 	private JLabel solutionsLabel2;
+	private DefaultCategoryDataset solutions = new DefaultCategoryDataset();
 
 	private JFreeChart tiersGraph;
 	private JPanel tiersPanel;
 	private JLabel tiersLabel;
-
 	private JPanel tiersPanel2;
 	private JLabel tiersLabel2;
+	private DefaultCategoryDataset tiers = new DefaultCategoryDataset();
 	
 	private JFreeChart tiersBasicGraph;
 	private JPanel tiersBasicPanel;
 	private JLabel tiersBasicLabel;
+	private DefaultCategoryDataset tiersBasic = new DefaultCategoryDataset();
 	
 	private JFreeChart feasibilitiesGraph;
 	private JPanel feasibilitiesPanel;
 	private JLabel feasibilitiesLabel;
+	private DefaultCategoryDataset feasibilities = new DefaultCategoryDataset();
 	
 	private JFreeChart costsGraph;
 	private JPanel costsPanel;
 	private JLabel costsLabel;
+	private DefaultCategoryDataset costs = new DefaultCategoryDataset();
 	
 	private JFreeChart durationsGraph;
 	private JPanel durationsPanel;
 	private JLabel durationsLabel;
+	private DefaultCategoryDataset durations = new DefaultCategoryDataset();
+	
+	private JFreeChart privateHostsGraph;
+	private JPanel privateHostsPanel;
+	private JLabel privateHostsLabel;
+	private DefaultCategoryDataset privateHosts = new DefaultCategoryDataset();
 	
 	private int total;
-	private DefaultCategoryDataset populations = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset solutions = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset tiers = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset tiersBasic = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset feasibilities = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset costs = new DefaultCategoryDataset();
-	
-	private DefaultCategoryDataset durations = new DefaultCategoryDataset();
 
 	private boolean alreadyUpdating = false;
+	
+	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 	public RobustnessProgressWindow(int total) {
 		this.total = total;
@@ -474,46 +404,85 @@ public class RobustnessProgressWindow {
 		Document doc = DOM.getDocument(solution);
 
 		NodeList nl = doc.getElementsByTagName("Tier");
+		
+		LinkedHashMap<String, Integer[]> usageHosts = new LinkedHashMap<String, Integer[]>();
 
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node tier = nl.item(i);
 
 			String size = tier.getAttributes().getNamedItem("resourceName")
 					.getNodeValue();
-
-			Size s = Size.parse(size);
 			
-			String tierName = null;
-			try {
-				tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
-			} catch (Exception e) {
-				tierName = null;
-			}
-			if (tierName == null || tierName.length() == 0)
-				tierName = "Tier " + i;
+			String provider = tier.getAttributes().getNamedItem("providerName")
+					.getNodeValue();
 			
-
-			tiers.addValue(s.ordinal(), /*"Tier " + i*/ tierName, "" + maxPopulation);
-			tiersBasic.addValue(s.basicId, /*"Tier " + i*/ tierName, "" + maxPopulation);
-
-			Element tierEl = (Element) tier;
-			NodeList hours = tierEl.getElementsByTagName("HourAllocation");
-
-			for (int j = 0; j < hours.getLength(); j++) {
-				Node hour = hours.item(j);
-				int valHour = Integer.valueOf(hour.getAttributes()
-						.getNamedItem("hour").getNodeValue()) + 1;
-
-				if (valHour == maxHour) {
-					solutions
-							.addValue(
-									Integer.valueOf(hour.getAttributes()
-											.getNamedItem("allocation")
-											.getNodeValue()), /*"Tier " + i*/ tierName, ""
-											+ maxPopulation);
+			if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1) {
+				Size s = Size.parse(size);
+				
+				String tierName = null;
+				try {
+					tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
+				} catch (Exception e) {
+					tierName = null;
 				}
-
+				if (tierName == null || tierName.length() == 0)
+					tierName = "Tier " + i;
+				
+	
+				tiers.addValue(s.ordinal(), /*"Tier " + i*/ tierName, "" + maxPopulation);
+				tiersBasic.addValue(s.basicId, /*"Tier " + i*/ tierName, "" + maxPopulation);
+	
+				Element tierEl = (Element) tier;
+				NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+	
+				for (int j = 0; j < hours.getLength(); j++) {
+					Node hour = hours.item(j);
+					int valHour = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("hour").getNodeValue()) + 1;
+	
+					if (valHour == maxHour) {
+						solutions
+								.addValue(
+										Integer.valueOf(hour.getAttributes()
+												.getNamedItem("allocation")
+												.getNodeValue()), /*"Tier " + i*/ tierName, ""
+												+ maxPopulation);
+					}
+	
+				}
+			} else {
+				Integer[] usage = usageHosts.get(provider);
+				if (usage == null) {
+					usage = new Integer[24];
+					for (int h = 0; h < 24; ++h)
+						usage[h] = 0;
+				}
+				
+				Element tierEl = (Element) tier;
+				NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+	
+				for (int j = 0; j < hours.getLength(); j++) {
+					Node hour = hours.item(j);
+					int valHour = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("hour").getNodeValue());
+					int valAllocation = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("allocation")
+							.getNodeValue());
+					
+					usage[valHour] += valAllocation;
+				}
+				
+				usageHosts.put(provider, usage);
 			}
+		}
+		
+		for (int h = 0; h < 24; ++h) {
+			int hourlyValue = 0;
+			for (String provider : usageHosts.keySet()) {
+				if (usageHosts.get(provider)[h] > 0)
+					hourlyValue++;
+			}
+			privateHosts.addValue(hourlyValue, name, "" + h);
 		}
 
 		nl = doc.getElementsByTagName("SolutionResult");
@@ -560,7 +529,9 @@ public class RobustnessProgressWindow {
 		gui.setTitle("Robustness Progress");
 		gui.setMinimumSize(new Dimension(900, 600));
 		gui.setLocationRelativeTo(null);
-		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
+//		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
+		gui.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		gui.addWindowListener(this);
 		gui.getContentPane().setLayout(new BorderLayout(0, 0));
 
 		JPanel upperPanel = new JPanel();
@@ -668,20 +639,24 @@ public class RobustnessProgressWindow {
 		durationsLabel = new JLabel();
 		durationsLabel.setIcon(null);
 		durationsPanel.add(durationsLabel);
+		
+		lowerPanel = new JPanel();
+		lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+		tabbedPane.addTab("Private Hosts", lowerPanel);
+		privateHostsPanel = new JPanel();
+		lowerPanel.add(privateHostsPanel);
+		privateHostsLabel = new JLabel();
+		privateHostsLabel.setIcon(null);
+		privateHostsPanel.add(privateHostsLabel);
 
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
 
 			@Override
-			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub
-			}
+			public void componentHidden(ComponentEvent e) { }
 
 			@Override
-			public void componentMoved(ComponentEvent e) {
-				// TODO Auto-generated method stub
-
-			}
+			public void componentMoved(ComponentEvent e) { }
 
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -721,6 +696,9 @@ public class RobustnessProgressWindow {
 		ChartUtilities.writeChartAsPNG(
 				new FileOutputStream(Paths.get(path, "durations.png")
 						.toFile()), durationsGraph, 1350, 700);
+		ChartUtilities.writeChartAsPNG(
+				new FileOutputStream(Paths.get(path, "privateHosts.png")
+						.toFile()), privateHostsGraph, 1350, 700);
 	}
 
 	public void setValue(int value) {
@@ -1037,6 +1015,48 @@ public class RobustnessProgressWindow {
 			renderer2.setItemLabelsVisible(true);
 			renderer2.setItemLabelFont(font);
 		}
+		
+		privateHostsGraph = ChartFactory.createLineChart(null, "Hour",
+				"Private Hosts", privateHosts, PlotOrientation.VERTICAL, true, true, false);
+		{
+			CategoryPlot plot = (CategoryPlot) privateHostsGraph.getPlot();
+			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+					.getRenderer();
+			renderer.setShapesVisible(true);
+			renderer.setDrawOutlines(true);
+			renderer.setUseFillPaint(true);
+			renderer.setFillPaint(Color.white);
+
+			CategoryAxis categoryAxis = plot.getDomainAxis();
+			categoryAxis.setLowerMargin(0.02);
+			categoryAxis.setUpperMargin(0.02);
+			categoryAxis.setTickLabelFont(font);
+
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setTickLabelFont(font);
+
+			CategoryItemRenderer renderer2 = plot
+					.getRenderer();
+			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+					"{2}", new DecimalFormat("0") {
+
+						/**
+                 *
+                 */
+						private static final long serialVersionUID = 1L;
+
+						@Override
+						public StringBuffer format(double number,
+								StringBuffer result, FieldPosition fieldPosition) {
+							result = new StringBuffer((int)number + "H");
+							return result;
+						}
+
+					});
+			renderer2.setItemLabelGenerator(generator);
+			renderer2.setItemLabelsVisible(true);
+			renderer2.setItemLabelFont(font);
+		}
 
 	}
 
@@ -1183,8 +1203,42 @@ public class RobustnessProgressWindow {
 
 			durationsLabel.validate();
 		}
+		
+		if (privateHostsGraph != null) {
+			ImageIcon icon;
+			try {
+				icon = new ImageIcon(
+						privateHostsGraph.createBufferedImage(
+								privateHostsPanel.getSize().width,
+								privateHostsPanel.getSize().height));
+			} catch (NullPointerException e) {
+				icon = new ImageIcon();
+			}
+			privateHostsLabel.setIcon(icon);
+			privateHostsLabel.setVisible(true);
+			privateHostsPanel.setPreferredSize(privateHostsLabel.getPreferredSize());
+
+			privateHostsLabel.validate();
+		}
 
 		alreadyUpdating = false;
+	}
+	
+	@Override
+	public void windowClosing(WindowEvent e) {		
+		super.windowClosing(e);
+		gui.dispose();
+		pcs.firePropertyChange("WindowClosed", false, true);
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public void addPropertyChangeListener(PropertyChangeListener listener){
+		pcs.addPropertyChangeListener(listener);
 	}
 
 }
