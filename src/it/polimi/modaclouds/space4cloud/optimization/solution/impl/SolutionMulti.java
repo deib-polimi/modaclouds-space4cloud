@@ -7,6 +7,7 @@ import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -45,8 +47,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 	private static final long serialVersionUID = -9050926347950168327L;
 	private static final Logger logger = LoggerFactory.getLogger(SolutionMulti.class);
 
-	public static int getCost(File solution) {
-		int cost = Integer.MAX_VALUE;
+	public static double getCost(File solution) {
+		double cost = Double.MAX_VALUE;
 
 		if (solution != null && solution.exists())
 			try {
@@ -60,8 +62,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 					Element root = (Element) doc.getElementsByTagName(
 							"SolutionMultiResult").item(0);
 
-					cost = (int) Math.round(Double.parseDouble(root
-							.getAttribute("cost")));
+					cost = Double.parseDouble(root
+							.getAttribute("cost"));
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -98,7 +100,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	private boolean feasible = false;
 
 	/** The Cost. */
-	private int cost = 0;
+	private double cost = 0.0;
 
 	private long evaluationTime = 0L;
 
@@ -115,6 +117,21 @@ public class SolutionMulti implements Cloneable, Serializable {
 			updateEvaluation();
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
+	}
+	
+	public void remove(Solution s) {
+		String provider = s.getProvider();
+		if (this.solutions.remove(provider) != null) {
+			updateEvaluation();
+		} else
+			logger.error("Error! The provider isn't defined in the solution!");
+	}
+	
+	public void removeUselessSolutions() {
+		for (Solution s : getAll()) {
+			if (!s.hasAtLeastOneReplicaInOneHour())
+				remove(s);
+		}
 	}
 
 	/**
@@ -202,11 +219,14 @@ public class SolutionMulti implements Cloneable, Serializable {
 	}
 
 	public void exportLight(Path filePath) {
-		if (!isEvaluated()) {
-			System.err
-					.println("Trying to export a solution that has not been evaluated!");
-			return;
-		}
+//		if (!isEvaluated()) {
+//			System.err
+//					.println("Trying to export a solution that has not been evaluated!");
+//			return;
+//		}
+		
+		updateEvaluation();
+		
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory
 					.newInstance();
@@ -332,11 +352,11 @@ public class SolutionMulti implements Cloneable, Serializable {
 	}
 
 	public void exportLightNew(String filename) {
-		if (!isEvaluated()) {
-			System.err
-					.println("Trying to export a solution that has not been evaluated!");
-			return;
-		}
+//		if (!isEvaluated()) {
+//			System.err
+//					.println("Trying to export a solution that has not been evaluated!");
+//			return;
+//		}
 
 		MultiCloudExtensions mces = new MultiCloudExtensions();
 		MultiCloudExtension mce = new MultiCloudExtension();
@@ -390,8 +410,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return solutions.values();
 	}
 
-	public double getCost() {
-		return cost;
+	public float getCost() {
+		return (float)cost;
 	}
 
 	public long getEvaluationTime() {
@@ -628,6 +648,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 			}
 		}
 		
+		if (res)
+			updateEvaluation();
+		
 		return res;
 	}
 
@@ -685,13 +708,20 @@ public class SolutionMulti implements Cloneable, Serializable {
 		// previousCost, cost);
 	}
 
-	private Solution privateCloudSolution = null;
+//	private Solution privateCloudSolution = null;
+//	
+//	public void setPrivateCloudSolution(Solution privateCloudSolution) {
+//		this.privateCloudSolution = privateCloudSolution;
+//	}
+//	public Solution getPrivateCloudSolution() {
+//		return privateCloudSolution;
+//	}
 	
-	public void setPrivateCloudSolution(Solution privateCloudSolution) {
-		this.privateCloudSolution = privateCloudSolution;
-	}
-	public Solution getPrivateCloudSolution() {
-		return privateCloudSolution;
+	public boolean isUsingPrivateCloud() {
+		for (String provider : solutions.keySet())
+			if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
+				return true;
+		return false;
 	}
 	
 	public String showWorkloadPercentages() {
@@ -713,6 +743,43 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	public void setEvaluationTime(long time) {
 		evaluationTime = time;
+	}
+	
+	public static List<String> getAllProviders(File solution) {
+		List<String> res = new ArrayList<String>();
+		
+		if (solution != null && solution.exists())
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(solution);
+				doc.getDocumentElement().normalize();
+				
+				NodeList tiers = doc.getElementsByTagName("Tier");
+				
+				for (int i = 0; i < tiers.getLength(); ++i) {
+					Node n = tiers.item(i);
+	
+					if (n.getNodeType() != Node.ELEMENT_NODE)
+						continue;
+	
+					Element tier = (Element) n;
+					String provider = tier.getAttribute("providerName");
+					
+					boolean alreadyIn = false;
+					for (int j = 0; j < res.size() && !alreadyIn; ++j) {
+						if (res.get(j).equals(provider))
+							alreadyIn = true;
+					}
+					if (!alreadyIn)
+						res.add(provider);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		
+		return res;
 	}
 
 }
