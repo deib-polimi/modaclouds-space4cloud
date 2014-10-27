@@ -176,7 +176,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public void exportCSV(Path filePath) {
 		String text = "";
 
-		text += "total cost: " + getCostAsString() + "\n";
+		text += "total cost: " + costFormatter.format(getCost()) + "\n";
 		text += "number of providers: " + solutions.size() + "\n\n";
 
 		for (Solution s : getAll()) {
@@ -241,7 +241,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			doc.appendChild(rootElement);
 
 			// set cost
-			rootElement.setAttribute("cost", "" + getCostAsString());
+			rootElement.setAttribute("cost", "" + costFormatter.format(getCost()));
 			// set evaluationtime
 			rootElement.setAttribute("time", "" + getEvaluationTime());
 			// set feasibility
@@ -417,16 +417,11 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return (float)cost;
 	}
 	
-	private static DecimalFormat formatter = null;
-	
-	public String getCostAsString() {
-		if (formatter == null) {
-			DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
-			otherSymbols.setDecimalSeparator('.');
-			formatter = new DecimalFormat("0.#####", otherSymbols);
-		}
-		
-		return formatter.format(cost);
+	public static DecimalFormat costFormatter = null;
+	static {
+		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
+		otherSymbols.setDecimalSeparator('.');
+		costFormatter = new DecimalFormat("0.#####", otherSymbols);
 	}
 
 	public long getEvaluationTime() {
@@ -674,7 +669,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	 */
 	public String showStatus() {
 		String result = "SolutionMulti Status\n";
-		result += "Total cost: " + getCostAsString();
+		result += "Total cost: " + costFormatter.format(getCost());
 		result += "\tEvaluated: " + isEvaluated();
 		result += "\tFeasible: " + isFeasible();
 		result += "\tProviders: " + size();
@@ -695,7 +690,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public String toString() {
 		String result = "SolutionMulti@"
 				+ Integer.toHexString(super.hashCode());
-		result += "[Cost: " + getCostAsString();
+		result += "[Cost: " + costFormatter.format(getCost());
 		result += ", Providers: " + size();
 		result += ", Evaluated: " + isEvaluated();
 		result += ", Feasible: " + isFeasible();

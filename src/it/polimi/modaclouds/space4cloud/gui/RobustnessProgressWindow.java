@@ -8,6 +8,7 @@ import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 import java.awt.BorderLayout;
@@ -920,7 +921,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 						@Override
 						public StringBuffer format(double number,
 								StringBuffer result, FieldPosition fieldPosition) {
-							result = new StringBuffer("" + number);
+							result = new StringBuffer(SolutionMulti.costFormatter.format(number)); // "" + number);
 							return result;
 						}
 
