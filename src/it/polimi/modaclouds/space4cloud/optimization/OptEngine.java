@@ -1757,6 +1757,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
         }
         return false;
     }
+    
+    protected boolean updateBestSolution(Solution sol) {
+    	return updateBestSolution(sol, false);
+    }
 
     protected boolean updateLocalBestSolution(Solution sol, boolean force) {
         if (force || sol.greaterThan(localBestSolution)) {
@@ -1777,6 +1781,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
             return true;
         }
         return false;
+    }
+    
+    protected boolean updateLocalBestSolution(Solution sol) {
+    	return updateLocalBestSolution(sol, false);
     }
 
     protected void updateLocalBestSolution(SolutionMulti sol) {
