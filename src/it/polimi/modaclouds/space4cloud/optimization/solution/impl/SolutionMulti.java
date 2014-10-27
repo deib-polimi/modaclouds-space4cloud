@@ -222,13 +222,13 @@ public class SolutionMulti implements Cloneable, Serializable {
 	}
 
 	public void exportLight(Path filePath) {
-//		if (!isEvaluated()) {
-//			System.err
-//					.println("Trying to export a solution that has not been evaluated!");
-//			return;
-//		}
+		if (!isEvaluated()) {
+			System.err
+					.println("Trying to export a solution that has not been evaluated!");
+			return;
+		}
 		
-		updateEvaluation();
+//		updateEvaluation();
 		
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory
@@ -355,11 +355,11 @@ public class SolutionMulti implements Cloneable, Serializable {
 	}
 
 	public void exportLightNew(String filename) {
-//		if (!isEvaluated()) {
-//			System.err
-//					.println("Trying to export a solution that has not been evaluated!");
-//			return;
-//		}
+		if (!isEvaluated()) {
+			System.err
+					.println("Trying to export a solution that has not been evaluated!");
+			return;
+		}
 
 		MultiCloudExtensions mces = new MultiCloudExtensions();
 		MultiCloudExtension mce = new MultiCloudExtension();
@@ -542,6 +542,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 						propertyValues.add(numberOfCores);
 	
 						app.changeValues(tierId, propertyNames, propertyValues);
+						
+						app.setEvaluated(false);
 					}
 				}
 				
@@ -658,8 +660,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			}
 		}
 		
-		if (res)
-			updateEvaluation();
+		updateEvaluation();
 		
 		return res;
 	}
