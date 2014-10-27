@@ -151,13 +151,16 @@ public class PrivateCloud implements CloudProvider {
 		List<File> solutionFiles = pc.getSolutions();
 		solution.setFrom(solutionFiles.get(0), null);
 		
-		{
-			Solution s = solution.get(0);
-			int[] hourlyMachines = getTotalHourlyMachines(s);
-			for (int h = 0; h < hourlyMachines.length; ++h) {
-				changeWorkload(s, h, ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h]);
-			}
-		}
+//		{
+//			Solution s = solution.get(0);
+//			int[] hourlyMachines = getTotalHourlyMachines(s);
+//			double[] rates = new double[hourlyMachines.length];
+//			for (int h = 0; h < hourlyMachines.length; ++h) {
+//				rates[h] = ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h];
+////				changeWorkload(s, h, ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h]);
+//			}
+//			changeWorkload(s, rates);
+//		}
 		
 		UsageModelExtensionParser usageModelParser = new UsageModelExtensionLoader(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
 		
@@ -234,14 +237,14 @@ public class PrivateCloud implements CloudProvider {
 	                double thinktime = -1;
 	                if (usageModelParser.getPopulations().size() == 1)
 	                    population = usageModelParser.getPopulations().values()
-	                    .iterator().next()[i];
+	                    .iterator().next()[hour];
 	                if (usageModelParser.getThinkTimes().size() == 1)
 	                    thinktime = usageModelParser.getThinkTimes().values()
-	                    .iterator().next()[i];
+	                    .iterator().next()[hour];
 
-//	                double percentage = 1.0; //(double) 1 / providers.size();
+	                double percentage = 1.0; //(double) 1 / providers.size();
 	                
-	                double percentage = ((double)getTotalHourlyMachines(s, hour) / startingHourlyMachines[hour]) * startingPercentages[hour];
+//	                double percentage = ((double)getTotalHourlyMachines(s, hour) / startingHourlyMachines[hour]) * startingPercentages[hour];
 
 	                population = (int) Math.ceil(population * percentage);
 	                
@@ -256,12 +259,25 @@ public class PrivateCloud implements CloudProvider {
 			}
 		}
 		
+		for (Solution s : solution.getAll()) {
+//			Solution s = solution.get(0);
+			int[] hourlyMachines = getTotalHourlyMachines(s);
+			double[] rates = new double[hourlyMachines.length];
+			for (int h = 0; h < hourlyMachines.length; ++h) {
+				rates[h] = ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h];
+//				changeWorkload(s, h, ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h]);
+			}
+			changeWorkload(s, rates);
+			
+			logger.debug(solution.showStatus());
+		}
+		
 		for (Solution s : startingSolution.getAll()) {
 			if (solution.get(s.getProvider()) == null)
 				solution.add(s);
 		}
 		
-		solution.removeUselessSolutions();
+//		solution.removeUselessSolutions();
 		
 		logger.info("Solution computed!");
 		return solution;
@@ -301,27 +317,68 @@ public class PrivateCloud implements CloudProvider {
      *            from the usage model extension file.
      */
     protected void changeWorkload(Solution sol, int hour, double rate) {
-        logger.debug("The hourly values of the workload are: ");
+        logger.debug("The hourly values of the workload are:");
+        String tmp = "";
         for (Instance i : sol.getApplications())
-            logger.debug("%d ", i.getWorkload());
-        logger.debug("\nTrying to change the %d hour using this rate: %f", hour, rate);
+            tmp += i.getWorkload() + " ";
+        logger.debug(tmp);
+        logger.debug("Trying to change the " + hour + " hour using this rate: " + rate);
 
         MoveChangeWorkload move = new MoveChangeWorkload(sol);
 
         try {
             move.modifyWorkload(hour, rate);
-            logger.debug("done!\nThe new values are: ");
+            logger.debug("Done! The new values are:");
+            tmp = "";
             for (Instance i : sol.getApplications())
-                logger.debug("%d ", i.getWorkload());
+                tmp += i.getWorkload() + " ";
+            logger.debug(tmp);
 
         } catch (ParserConfigurationException | SAXException | IOException
                 | JAXBException e) {
-            logger.debug("error!\n");
-            e.printStackTrace();
-            logger.error("Error performing the change of the workload.\n"
-                    + e.getMessage());
+            logger.error("Error!", e);
             return;
         }
+    }
+    
+    /**
+     * This method should allow the change of workload at runtime!
+     * 
+     * @param sol
+     *            the current solution that is going to be modified by the
+     *            method.
+     * @param rates
+     *            the rates by which we'll multiply the actual workload, taken
+     *            from the usage model extension file.
+     */
+    protected void changeWorkload(Solution sol, double[] rates) {
+        logger.debug("The hourly values of the workload are:");
+        String tmp = "";
+        for (Instance i : sol.getApplications())
+            tmp += i.getWorkload() + " ";
+        logger.debug(tmp);
+        logger.debug("Trying to change them using those rates:");
+        tmp = "";
+        for (double rate : rates)
+            tmp += rate + " ";
+        logger.debug(tmp);
+
+        MoveChangeWorkload move = new MoveChangeWorkload(sol);
+
+        try {
+            move.modifyWorkload(rates);
+            logger.debug("Done! The new values are:");
+            tmp = "";
+            for (Instance i : sol.getApplications())
+                tmp += i.getWorkload() + " ";
+            logger.debug(tmp);
+
+        } catch (ParserConfigurationException | SAXException | IOException
+                | JAXBException e) {
+            logger.error("Error!", e);
+            return;
+        }
+
     }
 	
 	public Host getHost(String provider) {

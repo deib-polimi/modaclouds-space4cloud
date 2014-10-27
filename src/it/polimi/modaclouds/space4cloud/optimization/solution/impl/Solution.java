@@ -243,6 +243,10 @@ public class Solution implements Cloneable, Serializable {
 
 		if (getRegion() != null)
 			cloneSolution.setRegion(new String(this.getRegion()));
+		
+		cloneSolution.percentageWorkload = new double[24];
+		for (int h = 0; h < 24; ++h)
+			cloneSolution.percentageWorkload[h] = percentageWorkload[h];
 
 		return cloneSolution;
 

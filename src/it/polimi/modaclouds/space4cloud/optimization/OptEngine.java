@@ -43,7 +43,6 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
-import it.polimi.modaclouds.space4cloud.utils.DataExporter;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
 import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
@@ -255,27 +254,30 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
      *            from the usage model extension file.
      */
     protected void changeWorkload(Solution sol, double[] rates) {
-        logger.debug("The hourly values of the workload are: ");
+        logger.debug("The hourly values of the workload are:");
+        String tmp = "";
         for (Instance i : sol.getApplications())
-            logger.debug("%d ", i.getWorkload());
-        logger.debug("\nTrying to change them using those rates:");
+            tmp += i.getWorkload() + " ";
+        logger.debug(tmp);
+        logger.debug("Trying to change them using those rates:");
+        tmp = "";
         for (double rate : rates)
-            logger.debug("%f ", rate);
+            tmp += rate + " ";
+        logger.debug(tmp);
 
         MoveChangeWorkload move = new MoveChangeWorkload(sol);
 
         try {
             move.modifyWorkload(rates);
-            logger.debug("done!\nThe new values are: ");
+            logger.debug("Done! The new values are:");
+            tmp = "";
             for (Instance i : sol.getApplications())
-                logger.debug("%d ", i.getWorkload());
+                tmp += i.getWorkload() + " ";
+            logger.debug(tmp);
 
         } catch (ParserConfigurationException | SAXException | IOException
                 | JAXBException e) {
-            logger.debug("error!\n");
-            e.printStackTrace();
-            logger.error("Error performing the change of the workload.\n"
-                    + e.getMessage());
+            logger.error("Error!", e);
             return;
         }
 
@@ -294,251 +296,30 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
      *            from the usage model extension file.
      */
     protected void changeWorkload(Solution sol, int hour, double rate) {
-        logger.debug("The hourly values of the workload are: ");
+        logger.debug("The hourly values of the workload are:");
+        String tmp = "";
         for (Instance i : sol.getApplications())
-            logger.debug("%d ", i.getWorkload());
-        logger.debug("\nTrying to change the %d hour using this rate: %f", hour, rate);
+            tmp += i.getWorkload() + " ";
+        logger.debug(tmp);
+        logger.debug("Trying to change the " + hour + " hour using this rate: " + rate);
 
         MoveChangeWorkload move = new MoveChangeWorkload(sol);
 
         try {
             move.modifyWorkload(hour, rate);
-            logger.debug("done!\nThe new values are: ");
+            logger.debug("Done! The new values are:");
+            tmp = "";
             for (Instance i : sol.getApplications())
-                logger.debug("%d ", i.getWorkload());
+                tmp += i.getWorkload() + " ";
+            logger.debug(tmp);
 
         } catch (ParserConfigurationException | SAXException | IOException
                 | JAXBException e) {
-            logger.debug("error!\n");
-            e.printStackTrace();
-            logger.error("Error performing the change of the workload.\n"
-                    + e.getMessage());
+            logger.error("Error!", e);
             return;
         }
 
     }
-
-//  /**
-//   * This method should allow the change of workload at runtime!
-//   * 
-//   * @param sol
-//   *            the current solution that is going to be modified by the
-//   *            method.
-//   * @param rate
-//   *            the rate by which we'll multiply the actual workload, taken
-//   *            from the usage model extension file.
-//   */
-//  protected void changeWorkload(Solution sol, double rate) {
-//      logger.debug("The hourly values of the workload are: ");
-//      for (Instance i : sol.getApplications())
-//          logger.debug("%d ", i.getWorkload());
-//      logger.debug("\nTrying the change them using a rate of %f...",
-//              rate);
-//
-//      MoveChangeWorkload move = new MoveChangeWorkload(sol);
-//
-//      try {
-//          move.modifyWorkload(new File(Configuration.USAGE_MODEL_EXTENSION), rate);
-//          logger.debug("done!\nThe new values are: ");
-//          for (Instance i : sol.getApplications())
-//              logger.debug("%d ", i.getWorkload());
-//
-//      } catch (ParserConfigurationException | SAXException | IOException
-//              | JAXBException e) {
-//          logger.debug("error!\n");
-//          e.printStackTrace();
-//          logger.error("Error performing the change of the workload.\n"
-//                  + e.getMessage());
-//          return;
-//      }
-//
-//      InternalOptimization(currentSolution);
-//
-//  }
-
-//  protected void changeWorkload(SolutionMulti sols) {
-//      if (sols.size() < 2)
-//          return;
-//
-//      HashMap<String, Double> processingRatesMap = new HashMap<String, Double>();
-//      HashMap<String, Integer> memoriesMap = new HashMap<String, Integer>();
-//      HashMap<String, double[]> ratesMap = new HashMap<String, double[]>();
-//      HashMap<String, ArrayList<Tier>> tierMap = new HashMap<String, ArrayList<Tier>>();
-//
-//      for (Solution sol : sols.getAll()) {
-//          logger.debug("The hourly values of the workload for "
-//                  + sol.getProvider() + " are: ");
-//          for (Instance i : sol.getApplications())
-//              logger.debug("%d ", i.getWorkload());
-//
-//          List<Tier> tierList = sol.getApplication(0).getTiers();
-//          String provider = sol.getProvider();
-//
-//          for (Tier tier : tierList) {
-//              String id = tier.getId();
-//
-//              ArrayList<Tier> tierByIdList = tierMap.get(id);
-//              if (tierByIdList == null)
-//                  tierByIdList = new ArrayList<Tier>();
-//
-//              tierByIdList.add(tier);
-//              tierMap.put(id, tierByIdList);
-//
-//              CloudService origRes = tier.getCloudService();
-//
-//              double processingRate = dataHandler.getProcessingRate(
-//                      origRes.getProvider(), origRes.getServiceName(),
-//                      origRes.getResourceName());
-//              int memory = dataHandler.getAmountMemory(origRes.getProvider(),
-//                      origRes.getServiceName(), origRes.getResourceName());
-//
-//              processingRatesMap.put(id + provider, processingRate);
-//              memoriesMap.put(id + provider, memory);
-//          }
-//
-//          double[] rates = new double[24];
-//          for (int i = 0; i < 24; ++i)
-//              rates[i] = sol.getPercentageWorkload(i);
-//
-//          ratesMap.put(provider, rates);
-//      }
-//
-//      for (int i = 0; i < 24; ++i) {
-//
-//          for (String id : tierMap.keySet()) {
-//              logger.debug("Hour: %d, Tier ID: %s\n", i, id);
-//
-//              ArrayList<Tier> tierByIdList = tierMap.get(id);
-//              double processingRates[] = new double[tierByIdList.size()];
-//              int memories[] = new int[tierByIdList.size()];
-//
-//              int x = 0;
-//              for (Tier tier : tierByIdList) {
-//                  IaaS service = (IaaS) tier.getCloudService();
-//                  String provider = service.getProvider();
-//                  processingRates[x] = service.getReplicas()
-//                          * processingRatesMap.get(id + provider);
-//                  memories[x] = service.getReplicas()
-//                          * memoriesMap.get(id + provider);
-//                  x++;
-//              }
-//
-//              int idMaxProcs = 0, idMaxMemory = 0;
-//
-//              for (int j = 1; j < processingRates.length; ++j) {
-//                  if (processingRates[j] > processingRates[idMaxProcs])
-//                      idMaxProcs = j;
-//                  if (memories[j] > memories[idMaxMemory])
-//                      idMaxMemory = j;
-//              }
-//
-//              String providerMaxProcs = tierByIdList.get(idMaxProcs)
-//                      .getCloudService().getProvider();
-//              String providerMaxMemory = tierByIdList.get(idMaxMemory)
-//                      .getCloudService().getProvider();
-//              String providerRandom = tierByIdList
-//                      .get((int) Math.floor(Math.random() * sols.size()))
-//                      .getCloudService().getProvider();
-//              boolean doRandom = (Math.random() > 0.4);
-//
-//              for (Solution sol : sols.getAll()) {
-//                  double[] rates = ratesMap.get(sol.getProvider());
-//
-//                  if (sol.getProvider().equals(providerMaxProcs)) {
-//                      rates[i] = rates[i] + 0.05 * (sols.size() - 1);
-//                  } else {
-//                      rates[i] = rates[i] - 0.05;
-//                  }
-//
-//                  if (sol.getProvider().equals(providerMaxMemory)) {
-//                      rates[i] = rates[i] + 0.05 * (sols.size() - 1);
-//                  } else {
-//                      rates[i] = rates[i] - 0.05;
-//                  }
-//
-//                  if (doRandom) {
-//                      if (sol.getProvider().equals(providerRandom)) {
-//                          rates[i] = rates[i] + 0.03 * (sols.size() - 1);
-//                      } else {
-//                          rates[i] = rates[i] - 0.03;
-//                      }
-//                  }
-//
-//                  logger.debug("\t" + sol.getProvider() + ": ");
-//                  for (double rate : rates) {
-//                      logger.debug((int) (rate * 100) + " ");
-//                  }
-//
-//
-//                  ratesMap.put(sol.getProvider(), rates);
-//              }
-//
-//              int bad = 0;
-//              for (Solution sol : sols.getAll()) {
-//                  // for (int k = 0; k < sols.size(); ++k) {
-//                  // Solution sol = sols.get(k);
-//                  double[] rates = ratesMap.get(sol.getProvider());
-//
-//                  if (rates[i] < 0.1) {
-//                      double diff = (0.1 - rates[i]) / (sols.size() - ++bad);
-//                      rates[i] = 0.1;
-//                      // for (Solution sol2 : sols.getAll()) {
-//                      for (int l = 0; l < sols.size(); ++l) {
-//                          Solution sol2 = sols.get(l);
-//                          if (!sol.getProvider().equals(sol2.getProvider())) {
-//                              double[] rates2 = ratesMap.get(sol2
-//                                      .getProvider());
-//                              rates2[i] -= diff;
-//
-//                              if (rates2[i] < 0.1) {
-//                                  diff += (0.1 - rates[i])
-//                                          / (sols.size() - ++bad);
-//                                  rates2[i] = 0.1;
-//                                  l = 0;
-//                              }
-//
-//                              ratesMap.put(sol2.getProvider(), rates2);
-//                          }
-//                      }
-//
-//                      System.out.print("Fixed: " + sol.getProvider() + ": ");
-//                      for (double rate : rates) {
-//                          System.out.print((int) (rate * 100) + " ");
-//                      }
-//
-//                      ratesMap.put(sol.getProvider(), rates);
-//                  }
-//              }
-//
-//          }
-//
-//      }
-//
-//      for (Solution sol : sols.getAll()) {
-//          MoveChangeWorkload move = new MoveChangeWorkload(sol);
-//
-//          try {
-//              move.modifyWorkload(new File(Configuration.USAGE_MODEL_EXTENSION),
-//                      ratesMap.get(sol.getProvider()));
-//              logger.debug("Done! The new values for "
-//                      + sol.getProvider() + " are: ");
-//              for (Instance i : sol.getApplications())
-//                  logger.debug("%d ", i.getWorkload());
-//
-//          } catch (ParserConfigurationException | SAXException | IOException
-//                  | JAXBException e) {
-//              logger.debug("error!\n");
-//              e.printStackTrace();
-//              logger.error("Error performing the change of the workload.\n"
-//                      + e.getMessage());
-//              // return;
-//          }
-//      }
-//
-//      evalServer.EvaluateSolution(sols);
-//      updateBestSolution(sols);
-//
-//  }
 
     /**
      * @param sol
@@ -1312,46 +1093,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			evalServer.EvaluateSolution(sol);
 			logger.info("Solution evaluated!");
 			logger.info(sol.showStatus());
-//			sol.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+ "-evaluated" + Configuration.SOLUTION_FILE_EXTENSION));
+			sol.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+ "-evaluated" + Configuration.SOLUTION_FILE_EXTENSION));
 		}
 		else
 			logger.info("No solution!");
 		
 		return sol;
-    	
-    	
-//        Solution s = PrivateCloud.getSolution(solutionMulti);
-//        if (s == null) {
-//            logger.error("Error! No suitable solution found!");
-//            return;
-//        }
-//        
-//        Path p = null;
-//        try {
-//            p = Files.createTempFile("sol", ".xml");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            p = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "soltmp.xml");
-//        }
-//        
-//        s.exportLight(p);
-//        logger.info("Private Cloud Solution exported in %s.", p.toString());
-//        
-//        double rates[] = new double[24];
-//        
-//        for (int hour = 0; hour < 24; ++hour)
-//            rates[hour] = Math.ceil((1.0 - s.getPercentageWorkload(hour)) / solutionMulti.size());
-//        
-//        for (Solution sol : solutionMulti.getAll())
-//            changeWorkload(sol, rates);
-//        
-//        logger.info("The solution was modified:");
-//        logger.info(solutionMulti.showStatus());
-//        
-//        solutionMulti.setPrivateCloudSolution(s);
-//        
-//        bestSolution = solutionMulti.clone();
-//        localBestSolution = solutionMulti.clone();
     }
 
     /**
@@ -1407,8 +1154,17 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
         }
         
 //        if (Configuration.USE_PRIVATE_CLOUD) {
+//        	// make feasible:
+//            for (Solution s : currentSolution.getAll())
+//                makeFeasible(s);
+//            
+//            // scale in:
+//            InternalOptimization(currentSolution);
+//            
+//            evalServer.EvaluateSolution(currentSolution);
+//        	
 //    		try {
-//		    	considerPrivateCloud(initialSolution);
+//		    	considerPrivateCloud(currentSolution);
 //				return 0;
 //    		} catch (Exception e) {
 //    			e.printStackTrace();

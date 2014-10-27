@@ -293,7 +293,108 @@ public class EvaluationServer implements ActionListener {
 //
 //	}
 	
+	public void EvaluateEmptySolution(Solution sol) {
+		if (sol.hasAtLeastOneReplicaInOneHour()) {
+			EvaluateSolution(sol);
+			return;
+		}
+		
+		long startTime = -1;		
+		requestedEvaluations++;
+		logger.debug("Starting evaluation");
+		error = false;
+		if (!sol.isEvaluated()) {
+
+			startTime = System.nanoTime();
+
+			ArrayList<Instance> instanceList = sol.getHourApplication();
+			
+			// evaluate hourly solutions
+			for (Instance i : instanceList) {
+				// the solution is empty, thus there's no point in actually calling LQNS
+				i.setEvaluated(true);
+			}
+			
+			incrementTotalNumberOfEvaluations();
+		}
+
+		// evaluate feasibility
+		if (constraintHandler != null)
+			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+		sol.updateEvaluation();
+
+		// evaluate costs		
+		deriveCosts(sol);
+
+		logger.trace("" + sol.getCost() + ", "
+				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
+				+ sol.isFeasible());
+
+		long middleTime = System.nanoTime();
+		if (log2png != null && logVm != null && logConstraint != null
+				&& timer != null) {
+			timer.split();
+			log2png.addPoint2Series(seriesHandleExecution,
+					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+					sol.getCost());
+			if(seriesHandleTiers==null){
+				seriesHandleTiers = new HashMap<>();
+				for(Tier t:sol.getApplication(0).getTiers()){					
+					seriesHandleTiers.put(t.getId(),logVm.newSeries(t.getName()));					
+				}
+			}
+				
+			for(Tier t:sol.getApplication(0).getTiers()){
+			logVm.addPoint2Series(seriesHandleTiers.get(t.getId()),
+					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+					sol.getVmNumberPerTier(t.getId()));			
+			}
+			logConstraint.addPoint2Series(seriesHandleConstraint,
+					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+					sol.getNumberOfViolatedConstraints());
+		}
+		long endTime = System.nanoTime();
+		if (startTime != -1) {
+			evaluationTime += (middleTime - startTime);
+			plottingTime += (endTime - middleTime);
+			fullEvaluationTime += (endTime - startTime);
+			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
+		}else
+			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
+		sol.setEvaluationTime(timer.getSplitTime());
+		
+		
+		
+		logger.debug("Update long term memory");
+		if(longTermFrequencyMemory==null){
+			longTermFrequencyMemory = new HashMap<String, Cache<String,Integer>>();			
+		}
+		
+		for(Tier t:sol.getApplication(0).getTiers()){			
+			Cache<String, Integer> tierMemory = longTermFrequencyMemory.get(t.getId());
+			if(tierMemory == null){
+				tierMemory = new Cache<String, Integer>(DEFAULT_TIER_MEMORY_MAX_SIZE);
+				longTermFrequencyMemory.put(t.getId(), tierMemory);
+			}
+			//get the tierTypeID
+			String tierTypeID = SolutionHelper.buildTierTypeID(t);
+			int counter = 0;
+			//if the tierTypeID already appears in the memory get the counter and update it
+			if(tierMemory.get(tierTypeID)!= null)
+				counter = tierMemory.get(tierTypeID);
+			counter++;
+			//if the tier is does not appear a new entry is created otherwise the old one is overritten.
+			tierMemory.put(tierTypeID, counter);
+		}
+		logger.debug("Evaluation ended");
+	}
+	
 	public void EvaluateSolution(Solution sol) {
+		if (!sol.hasAtLeastOneReplicaInOneHour()) {
+			EvaluateEmptySolution(sol);
+			return;
+		}
+		
 		if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
 			EvaluatePrivateSolution(sol);
 			return;
