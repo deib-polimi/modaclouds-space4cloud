@@ -15,10 +15,13 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -173,7 +176,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public void exportCSV(Path filePath) {
 		String text = "";
 
-		text += "total cost: " + getCost() + "\n";
+		text += "total cost: " + getCostAsString() + "\n";
 		text += "number of providers: " + solutions.size() + "\n\n";
 
 		for (Solution s : getAll()) {
@@ -238,7 +241,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			doc.appendChild(rootElement);
 
 			// set cost
-			rootElement.setAttribute("cost", "" + getCost());
+			rootElement.setAttribute("cost", "" + getCostAsString());
 			// set evaluationtime
 			rootElement.setAttribute("time", "" + getEvaluationTime());
 			// set feasibility
@@ -412,6 +415,18 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	public float getCost() {
 		return (float)cost;
+	}
+	
+	private static DecimalFormat formatter = null;
+	
+	public String getCostAsString() {
+		if (formatter == null) {
+			DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
+			otherSymbols.setDecimalSeparator('.');
+			formatter = new DecimalFormat("0.#####", otherSymbols);
+		}
+		
+		return formatter.format(cost);
 	}
 
 	public long getEvaluationTime() {
@@ -659,7 +674,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	 */
 	public String showStatus() {
 		String result = "SolutionMulti Status\n";
-		result += "Total cost: " + getCost();
+		result += "Total cost: " + getCostAsString();
 		result += "\tEvaluated: " + isEvaluated();
 		result += "\tFeasible: " + isFeasible();
 		result += "\tProviders: " + size();
@@ -680,7 +695,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public String toString() {
 		String result = "SolutionMulti@"
 				+ Integer.toHexString(super.hashCode());
-		result += "[Cost: " + getCost();
+		result += "[Cost: " + getCostAsString();
 		result += ", Providers: " + size();
 		result += ", Evaluated: " + isEvaluated();
 		result += ", Feasible: " + isFeasible();
