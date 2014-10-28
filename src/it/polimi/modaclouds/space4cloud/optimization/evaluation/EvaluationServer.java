@@ -131,10 +131,6 @@ public class EvaluationServer implements ActionListener {
 		for (Instance i : sol.getHourApplication()) {
 			double cost = costEvaulator.deriveCosts(i, sol.getHourApplication()
 					.indexOf(i));
-			{
-				// TODO: cancella
-				logger.debug("> " + cost + ", " + totalCost);
-			}
 			totalCost += cost;
 		}
 		sol.setCost(totalCost);
@@ -466,19 +462,9 @@ public class EvaluationServer implements ActionListener {
 			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
 		sol.updateEvaluation();
 		
-		{
-			// TODO: cancella
-        	logger.debug("(0) " + sol.getProvider() + ": " + sol.getCost());
-        }
-
 		// evaluate costs		
 		deriveCosts(sol);
 		
-		{
-			// TODO: cancella
-        	logger.debug("(9) " + sol.getProvider() + ": " + sol.getCost());
-        }
-
 		logger.trace("" + sol.getCost() + ", "
 				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
 				+ sol.isFeasible());
@@ -768,29 +754,8 @@ public class EvaluationServer implements ActionListener {
 	}
 
 	public void EvaluateSolution(SolutionMulti sol) {
-
-        
-        {
-        	// TODO: cancella
-        	SolutionMulti solMul = sol;
-        	String tmp = "(A) Total: " + solMul.getCost();
-        	for (Solution s : solMul.getAll())
-        		tmp += ", " + s.getProvider() +":" + s.getCost();
-        	logger.debug(tmp);
-        }
-		
 		for (Solution s : sol.getAll())
 			EvaluateSolution(s);
-		
-		{
-			// TODO: cancella
-        	SolutionMulti solMul = sol;
-        	String tmp = "(Z) Total: " + solMul.getCost();
-        	for (Solution s : solMul.getAll())
-        		tmp += ", " + s.getProvider() +":" + s.getCost();
-        	logger.debug(tmp);
-        }
-		
 		sol.updateEvaluation();
 	}
 }

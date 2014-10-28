@@ -280,11 +280,11 @@ public class CostEvaluator {
 			int hour) {
 		double cost = 0.0, temp;
 		
-		if (lc == null && cp == null)
+		if ((lc == null || lc.size() == 0) && cp == null)
 			return Double.MAX_VALUE;
 
 		// Consider the costs which do not belong to a cost profile.
-		if (lc != null && cp == null)
+		if (lc != null && lc.size() > 0 && cp == null)
 			for (Cost c : lc) {
 				// if the resource has a cost for each hour skip those that are
 				// different the "hour", if it has only 1 cost (for the whole
