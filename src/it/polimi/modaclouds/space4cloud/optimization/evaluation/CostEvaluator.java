@@ -279,6 +279,9 @@ public class CostEvaluator {
 	private double deriveCosts(List<Cost> lc, CostProfile cp, int replicas,
 			int hour) {
 		double cost = 0.0, temp;
+		
+		if (lc == null && cp == null)
+			return Double.MAX_VALUE;
 
 		// Consider the costs which do not belong to a cost profile.
 		if (lc != null && cp == null)
@@ -335,8 +338,8 @@ public class CostEvaluator {
 			}
 
 		// Consider the Cost Profile
-//		if (cp != null && cp != null) {
-		if (lc == null && cp != null) {
+		if (cp != null && cp != null) {
+//		if (lc == null && cp != null) {
 			lc = cp.getComposedOf();
 			if (lc != null)
 				for (Cost c : lc) {
