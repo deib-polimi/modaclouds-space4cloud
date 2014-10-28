@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
@@ -123,14 +124,33 @@ public class DataHandler {
 				.getProviderDBConnectors().get(provider) // provider
 				.getIaaSServicesHashMap().get(serviceName) // service
 				.getComposedOf();
+		
+		{
+			// TODO: rimuovi questo
+			Map<String, ProviderDBConnector> res = cloudProviders.getProviderDBConnectors();
+			for (String s : res.keySet())
+				logger.debug(">>> " + s);
+			
+			List<CloudResource> list = cloudProviders
+					.getProviderDBConnectors().get(provider) // provider
+					.getIaaSServicesHashMap().get(serviceName) // service
+					.getComposedOf();
+			
+			for (CloudResource cr : list) {
+				if (cr.getName().equals(resourceName)) {
+					logger.debug(">>> " + cr.getName());
+				}
+			}
+			
+		}
 
 		// TODO: Controllare questa cosa :(
 		for (CloudResource cr : cloudResourceList) {
-			if (cr.getName().equals(resourceName) //) {
-				 && cr.getHasCost() !=
-				 null &&
-				 cr.getHasCost().size()
-				 > 0) {
+			if (
+				 cr.getName().equals(resourceName)
+				 && (cr.getHasCost() != null)
+				 && (cr.getHasCost().size() > 0)
+				) {
 				
 				return cr;
 			}

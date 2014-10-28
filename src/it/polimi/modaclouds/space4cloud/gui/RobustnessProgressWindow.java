@@ -67,42 +67,42 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 
 	public static enum Size {
 
+		zero("zero", 0),
+		
 		// Amazon
-		zero("zero", 0), t1micro("micro", 1), m1small("small", 2), m1medium(
-				"medium", 3), c1medium("medium", 3), m1large("large", 4), c3large(
-				"large", 4), m1xlarge("xlarge", 5), m2xlarge("xlarge", 5), m3xlarge(
-				"xlarge", 5), c1xlarge("xlarge", 5), c3xlarge("xlarge", 5), m32xlarge(
-				"xxlarge", 6), c32xlarge("xxlarge", 6),
+		t1micro("micro", 1), m1small("small", 2),
+		m1medium("medium", 3), c1medium("medium", 3),
+		m1large("large", 4), c3large("large", 4),
+		m1xlarge("xlarge", 5), m2xlarge("xlarge", 5), m3xlarge("xlarge", 5), c1xlarge("xlarge", 5), c3xlarge("xlarge", 5),
+		m22xlarge("xxlarge", 6), m32xlarge("xxlarge", 6), c32xlarge("xxlarge", 6),
+		cg14xlarge("xxxxlarge", 7),
 
 		// Microsoft
-		GeneralAvailabilityExtraSmallInstance("ExtraSmall", 7), PreviewExtraSmallInstance(
-				"ExtraSmall", 7), GeneralAvailabilitySmallInstance("Small", 8), PreviewSmallInstance(
-				"Small", 8), GeneralAvailabilityMediumInstance("Medium", 9), PreviewMediumInstance(
-				"Medium", 9), GeneralAvailabilityLargeInstance("Large", 10), PreviewLargeInstance(
-				"Large", 10), GeneralAvailabilityExtraLargeInstance(
-				"ExtraLarge", 11), PreviewExtraLargeInstance("ExtraLarge", 11),
+		GeneralAvailabilityExtraSmallInstance("ExtraSmall", 8),	PreviewExtraSmallInstance("ExtraSmall", 8),
+		GeneralAvailabilitySmallInstance("Small", 9), PreviewSmallInstance("Small", 9),
+		GeneralAvailabilityMediumInstance("Medium", 10), PreviewMediumInstance("Medium", 10),
+		GeneralAvailabilityLargeInstance("Large", 11), PreviewLargeInstance("Large", 11),
+		GeneralAvailabilityExtraLargeInstance("ExtraLarge", 12), PreviewExtraLargeInstance("ExtraLarge", 12),
 
 		// Flexiscale
-		Flexiscale512MB1CPUServer("512 MB/1 CPU", 12), Flexiscale512MB1CPUServerWindows(
-				"512 MB/1 CPU", 12), Flexiscale1GB1CPUServer("1 GB/1 CPU", 13), Flexiscale1GB1CPUServerWindows(
-				"1 GB/1 CPU", 13), Flexiscale2GB1CPUServer("2 GB/1 CPU", 14), Flexiscale2GB1CPUServerWindows(
-				"2 GB/1 CPU", 14), Flexiscale2GB2CPUServer("2 GB/2 CPU", 15), Flexiscale2GB2CPUServerWindows(
-				"2 GB/2 CPU", 15), Flexiscale4GB2CPUServer("4 GB/2 CPU", 16), Flexiscale4GB2CPUServerWindows(
-				"4 GB/2 CPU", 16), Flexiscale4GB3CPUServer("4 GB/3 CPU", 17), Flexiscale4GB3CPUServerWindows(
-				"4 GB/3 CPU", 17), Flexiscale4GB4CPUServer("4 GB/4 CPU", 18), Flexiscale4GB4CPUServerWindows(
-				"4 GB/4 CPU", 18), Flexiscale6GB3CPUServer("6 GB/3 CPU", 19), Flexiscale6GB3CPUServerWindows(
-				"6 GB/3 CPU", 19), Flexiscale6GB4CPUServer("6 GB/4 CPU", 20), Flexiscale6GB4CPUServerWindows(
-				"6 GB/4 CPU", 20), Flexiscale6GB5CPUServer("6 GB/5 CPU", 21), Flexiscale6GB5CPUServerWindows(
-				"6 GB/5 CPU", 21), Flexiscale6GB6CPUServer("6 GB/6 CPU", 22), Flexiscale6GB6CPUServerWindows(
-				"6 GB/6 CPU", 22), Flexiscale8GB4CPUServer("8 GB/4 CPU", 23), Flexiscale8GB4CPUServerWindows(
-				"8 GB/4 CPU", 23), Flexiscale8GB5CPUServer("8 GB/5 CPU", 24), Flexiscale8GB5CPUServerWindows(
-				"8 GB/5 CPU", 24), Flexiscale8GB6CPUServer("8 GB/6 CPU", 25), Flexiscale8GB6CPUServerWindows(
-				"8 GB/6 CPU", 25), Flexiscale8GB7CPUServer("8 GB/7 CPU", 26), Flexiscale8GB7CPUServerWindows(
-				"8 GB/7 CPU", 26), Flexiscale8GB8CPUServer("8 GB/8 CPU", 27), Flexiscale8GB8CPUServerWindows(
-				"8 GB/8 CPU", 27);
+		Flexiscale512MB1CPUServer("512 MB/1 CPU", 13), Flexiscale512MB1CPUServerWindows("512 MB/1 CPU", 13),
+		Flexiscale1GB1CPUServer("1 GB/1 CPU", 14), Flexiscale1GB1CPUServerWindows("1 GB/1 CPU", 14),
+		Flexiscale2GB1CPUServer("2 GB/1 CPU", 15), Flexiscale2GB1CPUServerWindows("2 GB/1 CPU", 15),
+		Flexiscale2GB2CPUServer("2 GB/2 CPU", 16), Flexiscale2GB2CPUServerWindows("2 GB/2 CPU", 16),
+		Flexiscale4GB2CPUServer("4 GB/2 CPU", 17), Flexiscale4GB2CPUServerWindows("4 GB/2 CPU", 17),
+		Flexiscale4GB3CPUServer("4 GB/3 CPU", 18), Flexiscale4GB3CPUServerWindows("4 GB/3 CPU", 18),
+		Flexiscale4GB4CPUServer("4 GB/4 CPU", 19), Flexiscale4GB4CPUServerWindows("4 GB/4 CPU", 19),
+		Flexiscale6GB3CPUServer("6 GB/3 CPU", 20), Flexiscale6GB3CPUServerWindows("6 GB/3 CPU", 20),
+		Flexiscale6GB4CPUServer("6 GB/4 CPU", 21), Flexiscale6GB4CPUServerWindows("6 GB/4 CPU", 21),
+		Flexiscale6GB5CPUServer("6 GB/5 CPU", 22), Flexiscale6GB5CPUServerWindows("6 GB/5 CPU", 22),
+		Flexiscale6GB6CPUServer("6 GB/6 CPU", 23), Flexiscale6GB6CPUServerWindows("6 GB/6 CPU", 23),
+		Flexiscale8GB4CPUServer("8 GB/4 CPU", 24), Flexiscale8GB4CPUServerWindows("8 GB/4 CPU", 24),
+		Flexiscale8GB5CPUServer("8 GB/5 CPU", 25), Flexiscale8GB5CPUServerWindows("8 GB/5 CPU", 25),
+		Flexiscale8GB6CPUServer("8 GB/6 CPU", 26), Flexiscale8GB6CPUServerWindows("8 GB/6 CPU", 26),
+		Flexiscale8GB7CPUServer("8 GB/7 CPU", 27), Flexiscale8GB7CPUServerWindows("8 GB/7 CPU", 27),
+		Flexiscale8GB8CPUServer("8 GB/8 CPU", 28), Flexiscale8GB8CPUServerWindows("8 GB/8 CPU", 28);
 
-		private static final int lastAmazonId = 6, lastMicrosoftId = 11,
-				lastFlexiscaleId = 27;
+		private static final int lastAmazonId = 7, lastMicrosoftId = 12, lastFlexiscaleId = 28;
 
 		public static Size getSizeByBasicId(int basicId) {
 			for (Size s : Size.values())
