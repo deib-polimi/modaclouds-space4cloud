@@ -130,11 +130,15 @@ public class DataHandler {
 				// null &&
 				// cr.getHasCost().size()
 				// > 0) {
+				
+				logger.debug("Resource " + resourceName + " on the provider " + provider + " found!");
+				if (cr.getHasCost() == null || cr.getHasCost().size() == 0)
+					logger.debug("But its cost profile is empty!");
+				
 				return cr;
 			}
 		}
 		
-		logger.debug("The resource " + resourceName + " on the provider " + provider + " wasn't found!");
 		return null;
 	}
 
