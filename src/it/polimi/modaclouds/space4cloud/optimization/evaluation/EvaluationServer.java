@@ -754,8 +754,35 @@ public class EvaluationServer implements ActionListener {
 	}
 
 	public void EvaluateSolution(SolutionMulti sol) {
+
+        
+        {
+        	SolutionMulti solMul = sol;
+        	String tmp = "(A) Total: " + solMul.getCost();
+        	for (Solution s : solMul.getAll())
+        		tmp += ", " + s.getProvider() +":" + s.getCost();
+        	logger.debug(tmp);
+        }
+		
 		for (Solution s : sol.getAll())
 			EvaluateSolution(s);
+		
+		{
+        	SolutionMulti solMul = sol;
+        	String tmp = "(B) Total: " + solMul.getCost();
+        	for (Solution s : solMul.getAll())
+        		tmp += ", " + s.getProvider() +":" + s.getCost();
+        	logger.debug(tmp);
+        }
+		
 		sol.updateEvaluation();
+		
+		{
+        	SolutionMulti solMul = sol;
+        	String tmp = "(C) Total: " + solMul.getCost();
+        	for (Solution s : solMul.getAll())
+        		tmp += ", " + s.getProvider() +":" + s.getCost();
+        	logger.debug(tmp);
+        }
 	}
 }
