@@ -837,6 +837,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 										Paths.get(bestSolution.getAbsolutePath()),
 										Paths.get(resultsFolder.toString(), "solution-" + testValue
 												+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+								
+								if (Configuration.RELAXED_INITIAL_SOLUTION)
+									Files.copy(
+											Paths.get(bestSolution.getParent(), "generated-solution.xml"),
+											Paths.get(resultsFolder.toString(), "generated-solution-" + testValue
+													+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 							}
 						}
 

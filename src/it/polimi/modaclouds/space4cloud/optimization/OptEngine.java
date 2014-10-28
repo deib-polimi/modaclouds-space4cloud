@@ -1032,6 +1032,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
         }
         logger.info("Deserialized: " + initialSolution);
     }
+    
+    protected void makeFeasible(SolutionMulti sol) {
+    	for (Solution s : sol.getAll())
+    		makeFeasible(s);
+    }
 
     /**
      * Make the solution feseable by performing scale out operations
@@ -1143,14 +1148,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
         
         if (Configuration.RELAXED_INITIAL_SOLUTION) {
             // make feasible:
-            for (Solution s : currentSolution.getAll())
-                makeFeasible(s);
-            
-//            // scale in:
-//            InternalOptimization(currentSolution);
-//
-//            bestSolution = currentSolution.clone();
-//            localBestSolution = currentSolution.clone();
+            makeFeasible(initialSolution);
             
             optimLogger.info("Updating best solutions");
 

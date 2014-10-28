@@ -133,7 +133,8 @@ public class DataHandler {
 				return cr;
 			}
 		}
-
+		
+		logger.debug("The resource " + resourceName + " on the provider " + provider + " wasn't found!");
 		return null;
 	}
 
