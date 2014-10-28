@@ -128,19 +128,22 @@ public class DataHandler {
 		{
 			// TODO: rimuovi questo
 			Map<String, ProviderDBConnector> res = cloudProviders.getProviderDBConnectors();
+			String tmp = "";
 			for (String s : res.keySet())
-				logger.debug(">>> " + s);
+				tmp += s + " ";
+			logger.debug("Providers: " + tmp);
 			
 			List<CloudResource> list = cloudProviders
 					.getProviderDBConnectors().get(provider) // provider
 					.getIaaSServicesHashMap().get(serviceName) // service
 					.getComposedOf();
 			
-			for (CloudResource cr : list) {
-				if (cr.getName().equals(resourceName)) {
-					logger.debug(">>> " + cr.getName());
-				}
-			}
+			tmp = "";
+			for (CloudResource cr : list)
+				if (cr.getName().equals(resourceName))
+					tmp += cr.getName() + " ";
+			
+			logger.debug("Resources: " + tmp);
 			
 		}
 
