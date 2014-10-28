@@ -126,10 +126,11 @@ public class DataHandler {
 
 		// TODO: Controllare questa cosa :(
 		for (CloudResource cr : cloudResourceList) {
-			if (cr.getName().equals(resourceName)) { // && cr.getHasCost() !=
-				// null &&
-				// cr.getHasCost().size()
-				// > 0) {
+			if (cr.getName().equals(resourceName) //) {
+				 && cr.getHasCost() !=
+				 null &&
+				 cr.getHasCost().size()
+				 > 0) {
 				
 				return cr;
 			}
