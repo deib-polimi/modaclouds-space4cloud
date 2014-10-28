@@ -1122,6 +1122,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
         // solution
         // initialSolution.showStatus();
         // Debugging constraintHandler
+        
+        {
+        	SolutionMulti solMul = initialSolution;
+        	String tmp = "Total: " + solMul.getCost();
+        	for (Solution s : solMul.getAll())
+        		tmp += ", " + s.getProvider() +":" + s.getCost();
+        	optimLogger.debug(tmp);
+        }
 
         bestSolution = initialSolution.clone();
         localBestSolution = initialSolution.clone();
@@ -1148,7 +1156,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
         
         if (Configuration.RELAXED_INITIAL_SOLUTION) {
             // make feasible:
-            makeFeasible(initialSolution);
+            makeFeasible(currentSolution);
             
             optimLogger.info("Updating best solutions");
 
@@ -1159,6 +1167,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			InternalOptimization(currentSolution);
 			updateLocalBestSolution(currentSolution, true);
 			updateBestSolution(currentSolution, true);
+			
+			{
+	        	SolutionMulti solMul = currentSolution;
+	        	String tmp = "Total: " + solMul.getCost();
+	        	for (Solution s : solMul.getAll())
+	        		tmp += ", " + s.getProvider() +":" + s.getCost();
+	        	optimLogger.debug(tmp);
+	        }
         }
         
 //        if (Configuration.USE_PRIVATE_CLOUD) {
