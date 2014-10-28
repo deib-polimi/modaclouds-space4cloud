@@ -281,7 +281,7 @@ public class CostEvaluator {
 		double cost = 0.0, temp;
 		
 		if ((lc == null || lc.size() == 0) && cp == null)
-			return Double.MAX_VALUE;
+			return 100.0;
 
 		// Consider the costs which do not belong to a cost profile.
 		if (lc != null && lc.size() > 0 && cp == null)
