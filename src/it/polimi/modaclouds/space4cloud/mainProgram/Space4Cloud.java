@@ -688,7 +688,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				.newFixedThreadPool(1);
 
 		robustnessWindow = new RobustnessProgressWindow(
-				usageModelExtFiles.size() + (variability > 0 ? 3 : 1));
+				usageModelExtFiles.size());
 		
 		robustnessWindow.addPropertyChangeListener(this);
 		
@@ -1103,6 +1103,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			logger.info("Robustness Process cancelled by the user");
 			pcs.firePropertyChange("robustnessEnded", false, true);
 			cleanExit();
+			// we should also kill all the running processes
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")){
 			logger.info("Robustness ended");
 			pcs.firePropertyChange("robustnessEnded", false, true);
