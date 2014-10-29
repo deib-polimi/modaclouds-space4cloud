@@ -122,12 +122,13 @@ public class CostEvaluator {
 				List<Cost> lc = cloudResource.getHasCost();
 				List<Cost> onDemandLc = new ArrayList<Cost>();
 				
-				String tmp = "Resource: " + iaasResource.getProvider() + ", " +
+				String tmp = "\nResource: " + iaasResource.getProvider() + ", " +
 											iaasResource.getServiceName() + ", " +
-											iaasResource.getResourceName();
+											iaasResource.getResourceName() + ", " +
+											application.getRegion();
 				tmp += "\nCosts types:\n";
 				for (Cost c : lc)
-					tmp += "- " + c.getDescription();
+					tmp += "- " + c.getDescription() + ", " + c.getRegion();
 
 				// filter only on-demand
 				for (Cost c : lc)
