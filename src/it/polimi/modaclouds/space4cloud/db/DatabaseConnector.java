@@ -108,5 +108,10 @@ public class DatabaseConnector {
 		
 		return null;
 	}
+	
+	public static Connection resetConnection() {
+		conn = null;
+		return getConnection();
+	}
 }
 
