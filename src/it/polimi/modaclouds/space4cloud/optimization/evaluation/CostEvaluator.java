@@ -125,7 +125,7 @@ public class CostEvaluator {
 				String tmp = "\nResource: " + iaasResource.getProvider() + ", " +
 											iaasResource.getServiceName() + ", " +
 											iaasResource.getResourceName() + ", " +
-											application.getRegion();
+											application.getRegion() + " (" + hour + ")";
 				tmp += "\nCosts types:\n";
 				for (Cost c : lc)
 					tmp += "- " + c.getDescription() + ", " + c.getRegion();

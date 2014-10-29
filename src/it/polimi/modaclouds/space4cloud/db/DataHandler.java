@@ -32,9 +32,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
@@ -118,14 +116,8 @@ public class DataHandler {
 		return cloudProviders.getProviderDBConnectors().keySet();
 	}
 	
-	private static Map<String, CloudResource> cloudResources = new HashMap<String, CloudResource>();
-
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
-		String key = provider + "@" + serviceName + "@" + resourceName;
-		if (cloudResources.containsKey(key))
-			return cloudResources.get(key);
-
 		ProviderDBConnector pdb = cloudProviders
 				.getProviderDBConnectors().get(provider); // provider
 		
@@ -137,10 +129,8 @@ public class DataHandler {
 		for (CloudResource cr : cloudResourceList) {
 			if (cr.getName().equals(resourceName)
 					&&(cr.getHasCost() != null)
-					&& (cr.getHasCost().size() > 0)) {
-					cloudResources.put(key, cr);
+					&& (cr.getHasCost().size() > 0))
 					return cr;
-				}
 		}
 		
 		cloudResourceList = pdb.getCloudResources(pdb
@@ -149,10 +139,8 @@ public class DataHandler {
 		for (CloudResource cr : cloudResourceList) {
 			if (cr.getName().equals(resourceName)
 					&&(cr.getHasCost() != null)
-					&& (cr.getHasCost().size() > 0)) {
-					cloudResources.put(key, cr);
+					&& (cr.getHasCost().size() > 0))
 					return cr;
-				}
 		}
 		
 		return null;
