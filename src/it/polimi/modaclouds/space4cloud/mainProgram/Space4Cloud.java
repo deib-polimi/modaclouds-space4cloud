@@ -628,6 +628,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 
 	}
+	
+	private ThreadPoolExecutor executor;
 
 	/**
 	 * Performs the analysis of the robustness of the solution by running the
@@ -684,7 +686,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		// We use a pool of executors for checking a number of modification
 		// of the problem.
-		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
+		/*ThreadPoolExecutor*/ executor = (ThreadPoolExecutor) Executors
 				.newFixedThreadPool(1);
 
 		robustnessWindow = new RobustnessProgressWindow(
@@ -1102,8 +1104,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed")){
 			logger.info("Robustness Process cancelled by the user");
 			pcs.firePropertyChange("robustnessEnded", false, true);
+			executor.shutdownNow();
 			cleanExit();
-			// we should also kill all the running processes
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")){
 			logger.info("Robustness ended");
 			pcs.firePropertyChange("robustnessEnded", false, true);

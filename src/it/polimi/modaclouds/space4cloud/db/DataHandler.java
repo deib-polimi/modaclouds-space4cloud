@@ -122,9 +122,12 @@ public class DataHandler {
 		ProviderDBConnector pdb = cloudProviders
 				.getProviderDBConnectors().get(provider); // provider
 		
-		List<CloudResource> cloudResourceList = pdb
-				.getIaaSServicesHashMap().get(serviceName) // service
-				.getComposedOf();
+//		List<CloudResource> cloudResourceList = pdb
+//				.getIaaSServicesHashMap().get(serviceName) // service
+//				.getComposedOf();
+		
+		List<CloudResource> cloudResourceList = pdb.getCloudResources(pdb
+				.getIaaSServicesHashMap().get(serviceName));
 
 		// TODO: Controllare questa cosa :(
 		for (CloudResource cr : cloudResourceList) {
