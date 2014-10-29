@@ -707,8 +707,10 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 	public void setValue(int value) {
 		if (value > total)
 			value = total;
+		else if (value < 0)
+			value = 0;
 		progressBar.setValue(value);
-		progressBar.setString(value + " out of " + total + " completed");
+		progressBar.setString(value + " out of " + total + " completed (" + Math.round(progressBar.getPercentComplete() * 100) + "%)");
 	}
 
 	@SuppressWarnings({ "deprecation" })

@@ -133,15 +133,15 @@ public class DataHandler {
 					return cr;
 		}
 		
-		cloudResourceList = pdb.getCloudResources(pdb
-				.getIaaSServicesHashMap().get(serviceName));
-
-		for (CloudResource cr : cloudResourceList) {
-			if (cr.getName().equals(resourceName)
-					&&(cr.getHasCost() != null)
-					&& (cr.getHasCost().size() > 0))
-					return cr;
-		}
+//		cloudResourceList = pdb.getCloudResources(pdb
+//				.getIaaSServicesHashMap().get(serviceName));
+//
+//		for (CloudResource cr : cloudResourceList) {
+//			if (cr.getName().equals(resourceName)
+//					&&(cr.getHasCost() != null)
+//					&& (cr.getHasCost().size() > 0))
+//					return cr;
+//		}
 		
 		return null;
 	}
