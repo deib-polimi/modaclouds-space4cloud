@@ -32,7 +32,9 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
@@ -115,45 +117,43 @@ public class DataHandler {
 	public Set<String> getCloudProviders() {
 		return cloudProviders.getProviderDBConnectors().keySet();
 	}
+	
+	private static Map<String, CloudResource> cloudResources = new HashMap<String, CloudResource>();
 
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
+		String key = provider + "@" + serviceName + "@" + resourceName;
+		if (cloudResources.containsKey(key))
+			return cloudResources.get(key);
 
 		ProviderDBConnector pdb = cloudProviders
 				.getProviderDBConnectors().get(provider); // provider
 		
-//		List<CloudResource> cloudResourceList = pdb
-//				.getIaaSServicesHashMap().get(serviceName) // service
-//				.getComposedOf();
-		
-		List<CloudResource> cloudResourceList = pdb.getCloudResources(pdb
-				.getIaaSServicesHashMap().get(serviceName));
+		List<CloudResource> cloudResourceList = pdb
+				.getIaaSServicesHashMap().get(serviceName) // service
+				.getComposedOf();
 
 		// TODO: Controllare questa cosa :(
 		for (CloudResource cr : cloudResourceList) {
-			if (cr.getName().equals(resourceName)) {
-				if ((cr.getHasCost() != null) && (cr.getHasCost().size() > 0)) {
+			if (cr.getName().equals(resourceName)
+					&&(cr.getHasCost() != null)
+					&& (cr.getHasCost().size() > 0)) {
+					cloudResources.put(key, cr);
 					return cr;
 				}
-//				else {
-//					List<CloudResource> uff = pdb.getCloudResources(pdb
-//							.getIaaSServicesHashMap().get(serviceName));
-//
-//					logger.debug("Starting resources: " + cloudResourceList.size() + ", new: " + uff.size());
-//					String tmp = "";
-//					for (CloudResource cr2 : uff) {
-//						tmp += cr2.getName() + " ";
-//						if (cr2.getName().equals(resourceName)
-//								&& (cr2.getHasCost() != null)
-//								&& (cr2.getHasCost().size() > 0))
-//							return cr2;
-//					}
-//					logger.debug("Resources: " + tmp);
-//				}
-			}
 		}
 		
-		
+		cloudResourceList = pdb.getCloudResources(pdb
+				.getIaaSServicesHashMap().get(serviceName));
+
+		for (CloudResource cr : cloudResourceList) {
+			if (cr.getName().equals(resourceName)
+					&&(cr.getHasCost() != null)
+					&& (cr.getHasCost().size() > 0)) {
+					cloudResources.put(key, cr);
+					return cr;
+				}
+		}
 		
 		return null;
 	}
