@@ -1105,7 +1105,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed")){
 			logger.info("Robustness Process cancelled by the user");
 			pcs.firePropertyChange("robustnessEnded", false, true);
-			executor.shutdownNow();
+			try {
+				executor.shutdownNow();
+			} catch (Exception e) { }
 			cleanExit();
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")){
 			logger.info("Robustness ended");
