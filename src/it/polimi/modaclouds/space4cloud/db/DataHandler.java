@@ -135,12 +135,15 @@ public class DataHandler {
 					List<CloudResource> uff = pdb.getCloudResources(pdb
 							.getIaaSServicesHashMap().get(serviceName));
 
+					String tmp = "";
 					for (CloudResource cr2 : uff) {
+						tmp += cr2.getName() + " ";
 						if (cr2.getName().equals(resourceName)
 								&& (cr2.getHasCost() != null)
 								&& (cr2.getHasCost().size() > 0))
 							return cr2;
 					}
+					logger.debug("Resources: " + tmp);
 				}
 			}
 		}
