@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
@@ -127,21 +126,30 @@ public class DataHandler {
 		
 		{
 			// TODO: rimuovi questo
-			Map<String, ProviderDBConnector> res = cloudProviders.getProviderDBConnectors();
-			String tmp = "";
-			for (String s : res.keySet())
-				tmp += s + " ";
-			logger.debug("Providers: " + tmp);
-			
 			List<CloudResource> list = cloudProviders
 					.getProviderDBConnectors().get(provider) // provider
 					.getIaaSServicesHashMap().get(serviceName) // service
 					.getComposedOf();
 			
-			tmp = "";
+			String tmp = "";
 			for (CloudResource cr : list)
 				if (cr.getName().equals(resourceName))
-					tmp += cr.getName() + " ";
+					if ((cr.getHasCost() == null) || (cr.getHasCost().size() == 0)) {
+						ProviderDBConnector pdb = cloudProviders.getProviderDBConnectors().get(provider);
+						
+						List<CloudResource> uff = pdb.getCloudResources(pdb.getIaaSServicesHashMap().get(serviceName));
+						boolean done = false;
+						for (CloudResource cr2 : uff)
+							if (cr2.getName().equals(resourceName)) {
+								if ((cr2.getHasCost() != null)
+									 && (cr2.getHasCost().size() > 0))
+									done = true;
+							}
+						
+						logger.debug(done ? "Cost problem solved!" : "No luck with the cost problem.");
+						
+					}
+						
 			
 			logger.debug("Resources: " + tmp);
 			
