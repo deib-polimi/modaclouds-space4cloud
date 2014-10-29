@@ -121,6 +121,13 @@ public class CostEvaluator {
 
 				List<Cost> lc = cloudResource.getHasCost();
 				List<Cost> onDemandLc = new ArrayList<Cost>();
+				
+				String tmp = "Resource: " + iaasResource.getProvider() + ", " +
+											iaasResource.getServiceName() + ", " +
+											iaasResource.getResourceName();
+				tmp += "\nCosts types:\n";
+				for (Cost c : lc)
+					tmp += "- " + c.getDescription();
 
 				// filter only on-demand
 				for (Cost c : lc)
@@ -135,6 +142,9 @@ public class CostEvaluator {
 					|| c.getRegion().equals(application.getRegion()))
 						lc.add(c);
 
+				if (lc.size() == 0)
+					logger.debug(tmp);
+				
 				CostProfile cp = cloudResource.getHasCostProfile();
 				cost += deriveCosts(lc, cp, iaasResource.getReplicas(), hour);
 			}
