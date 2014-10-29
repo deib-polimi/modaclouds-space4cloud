@@ -134,21 +134,22 @@ public class DataHandler {
 			if (cr.getName().equals(resourceName)) {
 				if ((cr.getHasCost() != null) && (cr.getHasCost().size() > 0)) {
 					return cr;
-				} else {
-					List<CloudResource> uff = pdb.getCloudResources(pdb
-							.getIaaSServicesHashMap().get(serviceName));
-
-					logger.debug("Starting resources: " + cloudResourceList.size() + ", new: " + uff.size());
-					String tmp = "";
-					for (CloudResource cr2 : uff) {
-						tmp += cr2.getName() + " ";
-						if (cr2.getName().equals(resourceName)
-								&& (cr2.getHasCost() != null)
-								&& (cr2.getHasCost().size() > 0))
-							return cr2;
-					}
-					logger.debug("Resources: " + tmp);
 				}
+//				else {
+//					List<CloudResource> uff = pdb.getCloudResources(pdb
+//							.getIaaSServicesHashMap().get(serviceName));
+//
+//					logger.debug("Starting resources: " + cloudResourceList.size() + ", new: " + uff.size());
+//					String tmp = "";
+//					for (CloudResource cr2 : uff) {
+//						tmp += cr2.getName() + " ";
+//						if (cr2.getName().equals(resourceName)
+//								&& (cr2.getHasCost() != null)
+//								&& (cr2.getHasCost().size() > 0))
+//							return cr2;
+//					}
+//					logger.debug("Resources: " + tmp);
+//				}
 			}
 		}
 		
