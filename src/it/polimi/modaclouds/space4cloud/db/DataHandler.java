@@ -119,77 +119,33 @@ public class DataHandler {
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
 
-//		List<CloudResource> cloudResourceList = cloudProviders
-//				.getProviderDBConnectors().get(provider) // provider
-//				.getIaaSServicesHashMap().get(serviceName) // service
-//				.getComposedOf();
-//		
-//		{
-//			// TODO: rimuovi questo
-//			List<CloudResource> list = cloudProviders
-//					.getProviderDBConnectors().get(provider) // provider
-//					.getIaaSServicesHashMap().get(serviceName) // service
-//					.getComposedOf();
-//			
-//			String tmp = "";
-//			for (CloudResource cr : list)
-//				if (cr.getName().equals(resourceName))
-//					if ((cr.getHasCost() == null) || (cr.getHasCost().size() == 0)) {
-//						ProviderDBConnector pdb = cloudProviders.getProviderDBConnectors().get(provider);
-//						
-//						List<CloudResource> uff = pdb.getCloudResources(pdb.getIaaSServicesHashMap().get(serviceName));
-//						boolean done = false;
-//						for (CloudResource cr2 : uff)
-//							if (cr2.getName().equals(resourceName)) {
-//								if ((cr2.getHasCost() != null)
-//									 && (cr2.getHasCost().size() > 0))
-//									done = true;
-//							}
-//						
-//						logger.debug(done ? "Cost problem solved!" : "No luck with the cost problem.");
-//						
-//					}
-//						
-//			
-//			logger.debug("Resources: " + tmp);
-//			
-//		}
-//
-//		// TODO: Controllare questa cosa :(
-//		for (CloudResource cr : cloudResourceList) {
-//			if (
-//				 cr.getName().equals(resourceName)
-//				 && (cr.getHasCost() != null)
-//				 && (cr.getHasCost().size() > 0)
-//				) {
-//				
-//				return cr;
-//			}
-//		}
+		ProviderDBConnector pdb = cloudProviders
+				.getProviderDBConnectors().get(provider); // provider
 		
-		for (int attempt = 0; attempt < 5; ++attempt) {
-			List<CloudResource> cloudResourceList = cloudProviders
-					.getProviderDBConnectors().get(provider) // provider
-					.getIaaSServicesHashMap().get(serviceName) // service
-					.getComposedOf();
-			
-			for (CloudResource cr : cloudResourceList) {
-				if (
-					 cr.getName().equals(resourceName)
-					 && (cr.getHasCost() != null)
-					 && (cr.getHasCost().size() > 0)
-					) {
-					
+		List<CloudResource> cloudResourceList = pdb
+				.getIaaSServicesHashMap().get(serviceName) // service
+				.getComposedOf();
+
+		// TODO: Controllare questa cosa :(
+		for (CloudResource cr : cloudResourceList) {
+			if (cr.getName().equals(resourceName)) {
+				if ((cr.getHasCost() != null) && (cr.getHasCost().size() > 0)) {
 					return cr;
+				} else {
+					List<CloudResource> uff = pdb.getCloudResources(pdb
+							.getIaaSServicesHashMap().get(serviceName));
+
+					for (CloudResource cr2 : uff) {
+						if (cr2.getName().equals(resourceName)
+								&& (cr2.getHasCost() != null)
+								&& (cr2.getHasCost().size() > 0))
+							return cr2;
+					}
 				}
 			}
-			
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 		}
+		
+		
 		
 		return null;
 	}
