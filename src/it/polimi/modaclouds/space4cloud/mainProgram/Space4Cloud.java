@@ -696,9 +696,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 		String duration = durationToString(1000 * (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60);
 		
-		// TODO: forse togliere questo?
-		DatabaseConnector.disconnect();
-		
 		logger
 		.info("Starting the robustness test, considering each problem "
 				+ attempts + " times (it could take up to " + duration

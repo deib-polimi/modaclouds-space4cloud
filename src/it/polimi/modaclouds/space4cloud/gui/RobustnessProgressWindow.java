@@ -541,8 +541,9 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
 
 		progressBar = new JProgressBar(0, total);
-		progressBar.setValue(0);
+//		progressBar.setValue(0);
 		progressBar.setStringPainted(true);
+		setValue(0);
 		upperPanel.add(progressBar);
 
 		JPanel lowerPanel = new JPanel();
@@ -707,6 +708,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		if (value > total)
 			value = total;
 		progressBar.setValue(value);
+		progressBar.setString(value + " out of " + total + " completed");
 	}
 
 	@SuppressWarnings({ "deprecation" })

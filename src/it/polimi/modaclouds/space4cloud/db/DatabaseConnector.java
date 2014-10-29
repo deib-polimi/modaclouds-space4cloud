@@ -108,15 +108,5 @@ public class DatabaseConnector {
 		
 		return null;
 	}
-	
-	public static void disconnect() {
-		if (conn != null)
-			try {
-				conn.close();
-				conn = null;
-			} catch (SQLException e) {
-				logger.error("Error in terminating the connection");
-			}
-	}
 }
 
