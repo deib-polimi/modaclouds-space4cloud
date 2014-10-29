@@ -746,8 +746,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 						StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) { }
 			
-			if (initialSolution != null)
-				Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
+//			TODO: check this
+//			if (initialSolution != null)
+//				Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
 
 			boolean alreadyThere = false;
 			{

@@ -133,8 +133,6 @@ public class DataHandler {
 					return cr;
 		}
 		
-		DatabaseConnector.resetConnection();
-		
 		cloudResourceList = pdb.getCloudResources(pdb
 				.getIaaSServicesHashMap().get(serviceName));
 

@@ -85,7 +85,7 @@ public class DatabaseConnector {
 		}
 		conn = DriverManager
 				.getConnection(url + dbName, userName, password);
-		if(conn != null)
+		if(conn != null && conn.isValid(10000))
 			logger.info("Connection with the database established");
 		else
 			logger.error("Error in connecting to the database");
@@ -107,11 +107,6 @@ public class DatabaseConnector {
 		}
 		
 		return null;
-	}
-	
-	public static Connection resetConnection() {
-		conn = null;
-		return getConnection();
 	}
 }
 
