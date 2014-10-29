@@ -137,8 +137,6 @@ public class PrivateCloud implements CloudProvider {
 		it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud pc =
 				new it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud(tempConf.toString(), tempSol.toString());
 		
-		pc.compute();
-		
 		int[] startingHourlyMachines = getTotalHourlyMachines(solution.get(0));
 		double[] startingPercentages = new double[24];
 		{
@@ -148,7 +146,7 @@ public class PrivateCloud implements CloudProvider {
 			}
 		}
 		
-		List<File> solutionFiles = pc.getSolutions();
+		List<File> solutionFiles = pc.getSolutions(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY));
 		solution.setFrom(solutionFiles.get(0), null);
 		
 //		{
