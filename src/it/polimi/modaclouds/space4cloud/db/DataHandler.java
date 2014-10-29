@@ -135,6 +135,7 @@ public class DataHandler {
 					List<CloudResource> uff = pdb.getCloudResources(pdb
 							.getIaaSServicesHashMap().get(serviceName));
 
+					logger.debug("Starting resources: " + cloudResourceList.size() + ", new: " + uff.size());
 					String tmp = "";
 					for (CloudResource cr2 : uff) {
 						tmp += cr2.getName() + " ";
