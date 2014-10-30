@@ -1098,7 +1098,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			evalServer.EvaluateSolution(sol);
 			logger.info("Solution evaluated!");
 			logger.info(sol.showStatus());
-			sol.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+ "-evaluated" + Configuration.SOLUTION_FILE_EXTENSION));
+//			sol.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+ "-evaluated" + Configuration.SOLUTION_FILE_EXTENSION));
 		}
 		else
 			logger.info("No solution!");
@@ -1163,8 +1163,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
         
 //        if (Configuration.USE_PRIVATE_CLOUD) {
 //        	// make feasible:
-//            for (Solution s : currentSolution.getAll())
-//                makeFeasible(s);
+//            makeFeasible(currentSolution);
 //            
 //            // scale in:
 //            InternalOptimization(currentSolution);
@@ -1172,7 +1171,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 //            evalServer.EvaluateSolution(currentSolution);
 //        	
 //    		try {
-//		    	considerPrivateCloud(currentSolution);
+//		    	currentSolution = considerPrivateCloud(currentSolution);
+//		    	evalServer.EvaluateSolution(currentSolution);
+//		    	SolutionWindow.show(currentSolution);
+//		    	
 //				return 0;
 //    		} catch (Exception e) {
 //    			e.printStackTrace();
@@ -1270,6 +1272,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		    		currentSolution = sol;
 		    		bestSolution = currentSolution.clone();
 		    		localBestSolution = currentSolution.clone();
+		    		
+		    		// TODO: fix this solution!
 		    	}
     		} catch (Exception e) {
     			logger.error("Unable to consider the private cloud", e);
