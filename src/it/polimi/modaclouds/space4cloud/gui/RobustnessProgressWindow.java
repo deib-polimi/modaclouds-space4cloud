@@ -588,6 +588,17 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 										.getNamedItem("allocation")
 										.getNodeValue()), tierName + "@" + maxPopulation, ""
 										+ valHour);
+						
+						if (valHour == maxHour) {
+							int allocation = Integer.valueOf(hour.getAttributes()
+									.getNamedItem("allocation")
+									.getNodeValue()) +
+									machinesOnPrivate.get(tierName + "@" + size)[valHour];
+							
+							solutions.setValue(
+										allocation, /*"Tier " + i*/ tierName + "@" + provider, ""
+												+ maxPopulation);
+						}
 					}
 				}
 			}
@@ -767,7 +778,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		privateHostsLabel.setIcon(null);
 		privateHostsPanel.add(privateHostsLabel);
 		int tabNumber = tabbedPane.indexOfComponent(lowerPanel);
-		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD);
+		tabbedPane.setEnabledAt(tabNumber, true); // Configuration.USE_PRIVATE_CLOUD); // TODO: aaa
 		
 		lowerPanel = new JPanel();
 		lowerPanel.setLayout(new GridLayout(2, 1, 0, 0));
@@ -783,7 +794,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		privateMachinesLabel.setIcon(null);
 		privateMachinesPanel.add(privateMachinesLabel);
 		tabNumber = tabbedPane.indexOfComponent(lowerPanel);
-		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD);
+		tabbedPane.setEnabledAt(tabNumber, true); // Configuration.USE_PRIVATE_CLOUD); // TODO: aaa
 		
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
