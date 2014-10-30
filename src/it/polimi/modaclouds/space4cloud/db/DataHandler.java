@@ -32,7 +32,9 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.EList;
@@ -85,6 +87,9 @@ public class DataHandler {
 
 
 	}
+	
+	private Map<String, Integer> amountMemories = new HashMap<String, Integer>();
+	
 	/**
 	 * Gets the amount of memory of the the cloud resource.
 	 * 
@@ -98,13 +103,18 @@ public class DataHandler {
 	 */
 	public Integer getAmountMemory(String provider, String serviceName,
 			String resourceName) {
+		String key = provider + "@" + serviceName + "@" + resourceName;
+		if (amountMemories.containsKey(key))
+			return amountMemories.get(key);
 
 		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 
 		for (VirtualHWResource i : cr.getComposedOf()) {
 			if (i.getType() == VirtualHWResourceType.MEMORY) {
 				/* a cast to V_Memory interface is needed */
-				return ((V_Memory) i).getSize();
+				Integer memory = ((V_Memory) i).getSize();
+				amountMemories.put(key, memory);
+				return memory;
 			}
 		}
 		/* In case of errors */
@@ -206,6 +216,8 @@ public class DataHandler {
 				service.getServiceName(), cr.getName(),
 				((IaaS) service).getReplicas(), numberOfCores, speed, ram);
 	}
+	
+	private Map<String, Integer> numbersOfReplicas = new HashMap<String, Integer>();
 
 	/**
 	 * Gets the number of replicas.
@@ -220,11 +232,16 @@ public class DataHandler {
 	 */
 	public Integer getNumberOfReplicas(String provider, String serviceName,
 			String resourceName) {
+		String key = provider + "@" + serviceName + "@" + resourceName;
+		if (numbersOfReplicas.containsKey(key))
+			return numbersOfReplicas.get(key);
 
 		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 		for (VirtualHWResource i : cr.getComposedOf()) {
 			if (i.getType() == VirtualHWResourceType.CPU) {
-				return i.getNumberOfReplicas();
+				Integer replicas = i.getNumberOfReplicas();
+				numbersOfReplicas.put(key, replicas);
+				return replicas;
 			}
 		}
 		/* In case of errors */
@@ -232,6 +249,8 @@ public class DataHandler {
 
 	}
 
+	private Map<String, Double> processingRates = new HashMap<String, Double>();
+	
 	/**
 	 * Gets the processing rate of the cpus.
 	 * 
@@ -245,6 +264,9 @@ public class DataHandler {
 	 */
 	public double getProcessingRate(String provider, String serviceName,
 			String resourceName) {
+		String key = provider + "@" + serviceName + "@" + resourceName;
+		if (processingRates.containsKey(key))
+			return processingRates.get(key);
 
 		List<CloudResource> cloudResourceList = cloudProviders
 				.getProviderDBConnectors().get(provider) // provider
@@ -261,7 +283,9 @@ public class DataHandler {
 
 		for (VirtualHWResource i : cr.getComposedOf()) {
 			if (i.getType() == VirtualHWResourceType.CPU) {
-				return i.getProcessingRate();
+				Double processingRate = i.getProcessingRate();
+				processingRates.put(key, processingRate);
+				return processingRate;
 			}
 		}
 		return -1;
