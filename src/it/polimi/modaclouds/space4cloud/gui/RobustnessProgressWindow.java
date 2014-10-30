@@ -9,6 +9,7 @@ import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.privatecloud.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 import java.awt.BorderLayout;
@@ -379,37 +380,41 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 
 	public void add(File usageModelExtension, File solution)
 			throws MalformedURLException, JAXBException, SAXException {
-		UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension
-				.toURI().toURL(), UsageModelExtensions.class);
+		
+		int maxPopulation = Space4Cloud.getMaxPopulation(usageModelExtension);
+		int maxHour = -1;
+		
+		String name = "Var " + maxPopulation;
 
-		int maxPopulation = -1, maxHour = -1;
-		String name = "Var "
-				+ Space4Cloud.getMaxPopulation(usageModelExtension);
-
-		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
-		if (cw != null) {
-			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
-				if (maxPopulation < we.getPopulation()) {
-					maxPopulation = we.getPopulation();
-					maxHour = we.getHour();
-				}
-				populations.addValue(we.getPopulation(), name,
-						"" + we.getHour());
-			}
-		} else {
-
-			OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
-			if (ow != null) {
-				for (OpenWorkloadElement we : ow.getWorkloadElement()) {
-					if (maxPopulation < we.getPopulation()) {
-						maxPopulation = we.getPopulation();
+		{
+			// Add the workload to the graph
+			
+			UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension
+					.toURI().toURL(), UsageModelExtensions.class);
+			
+			ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+			if (cw != null) {
+				for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+					if (maxPopulation == we.getPopulation())
 						maxHour = we.getHour();
-					}
+					
 					populations.addValue(we.getPopulation(), name,
 							"" + we.getHour());
 				}
 			} else {
-				return;
+	
+				OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+				if (ow != null) {
+					for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+						if (maxPopulation == we.getPopulation())
+							maxHour = we.getHour();
+						
+						populations.addValue(we.getPopulation(), name,
+								"" + we.getHour());
+					}
+				} else {
+					return;
+				}
 			}
 		}
 
@@ -435,7 +440,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 				
 				String tierName = null;
 				try {
-					tierName = tier.getAttributes().getNamedItem("name").getNodeValue() + "@" + provider.substring(0, 3);
+					tierName = tier.getAttributes().getNamedItem("name").getNodeValue() + "@" + provider;
 				} catch (Exception e) {
 					tierName = null;
 				}
@@ -501,24 +506,39 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			}
 		}
 		
-		nl = doc.getElementsByTagName("Tier");
-		
-		for (int i = 0; i < nl.getLength(); i++) {
-			Node tier = nl.item(i);
+		if (machinesOnPrivate.size() == 0) {
+			nl = doc.getElementsByTagName("Solution");
+			
+			Node selected = null;
+			double maxCost = Double.MIN_VALUE;
+			
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node solutionResult = nl.item(i);
 
-			String size = tier.getAttributes().getNamedItem("resourceName")
-					.getNodeValue();
-			
-			String provider = tier.getAttributes().getNamedItem("providerName")
-					.getNodeValue();
-			
-			String tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
-			
-			if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1 &&
-					machinesOnPrivate.containsKey(tierName + "@" + size)) {
+				double cost = Double.parseDouble(solutionResult.getAttributes()
+						.getNamedItem("cost").getNodeValue());
 				
+				String provider =
+						((Element)solutionResult).getElementsByTagName("Tier").item(0).getAttributes().getNamedItem("providerName").getNodeValue();
+				
+				if (cost > maxCost && provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1) {
+					maxCost = cost;
+					selected = solutionResult;
+				}
+			}
+			
+			
+			nl = ((Element)selected).getElementsByTagName("Tier");
+			
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node tier = nl.item(i);
+				
+				String tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
+					
 				Element tierEl = (Element) tier;
 				NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+				
+				Integer[] machines = new Integer[24];
 	
 				for (int j = 0; j < hours.getLength(); j++) {
 					Node hour = hours.item(j);
@@ -528,8 +548,47 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 					hourlySolutions.addValue(
 							Integer.valueOf(hour.getAttributes()
 									.getNamedItem("allocation")
-									.getNodeValue()), tierName + "@" + name.substring("Var ".length()), ""
+									.getNodeValue()), tierName + "@" + maxPopulation, ""
 									+ valHour);
+					
+					machines[j] = 0;
+				}
+				
+				machinesOnPrivate.put(tierName + "@null", machines);
+			}
+			
+			
+		} else {
+			nl = doc.getElementsByTagName("Tier");
+			
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node tier = nl.item(i);
+
+				String size = tier.getAttributes().getNamedItem("resourceName")
+						.getNodeValue();
+				
+				String provider = tier.getAttributes().getNamedItem("providerName")
+						.getNodeValue();
+				
+				String tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
+				
+				if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1 &&
+						machinesOnPrivate.containsKey(tierName + "@" + size)) {
+					
+					Element tierEl = (Element) tier;
+					NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+		
+					for (int j = 0; j < hours.getLength(); j++) {
+						Node hour = hours.item(j);
+						int valHour = Integer.valueOf(hour.getAttributes()
+								.getNamedItem("hour").getNodeValue()) + 1;
+						
+						hourlySolutions.addValue(
+								Integer.valueOf(hour.getAttributes()
+										.getNamedItem("allocation")
+										.getNodeValue()), tierName + "@" + maxPopulation, ""
+										+ valHour);
+					}
 				}
 			}
 		}
@@ -543,7 +602,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			privateHosts.addValue(hourlyValue, name, "" + h);
 			
 			for (String tier : machinesOnPrivate.keySet())
-				privateMachines.addValue(machinesOnPrivate.get(tier)[h], tier.substring(0, tier.indexOf('@')) + "@" + name.substring("Var ".length()), "" + h);
+				privateMachines.addValue(machinesOnPrivate.get(tier)[h], tier.substring(0, tier.indexOf('@')) + "@" + maxPopulation, "" + h);
 		}
 
 		nl = doc.getElementsByTagName("SolutionResult");
@@ -559,14 +618,11 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			boolean feasibility = Boolean
 					.parseBoolean(solutionResult.getAttributes()
 							.getNamedItem("feasibility").getNodeValue());
-			
 			long duration = Long.parseLong(solutionResult.getAttributes()
 					.getNamedItem("time").getNodeValue());
 
 			costs.addValue(cost, "Solution"/* name */, "" + "" + maxPopulation);
-			feasibilities.addValue(feasibility ? 1 : 0, "Solution"/* name */, ""
-					+ "" + maxPopulation);
-			
+			feasibilities.addValue(feasibility ? 1 : 0, "Solution"/* name */, "" + maxPopulation);
 			durations.addValue(duration, "Solution"/* name */, "" + "" + maxPopulation);
 		}
 
@@ -710,6 +766,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		privateHostsLabel = new JLabel();
 		privateHostsLabel.setIcon(null);
 		privateHostsPanel.add(privateHostsLabel);
+		int tabNumber = tabbedPane.indexOfComponent(lowerPanel);
+		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD);
 		
 		lowerPanel = new JPanel();
 		lowerPanel.setLayout(new GridLayout(2, 1, 0, 0));
@@ -724,7 +782,9 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		privateMachinesLabel = new JLabel();
 		privateMachinesLabel.setIcon(null);
 		privateMachinesPanel.add(privateMachinesLabel);
-
+		tabNumber = tabbedPane.indexOfComponent(lowerPanel);
+		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD);
+		
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
 
