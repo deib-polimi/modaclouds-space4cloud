@@ -19,6 +19,11 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
@@ -44,7 +49,7 @@ import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-public class SolutionWindow {
+public class SolutionWindow extends WindowAdapter implements PropertyChangeListener {
 	
 	private JFrame gui;
 	private JTabbedPane tab;
@@ -74,6 +79,7 @@ public class SolutionWindow {
 	private HashMap<String, JPanel> informationPanels;
 	private HashMap<String, JLabel> informationLabels;
 	
+	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 	
 	public SolutionWindow(SolutionMulti solutionMulti, File usageModelExtension) {
 		this.solutionMulti = solutionMulti;
@@ -121,8 +127,6 @@ public class SolutionWindow {
 			String provider = solutionMulti.get(i).getProvider();
 			infoAll.append("<li>" +  provider + "</li>\n");
 		}
-		if (solutionMulti.getPrivateCloudSolution() != null)
-			infoAll.append("<li>Private Cloud</li>\n");
 		infoAll.append("</ul></td></tr>\n");
 		infoAll.append("<tr><td>Feasible</td><td>" + String.valueOf(solutionMulti.isFeasible()) + "</td></tr>\n");
 		
@@ -186,54 +190,6 @@ public class SolutionWindow {
 			informationLabel.setText(info.toString());
 		}
 		
-		if (solutionMulti.getPrivateCloudSolution() != null) {
-			String provider = "Private Cloud";
-			Solution solution = solutionMulti.getPrivateCloudSolution();
-
-			DefaultCategoryDataset workload = new DefaultCategoryDataset();
-			DefaultCategoryDataset allocation = new DefaultCategoryDataset();
-			
-			for (int hour = 0; hour < 24; ++hour) {
-				workload.addValue(solution.getPercentageWorkload(hour), provider, "" + hour);
-				for (Tier t : solution.getApplication(hour).getTiers()) {
-					allocation.addValue(((IaaS) t.getCloudService()).getReplicas(), t.getName(), "" + hour);
-				}
-			}
-			
-			workloads.put(provider, workload);
-			allocations.put(provider, allocation);
-			
-			if (!set) {
-				infoAll.append("<tr><td>Components</td><td><ul>\n");
-				for (Tier t : solution.getApplication(0).getTiers()) {
-					infoAll.append("<li>" + t.getName() + "</li>\n");
-				}
-				infoAll.append("</ul></td></tr>\n");
-				infoAll.append("</table>\n</body>\n</html>\n");
-				
-				informationLabel.setText(infoAll.toString());
-				set = true;
-			}
-			
-			JLabel informationLabel = new JLabel();
-			informationLabels.put(provider, informationLabel);
-			
-			StringBuffer info = new StringBuffer();
-			info.append("<html>\n<body style='font-size: 13;'>\n");
-			info.append("<table style='width: 500px; border: 1px solid black; margin: 30px; padding: 2px' border=1>\n");
-			info.append("<tr><th style='border: 0; background: black; color: white;'>Information</th><th style='border:0; background: black; color: white;'>Value</th></tr>\n");
-			info.append("<tr><td>Feasible</td><td>" + String.valueOf(solution.isFeasible()) + "</td></tr>\n");
-			info.append("<tr><td>Solution per Component</td><td><ul>\n");
-			for (Tier t : solution.getApplication(0).getTiers()) {
-				info.append("<li>" + t.getName() + "\n<ul>\n");
-				info.append("<li>" + t.getCloudService().getServiceName() + "</li>\n");
-				info.append("<li>" + t.getCloudService().getResourceName() + "</li>\n");
-				info.append("</ul>\n</li>\n");
-			}
-			info.append("</ul></td></tr>\n");
-			info.append("</table>\n</body>\n</html>\n");
-			informationLabel.setText(info.toString());
-		}
 	}
 	
 	public void setPopulation(File usageModelExtension) {
@@ -268,7 +224,9 @@ public class SolutionWindow {
 		gui.setTitle("Solution");
 		gui.setMinimumSize(new Dimension(900, 600));
 		gui.setLocationRelativeTo(null);
-		gui.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//		gui.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		gui.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		gui.addWindowListener(this);
 		
 		tab = new JTabbedPane(); 
 		gui.getContentPane().add(tab);
@@ -350,70 +308,14 @@ public class SolutionWindow {
 			informationPanel.add(informationLabel);
 		}
 		
-		if (solutionMulti.getPrivateCloudSolution() != null) {
-			String provider = "Private Cloud";
-			pan = new JPanel(new GridLayout(2, 1));
-			tab.addTab(provider, pan);
-			
-			JTabbedPane inTab = new JTabbedPane();
-			pan.add(inTab);
-			
-			JPanel workloadPanel = new JPanel();
-//			pan.add(workloadPanel);
-			inTab.addTab("Population Percentage", workloadPanel);
-			JLabel workloadLabel = new JLabel();
-			workloadLabel.setIcon(null);
-			workloadPanel.add(workloadLabel);
-			
-//			workloadPanel.setBorder(new TitledBorder(null, "Population Percentage",
-//					TitledBorder.LEADING, TitledBorder.TOP, null, null));
-			
-			workloadPanels.put(provider, workloadPanel);
-			workloadLabels.put(provider, workloadLabel);
-			
-			
-			JPanel allocationPanel = new JPanel();
-//			pan.add(allocationPanel);
-			inTab.addTab("Allocations", allocationPanel);
-			JLabel allocationLabel = new JLabel();
-			allocationLabel.setIcon(null);
-			allocationPanel.add(allocationLabel);
-			
-//			allocationPanel.setBorder(new TitledBorder(null, "Population Percentage",
-//					TitledBorder.LEADING, TitledBorder.TOP, null, null));
-			
-			allocationPanels.put(provider, allocationPanel);
-			allocationLabels.put(provider, allocationLabel);
-			
-			
-			JPanel informationPanel = new JPanel();
-			informationPanels.put(provider, informationPanel);
-			JLabel informationLabel = informationLabels.get(provider);
-			
-			JScrollPane paneIn = new JScrollPane(informationPanel);
-			
-			pan.add(paneIn);
-			
-//			pan.add(informationPanel);
-//			informationPanel.setBorder(new TitledBorder(null, "Information",
-//					TitledBorder.LEADING, TitledBorder.TOP, null, null));
-			
-			informationPanel.add(informationLabel);
-		}
-		
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
 
 			@Override
-			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub
-			}
+			public void componentHidden(ComponentEvent e) { }
 
 			@Override
-			public void componentMoved(ComponentEvent e) {
-				// TODO Auto-generated method stub
-
-			}
+			public void componentMoved(ComponentEvent e) { }
 
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -560,111 +462,6 @@ public class SolutionWindow {
 			
 		}
 		
-		
-		
-		if (solutionMulti.getPrivateCloudSolution() != null) {
-			String provider = "Private Cloud";
-		
-			DefaultCategoryDataset workload = workloads.get(provider);
-			
-			JFreeChart workloadGraph = ChartFactory.createLineChart(null, "Hour", 
-					"Workload Percentage", workload, PlotOrientation.VERTICAL, true, true, false);
-			{
-				CategoryPlot plot = (CategoryPlot) workloadGraph.getPlot();
-				LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
-						.getRenderer();
-				renderer.setShapesVisible(true);
-				renderer.setDrawOutlines(true);
-				renderer.setUseFillPaint(true);
-				renderer.setFillPaint(Color.white);
-				NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-				rangeAxis.setTickLabelFont(font);
-				
-				rangeAxis.setRange(-0.1, 1.1);
-
-				CategoryAxis categoryAxis = plot.getDomainAxis();
-				categoryAxis.setLowerMargin(0.02);
-				categoryAxis.setUpperMargin(0.02);
-				categoryAxis.setTickLabelFont(font);
-
-				CategoryItemRenderer renderer2 = plot
-						.getRenderer();
-				CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
-						"{2}", new DecimalFormat("0") {
-
-							/**
-	                 *
-	                 */
-							private static final long serialVersionUID = 1L;
-
-							@Override
-							public StringBuffer format(double number,
-									StringBuffer result, FieldPosition fieldPosition) {
-								result = new StringBuffer((int)(number * 100) + "%");
-								return result;
-							}
-
-						});
-				renderer2.setItemLabelGenerator(generator);
-				renderer2.setItemLabelsVisible(true);
-				renderer2.setItemLabelFont(font);
-			}
-			
-			workloadGraphs.put(provider, workloadGraph);
-			
-			
-			
-			DefaultCategoryDataset allocation = allocations.get(provider);
-			
-			JFreeChart allocationGraph = ChartFactory.createLineChart(null, "Hour", 
-					"Allocation", allocation, PlotOrientation.VERTICAL, true, true, false);
-			{
-				CategoryPlot plot = (CategoryPlot) allocationGraph.getPlot();
-				LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
-						.getRenderer();
-				renderer.setShapesVisible(true);
-				renderer.setDrawOutlines(true);
-				renderer.setUseFillPaint(true);
-				renderer.setFillPaint(Color.white);
-				NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-				rangeAxis.setTickLabelFont(font);
-
-				int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
-				for (int l = 0; l < allocation.getColumnCount(); ++l)
-					for (int j = 0; j < allocation.getRowCount(); ++j) {
-						tmp = allocation.getValue(j, l).intValue();
-						if (tmp < min)
-							min = tmp;
-						if (tmp > max)
-							max = tmp;
-					}
-				if (min == Integer.MAX_VALUE)
-					min = 0;
-				if (max == Integer.MIN_VALUE)
-					max = (int) rangeAxis.getRange().getUpperBound() + 1;
-
-				rangeAxis.setRange(/* 0 */min - 1, /*
-													 * rangeAxis.getRange().
-													 * getUpperBound() + 1
-													 */max + 1);
-
-				CategoryAxis categoryAxis = plot.getDomainAxis();
-				categoryAxis.setLowerMargin(0.02);
-				categoryAxis.setUpperMargin(0.02);
-				categoryAxis.setTickLabelFont(font);
-				
-				CategoryItemRenderer renderer2 = plot
-						.getRenderer();
-				CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
-						"{2}", new DecimalFormat("0"));
-				renderer2.setItemLabelGenerator(generator);
-				renderer2.setItemLabelsVisible(true);
-				renderer2.setItemLabelFont(font);
-			}
-			
-			allocationGraphs.put(provider, allocationGraph);
-		}
-		
 	}
 	
 	private void updateImages() {
@@ -739,60 +536,26 @@ public class SolutionWindow {
 			}
 		}
 		
-		if (solutionMulti.getPrivateCloudSolution() != null) {
-			String provider = "Private Cloud";
-		
-			JFreeChart workloadGraph = workloadGraphs.get(provider);
-			
-			JPanel workloadPanel = workloadPanels.get(provider);
-			JLabel workloadLabel = workloadLabels.get(provider);
-			
-			if (workloadGraph != null) {
-				ImageIcon icon;
-				try {
-					icon = new ImageIcon(workloadGraph.createBufferedImage(
-							workloadPanel.getSize().width,
-							workloadPanel.getSize().height));
-				} catch (NullPointerException e) {
-					icon = new ImageIcon();
-				}
-				workloadLabel.setIcon(icon);
-				workloadLabel.setVisible(true);
-				workloadPanel.setPreferredSize(workloadLabel
-						.getPreferredSize());
-
-				workloadLabel.validate();
-			}
-			
-			JFreeChart allocationGraph = allocationGraphs.get(provider);
-			
-			JPanel allocationPanel = allocationPanels.get(provider);
-			JLabel allocationLabel = allocationLabels.get(provider);
-			
-			if (allocationGraph != null) {
-				ImageIcon icon;
-				try {
-					icon = new ImageIcon(allocationGraph.createBufferedImage(
-							allocationPanel.getSize().width,
-							allocationPanel.getSize().height));
-				} catch (NullPointerException e) {
-					icon = new ImageIcon();
-				}
-				allocationLabel.setIcon(icon);
-				allocationLabel.setVisible(true);
-				allocationPanel.setPreferredSize(allocationLabel
-						.getPreferredSize());
-
-				allocationLabel.validate();
-			}
-		}
-		
 		alreadyUpdating = false;
 	}
 
 	public static void show(SolutionMulti solution) {
 		SolutionWindow sw = new SolutionWindow(solution, null);
 		sw.initialize();
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {		
+		super.windowClosing(e);
+		gui.dispose();
+		pcs.firePropertyChange("WindowClosed", false, true);
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) { }
+	
+	public void addPropertyChangeListener(PropertyChangeListener listener){
+		pcs.addPropertyChangeListener(listener);
 	}
 	
 }
