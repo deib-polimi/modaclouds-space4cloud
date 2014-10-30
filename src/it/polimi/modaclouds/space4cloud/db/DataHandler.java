@@ -49,7 +49,7 @@ public class DataHandler {
 	//	private static final Logger logger = LoggerHelper.getLogger(DataHandler.class);
 
 	private static final Logger logger=LoggerFactory.getLogger(DataHandler.class);
-	private final CloudProvidersDictionary cloudProviders;
+	private CloudProvidersDictionary cloudProviders;
 
 	/**
 	 * Instantiates a new data handler. it also charges data from the database
@@ -143,15 +143,13 @@ public class DataHandler {
 					return cr;
 		}
 		
-//		cloudResourceList = pdb.getCloudResources(pdb
-//				.getIaaSServicesHashMap().get(serviceName));
-//
-//		for (CloudResource cr : cloudResourceList) {
-//			if (cr.getName().equals(resourceName)
-//					&&(cr.getHasCost() != null)
-//					&& (cr.getHasCost().size() > 0))
-//					return cr;
-//		}
+		try {
+			cloudProviders = new CloudProvidersDictionary();
+			logger.debug("Database resetted!");
+			return getCloudResource(provider, serviceName, resourceName);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 		return null;
 	}
