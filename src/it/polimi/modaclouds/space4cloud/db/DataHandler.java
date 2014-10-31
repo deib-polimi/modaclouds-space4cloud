@@ -118,27 +118,33 @@ public class DataHandler {
 	
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
-		ProviderDBConnector pdb = cloudProviders
-				.getProviderDBConnectors().get(provider); // provider
 		
-		List<CloudResource> cloudResourceList = pdb
-				.getIaaSServicesHashMap().get(serviceName) // service
-				.getComposedOf();
-
-		// TODO: Controllare questa cosa :(
-		for (CloudResource cr : cloudResourceList) {
-			if (cr.getName().equals(resourceName)
-					&&(cr.getHasCost() != null)
-					&& (cr.getHasCost().size() > 0))
-					return cr;
-		}
+		int maxAttempts = 2;
 		
-		try {
-			cloudProviders = new CloudProvidersDictionary();
-			logger.debug("Database resetted!");
-			return getCloudResource(provider, serviceName, resourceName);
-		} catch (SQLException e) {
-			e.printStackTrace();
+		for (int attempt = 1; attempt <= maxAttempts; ++attempt) {
+		
+			ProviderDBConnector pdb = cloudProviders
+					.getProviderDBConnectors().get(provider); // provider
+			
+			List<CloudResource> cloudResourceList = pdb
+					.getIaaSServicesHashMap().get(serviceName) // service
+					.getComposedOf();
+	
+			// TODO: Controllare questa cosa :(
+			for (CloudResource cr : cloudResourceList) {
+				if (cr.getName().equals(resourceName)
+						&&(cr.getHasCost() != null)
+						&& (cr.getHasCost().size() > 0))
+						return cr;
+			}
+			
+			try {
+				cloudProviders = new CloudProvidersDictionary();
+				logger.debug("Database resetted!");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
 		}
 		
 		return null;
