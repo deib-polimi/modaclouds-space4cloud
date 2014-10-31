@@ -778,7 +778,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		privateHostsLabel.setIcon(null);
 		privateHostsPanel.add(privateHostsLabel);
 		int tabNumber = tabbedPane.indexOfComponent(lowerPanel);
-		tabbedPane.setEnabledAt(tabNumber, true); // Configuration.USE_PRIVATE_CLOUD); // TODO: aaa
+		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD);
 		
 		lowerPanel = new JPanel();
 		lowerPanel.setLayout(new GridLayout(2, 1, 0, 0));
@@ -794,7 +794,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		privateMachinesLabel.setIcon(null);
 		privateMachinesPanel.add(privateMachinesLabel);
 		tabNumber = tabbedPane.indexOfComponent(lowerPanel);
-		tabbedPane.setEnabledAt(tabNumber, true); // Configuration.USE_PRIVATE_CLOUD); // TODO: aaa
+		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD);
 		
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
