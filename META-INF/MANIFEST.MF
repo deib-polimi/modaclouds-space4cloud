@@ -44,7 +44,7 @@ Bundle-ClassPath: .,
  target/dependency/xml-apis-1.4.01.jar,
  target/dependency/qos-models-2.2-SNAPSHOT.jar,
  target/dependency/milp-0.0.11.jar,
- target/dependency/privatecloud-0.0.7-SNAPSHOT.jar
+ target/dependency/privatecloud-0.0.8-SNAPSHOT.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.db;
   uses:="it.polimi.modaclouds.space4cloud.optimization.solution.impl,
