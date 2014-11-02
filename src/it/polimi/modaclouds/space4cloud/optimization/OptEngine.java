@@ -45,7 +45,7 @@ import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
-import it.polimi.modaclouds.space4cloud.utils.RussianEvaluator;
+import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
 import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
@@ -1377,7 +1377,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
     }
     
     private SolutionMulti setWorkloadPercentagesFromMILP(SolutionMulti currentSolution) {
-        RussianEvaluator reval = new RussianEvaluator();
+        MILPEvaluator reval = new MILPEvaluator();
         
         SolutionMulti tempSolution = currentSolution.clone();
         
