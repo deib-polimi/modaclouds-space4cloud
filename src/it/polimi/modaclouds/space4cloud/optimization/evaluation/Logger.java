@@ -134,11 +134,14 @@ public class Logger implements Runnable {
 			StopWatch timer = new StopWatch();
 			timer.start();
 			timers.put(modelName, timer);
+			logger.debug("Adding the stopwatch for " + modelName);
 		} else if (status.equals(SOLVED)) {
 			long time = -1;
 			try {
 				if(timers.containsKey(modelName)){
+					logger.debug("Stopping the stopwatch for " + modelName);
 					timers.get(modelName).stop();
+					logger.debug("Stopped the stopwatch for " + modelName);
 					time = timers.get(modelName).getTime();
 				}
 			} catch (IllegalStateException e) {
