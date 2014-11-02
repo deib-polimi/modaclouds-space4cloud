@@ -99,6 +99,8 @@ public class PrivateCloud implements CloudProvider {
 		return solution != null;
 	}
 	
+	public static final int MAX_ATTEMPTS = 2;
+	
 	public SolutionMulti getSolution() throws Exception {
 		if (solution != null) {
 			logger.info("Solution already computed, returned that.");
@@ -134,9 +136,6 @@ public class PrivateCloud implements CloudProvider {
 		solution.exportLight(tempSol);
 		Configuration.saveConfiguration(tempConf.toString());
 		
-		it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud pc =
-				new it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud(tempConf.toString(), tempSol.toString());
-		
 		int[] startingHourlyMachines = getTotalHourlyMachines(solution.get(0));
 		double[] startingPercentages = new double[24];
 		{
@@ -146,7 +145,28 @@ public class PrivateCloud implements CloudProvider {
 			}
 		}
 		
-		List<File> solutionFiles = pc.getSolutions(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY));
+		List<File> solutionFiles = null;
+		boolean done = false;
+		
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+			it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud pc =
+					new it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud(tempConf.toString(), tempSol.toString());
+			
+			solutionFiles = pc.getSolutions(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY));
+			
+			for (int i = 0; i < solutionFiles.size() && !done; ++i) {
+				if (SolutionMulti.getCost(solutionFiles.get(i)) > 0) {
+					done = true;
+					attempt = MAX_ATTEMPTS;
+				}
+			}
+		}
+		if (!done) {
+			logger.error("Error in computing the solution!");
+			reset();
+			return null;
+		}
+		
 		solution.setFrom(solutionFiles.get(0), null);
 		
 //		{

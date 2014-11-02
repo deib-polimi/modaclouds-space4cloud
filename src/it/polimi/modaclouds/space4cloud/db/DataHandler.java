@@ -116,12 +116,12 @@ public class DataHandler {
 		return cloudProviders.getProviderDBConnectors().keySet();
 	}
 	
+	public static final int MAX_ATTEMPTS = 2;
+	
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
 		
-		int maxAttempts = 2;
-		
-		for (int attempt = 1; attempt <= maxAttempts; ++attempt) {
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
 		
 			ProviderDBConnector pdb = cloudProviders
 					.getProviderDBConnectors().get(provider); // provider
