@@ -152,6 +152,8 @@ public class PrivateCloud implements CloudProvider {
 			it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud pc =
 					new it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud(tempConf.toString(), tempSol.toString());
 			
+//			it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud.removeTempFiles = false;
+			
 			solutionFiles = pc.getSolutions(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY));
 			
 			for (int i = 0; i < solutionFiles.size() && !done; ++i) {
