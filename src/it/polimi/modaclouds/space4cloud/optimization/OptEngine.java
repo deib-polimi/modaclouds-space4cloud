@@ -1161,26 +1161,26 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			updateBestSolution(currentSolution, true);
         }
         
-        if (Configuration.USE_PRIVATE_CLOUD) {
-        	// make feasible:
-            makeFeasible(currentSolution);
-            
-            // scale in:
-            InternalOptimization(currentSolution);
-            
-            evalServer.EvaluateSolution(currentSolution);
-        	
-    		try {
-		    	currentSolution = considerPrivateCloud(currentSolution);
-		    	evalServer.EvaluateSolution(currentSolution);
-		    	SolutionWindow.show(currentSolution);
-		    	
-				return 0;
-    		} catch (Exception e) {
-    			e.printStackTrace();
-    			return -1;
-    		}
-    	}
+//        if (Configuration.USE_PRIVATE_CLOUD) {
+//        	// make feasible:
+//            makeFeasible(currentSolution);
+//            
+//            // scale in:
+//            InternalOptimization(currentSolution);
+//            
+//            evalServer.EvaluateSolution(currentSolution);
+//        	
+//    		try {
+//		    	currentSolution = considerPrivateCloud(currentSolution);
+//		    	evalServer.EvaluateSolution(currentSolution);
+//		    	SolutionWindow.show(currentSolution);
+//		    	
+//				return 0;
+//    		} catch (Exception e) {
+//    			e.printStackTrace();
+//    			return -1;
+//    		}
+//    	}
         
         while (!isMaxNumberOfIterations()) {
 
