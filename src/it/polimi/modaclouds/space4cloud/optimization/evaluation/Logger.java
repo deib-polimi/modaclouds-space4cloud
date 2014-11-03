@@ -118,31 +118,36 @@ public class Logger implements Runnable {
 	}
 
 	private synchronized void updateModelEvaluation(String message) {
-		logger.debug("Message: " + message);
 		message = message.trim().replaceAll(" +", " ");
 		String[] tokens = message.split(" ");
+		
+		int offset = 0;
+		
 		String modelName = tokens[1];
+		
+		if (modelName.indexOf("xml") == -1) {
+			modelName += " " + tokens[2];
+			offset++;
+		}
+		
 		modelName = modelName.replace("_line.xml", ".xml");
 		modelName = Paths.get(modelName).toString();
 		String status = null;
-		if (tokens.length == 4)
-			status = tokens[3];
+		if (tokens.length == (4 + offset))
+			status = tokens[3 + offset];
 		else
-			status = tokens[2];
+			status = tokens[2 + offset];
 		evaluations.put(modelName, status);
 
 		if (status.equals(SUBMITTED)) {
 			StopWatch timer = new StopWatch();
 			timer.start();
 			timers.put(modelName, timer);
-			logger.debug("Adding the stopwatch for " + modelName);
 		} else if (status.equals(SOLVED)) {
 			long time = -1;
 			try {
 				if(timers.containsKey(modelName)){
-					logger.debug("Stopping the stopwatch for " + modelName);
 					timers.get(modelName).stop();
-					logger.debug("Stopped the stopwatch for " + modelName);
 					time = timers.get(modelName).getTime();
 				}
 			} catch (IllegalStateException e) {
