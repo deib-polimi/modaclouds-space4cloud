@@ -62,8 +62,7 @@ public class PrivateCloud implements CloudProvider {
 	}
 	
 	public static PrivateCloud getInstance(SolutionMulti solutionMulti, DataHandler dataHandler) {
-		if (instance == null)
-			instance = new PrivateCloud(solutionMulti, dataHandler);
+		instance = new PrivateCloud(solutionMulti, dataHandler);
 		
 		return instance;
 	}
