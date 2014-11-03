@@ -118,6 +118,7 @@ public class Logger implements Runnable {
 	}
 
 	private synchronized void updateModelEvaluation(String message) {
+		logger.debug("Message: " + message);
 		message = message.trim().replaceAll(" +", " ");
 		String[] tokens = message.split(" ");
 		String modelName = tokens[1];
