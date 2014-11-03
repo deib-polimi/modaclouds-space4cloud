@@ -251,21 +251,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			return;
 		}
 
-		//if the initial solution has to be computed then initialize the solver with the database connection values
-		if(Configuration.RELAXED_INITIAL_SOLUTION){
-			try {
-				MILPEvaluator.setDatabaseInformation(DatabaseConnector.url,
-						DatabaseConnector.dbName,
-						DatabaseConnector.driver,
-						DatabaseConnector.userName,
-						DatabaseConnector.password);
-			} catch (IOException e) {
-				logger.error("Could not init the Initial solution engine",e);
-				cleanExit();
-				return;
-			}
-		}
-
 		//If the chosen solver is LINE try to connect to it or launch it locally. 		
 		if(Configuration.SOLVER ==Solver.LINE){
 			logger.info("Looking for LINE server");			

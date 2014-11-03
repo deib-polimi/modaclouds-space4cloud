@@ -1,11 +1,11 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.space4clouds.milp.Solver;
+import it.polimi.modaclouds.space4cloud.milp.Solver;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,54 +28,18 @@ public class MILPEvaluator {
 	protected int cost = -1;
 
 	protected long evaluationTime = -1L;
-
-	private static String URL = "jdbc:mysql://localhost:3306/";
-	private static String DBNAME = "cloud";
-	private static String DRIVER = "com.mysql.jdbc.Driver";
-	private static String USERNAME = "moda";
-	private static String PASSWORD = "modaclouds";
 	
 	private static final Logger logger = LoggerFactory.getLogger(MILPEvaluator.class);
 	
 	public MILPEvaluator() {
-		solver = new Solver(Configuration.PROJECT_BASE_FOLDER, 
-							Configuration.WORKING_DIRECTORY,
-							Configuration.PALLADIO_RESOURCE_MODEL, 
-							Configuration.PALLADIO_USAGE_MODEL, 
-							Configuration.PALLADIO_ALLOCATION_MODEL,
-							Configuration.PALLADIO_REPOSITORY_MODEL,
-							Configuration.PALLADIO_SYSTEM_MODEL,					
-							Configuration.CONSTRAINTS, 
-							Configuration.USAGE_MODEL_EXTENSION,
-							Configuration.SSH_HOST,
-							Configuration.SSH_PASSWORD,
-							Configuration.SSH_USER_NAME);
-		
-		solver.getOptions().SqlDBUrl = URL;
-		solver.getOptions().DBName = DBNAME;
-		solver.getOptions().DBDriver = DRIVER;
-		solver.getOptions().DBUserName = USERNAME;
-		solver.getOptions().DBPassword = PASSWORD;
-	}
-	
-	public static void setDatabaseInformation(InputStream confFileStream) throws IOException {		
-		if(confFileStream!=null){
-			Properties properties = new Properties();
-			properties.load(confFileStream);		
-			URL=properties.getProperty("URL");
-			DBNAME=properties.getProperty("DBNAME");
-			DRIVER=properties.getProperty("DRIVER");
-			USERNAME=properties.getProperty("USERNAME");
-			PASSWORD=properties.getProperty("PASSWORD");
+		Path tempConf;
+		try {
+			tempConf = Files.createTempFile("conf", ".properties");
+			Configuration.saveConfiguration(tempConf.toString());
+			solver = new Solver(tempConf.toString());
+		} catch (IOException e) {
+			logger.error("Error in initializing the MILP tool!", e);
 		}
-	}
-	
-	public static void setDatabaseInformation(String url, String dbName, String driver, String userName, String password) throws IOException {												
-			URL=url;
-			DBNAME=dbName;
-			DRIVER=driver;
-			USERNAME=userName;
-			PASSWORD=password;
 	}
 	
 	public final static int MAX_ATTEMPTS = 2; 
