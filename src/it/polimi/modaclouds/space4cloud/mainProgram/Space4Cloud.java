@@ -21,13 +21,11 @@ import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
 import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
-import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
-import it.polimi.modaclouds.space4cloud.gui.AssesmentWindow;
+import it.polimi.modaclouds.space4cloud.gui.AssessmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
@@ -36,21 +34,15 @@ import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizati
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandler;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandlerFactory;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 import it.polimi.modaclouds.space4cloud.utils.DataExporter;
+import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtentionLoader;
 import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
-import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -71,9 +63,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
@@ -99,7 +89,7 @@ import org.xml.sax.SAXException;
 public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	private static OptimizationProgressWindow progressWindow;
-	private static AssesmentWindow assesmentWindow;
+	private static AssessmentWindow assesmentWindow;
 	private static RobustnessProgressWindow robustnessWindow;
 	private OptEngine engine = null;	
 	private static final Logger logger = LoggerFactory.getLogger(Space4Cloud.class);
@@ -458,63 +448,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		// print the results
 		SolutionMulti providedSolutions = engine.getInitialSolution();
-		Solution providedSolution = providedSolutions.get(0);
-		// TODO: we should consider the multi-provider solution here!
 
-		assesmentWindow = new AssesmentWindow();
-		// plotting the number of VMs
-		Logger2JFreeChartImage vmLogger = new Logger2JFreeChartImage(
-				"vmCount.properties");
-		Map<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
-		for (Tier t : providedSolution.getApplication(0).getTiers()) {
-			vmSeriesHandlers.put(t.getId(), vmLogger.newSeries(t.getName()));
-		}
-		for (int i = 0; i < 24; i++) {
-			for (Tier t : providedSolution.getApplication(i).getTiers()) {
-				vmLogger.addPoint2Series(vmSeriesHandlers.get(t.getId()), i,
-						((IaaS) t.getCloudService()).getReplicas());
-			}
-		}
-		assesmentWindow.setVMLogger(vmLogger);
-
-		// plotting the response Times
-		Logger2JFreeChartImage rtLogger = new Logger2JFreeChartImage(
-				"responseTime.properties");
-		Map<String, SeriesHandle> rtSeriesHandlers = new HashMap<>();
-		for (Tier t : providedSolution.getApplication(0).getTiers())
-			for (Component c : t.getComponents())
-				for (Functionality f : c.getFunctionalities())
-					rtSeriesHandlers.put(f.getName(),
-							rtLogger.newSeries(f.getName()));
-
-		for (int i = 0; i < 24; i++)
-			for (Tier t : providedSolution.getApplication(i).getTiers())
-				for (Component c : t.getComponents())
-					for (Functionality f : c.getFunctionalities()){
-						if(f.isEvaluated())
-							rtLogger.addPoint2Series(
-									rtSeriesHandlers.get(f.getName()), i,
-									f.getResponseTime());
-					}
-		assesmentWindow.setResponseTimeLogger(rtLogger);
-
-		// plotting the utilization
-		Logger2JFreeChartImage utilLogger = new Logger2JFreeChartImage(
-				"utilization.properties");
-		Map<String, SeriesHandle> utilSeriesHandlers = new HashMap<>();
-		for (Tier t : providedSolution.getApplication(0).getTiers())
-			utilSeriesHandlers.put(t.getId(), utilLogger.newSeries(t.getName()));
-
-		for (int i = 0; i < 24; i++)
-			for (Tier t : providedSolution.getApplication(i).getTiers())
-				utilLogger.addPoint2Series(utilSeriesHandlers.get(t.getId()),
-						i, ((Compute) t.getCloudService()).getUtilization());
-		assesmentWindow.setUtilizationLogger(utilLogger);
-		assesmentWindow.show();
-		assesmentWindow.updateImages();
+		assesmentWindow = new AssessmentWindow();
+		assesmentWindow.considerSolution(providedSolutions);
 
 		// export the solution
-		providedSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME));
+		providedSolutions.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME + Configuration.SOLUTION_FILE_EXTENSION));
 	}
 
 	private void performGenerateInitialSolution() {

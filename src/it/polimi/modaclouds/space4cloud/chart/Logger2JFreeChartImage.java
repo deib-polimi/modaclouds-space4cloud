@@ -17,6 +17,7 @@ package it.polimi.modaclouds.space4cloud.chart;
 
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
+import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
@@ -36,6 +37,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
@@ -127,6 +129,7 @@ public class Logger2JFreeChartImage {
 
 	}
 
+	@SuppressWarnings("deprecation")
 	public BufferedImage save2buffer(Dimension dim) {
 
 		XYSeriesCollection dataSet = new XYSeriesCollection();
@@ -148,7 +151,15 @@ public class Logger2JFreeChartImage {
 		////////////////////////
 		{
 			Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+			BasicStroke stroke = new BasicStroke(2.0f,                     // Line width
+												BasicStroke.CAP_ROUND,     // End-cap style
+												BasicStroke.JOIN_ROUND);   // Vertex join style
+			
 			XYPlot plot = (XYPlot) chart.getPlot();
+			
+			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot
+					.getRenderer();
+			renderer.setStroke(stroke);
 
 			ValueAxis valueAxis = plot.getDomainAxis();
 			valueAxis.setLowerMargin(0.02);

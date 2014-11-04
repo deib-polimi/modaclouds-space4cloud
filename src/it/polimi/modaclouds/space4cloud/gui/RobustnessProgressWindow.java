@@ -12,6 +12,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti
 import it.polimi.modaclouds.space4cloud.privatecloud.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -963,6 +964,9 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 	@SuppressWarnings({ "deprecation" })
 	public void updateGraph() {
 		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+		BasicStroke stroke = new BasicStroke(2.0f,                     // Line width
+                							BasicStroke.CAP_ROUND,     // End-cap style
+                							BasicStroke.JOIN_ROUND);   // Vertex join style
 
 		populationsGraph = ChartFactory.createLineChart(null, "Hour",
 				"Population", populations);
@@ -974,6 +978,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
 
 			CategoryAxis categoryAxis = plot.getDomainAxis();
 			categoryAxis.setLowerMargin(0.02);
@@ -996,6 +1001,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 //			rangeAxis.setRange(0, rangeAxis.getRange().getUpperBound() * 1.1);
 			rangeAxis.setTickLabelFont(font);
@@ -1043,6 +1050,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 			rangeAxis.setTickLabelFont(font);
 
@@ -1107,6 +1116,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 			rangeAxis.setTickLabelFont(font);
 
@@ -1170,6 +1181,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
 
 			CategoryAxis categoryAxis = plot.getDomainAxis();
 			categoryAxis.setLowerMargin(0.02);
@@ -1213,6 +1225,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 			rangeAxis.setTickLabelFont(font);
 			rangeAxis.setRange(-0.5, 1.5);
@@ -1256,6 +1270,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
 
 			CategoryAxis categoryAxis = plot.getDomainAxis();
 			categoryAxis.setLowerMargin(0.02);
@@ -1300,6 +1315,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 				renderer.setDrawOutlines(true);
 				renderer.setUseFillPaint(true);
 				renderer.setFillPaint(Color.white);
+				renderer.setStroke(stroke);
 
 				CategoryAxis categoryAxis = plot.getDomainAxis();
 				categoryAxis.setLowerMargin(0.02);
@@ -1363,6 +1379,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 				renderer.setDrawOutlines(true);
 				renderer.setUseFillPaint(true);
 				renderer.setFillPaint(Color.white);
+				renderer.setStroke(stroke);
 
 				CategoryAxis categoryAxis = plot.getDomainAxis();
 				categoryAxis.setLowerMargin(0.02);
@@ -1412,6 +1429,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 				renderer.setDrawOutlines(true);
 				renderer.setUseFillPaint(true);
 				renderer.setFillPaint(Color.white);
+				renderer.setStroke(stroke);
 
 				CategoryAxis categoryAxis = plot.getDomainAxis();
 				categoryAxis.setLowerMargin(0.02);
