@@ -18,6 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
+import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
+
 
 
 
@@ -76,12 +78,12 @@ public class Main {
 		instance.start();
 	}
 	
-//	public static void mainRedrawRobustness(String[] args) {
-//		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\variability\\1000");
-//	}
+	public static void mainRedrawRobustness(String[] args) {
+		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\private\\");
+	}
 	
 	public static void main(String[] args) {
-		mainStandard(args);
+		mainRedrawRobustness(args);
 	}
 
 }

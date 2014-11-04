@@ -81,6 +81,9 @@ public class ConstraintHandler {
 			case WORKLOADPERCENTAGE:
 				constraint = new WorkloadPercentageConstraint(cons);
 				break;
+			case AVAILABILITY:
+				constraint = new AvailabilityConstraint(cons);
+				break;
 				//add other constraints
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
@@ -104,6 +107,8 @@ public class ConstraintHandler {
 				logger.info("\tmin: "+((RamConstraint)c).getMin());			
 			} else if (c instanceof WorkloadPercentageConstraint) {
 				logger.info("\tmin: "+((WorkloadPercentageConstraint)c).getMin());
+			} else if (c instanceof AvailabilityConstraint) {
+				logger.info("\tmin: "+((AvailabilityConstraint)c).getMin());
 			}
 
 		}
@@ -192,7 +197,7 @@ public class ConstraintHandler {
 	public double getWorkloadPercentageConstraint() {
 		for (Constraint c : constraints) {
 			if (c instanceof WorkloadPercentageConstraint)
-				return ((WorkloadPercentageConstraint)c).range.getHasMinValue();
+				return c.range.getHasMinValue();
 		}
 		return 0.0;
 	}
