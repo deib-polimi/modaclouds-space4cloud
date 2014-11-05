@@ -73,6 +73,10 @@ public class DatabaseConnector {
 		logger.debug("\tpass:"+password);
 
 
+		connect();
+	}
+	
+	private static void connect() throws SQLException {
 		try {
 			Class.forName(driver).newInstance();
 		} catch (InstantiationException | IllegalAccessException
@@ -93,8 +97,16 @@ public class DatabaseConnector {
 	 * @return the Connection instance.
 	 * @throws SQLException 
 	 */
-	public static Connection getConnection(){
-		return conn;
+	public static Connection getConnection() {
+		try {
+			if (conn == null || conn.isClosed() || !conn.isValid(10000))
+				connect();
+			return conn;
+		} catch (Exception e) {
+			logger.error("Error in connecting to the database");
+		}
+		
+		return null;
 	}
 	
 	public static void closeConnection(){

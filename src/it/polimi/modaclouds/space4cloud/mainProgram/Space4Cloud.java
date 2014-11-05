@@ -85,6 +85,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker.StateValue;
@@ -356,6 +357,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			try {
 				consoleLogger.info("Performing Assesment");
 				performAssessment();
+				consoleLogger.info("Assesment finished");
 			} catch (AssesmentException e) {
 				logger.error("Error in performing the assesment", e);
 				signalError("An error occured performing the assesment.\n"+e.getLocalizedMessage());
@@ -367,6 +369,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			try {
 				consoleLogger.info("Performing Optimization");
 				performOptimization();
+				consoleLogger.info("Optimization finished");
 			} catch (OptimizationException e) {
 				logger.error("Error in the optimization", e);
 				signalError("An error occured performing the optimization.\n"+e.getLocalizedMessage());
@@ -378,6 +381,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			try {
 				consoleLogger.info("Performing Robustness Analysis");
 				performRobustnessAnalysis();
+				consoleLogger.info("Robustness Analysis finished");
 			} catch (RobustnessException e) {
 				logger.error("Error in the robustness analysis", e);
 				signalError("An error occured performing the robustness analysis.\n"+e.getLocalizedMessage());
@@ -1156,6 +1160,23 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	public void addPropertyChangeListener(PropertyChangeListener listener){
 		pcs.addPropertyChangeListener(listener);
+	}
+	
+	public static String durationToString(long duration) {
+		String actualDuration = "";
+		{
+			int res = (int) TimeUnit.MILLISECONDS.toSeconds(duration);
+			if (res > 60 * 60) {
+				actualDuration += (res / (60 * 60)) + " h ";
+				res = res % (60 * 60);
+			}
+			if (res > 60) {
+				actualDuration += (res / 60) + " m ";
+				res = res % 60;
+			}
+			actualDuration += res + " s";
+		}
+		return actualDuration;
 	}
 
 }
