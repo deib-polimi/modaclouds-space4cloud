@@ -356,7 +356,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			try {
 				consoleLogger.info("Performing Assesment");
 				performAssessment();
-				consoleLogger.info("Assesment finished");
 			} catch (AssesmentException e) {
 				logger.error("Error in performing the assesment", e);
 				signalError("An error occured performing the assesment.\n"+e.getLocalizedMessage());
@@ -368,7 +367,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			try {
 				consoleLogger.info("Performing Optimization");
 				performOptimization();
-				consoleLogger.info("Optimization finished");
 			} catch (OptimizationException e) {
 				logger.error("Error in the optimization", e);
 				signalError("An error occured performing the optimization.\n"+e.getLocalizedMessage());
@@ -380,7 +378,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			try {
 				consoleLogger.info("Performing Robustness Analysis");
 				performRobustnessAnalysis();
-				consoleLogger.info("Robustness Analysis finished");
 			} catch (RobustnessException e) {
 				logger.error("Error in the robustness analysis", e);
 				signalError("An error occured performing the robustness analysis.\n"+e.getLocalizedMessage());
