@@ -450,6 +450,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		SolutionMulti providedSolutions = engine.getInitialSolution();
 
 		assesmentWindow = new AssessmentWindow();
+		
+		assesmentWindow.addPropertyChangeListener(this);
+		
 		assesmentWindow.considerSolution(providedSolutions);
 
 		// export the solution
@@ -1040,6 +1043,14 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			if(!batch)
 				robustnessWindow.signalCompletion();
 			cleanExit();
+		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("WindowClosed")){
+			logger.info("Assessment window closed");
+			pcs.firePropertyChange("assessmentClosed", false, true);
+//			cleanExit();
+		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("AssessmentEnded")){
+			logger.info("Assessment ended");
+			pcs.firePropertyChange("assessmentEnded", false, true);
+//			cleanExit();
 		}
 
 	}
