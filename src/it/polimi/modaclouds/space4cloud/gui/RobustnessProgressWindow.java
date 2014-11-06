@@ -7,8 +7,12 @@ import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.privatecloud.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -16,6 +20,11 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -26,11 +35,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
@@ -54,46 +66,46 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class RobustnessProgressWindow {
+public class RobustnessProgressWindow extends WindowAdapter implements PropertyChangeListener {
 
 	public static enum Size {
 
+		zero("zero", 0),
+		
 		// Amazon
-		zero("zero", 0), t1micro("micro", 1), m1small("small", 2), m1medium(
-				"medium", 3), c1medium("medium", 3), m1large("large", 4), c3large(
-				"large", 4), m1xlarge("xlarge", 5), m2xlarge("xlarge", 5), m3xlarge(
-				"xlarge", 5), c1xlarge("xlarge", 5), c3xlarge("xlarge", 5), m32xlarge(
-				"xxlarge", 6), c32xlarge("xxlarge", 6),
+		t1micro("micro", 1), m1small("small", 2),
+		m1medium("medium", 3), c1medium("medium", 3),
+		m1large("large", 4), c3large("large", 4),
+		m1xlarge("xlarge", 5), m2xlarge("xlarge", 5), m3xlarge("xlarge", 5), c1xlarge("xlarge", 5), c3xlarge("xlarge", 5),
+		m22xlarge("xxlarge", 6), m32xlarge("xxlarge", 6), c32xlarge("xxlarge", 6),
+		cg14xlarge("xxxxlarge", 7),
 
 		// Microsoft
-		GeneralAvailabilityExtraSmallInstance("ExtraSmall", 7), PreviewExtraSmallInstance(
-				"ExtraSmall", 7), GeneralAvailabilitySmallInstance("Small", 8), PreviewSmallInstance(
-				"Small", 8), GeneralAvailabilityMediumInstance("Medium", 9), PreviewMediumInstance(
-				"Medium", 9), GeneralAvailabilityLargeInstance("Large", 10), PreviewLargeInstance(
-				"Large", 10), GeneralAvailabilityExtraLargeInstance(
-				"ExtraLarge", 11), PreviewExtraLargeInstance("ExtraLarge", 11),
+		GeneralAvailabilityExtraSmallInstance("ExtraSmall", 8),	PreviewExtraSmallInstance("ExtraSmall", 8),
+		GeneralAvailabilitySmallInstance("Small", 9), PreviewSmallInstance("Small", 9),
+		GeneralAvailabilityMediumInstance("Medium", 10), PreviewMediumInstance("Medium", 10),
+		GeneralAvailabilityLargeInstance("Large", 11), PreviewLargeInstance("Large", 11),
+		GeneralAvailabilityExtraLargeInstance("ExtraLarge", 12), PreviewExtraLargeInstance("ExtraLarge", 12),
 
 		// Flexiscale
-		Flexiscale512MB1CPUServer("512 MB/1 CPU", 12), Flexiscale512MB1CPUServerWindows(
-				"512 MB/1 CPU", 12), Flexiscale1GB1CPUServer("1 GB/1 CPU", 13), Flexiscale1GB1CPUServerWindows(
-				"1 GB/1 CPU", 13), Flexiscale2GB1CPUServer("2 GB/1 CPU", 14), Flexiscale2GB1CPUServerWindows(
-				"2 GB/1 CPU", 14), Flexiscale2GB2CPUServer("2 GB/2 CPU", 15), Flexiscale2GB2CPUServerWindows(
-				"2 GB/2 CPU", 15), Flexiscale4GB2CPUServer("4 GB/2 CPU", 16), Flexiscale4GB2CPUServerWindows(
-				"4 GB/2 CPU", 16), Flexiscale4GB3CPUServer("4 GB/3 CPU", 17), Flexiscale4GB3CPUServerWindows(
-				"4 GB/3 CPU", 17), Flexiscale4GB4CPUServer("4 GB/4 CPU", 18), Flexiscale4GB4CPUServerWindows(
-				"4 GB/4 CPU", 18), Flexiscale6GB3CPUServer("6 GB/3 CPU", 19), Flexiscale6GB3CPUServerWindows(
-				"6 GB/3 CPU", 19), Flexiscale6GB4CPUServer("6 GB/4 CPU", 20), Flexiscale6GB4CPUServerWindows(
-				"6 GB/4 CPU", 20), Flexiscale6GB5CPUServer("6 GB/5 CPU", 21), Flexiscale6GB5CPUServerWindows(
-				"6 GB/5 CPU", 21), Flexiscale6GB6CPUServer("6 GB/6 CPU", 22), Flexiscale6GB6CPUServerWindows(
-				"6 GB/6 CPU", 22), Flexiscale8GB4CPUServer("8 GB/4 CPU", 23), Flexiscale8GB4CPUServerWindows(
-				"8 GB/4 CPU", 23), Flexiscale8GB5CPUServer("8 GB/5 CPU", 24), Flexiscale8GB5CPUServerWindows(
-				"8 GB/5 CPU", 24), Flexiscale8GB6CPUServer("8 GB/6 CPU", 25), Flexiscale8GB6CPUServerWindows(
-				"8 GB/6 CPU", 25), Flexiscale8GB7CPUServer("8 GB/7 CPU", 26), Flexiscale8GB7CPUServerWindows(
-				"8 GB/7 CPU", 26), Flexiscale8GB8CPUServer("8 GB/8 CPU", 27), Flexiscale8GB8CPUServerWindows(
-				"8 GB/8 CPU", 27);
+		Flexiscale512MB1CPUServer("512 MB/1 CPU", 13), Flexiscale512MB1CPUServerWindows("512 MB/1 CPU", 13),
+		Flexiscale1GB1CPUServer("1 GB/1 CPU", 14), Flexiscale1GB1CPUServerWindows("1 GB/1 CPU", 14),
+		Flexiscale2GB1CPUServer("2 GB/1 CPU", 15), Flexiscale2GB1CPUServerWindows("2 GB/1 CPU", 15),
+		Flexiscale2GB2CPUServer("2 GB/2 CPU", 16), Flexiscale2GB2CPUServerWindows("2 GB/2 CPU", 16),
+		Flexiscale4GB2CPUServer("4 GB/2 CPU", 17), Flexiscale4GB2CPUServerWindows("4 GB/2 CPU", 17),
+		Flexiscale4GB3CPUServer("4 GB/3 CPU", 18), Flexiscale4GB3CPUServerWindows("4 GB/3 CPU", 18),
+		Flexiscale4GB4CPUServer("4 GB/4 CPU", 19), Flexiscale4GB4CPUServerWindows("4 GB/4 CPU", 19),
+		Flexiscale6GB3CPUServer("6 GB/3 CPU", 20), Flexiscale6GB3CPUServerWindows("6 GB/3 CPU", 20),
+		Flexiscale6GB4CPUServer("6 GB/4 CPU", 21), Flexiscale6GB4CPUServerWindows("6 GB/4 CPU", 21),
+		Flexiscale6GB5CPUServer("6 GB/5 CPU", 22), Flexiscale6GB5CPUServerWindows("6 GB/5 CPU", 22),
+		Flexiscale6GB6CPUServer("6 GB/6 CPU", 23), Flexiscale6GB6CPUServerWindows("6 GB/6 CPU", 23),
+		Flexiscale8GB4CPUServer("8 GB/4 CPU", 24), Flexiscale8GB4CPUServerWindows("8 GB/4 CPU", 24),
+		Flexiscale8GB5CPUServer("8 GB/5 CPU", 25), Flexiscale8GB5CPUServerWindows("8 GB/5 CPU", 25),
+		Flexiscale8GB6CPUServer("8 GB/6 CPU", 26), Flexiscale8GB6CPUServerWindows("8 GB/6 CPU", 26),
+		Flexiscale8GB7CPUServer("8 GB/7 CPU", 27), Flexiscale8GB7CPUServerWindows("8 GB/7 CPU", 27),
+		Flexiscale8GB8CPUServer("8 GB/8 CPU", 28), Flexiscale8GB8CPUServerWindows("8 GB/8 CPU", 28);
 
-		private static final int lastAmazonId = 6, lastMicrosoftId = 11,
-				lastFlexiscaleId = 27;
+		private static final int lastAmazonId = 7, lastMicrosoftId = 12, lastFlexiscaleId = 28;
 
 		public static Size getSizeByBasicId(int basicId) {
 			for (Size s : Size.values())
@@ -210,63 +222,7 @@ public class RobustnessProgressWindow {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	public static void main(String args[]) {
-		String basePath = "C:\\Users\\Riccardo\\Desktop\\tmp\\argh\\results";
-
-		int testFrom = 100, testTo = 4300, step = 300;
-		// int testFrom = 30, testTo = 3000, step = 90;
-
-		if (args != null && args.length > 0) {
-			basePath = args[0];
-
-			if (args.length > 1) {
-				try {
-					testFrom = Integer.parseInt(args[1]);
-				} catch (Exception e) {
-				}
-
-				if (args.length > 2) {
-					try {
-						testTo = Integer.parseInt(args[2]);
-					} catch (Exception e) {
-					}
-
-					if (args.length > 3) {
-						try {
-							step = Integer.parseInt(args[3]);
-						} catch (Exception e) {
-						}
-
-					}
-				}
-			}
-		}
-
-		// redraw(basePath, testFrom, testTo, step);
-
-		RobustnessProgressWindow rpw1 = redraw(basePath); //, testFrom, testTo, step);
-		// rpw1.gui.dispose();
-
-		// RobustnessProgressWindow rpw2 =
-		// redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\russo\\bipicco3", 100,
-		// 10000, 300);
-		// rpw2.gui.dispose();
-		//
-		// RobustnessProgressWindow rpw3 =
-		// redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\russo\\results-amazon2",
-		// 100, 10000, 300);
-		// rpw3.gui.dispose();
-		//
-		// compare(rpw1, rpw2, basePath + File.separator +
-		// "costsDiffs-generated-non2.png");
-		// compare(rpw1, rpw3, basePath + File.separator +
-		// "costsDiffs-generated-generated2.png");
-		// compare(rpw3, rpw2, basePath + File.separator +
-		// "costsDiffs-generated2-non2.png");
-
-	}
-	public static RobustnessProgressWindow redraw(String basePath) { //,	int testFrom, int testTo, int step) {
+	public static RobustnessProgressWindow redraw(String basePath) {
 		RobustnessProgressWindow rpw = null;
 		
 		Path p = Paths.get(basePath);
@@ -312,28 +268,6 @@ public class RobustnessProgressWindow {
 				e.printStackTrace();
 			}
 		}
-		
-		
-		/*
-		int total = (testTo - testFrom) / step;
-
-		RobustnessProgressWindow rpw = new RobustnessProgressWindow(total);
-
-		try {
-			for (int i = testFrom; i <= testTo; i += step) {
-				rpw.add(Paths.get(basePath, "ume-" + i + ".xml").toFile(),
-						Paths.get(basePath, "solution-" + i + ".xml").toFile());
-
-				rpw.setValue(rpw.getValue() + 1);
-			}
-
-			rpw.save2png(basePath);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		rpw.setValue(total);
-		*/
 
 		return rpw;
 	}
@@ -341,6 +275,9 @@ public class RobustnessProgressWindow {
 	public static void sortDataset(DefaultCategoryDataset dataset) {
 		for (int i = 0; i < dataset.getColumnCount() - 1; ++i) {
 			for (int j = i + 1; j < dataset.getColumnCount(); ++j) {
+				if (i < 0)
+					continue;
+				
 				boolean bigger = false;
 				try {
 					bigger = (Integer
@@ -374,55 +311,84 @@ public class RobustnessProgressWindow {
 
 	private JFrame gui;
 	private JProgressBar progressBar;
+	
 	private JFreeChart populationsGraph;
 	private JPanel populationsPanel;
 	private JLabel populationsLabel;
+	private DefaultCategoryDataset populations = new DefaultCategoryDataset();
 
 	private JFreeChart solutionsGraph;
 	private JPanel solutionsPanel;
 	private JLabel solutionsLabel;
 	private JPanel solutionsPanel2;
 	private JLabel solutionsLabel2;
+	private DefaultCategoryDataset solutions = new DefaultCategoryDataset();
 
 	private JFreeChart tiersGraph;
 	private JPanel tiersPanel;
 	private JLabel tiersLabel;
-
 	private JPanel tiersPanel2;
 	private JLabel tiersLabel2;
+	private DefaultCategoryDataset tiers = new DefaultCategoryDataset();
 	
 	private JFreeChart tiersBasicGraph;
 	private JPanel tiersBasicPanel;
 	private JLabel tiersBasicLabel;
+	private DefaultCategoryDataset tiersBasic = new DefaultCategoryDataset();
 	
 	private JFreeChart feasibilitiesGraph;
 	private JPanel feasibilitiesPanel;
 	private JLabel feasibilitiesLabel;
+	private DefaultCategoryDataset feasibilities = new DefaultCategoryDataset();
 	
 	private JFreeChart costsGraph;
 	private JPanel costsPanel;
 	private JLabel costsLabel;
+	private DefaultCategoryDataset costs = new DefaultCategoryDataset();
 	
 	private JFreeChart durationsGraph;
 	private JPanel durationsPanel;
 	private JLabel durationsLabel;
+	private DefaultCategoryDataset durations = new DefaultCategoryDataset();
+	
+//	private JFreeChart privateHostsGraph;
+//	private JPanel privateHostsPanel;
+//	private JLabel privateHostsLabel;
+//	private DefaultCategoryDataset privateHosts = new DefaultCategoryDataset();
+//	
+//	private JFreeChart privateMachinesGraph;
+//	private JPanel privateMachinesPanel;
+//	private JLabel privateMachinesLabel;
+//	private DefaultCategoryDataset privateMachines = new DefaultCategoryDataset();
+//	
+//	private JFreeChart hourlySolutionsGraph;
+//	private JPanel hourlySolutionsPanel;
+//	private JLabel hourlySolutionsLabel;
+//	private DefaultCategoryDataset hourlySolutions = new DefaultCategoryDataset();
+	
+	private JTabbedPane privateHostsTabs;
+	private JTabbedPane publicVsPrivateTabs;
+	
+	private HashMap<Integer, JFreeChart> privateHostsGraphs = new HashMap<Integer, JFreeChart>();
+	private HashMap<Integer, JPanel> privateHostsPanels = new HashMap<Integer, JPanel>();
+	private HashMap<Integer, JLabel> privateHostsLabels = new HashMap<Integer, JLabel>();
+	private HashMap<Integer, DefaultCategoryDataset> privateHostsMap = new HashMap<Integer, DefaultCategoryDataset>();
+	
+	private HashMap<Integer, JFreeChart> privateMachinesGraphs = new HashMap<Integer, JFreeChart>();
+	private HashMap<Integer, JPanel> privateMachinesPanels = new HashMap<Integer, JPanel>();
+	private HashMap<Integer, JLabel> privateMachinesLabels = new HashMap<Integer, JLabel>();
+	private HashMap<Integer, DefaultCategoryDataset>  privateMachinesMap = new HashMap<Integer, DefaultCategoryDataset>();
+	
+	private HashMap<Integer, JFreeChart> hourlySolutionsGraphs = new HashMap<Integer, JFreeChart>();
+	private HashMap<Integer, JPanel> hourlySolutionsPanels = new HashMap<Integer, JPanel>();
+	private HashMap<Integer, JLabel> hourlySolutionsLabels = new HashMap<Integer, JLabel>();
+	private HashMap<Integer, DefaultCategoryDataset>  hourlySolutionsMap = new HashMap<Integer, DefaultCategoryDataset>();
 	
 	private int total;
-	private DefaultCategoryDataset populations = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset solutions = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset tiers = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset tiersBasic = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset feasibilities = new DefaultCategoryDataset();
-
-	private DefaultCategoryDataset costs = new DefaultCategoryDataset();
-	
-	private DefaultCategoryDataset durations = new DefaultCategoryDataset();
 
 	private boolean alreadyUpdating = false;
+	
+	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 	public RobustnessProgressWindow(int total) {
 		this.total = total;
@@ -434,73 +400,244 @@ public class RobustnessProgressWindow {
 
 	public void add(File usageModelExtension, File solution)
 			throws MalformedURLException, JAXBException, SAXException {
-		UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension
-				.toURI().toURL(), UsageModelExtensions.class);
+		int maxPopulation = Space4Cloud.getMaxPopulation(usageModelExtension);
+		int maxHour = -1;
+		
+		DefaultCategoryDataset privateHosts = new DefaultCategoryDataset();
+		DefaultCategoryDataset privateMachines = new DefaultCategoryDataset();
+		DefaultCategoryDataset hourlySolutions = new DefaultCategoryDataset();
+		
+		
+		String name = "Var " + maxPopulation;
 
-		int maxPopulation = -1, maxHour = -1;
-		String name = "Var "
-				+ Space4Cloud.getMaxPopulation(usageModelExtension);
-
-		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
-		if (cw != null) {
-			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
-				if (maxPopulation < we.getPopulation()) {
-					maxPopulation = we.getPopulation();
-					maxHour = we.getHour();
-				}
-				populations.addValue(we.getPopulation(), name,
-						"" + we.getHour());
-			}
-		} else {
-
-			OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
-			if (ow != null) {
-				for (OpenWorkloadElement we : ow.getWorkloadElement()) {
-					if (maxPopulation < we.getPopulation()) {
-						maxPopulation = we.getPopulation();
+		{
+			// Add the workload to the graph
+			
+			UsageModelExtensions umes = XMLHelper.deserialize(usageModelExtension
+					.toURI().toURL(), UsageModelExtensions.class);
+			
+			ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+			if (cw != null) {
+				for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+					if (maxPopulation == we.getPopulation())
 						maxHour = we.getHour();
-					}
+					
 					populations.addValue(we.getPopulation(), name,
 							"" + we.getHour());
 				}
 			} else {
-				return;
+	
+				OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+				if (ow != null) {
+					for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+						if (maxPopulation == we.getPopulation())
+							maxHour = we.getHour();
+						
+						populations.addValue(we.getPopulation(), name,
+								"" + we.getHour());
+					}
+				} else {
+					return;
+				}
 			}
 		}
 
 		Document doc = DOM.getDocument(solution);
 
 		NodeList nl = doc.getElementsByTagName("Tier");
+		
+		LinkedHashMap<String, Integer[]> usageHosts = new LinkedHashMap<String, Integer[]>();
+		
+		LinkedHashMap<String, Integer[]> machinesOnPrivate = new LinkedHashMap<String, Integer[]>();
 
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node tier = nl.item(i);
 
 			String size = tier.getAttributes().getNamedItem("resourceName")
 					.getNodeValue();
-
-			Size s = Size.parse(size);
-
-			tiers.addValue(s.ordinal(), "Tier " + i, "" + maxPopulation);
-			tiersBasic.addValue(s.basicId, "Tier " + i, "" + maxPopulation);
-
-			Element tierEl = (Element) tier;
-			NodeList hours = tierEl.getElementsByTagName("HourAllocation");
-
-			for (int j = 0; j < hours.getLength(); j++) {
-				Node hour = hours.item(j);
-				int valHour = Integer.valueOf(hour.getAttributes()
-						.getNamedItem("hour").getNodeValue()) + 1;
-
-				if (valHour == maxHour) {
-					solutions
-							.addValue(
-									Integer.valueOf(hour.getAttributes()
-											.getNamedItem("allocation")
-											.getNodeValue()), "Tier " + i, ""
-											+ maxPopulation);
+			
+			String provider = tier.getAttributes().getNamedItem("providerName")
+					.getNodeValue();
+			
+			if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1) {
+				Size s = Size.parse(size);
+				
+				String tierName = null;
+				try {
+					tierName = tier.getAttributes().getNamedItem("name").getNodeValue() + "@" + provider;
+				} catch (Exception e) {
+					tierName = null;
 				}
-
+				if (tierName == null || tierName.length() == 0)
+					tierName = "Tier " + i;
+				
+	
+				tiers.addValue(s.ordinal(), /*"Tier " + i*/ tierName, "" + maxPopulation);
+				tiersBasic.addValue(s.basicId, /*"Tier " + i*/ tierName, "" + maxPopulation);
+	
+				Element tierEl = (Element) tier;
+				NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+	
+				for (int j = 0; j < hours.getLength(); j++) {
+					Node hour = hours.item(j);
+					int valHour = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("hour").getNodeValue()) + 1;
+	
+					if (valHour == maxHour) {
+						solutions
+								.addValue(
+										Integer.valueOf(hour.getAttributes()
+												.getNamedItem("allocation")
+												.getNodeValue()), /*"Tier " + i*/ tierName, ""
+												+ maxPopulation);
+					}
+	
+				}
+			} else {
+				Integer[] usage = usageHosts.get(provider);
+				if (usage == null) {
+					usage = new Integer[24];
+					for (int h = 0; h < 24; ++h)
+						usage[h] = 0;
+				}
+				
+				String key = tier.getAttributes().getNamedItem("name").getNodeValue() + "@" + size;
+				
+				Integer[] machines = machinesOnPrivate.get(key);
+				if (machines == null) {
+					machines = new Integer[24];
+					for (int h = 0; h < 24; ++h)
+						machines[h] = 0;
+				}
+				
+				Element tierEl = (Element) tier;
+				NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+	
+				for (int j = 0; j < hours.getLength(); j++) {
+					Node hour = hours.item(j);
+					int valHour = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("hour").getNodeValue());
+					int valAllocation = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("allocation")
+							.getNodeValue());
+					
+					usage[valHour] += valAllocation;
+					machines[valHour] += valAllocation;
+				}
+				
+				usageHosts.put(provider, usage);
+				machinesOnPrivate.put(key, machines);
 			}
+		}
+		
+		if (machinesOnPrivate.size() == 0) {
+			nl = doc.getElementsByTagName("Solution");
+			
+			Node selected = null;
+			double maxCost = Double.MIN_VALUE;
+			
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node solutionResult = nl.item(i);
+
+				double cost = Double.parseDouble(solutionResult.getAttributes()
+						.getNamedItem("cost").getNodeValue());
+				
+				String provider =
+						((Element)solutionResult).getElementsByTagName("Tier").item(0).getAttributes().getNamedItem("providerName").getNodeValue();
+				
+				if (cost > maxCost && provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1) {
+					maxCost = cost;
+					selected = solutionResult;
+				}
+			}
+			
+			
+			nl = ((Element)selected).getElementsByTagName("Tier");
+			
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node tier = nl.item(i);
+				
+				String tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
+					
+				Element tierEl = (Element) tier;
+				NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+				
+				Integer[] machines = new Integer[24];
+	
+				for (int j = 0; j < hours.getLength(); j++) {
+					Node hour = hours.item(j);
+					int valHour = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("hour").getNodeValue()) + 1;
+					
+					hourlySolutions.addValue(
+							Integer.valueOf(hour.getAttributes()
+									.getNamedItem("allocation")
+									.getNodeValue()), tierName, ""
+									+ valHour);
+					
+					machines[j] = 0;
+				}
+				
+				machinesOnPrivate.put(tierName + "@null", machines);
+			}
+			
+			
+		} else {
+			nl = doc.getElementsByTagName("Tier");
+			
+			for (int i = 0; i < nl.getLength(); i++) {
+				Node tier = nl.item(i);
+
+				String size = tier.getAttributes().getNamedItem("resourceName")
+						.getNodeValue();
+				
+				String provider = tier.getAttributes().getNamedItem("providerName")
+						.getNodeValue();
+				
+				String tierName = tier.getAttributes().getNamedItem("name").getNodeValue();
+				
+				if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1 &&
+						machinesOnPrivate.containsKey(tierName + "@" + size)) {
+					
+					Element tierEl = (Element) tier;
+					NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+		
+					for (int j = 0; j < hours.getLength(); j++) {
+						Node hour = hours.item(j);
+						int valHour = Integer.valueOf(hour.getAttributes()
+								.getNamedItem("hour").getNodeValue()) + 1;
+						
+						hourlySolutions.addValue(
+								Integer.valueOf(hour.getAttributes()
+										.getNamedItem("allocation")
+										.getNodeValue()), tierName, ""
+										+ valHour);
+						
+						if (valHour == maxHour) {
+							int allocation = Integer.valueOf(hour.getAttributes()
+									.getNamedItem("allocation")
+									.getNodeValue()) +
+									machinesOnPrivate.get(tierName + "@" + size)[valHour];
+							
+							solutions.setValue(
+										allocation, /*"Tier " + i*/ tierName + "@" + provider, ""
+												+ maxPopulation);
+						}
+					}
+				}
+			}
+		}
+		
+		for (int h = 0; h < 24; ++h) {
+			int hourlyValue = 0;
+			for (String provider : usageHosts.keySet()) {
+				if (usageHosts.get(provider)[h] > 0)
+					hourlyValue++;
+			}
+			privateHosts.addValue(hourlyValue, name, "" + h);
+			
+			for (String tier : machinesOnPrivate.keySet())
+				privateMachines.addValue(machinesOnPrivate.get(tier)[h], tier.substring(0, tier.indexOf('@')), "" + h);
 		}
 
 		nl = doc.getElementsByTagName("SolutionResult");
@@ -516,14 +653,11 @@ public class RobustnessProgressWindow {
 			boolean feasibility = Boolean
 					.parseBoolean(solutionResult.getAttributes()
 							.getNamedItem("feasibility").getNodeValue());
-			
 			long duration = Long.parseLong(solutionResult.getAttributes()
-					.getNamedItem("generationTime").getNodeValue());
+					.getNamedItem("time").getNodeValue());
 
 			costs.addValue(cost, "Solution"/* name */, "" + "" + maxPopulation);
-			feasibilities.addValue(feasibility ? 1 : 0, "Solution"/* name */, ""
-					+ "" + maxPopulation);
-			
+			feasibilities.addValue(feasibility ? 1 : 0, "Solution"/* name */, "" + maxPopulation);
 			durations.addValue(duration, "Solution"/* name */, "" + "" + maxPopulation);
 		}
 
@@ -533,7 +667,46 @@ public class RobustnessProgressWindow {
 		sortDataset(feasibilities);
 		sortDataset(durations);
 		sortDataset(tiersBasic);
-
+		
+		privateHostsMap.put(maxPopulation, privateHosts);
+		privateMachinesMap.put(maxPopulation, privateMachines);
+		hourlySolutionsMap.put(maxPopulation, hourlySolutions);
+		
+		privateHostsGraphs.put(maxPopulation, null);
+		privateMachinesGraphs.put(maxPopulation, null);
+		hourlySolutionsGraphs.put(maxPopulation, null);
+		
+		JPanel privateHostsPanel = new JPanel();
+		privateHostsTabs.addTab("Var " + maxPopulation, privateHostsPanel);
+		JLabel privateHostsLabel = new JLabel();
+		privateHostsLabel.setIcon(null);
+		privateHostsPanel.add(privateHostsLabel);
+		
+		JPanel lowerPanel = new JPanel();
+		lowerPanel.setLayout(new GridLayout(2, 1, 0, 0));
+		publicVsPrivateTabs.addTab("Var " + maxPopulation, lowerPanel);
+		JPanel hourlySolutionsPanel = new JPanel();
+		lowerPanel.add(hourlySolutionsPanel);
+		JLabel hourlySolutionsLabel = new JLabel();
+		hourlySolutionsLabel.setIcon(null);
+		hourlySolutionsPanel.add(hourlySolutionsLabel);
+		JPanel privateMachinesPanel = new JPanel();
+		lowerPanel.add(privateMachinesPanel);
+		JLabel privateMachinesLabel = new JLabel();
+		privateMachinesLabel.setIcon(null);
+		privateMachinesPanel.add(privateMachinesLabel);
+		
+		gui.validate();
+		
+		privateHostsPanels.put(maxPopulation, privateHostsPanel);
+		privateHostsLabels.put(maxPopulation, privateHostsLabel);
+		
+		privateMachinesPanels.put(maxPopulation, privateMachinesPanel);
+		privateMachinesLabels.put(maxPopulation, privateMachinesLabel);
+		
+		hourlySolutionsPanels.put(maxPopulation, hourlySolutionsPanel);
+		hourlySolutionsLabels.put(maxPopulation, hourlySolutionsLabel);
+		
 		updateGraph();
 		updateImages();
 	}
@@ -547,7 +720,9 @@ public class RobustnessProgressWindow {
 		gui.setTitle("Robustness Progress");
 		gui.setMinimumSize(new Dimension(900, 600));
 		gui.setLocationRelativeTo(null);
-		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
+//		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
+		gui.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		gui.addWindowListener(this);
 		gui.getContentPane().setLayout(new BorderLayout(0, 0));
 
 		JPanel upperPanel = new JPanel();
@@ -555,8 +730,9 @@ public class RobustnessProgressWindow {
 		upperPanel.setLayout(new BoxLayout(upperPanel, BoxLayout.X_AXIS));
 
 		progressBar = new JProgressBar(0, total);
-		progressBar.setValue(0);
+//		progressBar.setValue(0);
 		progressBar.setStringPainted(true);
+		setValue(0);
 		upperPanel.add(progressBar);
 
 		JPanel lowerPanel = new JPanel();
@@ -655,20 +831,60 @@ public class RobustnessProgressWindow {
 		durationsLabel = new JLabel();
 		durationsLabel.setIcon(null);
 		durationsPanel.add(durationsLabel);
-
+		
+		lowerPanel = new JPanel();
+		lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+		tabbedPane.addTab("Private Hosts Used", lowerPanel);
+		privateHostsTabs = new JTabbedPane();
+		lowerPanel.add(privateHostsTabs);
+		int tabNumber = tabbedPane.indexOfComponent(lowerPanel);
+		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
+//		tabbedPane.setEnabledAt(tabNumber, true);
+		
+		lowerPanel = new JPanel();
+		lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+		tabbedPane.addTab("Private vs Public", lowerPanel);
+		publicVsPrivateTabs = new JTabbedPane();
+		lowerPanel.add(publicVsPrivateTabs);
+		tabNumber = tabbedPane.indexOfComponent(lowerPanel);
+		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
+//		tabbedPane.setEnabledAt(tabNumber, true);
+		
+//		lowerPanel = new JPanel();
+//		lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
+//		tabbedPane.addTab("Private Hosts Used", lowerPanel);
+//		privateHostsPanel = new JPanel();
+//		lowerPanel.add(privateHostsPanel);
+//		privateHostsLabel = new JLabel();
+//		privateHostsLabel.setIcon(null);
+//		privateHostsPanel.add(privateHostsLabel);
+//		int tabNumber = tabbedPane.indexOfComponent(lowerPanel);
+//		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD);
+//		
+//		lowerPanel = new JPanel();
+//		lowerPanel.setLayout(new GridLayout(2, 1, 0, 0));
+//		tabbedPane.addTab("Private vs Public", lowerPanel);
+//		hourlySolutionsPanel = new JPanel();
+//		lowerPanel.add(hourlySolutionsPanel);
+//		hourlySolutionsLabel = new JLabel();
+//		hourlySolutionsLabel.setIcon(null);
+//		hourlySolutionsPanel.add(hourlySolutionsLabel);
+//		privateMachinesPanel = new JPanel();
+//		lowerPanel.add(privateMachinesPanel);
+//		privateMachinesLabel = new JLabel();
+//		privateMachinesLabel.setIcon(null);
+//		privateMachinesPanel.add(privateMachinesLabel);
+//		tabNumber = tabbedPane.indexOfComponent(lowerPanel);
+//		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD);
+		
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
 
 			@Override
-			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub
-			}
+			public void componentHidden(ComponentEvent e) { }
 
 			@Override
-			public void componentMoved(ComponentEvent e) {
-				// TODO Auto-generated method stub
-
-			}
+			public void componentMoved(ComponentEvent e) { }
 
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -708,17 +924,49 @@ public class RobustnessProgressWindow {
 		ChartUtilities.writeChartAsPNG(
 				new FileOutputStream(Paths.get(path, "durations.png")
 						.toFile()), durationsGraph, 1350, 700);
+		
+		for (Integer key : privateHostsGraphs.keySet()) {
+			JFreeChart privateHostsGraph = privateHostsGraphs.get(key);
+			JFreeChart privateMachinesGraph = privateMachinesGraphs.get(key);
+			JFreeChart hourlySolutionsGraph = hourlySolutionsGraphs.get(key);
+			
+			ChartUtilities.writeChartAsPNG(
+					new FileOutputStream(Paths.get(path, key + "-privateHosts.png")
+							.toFile()), privateHostsGraph, 1350, 700);
+			ChartUtilities.writeChartAsPNG(
+					new FileOutputStream(Paths.get(path, key + "-machinesOnPrivate.png")
+							.toFile()), privateMachinesGraph, 1350, 700);
+			ChartUtilities.writeChartAsPNG(
+					new FileOutputStream(Paths.get(path, key + "-machinesOnPublic.png")
+							.toFile()), hourlySolutionsGraph, 1350, 700);
+		}
+		
+//		ChartUtilities.writeChartAsPNG(
+//				new FileOutputStream(Paths.get(path, "privateHosts.png")
+//						.toFile()), privateHostsGraph, 1350, 700);
+//		ChartUtilities.writeChartAsPNG(
+//				new FileOutputStream(Paths.get(path, "machinesOnPrivate.png")
+//						.toFile()), privateMachinesGraph, 1350, 700);
+//		ChartUtilities.writeChartAsPNG(
+//				new FileOutputStream(Paths.get(path, "machinesOnPublic.png")
+//						.toFile()), hourlySolutionsGraph, 1350, 700);
 	}
 
 	public void setValue(int value) {
 		if (value > total)
 			value = total;
+		else if (value < 0)
+			value = 0;
 		progressBar.setValue(value);
+		progressBar.setString(value + " out of " + total + " completed (" + Math.round(progressBar.getPercentComplete() * 100) + "%)");
 	}
 
 	@SuppressWarnings({ "deprecation" })
 	public void updateGraph() {
 		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+		BasicStroke stroke = new BasicStroke(2.0f,                     // Line width
+                							BasicStroke.CAP_ROUND,     // End-cap style
+                							BasicStroke.JOIN_ROUND);   // Vertex join style
 
 		populationsGraph = ChartFactory.createLineChart(null, "Hour",
 				"Population", populations);
@@ -730,6 +978,7 @@ public class RobustnessProgressWindow {
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
 
 			CategoryAxis categoryAxis = plot.getDomainAxis();
 			categoryAxis.setLowerMargin(0.02);
@@ -752,9 +1001,30 @@ public class RobustnessProgressWindow {
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setRange(0, rangeAxis.getRange().getUpperBound() * 1.1);
+//			rangeAxis.setRange(0, rangeAxis.getRange().getUpperBound() * 1.1);
 			rangeAxis.setTickLabelFont(font);
+			
+			int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
+            for (int i = 0; i < solutions.getColumnCount(); ++i)
+                for (int j = 0; j < solutions.getRowCount(); ++j) {
+                    tmp = solutions.getValue(j, i).intValue();
+                    if (tmp < min)
+                        min = tmp;
+                    if (tmp > max)
+                        max = tmp;
+                }
+            if (min == Integer.MAX_VALUE)
+                min = 0;
+            if (max == Integer.MIN_VALUE)
+                max = (int) rangeAxis.getRange().getUpperBound() + 1;
+
+            rangeAxis.setRange(/* 0 */min - 0.5, /*
+                                                 * rangeAxis.getRange().
+                                                 * getUpperBound() + 1
+                                                 */max + 0.5);
 
 			CategoryAxis categoryAxis = plot.getDomainAxis();
 			categoryAxis.setLowerMargin(0.02);
@@ -780,6 +1050,8 @@ public class RobustnessProgressWindow {
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 			rangeAxis.setTickLabelFont(font);
 
@@ -844,6 +1116,8 @@ public class RobustnessProgressWindow {
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 			rangeAxis.setTickLabelFont(font);
 
@@ -907,6 +1181,7 @@ public class RobustnessProgressWindow {
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
 
 			CategoryAxis categoryAxis = plot.getDomainAxis();
 			categoryAxis.setLowerMargin(0.02);
@@ -929,7 +1204,7 @@ public class RobustnessProgressWindow {
 						@Override
 						public StringBuffer format(double number,
 								StringBuffer result, FieldPosition fieldPosition) {
-							result = new StringBuffer("" + number);
+							result = new StringBuffer(SolutionMulti.costFormatter.format(number)); // "" + number);
 							return result;
 						}
 
@@ -950,6 +1225,8 @@ public class RobustnessProgressWindow {
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
 			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
 			rangeAxis.setTickLabelFont(font);
 			rangeAxis.setRange(-0.5, 1.5);
@@ -993,6 +1270,7 @@ public class RobustnessProgressWindow {
 			renderer.setDrawOutlines(true);
 			renderer.setUseFillPaint(true);
 			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
 
 			CategoryAxis categoryAxis = plot.getDomainAxis();
 			categoryAxis.setLowerMargin(0.02);
@@ -1024,6 +1302,327 @@ public class RobustnessProgressWindow {
 			renderer2.setItemLabelsVisible(true);
 			renderer2.setItemLabelFont(font);
 		}
+		
+		for (Integer key : privateHostsMap.keySet()) {
+			DefaultCategoryDataset privateHosts = privateHostsMap.get(key);
+			JFreeChart privateHostsGraph = ChartFactory.createLineChart(null, "Hour",
+					"Private Hosts", privateHosts, PlotOrientation.VERTICAL, true, true, false);
+			{
+				CategoryPlot plot = (CategoryPlot) privateHostsGraph.getPlot();
+				LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+						.getRenderer();
+				renderer.setShapesVisible(true);
+				renderer.setDrawOutlines(true);
+				renderer.setUseFillPaint(true);
+				renderer.setFillPaint(Color.white);
+				renderer.setStroke(stroke);
+
+				CategoryAxis categoryAxis = plot.getDomainAxis();
+				categoryAxis.setLowerMargin(0.02);
+				categoryAxis.setUpperMargin(0.02);
+				categoryAxis.setTickLabelFont(font);
+
+				NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+				rangeAxis.setTickLabelFont(font);
+				
+				int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
+	            for (int i = 0; i < privateHosts.getColumnCount(); ++i)
+	                for (int j = 0; j < privateHosts.getRowCount(); ++j) {
+	                    tmp = privateHosts.getValue(j, i).intValue();
+	                    if (tmp < min)
+	                        min = tmp;
+	                    if (tmp > max)
+	                        max = tmp;
+	                }
+	            if (min == Integer.MAX_VALUE)
+	                min = 0;
+	            if (max == Integer.MIN_VALUE)
+	                max = (int) rangeAxis.getRange().getUpperBound() + 1;
+
+	            rangeAxis.setRange(/* 0 */min - 0.5, /*
+	                                                 * rangeAxis.getRange().
+	                                                 * getUpperBound() + 1
+	                                                 */max + 0.5);
+
+				CategoryItemRenderer renderer2 = plot
+						.getRenderer();
+				CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+						"{2}", new DecimalFormat("0") {
+
+							/**
+	                 *
+	                 */
+							private static final long serialVersionUID = 1L;
+
+							@Override
+							public StringBuffer format(double number,
+									StringBuffer result, FieldPosition fieldPosition) {
+								result = new StringBuffer((int)number + "");
+								return result;
+							}
+
+						});
+				renderer2.setItemLabelGenerator(generator);
+				renderer2.setItemLabelsVisible(true);
+				renderer2.setItemLabelFont(font);
+			}
+			privateHostsGraphs.put(key, privateHostsGraph);
+			
+			DefaultCategoryDataset hourlySolutions = hourlySolutionsMap.get(key);
+			JFreeChart hourlySolutionsGraph = ChartFactory.createLineChart(null, "Hour",
+					"Machines on Public", hourlySolutions);
+			{
+				CategoryPlot plot = (CategoryPlot) hourlySolutionsGraph.getPlot();
+				LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+						.getRenderer();
+				renderer.setShapesVisible(true);
+				renderer.setDrawOutlines(true);
+				renderer.setUseFillPaint(true);
+				renderer.setFillPaint(Color.white);
+				renderer.setStroke(stroke);
+
+				CategoryAxis categoryAxis = plot.getDomainAxis();
+				categoryAxis.setLowerMargin(0.02);
+				categoryAxis.setUpperMargin(0.02);
+				categoryAxis.setTickLabelFont(font);
+
+				NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+				rangeAxis.setTickLabelFont(font);
+				
+				int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
+	            for (int i = 0; i < hourlySolutions.getColumnCount(); ++i)
+	                for (int j = 0; j < hourlySolutions.getRowCount(); ++j) {
+	                    tmp = hourlySolutions.getValue(j, i).intValue();
+	                    if (tmp < min)
+	                        min = tmp;
+	                    if (tmp > max)
+	                        max = tmp;
+	                }
+	            if (min == Integer.MAX_VALUE)
+	                min = 0;
+	            if (max == Integer.MIN_VALUE)
+	                max = (int) rangeAxis.getRange().getUpperBound() + 1;
+
+	            rangeAxis.setRange(/* 0 */min - 0.5, /*
+	                                                 * rangeAxis.getRange().
+	                                                 * getUpperBound() + 1
+	                                                 */max + 0.5);
+
+				CategoryItemRenderer renderer2 = plot
+						.getRenderer();
+				CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+						"{2}", new DecimalFormat("0"));
+				renderer2.setItemLabelGenerator(generator);
+				renderer2.setItemLabelsVisible(true);
+				renderer2.setItemLabelFont(font);
+			}
+			hourlySolutionsGraphs.put(key, hourlySolutionsGraph);
+			
+			DefaultCategoryDataset privateMachines = privateMachinesMap.get(key);
+			JFreeChart privateMachinesGraph = ChartFactory.createLineChart(null, "Hour",
+					"Machines on Private", privateMachines);
+			{
+				CategoryPlot plot = (CategoryPlot) privateMachinesGraph.getPlot();
+				LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+						.getRenderer();
+				renderer.setShapesVisible(true);
+				renderer.setDrawOutlines(true);
+				renderer.setUseFillPaint(true);
+				renderer.setFillPaint(Color.white);
+				renderer.setStroke(stroke);
+
+				CategoryAxis categoryAxis = plot.getDomainAxis();
+				categoryAxis.setLowerMargin(0.02);
+				categoryAxis.setUpperMargin(0.02);
+				categoryAxis.setTickLabelFont(font);
+
+				NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+				rangeAxis.setTickLabelFont(font);
+				
+				int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
+	            for (int i = 0; i < privateMachines.getColumnCount(); ++i)
+	                for (int j = 0; j < privateMachines.getRowCount(); ++j) {
+	                    tmp = privateMachines.getValue(j, i).intValue();
+	                    if (tmp < min)
+	                        min = tmp;
+	                    if (tmp > max)
+	                        max = tmp;
+	                }
+	            if (min == Integer.MAX_VALUE)
+	                min = 0;
+	            if (max == Integer.MIN_VALUE)
+	                max = (int) rangeAxis.getRange().getUpperBound() + 1;
+
+	            rangeAxis.setRange(/* 0 */min - 0.5, /*
+	                                                 * rangeAxis.getRange().
+	                                                 * getUpperBound() + 1
+	                                                 */max + 0.5);
+
+				CategoryItemRenderer renderer2 = plot
+						.getRenderer();
+				CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+						"{2}", new DecimalFormat("0"));
+				renderer2.setItemLabelGenerator(generator);
+				renderer2.setItemLabelsVisible(true);
+				renderer2.setItemLabelFont(font);
+			}
+			privateMachinesGraphs.put(key, privateMachinesGraph);
+		}
+		
+//		privateHostsGraph = ChartFactory.createLineChart(null, "Hour",
+//				"Private Hosts", privateHosts, PlotOrientation.VERTICAL, true, true, false);
+//		{
+//			CategoryPlot plot = (CategoryPlot) privateHostsGraph.getPlot();
+//			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+//					.getRenderer();
+//			renderer.setShapesVisible(true);
+//			renderer.setDrawOutlines(true);
+//			renderer.setUseFillPaint(true);
+//			renderer.setFillPaint(Color.white);
+//
+//			CategoryAxis categoryAxis = plot.getDomainAxis();
+//			categoryAxis.setLowerMargin(0.02);
+//			categoryAxis.setUpperMargin(0.02);
+//			categoryAxis.setTickLabelFont(font);
+//
+//			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+//			rangeAxis.setTickLabelFont(font);
+//			
+//			int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
+//            for (int i = 0; i < privateHosts.getColumnCount(); ++i)
+//                for (int j = 0; j < privateHosts.getRowCount(); ++j) {
+//                    tmp = privateHosts.getValue(j, i).intValue();
+//                    if (tmp < min)
+//                        min = tmp;
+//                    if (tmp > max)
+//                        max = tmp;
+//                }
+//            if (min == Integer.MAX_VALUE)
+//                min = 0;
+//            if (max == Integer.MIN_VALUE)
+//                max = (int) rangeAxis.getRange().getUpperBound() + 1;
+//
+//            rangeAxis.setRange(/* 0 */min - 0.5, /*
+//                                                 * rangeAxis.getRange().
+//                                                 * getUpperBound() + 1
+//                                                 */max + 0.5);
+//
+//			CategoryItemRenderer renderer2 = plot
+//					.getRenderer();
+//			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+//					"{2}", new DecimalFormat("0") {
+//
+//						/**
+//                 *
+//                 */
+//						private static final long serialVersionUID = 1L;
+//
+//						@Override
+//						public StringBuffer format(double number,
+//								StringBuffer result, FieldPosition fieldPosition) {
+//							result = new StringBuffer((int)number + "");
+//							return result;
+//						}
+//
+//					});
+//			renderer2.setItemLabelGenerator(generator);
+//			renderer2.setItemLabelsVisible(true);
+//			renderer2.setItemLabelFont(font);
+//		}
+//		
+//		hourlySolutionsGraph = ChartFactory.createLineChart(null, "Hour",
+//				"Machines on Public", hourlySolutions);
+//		{
+//			CategoryPlot plot = (CategoryPlot) hourlySolutionsGraph.getPlot();
+//			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+//					.getRenderer();
+//			renderer.setShapesVisible(true);
+//			renderer.setDrawOutlines(true);
+//			renderer.setUseFillPaint(true);
+//			renderer.setFillPaint(Color.white);
+//
+//			CategoryAxis categoryAxis = plot.getDomainAxis();
+//			categoryAxis.setLowerMargin(0.02);
+//			categoryAxis.setUpperMargin(0.02);
+//			categoryAxis.setTickLabelFont(font);
+//
+//			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+//			rangeAxis.setTickLabelFont(font);
+//			
+//			int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
+//            for (int i = 0; i < hourlySolutions.getColumnCount(); ++i)
+//                for (int j = 0; j < hourlySolutions.getRowCount(); ++j) {
+//                    tmp = hourlySolutions.getValue(j, i).intValue();
+//                    if (tmp < min)
+//                        min = tmp;
+//                    if (tmp > max)
+//                        max = tmp;
+//                }
+//            if (min == Integer.MAX_VALUE)
+//                min = 0;
+//            if (max == Integer.MIN_VALUE)
+//                max = (int) rangeAxis.getRange().getUpperBound() + 1;
+//
+//            rangeAxis.setRange(/* 0 */min - 0.5, /*
+//                                                 * rangeAxis.getRange().
+//                                                 * getUpperBound() + 1
+//                                                 */max + 0.5);
+//
+//			CategoryItemRenderer renderer2 = plot
+//					.getRenderer();
+//			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+//					"{2}", new DecimalFormat("0"));
+//			renderer2.setItemLabelGenerator(generator);
+//			renderer2.setItemLabelsVisible(true);
+//			renderer2.setItemLabelFont(font);
+//		}
+//		
+//		privateMachinesGraph = ChartFactory.createLineChart(null, "Hour",
+//				"Machines on Private", privateMachines);
+//		{
+//			CategoryPlot plot = (CategoryPlot) privateMachinesGraph.getPlot();
+//			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+//					.getRenderer();
+//			renderer.setShapesVisible(true);
+//			renderer.setDrawOutlines(true);
+//			renderer.setUseFillPaint(true);
+//			renderer.setFillPaint(Color.white);
+//
+//			CategoryAxis categoryAxis = plot.getDomainAxis();
+//			categoryAxis.setLowerMargin(0.02);
+//			categoryAxis.setUpperMargin(0.02);
+//			categoryAxis.setTickLabelFont(font);
+//
+//			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+//			rangeAxis.setTickLabelFont(font);
+//			
+//			int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
+//            for (int i = 0; i < privateMachines.getColumnCount(); ++i)
+//                for (int j = 0; j < privateMachines.getRowCount(); ++j) {
+//                    tmp = privateMachines.getValue(j, i).intValue();
+//                    if (tmp < min)
+//                        min = tmp;
+//                    if (tmp > max)
+//                        max = tmp;
+//                }
+//            if (min == Integer.MAX_VALUE)
+//                min = 0;
+//            if (max == Integer.MIN_VALUE)
+//                max = (int) rangeAxis.getRange().getUpperBound() + 1;
+//
+//            rangeAxis.setRange(/* 0 */min - 0.5, /*
+//                                                 * rangeAxis.getRange().
+//                                                 * getUpperBound() + 1
+//                                                 */max + 0.5);
+//
+//			CategoryItemRenderer renderer2 = plot
+//					.getRenderer();
+//			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+//					"{2}", new DecimalFormat("0"));
+//			renderer2.setItemLabelGenerator(generator);
+//			renderer2.setItemLabelsVisible(true);
+//			renderer2.setItemLabelFont(font);
+//		}
 
 	}
 
@@ -1170,8 +1769,143 @@ public class RobustnessProgressWindow {
 
 			durationsLabel.validate();
 		}
+		
+		for (Integer key : privateHostsGraphs.keySet()) {
+			JFreeChart privateHostsGraph = privateHostsGraphs.get(key);
+			if (privateHostsGraph != null) {
+				JPanel privateHostsPanel = privateHostsPanels.get(key);
+				JLabel privateHostsLabel = privateHostsLabels.get(key);
+				ImageIcon icon;
+				try {
+					icon = new ImageIcon(
+							privateHostsGraph.createBufferedImage(
+									privateHostsPanel.getSize().width,
+									privateHostsPanel.getSize().height));
+				} catch (NullPointerException e) {
+					icon = new ImageIcon();
+				}
+				privateHostsLabel.setIcon(icon);
+				privateHostsLabel.setVisible(true);
+				privateHostsPanel.setPreferredSize(privateHostsLabel.getPreferredSize());
+
+				privateHostsLabel.validate();
+			}
+			
+			JFreeChart privateMachinesGraph = privateMachinesGraphs.get(key);
+			if (privateMachinesGraph != null) {
+				JPanel privateMachinesPanel = privateMachinesPanels.get(key);
+				JLabel privateMachinesLabel = privateMachinesLabels.get(key);
+				ImageIcon icon;
+				try {
+					icon = new ImageIcon(
+							privateMachinesGraph.createBufferedImage(
+									privateMachinesPanel.getSize().width,
+									privateMachinesPanel.getSize().height));
+				} catch (NullPointerException e) {
+					icon = new ImageIcon();
+				}
+				privateMachinesLabel.setIcon(icon);
+				privateMachinesLabel.setVisible(true);
+				privateMachinesPanel.setPreferredSize(privateMachinesLabel.getPreferredSize());
+
+				privateMachinesLabel.validate();
+			}
+			
+			JFreeChart hourlySolutionsGraph = hourlySolutionsGraphs.get(key);
+			if (hourlySolutionsGraph != null) {
+				JPanel hourlySolutionsPanel = hourlySolutionsPanels.get(key);
+				JLabel hourlySolutionsLabel = hourlySolutionsLabels.get(key);
+				ImageIcon icon;
+				try {
+					icon = new ImageIcon(
+							hourlySolutionsGraph.createBufferedImage(
+									hourlySolutionsPanel.getSize().width,
+									hourlySolutionsPanel.getSize().height));
+				} catch (NullPointerException e) {
+					icon = new ImageIcon();
+				}
+				hourlySolutionsLabel.setIcon(icon);
+				hourlySolutionsLabel.setVisible(true);
+				hourlySolutionsPanel.setPreferredSize(hourlySolutionsLabel.getPreferredSize());
+
+				hourlySolutionsLabel.validate();
+			}
+		}
+		
+//		if (privateHostsGraph != null) {
+//			ImageIcon icon;
+//			try {
+//				icon = new ImageIcon(
+//						privateHostsGraph.createBufferedImage(
+//								privateHostsPanel.getSize().width,
+//								privateHostsPanel.getSize().height));
+//			} catch (NullPointerException e) {
+//				icon = new ImageIcon();
+//			}
+//			privateHostsLabel.setIcon(icon);
+//			privateHostsLabel.setVisible(true);
+//			privateHostsPanel.setPreferredSize(privateHostsLabel.getPreferredSize());
+//
+//			privateHostsLabel.validate();
+//		}
+//		
+//		if (privateMachinesGraph != null) {
+//			ImageIcon icon;
+//			try {
+//				icon = new ImageIcon(
+//						privateMachinesGraph.createBufferedImage(
+//								privateMachinesPanel.getSize().width,
+//								privateMachinesPanel.getSize().height));
+//			} catch (NullPointerException e) {
+//				icon = new ImageIcon();
+//			}
+//			privateMachinesLabel.setIcon(icon);
+//			privateMachinesLabel.setVisible(true);
+//			privateMachinesPanel.setPreferredSize(privateMachinesLabel.getPreferredSize());
+//
+//			privateMachinesLabel.validate();
+//		}
+//		
+//		if (hourlySolutionsGraph != null) {
+//			ImageIcon icon;
+//			try {
+//				icon = new ImageIcon(
+//						hourlySolutionsGraph.createBufferedImage(
+//								hourlySolutionsPanel.getSize().width,
+//								hourlySolutionsPanel.getSize().height));
+//			} catch (NullPointerException e) {
+//				icon = new ImageIcon();
+//			}
+//			hourlySolutionsLabel.setIcon(icon);
+//			hourlySolutionsLabel.setVisible(true);
+//			hourlySolutionsPanel.setPreferredSize(hourlySolutionsLabel.getPreferredSize());
+//
+//			hourlySolutionsLabel.validate();
+//		}
 
 		alreadyUpdating = false;
+	}
+	
+	@Override
+	public void windowClosing(WindowEvent e) {		
+		super.windowClosing(e);
+		gui.dispose();
+		pcs.firePropertyChange("WindowClosed", false, true);
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) { }
+	
+	public void addPropertyChangeListener(PropertyChangeListener listener){
+		pcs.addPropertyChangeListener(listener);
+	}
+	
+	public void signalCompletion() {
+		JOptionPane.showMessageDialog(gui, "Robustness process completed");
+	}
+	
+	public void testEnded() {
+		pcs.firePropertyChange("RobustnessEnded", false, true);
 	}
 
 }

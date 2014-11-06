@@ -1,20 +1,22 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.space4clouds.milp.Solver;
+import it.polimi.modaclouds.space4cloud.milp.Solver;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class RussianEvaluator {
+public class MILPEvaluator {
 
 	protected Solver solver;
 
@@ -26,69 +28,53 @@ public class RussianEvaluator {
 	protected int cost = -1;
 
 	protected long evaluationTime = -1L;
-
-	private static String URL = "jdbc:mysql://localhost:3306/";
-	private static String DBNAME = "cloud";
-	private static String DRIVER = "com.mysql.jdbc.Driver";
-	private static String USERNAME = "moda";
-	private static String PASSWORD = "modaclouds";
 	
-	public RussianEvaluator() {
-		solver = new Solver(Configuration.PROJECT_BASE_FOLDER, 
-							Configuration.WORKING_DIRECTORY,
-							Configuration.PALLADIO_RESOURCE_MODEL, 
-							Configuration.PALLADIO_USAGE_MODEL, 
-							Configuration.PALLADIO_ALLOCATION_MODEL,
-							Configuration.PALLADIO_REPOSITORY_MODEL,
-							Configuration.PALLADIO_SYSTEM_MODEL,					
-							Configuration.CONSTRAINTS, 
-							Configuration.USAGE_MODEL_EXTENSION,
-							Configuration.SSH_HOST,
-							Configuration.SSH_PASSWORD,
-							Configuration.SSH_USER_NAME);
-		
-		solver.getOptions().SqlDBUrl = URL;
-		solver.getOptions().DBName = DBNAME;
-		solver.getOptions().DBDriver = DRIVER;
-		solver.getOptions().DBUserName = USERNAME;
-		solver.getOptions().DBPassword = PASSWORD;
-	}
+	private static final Logger logger = LoggerFactory.getLogger(MILPEvaluator.class);
 	
-	public static void setDatabaseInformation(InputStream confFileStream) throws IOException {		
-		if(confFileStream!=null){
-			Properties properties = new Properties();
-			properties.load(confFileStream);		
-			URL=properties.getProperty("URL");
-			DBNAME=properties.getProperty("DBNAME");
-			DRIVER=properties.getProperty("DRIVER");
-			USERNAME=properties.getProperty("USERNAME");
-			PASSWORD=properties.getProperty("PASSWORD");
+	public MILPEvaluator() {
+		Path tempConf;
+		try {
+			tempConf = Files.createTempFile("conf", ".properties");
+			Configuration.saveConfiguration(tempConf.toString());
+			solver = new Solver(tempConf.toString());
+		} catch (IOException e) {
+			logger.error("Error in initializing the MILP tool!", e);
 		}
 	}
 	
-	public static void setDatabaseInformation(String url, String dbName, String driver, String userName, String password) throws IOException {												
-			URL=url;
-			DBNAME=dbName;
-			DRIVER=driver;
-			USERNAME=userName;
-			PASSWORD=password;
-	}
+	public final static int MAX_ATTEMPTS = 2; 
 
 	public void eval() throws Exception {
-		resourceEnvExt = solver.getResourceModelExt();
-		solution = solver.getSolution();
-		multiCloudExt = solver.getMultiCloudExt();
-		cost = -1;
-		evaluationTime = -1L;
-		computed = true;
-
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+			resourceEnvExt = solver.getResourceModelExt();
+			solution = solver.getSolution();
+			multiCloudExt = solver.getMultiCloudExt();
+			cost = -1;
+			evaluationTime = -1L;
+			computed = true;
+			
+			if (resourceEnvExt != null && solution != null && multiCloudExt != null
+					&& solution.exists() && getCost() > -1)
+				attempt = MAX_ATTEMPTS;
+			else {
+				logger.info("I'll try again in 5 seconds...");
+				
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
 		if (resourceEnvExt == null || solution == null || multiCloudExt == null
-				|| !solution.exists()) {
+				|| !solution.exists() || getCost() == -1) {
 			reset();
 			throw new Exception(
 					"Error! It's impossible to generate the solution! Are you connected?");
 		}
 	}
+		
 
 	public int getCost() {
 		parseResults();

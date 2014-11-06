@@ -681,7 +681,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 	public List<CloudResource> getCloudResources(IaaS_Service iaas) {
 		try {
 
-			/*TODO: Non capisco questo codice, perchè accedere di nuovo al db? abbiamo già caricato le 
+			/*TODO: Non capisco questo codice, perchï¿½ accedere di nuovo al db? abbiamo giï¿½ caricato le 
 			 * risorse cloud quando abbiamo caricato i servizi anche se effettivamente non ne abbiamo definito il tipo*/
 			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from iaas_service_composedof I, cloudresource CR where I.IaaS_id="

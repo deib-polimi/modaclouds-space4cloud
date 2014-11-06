@@ -18,9 +18,7 @@
  */
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
-
-
-
+import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
 
 /**
  * Main class of the CSPACE tool.<br/>
@@ -54,7 +52,7 @@ package it.polimi.modaclouds.space4cloud.mainProgram;
  * <li>Derive the 24 Usage Models.</li>
  * </ol>
  * 
- * @author Davide Franceschelli, Michele Ciavotta, Giovanni Gibilisco
+ * @author Michele Ciavotta, Giovanni Gibilisco
  * 
  */
 
@@ -62,22 +60,26 @@ public class Main {
 
 	/**
 	 * Main method.
-	 **/
-	public static void main(String[] args) {
+	 **/	
+	public static void mainStandard(String[] args) {
 		Space4Cloud instance = new Space4Cloud();
+		instance.start();
+	}
+	
+	public static void mainBatch(String[] args) {
+		String folder = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\OfBiz\\";
+		String configuration = folder + "conf-private-1p.properties";
 		
-		/*
-//		String configuration = "C:\\Users\\GiovanniPaolo\\Workspaces\\runtime-SPACE4CLOUD2.0\\OfBizSimple\\NewGuiConfigurationLQNS.prop";
-		String configuration = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\";
-//		configuration += "conf-robustness.properties";
-//		configuration += "conf-robustness-ruski.properties";
-		configuration += "conf-optimization.properties";
-//		configuration += "conf-optimization-ruski.properties";
-		
-//		Space4Cloud instance = new Space4Cloud(configuration);
-		 */
-
-		instance.start();		
+		Space4Cloud instance = new Space4Cloud(configuration);
+		instance.start();
+	}
+	
+	public static void mainRedrawRobustness(String[] args) {
+		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\private\\");
+	}
+	
+	public static void main(String[] args) {
+		mainRedrawRobustness(args);
 	}
 
 }

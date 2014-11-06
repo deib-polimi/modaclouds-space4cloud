@@ -17,6 +17,7 @@ package it.polimi.modaclouds.space4cloud.chart;
 
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
+import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
@@ -26,9 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.jfree.chart.ChartFactory;
@@ -38,6 +37,7 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
@@ -50,8 +50,8 @@ import org.slf4j.LoggerFactory;
  */
 public class Logger2JFreeChartImage {
 
-	private String chartTitle = "";
-	private Map<String,Integer> keyCounters= new HashMap<String,Integer>();
+	private String chartTitle = "";	
+
 
 	private String path2save = "";
 	private JFreeChart chart;
@@ -119,16 +119,6 @@ public class Logger2JFreeChartImage {
 
 	public SeriesHandle newSeries(String seriesTitle) {
 
-		
-		for(XYSeries serie:seriesList){
-			if(serie.getKey().equals(seriesTitle)){
-				if(!keyCounters.containsKey(seriesTitle))
-					keyCounters.put(seriesTitle, 1);
-				else
-					keyCounters.put(seriesTitle, keyCounters.get(seriesTitle)+1);
-				seriesTitle += keyCounters.get(seriesTitle);
-			}				
-		}
 		final XYSeries series = new XYSeries(seriesTitle);
 
 		if (seriesList.add(series)) {
@@ -140,6 +130,8 @@ public class Logger2JFreeChartImage {
 
 	}
 
+
+	@SuppressWarnings("deprecation")
 	public BufferedImage save2buffer(Dimension dim) {
 
 		XYSeriesCollection dataSet = new XYSeriesCollection();
@@ -151,7 +143,7 @@ public class Logger2JFreeChartImage {
 		chart = ChartFactory.createXYLineChart(chartTitle, "Iterations", "Y",
 				dataSet, PlotOrientation.VERTICAL, true, true, false);
 		if (dim == null)
-			dim = new Dimension(200, 200);
+			dim = new Dimension(100, 100);
 		if(dim.getHeight()<=0)
 			dim.height=1;
 		if(dim.getWidth()<=0)
@@ -161,7 +153,16 @@ public class Logger2JFreeChartImage {
 		////////////////////////
 		{
 			Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+
+			BasicStroke stroke = new BasicStroke(2.0f,                     // Line width
+												BasicStroke.CAP_ROUND,     // End-cap style
+												BasicStroke.JOIN_ROUND);   // Vertex join style
+			
 			XYPlot plot = (XYPlot) chart.getPlot();
+			
+			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot
+					.getRenderer();
+			renderer.setStroke(stroke);
 
 			ValueAxis valueAxis = plot.getDomainAxis();
 			valueAxis.setLowerMargin(0.02);
@@ -173,22 +174,10 @@ public class Logger2JFreeChartImage {
 		}
 		////////////////////////
 		
-		BufferedImage image = null;
-		if(chart == null || dim == null){
-			logger.warn("No chart");
-		} else{
-			try{
-				image = chart.createBufferedImage((int) (dim.getWidth() * 0.9),
-						(int) (dim.getHeight() * 0.9));
-			}catch(ArrayIndexOutOfBoundsException | NullPointerException e ){
-				logger.warn("Error in creating image",e);
-			}
-			
-		}
-			
 
-			
-		return image;
+
+		return chart.createBufferedImage((int) (dim.getWidth() * 0.9),
+				(int) (dim.getHeight() * 0.9));
 
 	}
 

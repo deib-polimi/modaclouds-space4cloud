@@ -23,7 +23,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	 * 
 	 */
 	private static final long serialVersionUID = -5356951769849277734L;
-	private static final String PANEL_NAME = "Optimization Configuration Panel";
+	private static final String PANEL_NAME = "Optimization Configuration";
 	private JLabel scaleInFactorLabel;
 	private JTextField tabuMemoryText;
 	private JTextField scrumbleText;

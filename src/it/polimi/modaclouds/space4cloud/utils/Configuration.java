@@ -13,22 +13,22 @@ import org.slf4j.LoggerFactory;
 
 public class Configuration {
 
-	private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
+	private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
+	
 	//Configuration constant among all runs
-	public static /*final*/ String WORKING_DIRECTORY = "space4cloud";
+	public static String WORKING_DIRECTORY = "space4cloud";
 	public static final String FOLDER_PREFIX = "hour_";
 	public static final String PERFORMANCE_RESULTS_FOLDER = "performance_results";
 	public static final String LAUNCH_CONFIG = "launchConfig.launch";
 	public static final String SOLUTION_FILE_NAME = "solution";
 	public static final String SOLUTION_FILE_EXTENSION= ".xml";
+
 	public static final String SOLUTION_LIGHT_FILE_NAME = "statistics";
 	public static final String SOLUTION_CSV_FILE_NAME = "solution.csv";
 	public static final String DEFAULT_DB_CONNECTION_FILE = "/config/DBConnection.properties";
 	public static final String RANDOM_ENVIRONMENT_SOLUTION_TAG = "+RandomEnvironments";
 	public static final String LINE_SOLUTION_TAG = "_line";
-
-
 
 	//Configuration for the current run of space4cloud	
 	public static String PALLADIO_REPOSITORY_MODEL;
@@ -58,26 +58,28 @@ public class Configuration {
 	public static int RANDOM_SEED = 1;
 	public static String RANDOM_ENV_FILE = "";
 
-
-
 	// For the robustness test:
 	public static int ROBUSTNESS_PEAK_FROM 	= 100;
 	public static int ROBUSTNESS_PEAK_TO 	= 10000;
 	public static int ROBUSTNESS_STEP_SIZE 	= 300;
 	public static int ROBUSTNESS_ATTEMPTS 	= 5;
 
+
 	public static boolean REDISTRIBUTE_WORKLOAD = false;
 
 
 	// For the Private Cloud part:
 	public static boolean USE_PRIVATE_CLOUD = false;
-	public static int PRIVATE_CPUS 			= 10; 			// number
-	public static double PRIVATE_CPUPOWER 	= 3.0 * 1000; 	// MHz
-	public static int PRIVATE_RAM 			= 16 * 1024; 	// MB
-	public static int PRIVATE_STORAGE		= 1 * 1024; 	// GB
-
+	public static String PRIVATE_CLOUD_HOSTS = "";
 	//Used to start or stop the optimization process
 	public static boolean run = true;
+
+
+	public static int ROBUSTNESS_VARIABILITY= 0;
+	public static double ROBUSTNESS_Q = 0.15;
+	public static int ROBUSTNESS_G = 24;
+	public static int ROBUSTNESS_H = 1080;
+	
 
 	//Operations
 	public static enum Operation {
@@ -97,6 +99,7 @@ public class Configuration {
 		}
 
 	}
+
 
 	//solvers
 	public static enum Solver {
@@ -136,6 +139,7 @@ public class Configuration {
 
 	}
 
+
 	public static void saveConfiguration(String filePath) throws IOException{
 		FileOutputStream fos = new FileOutputStream(filePath);
 		Properties prop = new Properties();
@@ -153,6 +157,7 @@ public class Configuration {
 		prop.put("SOLVER", SOLVER.toString() );
 		prop.put("LINE_PROP_FILE", LINE_PROP_FILE);
 		prop.put("RANDOM_ENV_FILE", RANDOM_ENV_FILE);		
+		prop.put("WORKING_DIRECTORY", WORKING_DIRECTORY);
 		prop.put("TABU_MEMORY_SIZE", Integer.toString(TABU_MEMORY_SIZE));
 		prop.put("SCRUMBLE_ITERS", Integer.toString(SCRUMBLE_ITERS));
 		prop.put("FEASIBILITY_ITERS", Integer.toString(FEASIBILITY_ITERS));
@@ -165,7 +170,6 @@ public class Configuration {
 		prop.put("SSH_USER_NAME", SSH_USER_NAME);
 		prop.put("SSH_PASSWORD", SSH_PASSWORD);
 		prop.put("RANDOM_SEED", Integer.toString(RANDOM_SEED));
-
 		prop.put("ROBUSTNESS_PEAK_FROM", Integer.toString(ROBUSTNESS_PEAK_FROM));
 		prop.put("ROBUSTNESS_PEAK_TO", Integer.toString(ROBUSTNESS_PEAK_TO));
 		prop.put("ROBUSTNESS_STEP_SIZE", Integer.toString(ROBUSTNESS_STEP_SIZE));
@@ -174,10 +178,11 @@ public class Configuration {
 		prop.put("REDISTRIBUTE_WORKLOAD", Boolean.toString(REDISTRIBUTE_WORKLOAD));
 
 		prop.put("USE_PRIVATE_CLOUD", Boolean.toString(USE_PRIVATE_CLOUD));
-		prop.put("PRIVATE_CPUS", Integer.toString(PRIVATE_CPUS));
-		prop.put("PRIVATE_CPUPOWER", Double.toString(PRIVATE_CPUPOWER));
-		prop.put("PRIVATE_RAM", Integer.toString(PRIVATE_RAM));
-		prop.put("PRIVATE_STORAGE", Integer.toString(PRIVATE_STORAGE));
+		prop.put("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
+		prop.put("ROBUSTNESS_VARIABILITY", Integer.toString(ROBUSTNESS_VARIABILITY));
+		prop.put("ROBUSTNESS_Q", Double.toString(ROBUSTNESS_Q));
+		prop.put("ROBUSTNESS_G", Integer.toString(ROBUSTNESS_G));
+		prop.put("ROBUSTNESS_H", Integer.toString(ROBUSTNESS_H));
 
 		prop.store(fos, "SPACE4Clouds configuration properties");
 		fos.flush();
@@ -218,6 +223,7 @@ public class Configuration {
 	//		ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS"));
 	//	}
 
+
 	public static void loadConfiguration(String filePath) throws IOException {
 		Properties prop = new Properties();
 		FileInputStream fis = new FileInputStream(filePath);
@@ -231,6 +237,9 @@ public class Configuration {
 		RESOURCE_ENVIRONMENT_EXTENSION = prop.getProperty("RESOURCE_ENVIRONMENT_EXTENSION", RESOURCE_ENVIRONMENT_EXTENSION);
 		CONSTRAINTS = prop.getProperty("CONSTRAINTS", CONSTRAINTS);
 		PROJECT_BASE_FOLDER = prop.getProperty("PROJECT_BASE_FOLDER", PROJECT_BASE_FOLDER);
+
+		WORKING_DIRECTORY = prop.getProperty("WORKING_DIRECTORY", WORKING_DIRECTORY);
+
 		DB_CONNECTION_FILE= prop.getProperty("DB_CONNECTION_FILE", DB_CONNECTION_FILE);
 		FUNCTIONALITY = Operation.valueOf(prop.getProperty("FUNCTIONALITY", FUNCTIONALITY.toString()));
 		SOLVER = Solver.valueOf(prop.getProperty("SOLVER", SOLVER.toString()));
@@ -238,6 +247,7 @@ public class Configuration {
 		RANDOM_ENV_FILE= prop.getProperty("RANDOM_ENV_FILE");	
 		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
 		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
+		PRIVATE_CLOUD_HOSTS = prop.getProperty("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
 		try{
 			TABU_MEMORY_SIZE= Integer.parseInt(prop.getProperty("TABU_MEMORY_SIZE"));
 			SCRUMBLE_ITERS= Integer.parseInt(prop.getProperty("SCRUMBLE_ITERS"));
@@ -253,17 +263,16 @@ public class Configuration {
 			ROBUSTNESS_PEAK_TO = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_TO", String.valueOf(ROBUSTNESS_PEAK_FROM)));
 			ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE", String.valueOf(ROBUSTNESS_STEP_SIZE)));
 			ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS", String.valueOf(ROBUSTNESS_ATTEMPTS)));
-
+			ROBUSTNESS_VARIABILITY = Integer.parseInt(prop.getProperty("ROBUSTNESS_VARIABILITY", String.valueOf(ROBUSTNESS_VARIABILITY)));
+			ROBUSTNESS_Q = Double.parseDouble(prop.getProperty("ROBUSTNESS_Q", String.valueOf(ROBUSTNESS_Q)));
+			ROBUSTNESS_G= Integer.parseInt(prop.getProperty("ROBUSTNESS_G", String.valueOf(ROBUSTNESS_G)));
+			ROBUSTNESS_H= Integer.parseInt(prop.getProperty("ROBUSTNESS_H", String.valueOf(ROBUSTNESS_H)));
 			REDISTRIBUTE_WORKLOAD = Boolean.parseBoolean(prop.getProperty("REDISTRIBUTE_WORKLOAD", String.valueOf(REDISTRIBUTE_WORKLOAD)));
-
-			USE_PRIVATE_CLOUD = Boolean.parseBoolean(prop.getProperty("USE_PRIVATE_CLOUD", String.valueOf(USE_PRIVATE_CLOUD)));
-			PRIVATE_CPUS = Integer.parseInt(prop.getProperty("PRIVATE_CPUS", String.valueOf(PRIVATE_CPUS)));
-			PRIVATE_CPUPOWER = Double.parseDouble(prop.getProperty("PRIVATE_CPUPOWER", String.valueOf(PRIVATE_CPUPOWER)));
-			PRIVATE_RAM = Integer.parseInt(prop.getProperty("PRIVATE_RAM", String.valueOf(PRIVATE_RAM)));
-			PRIVATE_STORAGE = Integer.parseInt(prop.getProperty("PRIVATE_STORAGE", String.valueOf(PRIVATE_STORAGE)));
+			USE_PRIVATE_CLOUD = Boolean.parseBoolean(prop.getProperty("USE_PRIVATE_CLOUD", String.valueOf(USE_PRIVATE_CLOUD)));			
 		}catch(NumberFormatException e){
 			logger.warn("Part of the configuration was invalid, reverted the invalid value to the default one.",e);
 		}
+
 	}
 
 	/**
@@ -295,7 +304,6 @@ public class Configuration {
 			errors.add("The palladio allocation model has not been specified");
 		if(PALLADIO_USAGE_MODEL== null|| PALLADIO_USAGE_MODEL.isEmpty())
 			errors.add("The palladio usage model has not been specified");
-
 		//check extensions
 		if(USAGE_MODEL_EXTENSION==null|| USAGE_MODEL_EXTENSION.isEmpty())
 			errors.add("The usage model extension has not been specified");
@@ -303,15 +311,14 @@ public class Configuration {
 			errors.add("The resource environment extension has not been specified");
 		if(CONSTRAINTS==null|| CONSTRAINTS.isEmpty())
 			errors.add("The constraint file has not been specified");
-
 		//check functionality and the solver
 		if(DB_CONNECTION_FILE==null|| DB_CONNECTION_FILE.isEmpty())
 			errors.add("The database connection file has not been specified");		
 		if(SOLVER== Solver.LINE && (LINE_PROP_FILE == null || LINE_PROP_FILE.isEmpty()))
-			errors.add("The LINE configuration file has not been specified");
-
+			errors.add("The LINE configuration file has not been specified");		
 		//check the optimization if it has been selected
-		if(FUNCTIONALITY==Operation.Optimization){
+		if(FUNCTIONALITY==Operation.Optimization || FUNCTIONALITY == Operation.Robustness) {
+
 			if(TABU_MEMORY_SIZE < 1)
 				errors.add("The tabu memory size must be a positive number");
 			if(SCRUMBLE_ITERS < 1)
@@ -335,16 +342,23 @@ public class Configuration {
 					errors.add("The host for SSH connection has to be provided to perform the initial solution generation");
 			}
 
+			
 			if (USE_PRIVATE_CLOUD) {
-				if (PRIVATE_CPUS < 1)
-					errors.add("The CPU number for the private cloud solution should be at least 1.");
-				if (PRIVATE_CPUPOWER < 1)
-					errors.add("The CPU power for the private cloud solution should be at least 1 MHz.");
-				if (PRIVATE_RAM < 1)
-					errors.add("The RAM for the private cloud solution should be at least 1 MB.");
-				if (PRIVATE_STORAGE < 1)
-					errors.add("The storage for the private cloud solution should be at least 1 GB.");
+				if (PRIVATE_CLOUD_HOSTS == null || PRIVATE_CLOUD_HOSTS.length() == 0)
+					errors.add("You need to specify the file describing the private hosts.");
 			}
+		}
+		if (FUNCTIONALITY == Operation.Robustness) {
+			if(ROBUSTNESS_ATTEMPTS < 1)
+				errors.add("The number of robustness attempts must be at least 1");
+			if(ROBUSTNESS_PEAK_FROM < 1)
+				errors.add("The minimum peak for the robustness test should be at least 1");
+			if(ROBUSTNESS_PEAK_TO < ROBUSTNESS_PEAK_FROM)
+				errors.add("The maximum peak for the robustness test has to be higher than the minimum peak");
+			if(ROBUSTNESS_STEP_SIZE < 1)
+				errors.add("The step size for the robustness test should be at least 1");
+			if(ROBUSTNESS_VARIABILITY < 0 || ROBUSTNESS_VARIABILITY > 100)
+				errors.add("The variability for the robustness test should be a number from 0 to 100");
 		}
 
 		return errors;
@@ -360,11 +374,13 @@ public class Configuration {
 		logger.debug("RESOURCE_ENVIRONMENT_EXTENSION: "+ RESOURCE_ENVIRONMENT_EXTENSION);
 		logger.debug("CONSTRAINTS: "+ CONSTRAINTS);
 		logger.debug("PROJECT_BASE_FOLDER: "+ PROJECT_BASE_FOLDER);
+
 		logger.debug("DB_CONNECTION_FILE: "+ DB_CONNECTION_FILE);
 		logger.debug("FUNCTIONALITY: "+ FUNCTIONALITY.toString());
 		logger.debug("SOLVER: "+ SOLVER.toString() );
 		logger.debug("LINE_PROP_FILE: "+ LINE_PROP_FILE);
 		logger.debug("RANDOM_ENV_FILE: "+ RANDOM_ENV_FILE);
+		logger.debug("WORKING_DIRECTORY: "+ WORKING_DIRECTORY);
 		logger.debug("TABU_MEMORY_SIZE: "+ Integer.toString(TABU_MEMORY_SIZE));
 		logger.debug("SCRUMBLE_ITERS: "+ Integer.toString(SCRUMBLE_ITERS));
 		logger.debug("FEASIBILITY_ITERS: "+ Integer.toString(FEASIBILITY_ITERS));
@@ -377,21 +393,20 @@ public class Configuration {
 		logger.debug("SSH_USER_NAME: "+ SSH_USER_NAME);
 		logger.debug("SSH_PASSWORD: "+ SSH_PASSWORD);
 		logger.debug("RANDOM_SEED: "+ Integer.toString(RANDOM_SEED));
-
 		logger.debug("ROBUSTNESS_PEAK_FROM: " + Integer.toString(ROBUSTNESS_PEAK_FROM));
 		logger.debug("ROBUSTNESS_PEAK_TO: " + Integer.toString(ROBUSTNESS_PEAK_TO));
 		logger.debug("ROBUSTNESS_STEP_SIZE: " + Integer.toString(ROBUSTNESS_STEP_SIZE));
 		logger.debug("ROBUSTNESS_ATTEMPTS: " + Integer.toString(ROBUSTNESS_ATTEMPTS));
-
+		logger.debug("ROBUSTNESS_VARIABILITY: " + Integer.toString(ROBUSTNESS_VARIABILITY));
+		logger.debug("ROBUSTNESS_Q: " + Double.toString(ROBUSTNESS_Q));
+		logger.debug("ROBUSTNESS_G: " + Integer.toString(ROBUSTNESS_G));
+		logger.debug("ROBUSTNESS_H: " + Integer.toString(ROBUSTNESS_H));
 		logger.debug("REDISTRIBUTE_WORKLOAD: " + Boolean.toString(REDISTRIBUTE_WORKLOAD));
-
 		logger.debug("USE_PRIVATE_CLOUD: " + Boolean.toString(USE_PRIVATE_CLOUD));
-		logger.debug("PRIVATE_CPUS: " + Integer.toString(PRIVATE_CPUS));
-		logger.debug("PRIVATE_CPUPOWER: " + Double.toString(PRIVATE_CPUPOWER));
-		logger.debug("PRIVATE_RAM: " + Integer.toString(PRIVATE_RAM));
-		logger.debug("PRIVATE_STORAGE: " + Integer.toString(PRIVATE_STORAGE));
+		logger.debug("PRIVATE_CLOUD_HOSTS: " + PRIVATE_CLOUD_HOSTS);
 	}
-
+	
+	
 
 	/**
 	 * Checks if the configuration in the given properties file is the same as the actual configuration.
@@ -413,9 +428,9 @@ public class Configuration {
 			return false;
 		}
 
-
 		for (Object o : prop.keySet()) {
 			String key = (String) o;
+
 
 			try {
 				if (!(String.valueOf(Configuration.class.getField(key).get(null))).equals(prop.getProperty(key)))
@@ -423,6 +438,7 @@ public class Configuration {
 			} catch (Exception e) {
 				return false;
 			}
+
 
 		}
 
@@ -442,4 +458,5 @@ public class Configuration {
 	}
 
 }
+
 

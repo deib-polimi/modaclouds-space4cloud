@@ -47,7 +47,7 @@ public class DataHandler {
 	//	private static final Logger logger = LoggerHelper.getLogger(DataHandler.class);
 
 	private static final Logger logger=LoggerFactory.getLogger(DataHandler.class);
-	private final CloudProvidersDictionary cloudProviders;
+	private CloudProvidersDictionary cloudProviders;
 
 	/**
 	 * Instantiates a new data handler. it also charges data from the database
@@ -85,6 +85,7 @@ public class DataHandler {
 
 
 	}
+	
 	/**
 	 * Gets the amount of memory of the the cloud resource.
 	 * 
@@ -98,7 +99,6 @@ public class DataHandler {
 	 */
 	public Integer getAmountMemory(String provider, String serviceName,
 			String resourceName) {
-
 		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 
 		for (VirtualHWResource i : cr.getComposedOf()) {
@@ -115,25 +115,38 @@ public class DataHandler {
 	public Set<String> getCloudProviders() {
 		return cloudProviders.getProviderDBConnectors().keySet();
 	}
-
+	
+	public static final int MAX_ATTEMPTS = 2;
+	
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
-
-		List<CloudResource> cloudResourceList = cloudProviders
-				.getProviderDBConnectors().get(provider) // provider
-				.getIaaSServicesHashMap().get(serviceName) // service
-				.getComposedOf();
-
-		// TODO: Controllare questa cosa :(
-		for (CloudResource cr : cloudResourceList) {
-			if (cr.getName().equals(resourceName)) { // && cr.getHasCost() !=
-				// null &&
-				// cr.getHasCost().size()
-				// > 0) {
-				return cr;
+		
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+		
+			ProviderDBConnector pdb = cloudProviders
+					.getProviderDBConnectors().get(provider); // provider
+			
+			List<CloudResource> cloudResourceList = pdb
+					.getIaaSServicesHashMap().get(serviceName) // service
+					.getComposedOf();
+	
+			// TODO: Controllare questa cosa :(
+			for (CloudResource cr : cloudResourceList) {
+				if (cr.getName().equals(resourceName)
+						&&(cr.getHasCost() != null)
+						&& (cr.getHasCost().size() > 0))
+						return cr;
 			}
+			
+			try {
+				cloudProviders = new CloudProvidersDictionary();
+				logger.debug("Database resetted!");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
 		}
-
+		
 		return null;
 	}
 
@@ -197,7 +210,7 @@ public class DataHandler {
 				service.getServiceName(), cr.getName(),
 				((IaaS) service).getReplicas(), numberOfCores, speed, ram);
 	}
-
+	
 	/**
 	 * Gets the number of replicas.
 	 * 
@@ -211,7 +224,6 @@ public class DataHandler {
 	 */
 	public Integer getNumberOfReplicas(String provider, String serviceName,
 			String resourceName) {
-
 		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 		for (VirtualHWResource i : cr.getComposedOf()) {
 			if (i.getType() == VirtualHWResourceType.CPU) {
@@ -222,7 +234,7 @@ public class DataHandler {
 		return -1;
 
 	}
-
+	
 	/**
 	 * Gets the processing rate of the cpus.
 	 * 
@@ -236,7 +248,6 @@ public class DataHandler {
 	 */
 	public double getProcessingRate(String provider, String serviceName,
 			String resourceName) {
-
 		List<CloudResource> cloudResourceList = cloudProviders
 				.getProviderDBConnectors().get(provider) // provider
 				.getIaaSServicesHashMap().get(serviceName) // service

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class MoveChangeWorkloadHour extends AbsMoveHour {
 
 	private double rate = 0.0;
+	private boolean changed = false;
 
 	/**
 	 * 
@@ -26,9 +27,10 @@ public class MoveChangeWorkloadHour extends AbsMoveHour {
 	@Override
 	public Solution apply() {
 		application.changeValues(null, this.propertyNames, this.propertyValues);
-		if (rate > 0.0) {
+		if (changed) {
 			currentSolution.setPercentageWorkload(hour, rate);
 			rate = 0.0;
+			changed = false;
 		}
 
 		return this.currentSolution;
@@ -40,6 +42,7 @@ public class MoveChangeWorkloadHour extends AbsMoveHour {
 		propertyNames.add("workload");
 		propertyValues.add((int) Math.ceil(population * rate));
 		this.rate = rate;
+		changed = true;
 		return this;
 	}
 

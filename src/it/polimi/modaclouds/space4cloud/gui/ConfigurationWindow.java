@@ -40,6 +40,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	private FunctionalityPanel functionalityPane;
 	private OptimizationConfigurationPanel optimizationConfigurationPane;
 	private RobustnessConfigurationPanel robustnessConfigurationPane;
+	private CloudBurstingPanel cloudBurstingPanel;
 	private static final Logger logger = LoggerFactory.getLogger(ConfigurationWindow.class);
 	private boolean disposed = false;
 	private boolean cancelled = true;
@@ -148,8 +149,9 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		extensionSelectionPane.setPreferredSize(frame.getContentPane().getPreferredSize());
 		tabbedPane.addTab(extensionSelectionPane.getName(), extensionSelectionPane);
 
+		//TODO:check merge
+		functionalityPane = new FunctionalityPanel(this);
 
-		functionalityPane = new FunctionalityPanel();
 		functionalityPane.setPreferredSize(frame.getContentPane().getPreferredSize());
 		functionalityPane.addPropertyChangeListener(FunctionalityPanel.functionalityProperty,this);
 		tabbedPane.addTab(functionalityPane.getName(), functionalityPane);		
@@ -166,6 +168,12 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		robustnessConfigurationPane.setEnabled(false);		
 		tabbedPane.addTab(robustnessConfigurationPane.getName(), robustnessConfigurationPane);
 		tabNumber = tabbedPane.indexOfComponent(robustnessConfigurationPane);
+		tabbedPane.setEnabledAt(tabNumber, false);
+		
+		cloudBurstingPanel = new CloudBurstingPanel();
+		cloudBurstingPanel.setPreferredSize(frame.getContentPane().getPreferredSize());
+		tabbedPane.addTab(cloudBurstingPanel.getName(), cloudBurstingPanel);
+		tabNumber = tabbedPane.indexOfComponent(cloudBurstingPanel);
 		tabbedPane.setEnabledAt(tabNumber, false);
 
 		loadConfiguration();
@@ -220,6 +228,10 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 				optimizationConfigurationPane.updateConfiguration();
 			else if (Configuration.FUNCTIONALITY == Operation.Robustness)
 				robustnessConfigurationPane.updateConfiguration();
+			
+			if (Configuration.USE_PRIVATE_CLOUD == true)
+				cloudBurstingPanel.updateConfiguration();
+			
 			File configurationFile = FileLoader.saveFile("Load SPACE4Cloud Configuration");
 			if(configurationFile!=null){
 				try {					
@@ -287,7 +299,15 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		functionalityPane.loadConfiguration();
 		optimizationConfigurationPane.loadConfiguration();
 		robustnessConfigurationPane.loadConfiguration();
+		cloudBurstingPanel.loadConfiguration();
+	}
+	
+	public void setVisibilityCloudBurstingPanel(boolean visibility) {
+		cloudBurstingPanel.setEnabled(visibility);
+		int tabNumber = tabbedPane.indexOfComponent(cloudBurstingPanel);
+		tabbedPane.setEnabledAt(tabNumber, visibility);
 	}
 
 }
+
 

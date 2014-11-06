@@ -7,6 +7,7 @@ import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,9 +16,13 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -45,11 +50,14 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	private static final long serialVersionUID = -9050926347950168327L;
 	private static final Logger logger = LoggerFactory.getLogger(SolutionMulti.class);
+
 	private int generationIteration = 0;	
 	private long generationTime =0;
 
-	public static int getCost(File solution) {
-		int cost = Integer.MAX_VALUE;
+
+
+	public static double getCost(File solution) {
+		double cost = Double.MAX_VALUE;
 
 		if (solution != null && solution.exists())
 			try {
@@ -63,8 +71,10 @@ public class SolutionMulti implements Cloneable, Serializable {
 					Element root = (Element) doc.getElementsByTagName(
 							"SolutionMultiResult").item(0);
 
-					cost = (int) Math.round(Double.parseDouble(root
-							.getAttribute("cost")));
+
+					cost = Double.parseDouble(root
+							.getAttribute("cost"));
+
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -101,7 +111,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	private boolean feasible = false;
 
 	/** The Cost. */
-	private int cost = 0;
+	private double cost = 0.0;
 
 	private HashMap<String, Solution> solutions;
 
@@ -116,6 +126,22 @@ public class SolutionMulti implements Cloneable, Serializable {
 			updateEvaluation();
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
+	}
+
+	
+	public void remove(Solution s) {
+		String provider = s.getProvider();
+		if (this.solutions.remove(provider) != null) {
+			updateEvaluation();
+		} else
+			logger.error("Error! The provider isn't defined in the solution!");
+	}
+	
+	public void removeUselessSolutions() {
+		for (Solution s : getAll()) {
+			if (!s.hasAtLeastOneReplicaInOneHour())
+				remove(s);
+		}
 	}
 
 	/**
@@ -157,7 +183,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public void exportCSV(Path filePath) {
 		String text = "";
 
-		text += "total cost: " + getCost() + "\n";
+
+		text += "total cost: " + costFormatter.format(getCost()) + "\n";
+
 		text += "number of providers: " + solutions.size() + "\n\n";
 
 		for (Solution s : getAll()) {
@@ -208,6 +236,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 					.println("Trying to export a solution that has not been evaluated!");
 			return;
 		}
+
+	
+
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory
 					.newInstance();
@@ -217,15 +248,18 @@ public class SolutionMulti implements Cloneable, Serializable {
 			Document doc = docBuilder.newDocument();
 			Element rootElement = doc.createElement("SolutionMultiResult");
 			doc.appendChild(rootElement);
-
-			rootElement.setAttribute("cost", Double.toString(getCost()));				
+			
 			rootElement.setAttribute("generationTime", Long.toString(getGenerationTime()));
 			rootElement.setAttribute("generationIteration", Integer.toString(getGenerationIteration()));
+			// set cost
+			rootElement.setAttribute("cost", "" + costFormatter.format(getCost()));
+			// set feasibility
 			rootElement.setAttribute("feasibility", "" + isFeasible());
 
 			for (Solution sol : getAll()) {
 				Element solution = doc.createElement("Solution");
 				rootElement.appendChild(solution);
+
 
 				solution.setAttribute("provider", sol.getProvider());
 				// set cost
@@ -241,6 +275,44 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 		
 
+
+				// create tier container element
+				Element tiers = doc.createElement("Tiers");
+				solution.appendChild(tiers);
+				for (Tier t : hourApplication.get(0).getTiers()) {
+					// create the tier
+					Element tier = doc.createElement("Tier");
+					tiers.appendChild(tier);
+
+					// set id, name, provider name, service name, resource name,
+					// service type
+					tier.setAttribute("id", t.getId());
+					tier.setAttribute("name", t.getName());
+
+					CloudService cs = t.getCloudService();
+					tier.setAttribute("providerName", cs.getProvider());
+					tier.setAttribute("serviceName", cs.getServiceName());
+					tier.setAttribute("resourceName", cs.getResourceName());
+					tier.setAttribute("serviceType", cs.getServiceType());
+
+					if(cs instanceof IaaS){
+						for (int i = 0; i < 24; i++) {
+							// create the allocation element
+							Element hourAllocation = doc.createElement("HourAllocation");
+							tier.appendChild(hourAllocation);
+							hourAllocation.setAttribute("hour", "" + i);
+							hourAllocation.setAttribute("allocation", ""
+									+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
+						}
+					}
+				}
+
+
+				// create the element with the response times
+				Element functionalities = doc.createElement("functionalities");
+				solution.appendChild(functionalities);
+
+
 				HashMap<String, Functionality> funcList = new HashMap<>();
 				for (Tier t : hourApplication.get(0).getTiers())
 					for (Component c : t.getComponents())
@@ -250,7 +322,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 				for (String id : funcList.keySet()) {
 					// create the tier
 					Element functionality = doc.createElement("Functionality");
+
 					solution.appendChild(functionality);
+
 
 					// set id, name, provider name, service name, resource name,
 					// service type
@@ -292,6 +366,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 		} catch (ParserConfigurationException | TransformerException e) {
 			logger.error("Error exporting the solution statistics",e);
+
 		}
 
 	}
@@ -355,8 +430,19 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return solutions.values();
 	}
 
-	public double getCost() {
-		return cost;
+
+
+
+
+	public float getCost() {
+		return (float)cost;
+	}
+	
+	public static DecimalFormat costFormatter = null;
+	static {
+		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
+		otherSymbols.setDecimalSeparator('.');
+		costFormatter = new DecimalFormat("0.00", otherSymbols);
 	}
 
 
@@ -391,7 +477,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return feasible;
 	}
 
-public boolean setFrom(File initialSolution, File initialMce) {
+
+	public boolean setFrom(File initialSolution, File initialMce) {
+
 		
 		boolean res = false;
 		
@@ -475,6 +563,8 @@ public boolean setFrom(File initialSolution, File initialMce) {
 						propertyValues.add(numberOfCores);
 	
 						app.changeValues(tierId, propertyNames, propertyValues);
+						
+						app.setEvaluated(false);
 					}
 				}
 				
@@ -591,6 +681,8 @@ public boolean setFrom(File initialSolution, File initialMce) {
 			}
 		}
 		
+		updateEvaluation();
+		
 		return res;
 	}
 
@@ -599,7 +691,8 @@ public boolean setFrom(File initialSolution, File initialMce) {
 	 */
 	public String showStatus() {
 		String result = "SolutionMulti Status\n";
-		result += "Total cost: " + getCost();
+
+		result += "Total cost: " + costFormatter.format(getCost());
 		result += "\tEvaluated: " + isEvaluated();
 		result += "\tFeasible: " + isFeasible();
 		result += "\tProviders: " + size();
@@ -620,7 +713,7 @@ public boolean setFrom(File initialSolution, File initialMce) {
 	public String toString() {
 		String result = "SolutionMulti@"
 				+ Integer.toHexString(super.hashCode());
-		result += "[Cost: " + getCost();
+		result += "[Cost: " + costFormatter.format(getCost());
 		result += ", Providers: " + size();
 		result += ", Evaluated: " + isEvaluated();
 		result += ", Feasible: " + isFeasible();
@@ -646,14 +739,22 @@ public boolean setFrom(File initialSolution, File initialMce) {
 		// previousCost, cost);
 	}
 
+
+//	private Solution privateCloudSolution = null;
+//	
+//	public void setPrivateCloudSolution(Solution privateCloudSolution) {
+//		this.privateCloudSolution = privateCloudSolution;
+//	}
+//	public Solution getPrivateCloudSolution() {
+//		return privateCloudSolution;
+//	}
 	
-	private Solution privateCloudSolution = null;
-	
-	public void setPrivateCloudSolution(Solution privateCloudSolution) {
-		this.privateCloudSolution = privateCloudSolution;
-	}
-	public Solution getPrivateCloudSolution() {
-		return privateCloudSolution;
+	public boolean isUsingPrivateCloud() {
+		for (String provider : solutions.keySet())
+			if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
+				return true;
+		return false;
+
 	}
 	
 	public String showWorkloadPercentages() {
@@ -673,6 +774,7 @@ public boolean setFrom(File initialSolution, File initialMce) {
 		return result;
 	}
 
+
 	public int getGenerationIteration() {
 		return generationIteration;
 	}
@@ -687,6 +789,44 @@ public boolean setFrom(File initialSolution, File initialMce) {
 
 	public void setGenerationTime(long generationTime) {
 		this.generationTime = generationTime;
+	}
+
+	public static List<String> getAllProviders(File solution) {
+		List<String> res = new ArrayList<String>();
+		
+		if (solution != null && solution.exists())
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(solution);
+				doc.getDocumentElement().normalize();
+				
+				NodeList tiers = doc.getElementsByTagName("Tier");
+				
+				for (int i = 0; i < tiers.getLength(); ++i) {
+					Node n = tiers.item(i);
+	
+					if (n.getNodeType() != Node.ELEMENT_NODE)
+						continue;
+	
+					Element tier = (Element) n;
+					String provider = tier.getAttribute("providerName");
+					
+					boolean alreadyIn = false;
+					for (int j = 0; j < res.size() && !alreadyIn; ++j) {
+						if (res.get(j).equals(provider))
+							alreadyIn = true;
+					}
+					if (!alreadyIn)
+						res.add(provider);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		
+		return res;
+
 	}
 
 }

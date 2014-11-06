@@ -241,6 +241,10 @@ public class Solution implements Cloneable, Serializable {
 
 		if (getRegion() != null)
 			cloneSolution.setRegion(new String(this.getRegion()));
+		
+		cloneSolution.percentageWorkload = new double[24];
+		for (int h = 0; h < 24; ++h)
+			cloneSolution.percentageWorkload[h] = percentageWorkload[h];
 
 		return cloneSolution;
 
@@ -429,8 +433,8 @@ public class Solution implements Cloneable, Serializable {
 	 * 
 	 * @return the cost
 	 */
-	public double getCost() {
-		return cost;
+	public float getCost() {
+		return (float)cost;
 	}
 
 	/**
@@ -723,7 +727,8 @@ public class Solution implements Cloneable, Serializable {
 	@Override
 	public String toString() {
 		String result = "Solution@" + Integer.toHexString(super.hashCode());
-		result += "[Cost: " + cost;
+		result += "[Provider: " + getProvider();
+		result += ", Cost: " + cost;
 		result += ", Evaluated: " + evaluated;
 		result += ", Feasible: " + isFeasible();
 		result += "]";
@@ -819,5 +824,15 @@ public class Solution implements Cloneable, Serializable {
 		
 	}
 
+	public boolean hasAtLeastOneReplicaInOneHour() {
+		for (Instance i : hourApplication) {
+			for (Tier t : i.getTiers()) {
+				IaaS res = (IaaS) t.getCloudService();
+				if (res.getReplicas() > 0)
+					return true;
+			}
+		}
+		return false;
+	}
 
 }

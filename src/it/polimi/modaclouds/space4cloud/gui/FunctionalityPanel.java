@@ -26,7 +26,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	//the property that can be listened when a change in the functionality is detected
 	public static final String functionalityProperty = "functionality";
 	private static final long serialVersionUID = -5356951769849277734L;
-	private static final String PANEL_NAME = "Functionality Selection Panel";
+	private static final String PANEL_NAME = "Functionality Selection";
 	private JComboBox<Operation> operationBox;
 	private JComboBox<Solver> solverBox;
 	private JTextField dbConfText;
@@ -35,28 +35,21 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	private JButton lineConfButton;
 	private JLabel linePropLabel;
 	private JLabel emptyLabel2;
-	private JLabel randomEnvironmentLabel;
-	private JLabel emptyLabel3;
-	private JTextField randomEnvironmentText;
-	private JButton randomEnvironmentButton;
-
-	private JTextField cpus, cpuPower, ram, storage;
+	
 	private JCheckBox usePrivateCloud;
-	private JLabel cpusLabel;
-	private JLabel cpuPowerLabel;
-	private JLabel ramLabel;
-	private JLabel storageLabel;
-
+	
+	private ConfigurationWindow configurationWindow;
+	
 	/**
 	 * Create the panel.
 	 */
-	public FunctionalityPanel() {
+	public FunctionalityPanel(ConfigurationWindow configurationWindow) {
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {201, 201, 0};
-		gridBagLayout.rowHeights = new int[] {35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0};
+		gridBagLayout.columnWidths = new int[]{201, 201, 0};
+		gridBagLayout.rowHeights = new int[]{40, 35, 35, 0, 35, 35, 35, 35, 35, 35, 0, 0, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
 		JLabel operationLabel = new JLabel("Operation");
@@ -74,7 +67,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		operationBox.addActionListener(this);
 		GridBagConstraints gbc_operationBox = new GridBagConstraints();
 		gbc_operationBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_operationBox.insets = new Insets(0, 0, 5, 5);
+		gbc_operationBox.insets = new Insets(0, 0, 5, 0);
 		gbc_operationBox.gridx = 1;
 		gbc_operationBox.gridy = 0;
 		add(operationBox, gbc_operationBox);
@@ -95,7 +88,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		solverBox.addActionListener(this);
 		GridBagConstraints gbc_solverBox = new GridBagConstraints();
 		gbc_solverBox.fill = GridBagConstraints.HORIZONTAL;
-		gbc_solverBox.insets = new Insets(0, 0, 5, 5);
+		gbc_solverBox.insets = new Insets(0, 0, 5, 0);
 		gbc_solverBox.gridx = 1;
 		gbc_solverBox.gridy = 1;
 		add(solverBox, gbc_solverBox);
@@ -110,7 +103,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 
 		JLabel emptyLabel = new JLabel("");
 		GridBagConstraints gbc_emptyLabel = new GridBagConstraints();
-		gbc_emptyLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_emptyLabel.insets = new Insets(0, 0, 5, 0);
 		gbc_emptyLabel.fill = GridBagConstraints.BOTH;
 		gbc_emptyLabel.gridx = 1;
 		gbc_emptyLabel.gridy = 2;
@@ -128,7 +121,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		dbLoadButton = new JButton("Browse");
 		dbLoadButton.addActionListener(this);
 		GridBagConstraints gbc_dbLoadButton = new GridBagConstraints();
-		gbc_dbLoadButton.insets = new Insets(0, 0, 5, 5);
+		gbc_dbLoadButton.insets = new Insets(0, 0, 5, 0);
 		gbc_dbLoadButton.gridx = 1;
 		gbc_dbLoadButton.gridy = 3;
 		add(dbLoadButton, gbc_dbLoadButton);
@@ -136,18 +129,19 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		linePropLabel = new JLabel("LINE Configuration File");
 		GridBagConstraints gbc_linePropLabel = new GridBagConstraints();
 		gbc_linePropLabel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_linePropLabel.anchor = GridBagConstraints.WEST;
 		gbc_linePropLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_linePropLabel.gridx = 0;
 		gbc_linePropLabel.gridy = 4;
-		//		linePropLabel.setVisible(false);
+		linePropLabel.setVisible(false);
 		add(linePropLabel, gbc_linePropLabel);
 
 		emptyLabel2 = new JLabel("");
 		GridBagConstraints gbc_emptyLabel2 = new GridBagConstraints();
-		gbc_emptyLabel2.insets = new Insets(0, 0, 5, 5);
+		gbc_emptyLabel2.insets = new Insets(0, 0, 5, 0);
 		gbc_emptyLabel2.gridx = 1;
 		gbc_emptyLabel2.gridy = 4;
-		//		emptyLabel.setVisible(false);
+		emptyLabel.setVisible(false);
 		add(emptyLabel2, gbc_emptyLabel2);
 
 		lineConfText = new JTextField();
@@ -157,143 +151,40 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		gbc_lineConfText.gridx = 0;
 		gbc_lineConfText.gridy = 5;
 		add(lineConfText, gbc_lineConfText);
-		//		lineConfText.setVisible(false);
+		lineConfText.setVisible(false);
 		lineConfText.setColumns(10);
 
 		lineConfButton = new JButton("Browse");
 		lineConfButton.addActionListener(this);
 		GridBagConstraints gbc_lineConfButton = new GridBagConstraints();
-		gbc_lineConfButton.insets = new Insets(0, 0, 5, 5);
+		gbc_lineConfButton.insets = new Insets(0, 0, 5, 0);
 		gbc_lineConfButton.gridx = 1;
 		gbc_lineConfButton.gridy = 5;
-		//		lineConfButton.setVisible(false);
+		lineConfButton.setVisible(false);
 		add(lineConfButton, gbc_lineConfButton);
-
-		GridBagConstraints gbc_emptyLabel4 = new GridBagConstraints();	
-		gbc_emptyLabel4.gridx = 0;
-		gbc_emptyLabel4.gridy = 7;
-		gbc_emptyLabel4.insets = new Insets(0, 0, 5, 5);		
-		add(new JLabel(""),gbc_emptyLabel4);
-		//		storage.setVisible(false);
-
-
-
-		randomEnvironmentLabel = new JLabel("Random Environment (Optional)");
-		GridBagConstraints gbc_randomEnvironmentLabel = new GridBagConstraints();
-		gbc_randomEnvironmentLabel.fill = GridBagConstraints.HORIZONTAL;
-		gbc_randomEnvironmentLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_randomEnvironmentLabel.gridx = 0;
-		gbc_randomEnvironmentLabel.gridy = 6;
-		//		randomEnvironmentLabel.setVisible(false);
-		add(randomEnvironmentLabel, gbc_randomEnvironmentLabel);
-
-		emptyLabel3 = new JLabel("");
-		GridBagConstraints gbc_emptyLabel3 = new GridBagConstraints();
-		gbc_emptyLabel3.insets = new Insets(0, 0, 5, 5);
-		gbc_emptyLabel3.gridx = 1;
-		gbc_emptyLabel3.gridy = 6;
-		add(emptyLabel3, gbc_emptyLabel3);
-
-		randomEnvironmentButton = new JButton("Browse");
-		randomEnvironmentButton.addActionListener(this);
-		GridBagConstraints gbc_randomEnvironmentButton = new GridBagConstraints();
-		gbc_randomEnvironmentButton.insets = new Insets(0, 0, 5, 5);
-		gbc_randomEnvironmentButton.gridx = 1;
-		gbc_randomEnvironmentButton.gridy = 7;
-		//		randomEnvironmentButton.setVisible(false);
-		add(randomEnvironmentButton, gbc_randomEnvironmentButton);
-
-		randomEnvironmentText = new JTextField();
-		GridBagConstraints gbc_randomEnvironmentText = new GridBagConstraints();
-		gbc_randomEnvironmentText.fill = GridBagConstraints.HORIZONTAL;
-		gbc_randomEnvironmentText.insets = new Insets(0, 0, 5, 5);
-		gbc_randomEnvironmentText.gridx = 0;
-		gbc_randomEnvironmentText.gridy = 7;
-		add(randomEnvironmentText, gbc_randomEnvironmentText);
-		randomEnvironmentText.setVisible(false);
-		randomEnvironmentText.setColumns(10);
-
-		GridBagConstraints gbc_privateCloudBox = new GridBagConstraints();
-		gbc_privateCloudBox.fill = GridBagConstraints.HORIZONTAL;		
-		gbc_privateCloudBox.gridx = 0;
-		gbc_privateCloudBox.gridy = 8;
-		gbc_privateCloudBox.insets = new Insets(0, 0, 5, 5);
-		usePrivateCloud = new JCheckBox("Use a Private Cloud");
-		add(usePrivateCloud, gbc_privateCloudBox);
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		
+		c.gridx = 0;
+		c.gridy = 6;
+		c.insets = new Insets(0, 0, 5, 5);
+		usePrivateCloud = new JCheckBox("Consider also a Private Cloud");
+		add(usePrivateCloud, c);
 		usePrivateCloud.addActionListener(this);
-		cpusLabel = new JLabel("CPUs");
-		GridBagConstraints gbc_cpusLabel = new GridBagConstraints();
-		gbc_cpusLabel.anchor = GridBagConstraints.WEST;
-		gbc_cpusLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_cpusLabel.gridx = 0;
-		gbc_cpusLabel.gridy = 9;
-		add(cpusLabel, gbc_cpusLabel);
-		//        cpusLabel.setVisible(false);
-
-
-
-		GridBagConstraints gbc_cpuText = new GridBagConstraints();
-		gbc_cpuText.fill = GridBagConstraints.HORIZONTAL;	
-		gbc_cpuText.gridx = 1;
-		gbc_cpuText.gridy = 9;
-		gbc_cpuText.insets = new Insets(0, 0, 5, 5);	
-		cpus = new JTextField(10);
-		add(cpus, gbc_cpuText);
-		//		cpus.setVisible(false);
-
-		GridBagConstraints gbc_cpuPwrLbl = new GridBagConstraints();
-		gbc_cpuPwrLbl.fill = GridBagConstraints.HORIZONTAL;	
-		gbc_cpuPwrLbl.gridx = 0;
-		gbc_cpuPwrLbl.gridy = 10;
-		gbc_cpuPwrLbl.insets = new Insets(0, 0, 5, 5);	
-		cpuPowerLabel = new JLabel("CPU speed");
-		add(cpuPowerLabel, gbc_cpuPwrLbl);
-		//		cpuPowerLabel.setVisible(false);
-
-
-		GridBagConstraints gbc_cpuPwr = new GridBagConstraints();
-		gbc_cpuPwr.fill = GridBagConstraints.HORIZONTAL;	
-		gbc_cpuPwr.gridx = 1;
-		gbc_cpuPwr.gridy = 10;
-		gbc_cpuPwr.insets = new Insets(0, 0, 5, 5);
-		cpuPower = new JTextField(10);
-		add(cpuPower, gbc_cpuPwr);
-		//		cpuPower.setVisible(false);
-
-		GridBagConstraints gbc_ramLbl = new GridBagConstraints();
-		gbc_ramLbl.fill = GridBagConstraints.HORIZONTAL;	
-		gbc_ramLbl.gridx = 0;
-		gbc_ramLbl.gridy = 11;
-		gbc_ramLbl.insets = new Insets(0, 0, 5, 5);
-		ramLabel = new JLabel("RAM [MB]");
-		add(ramLabel, gbc_ramLbl);
-		//		ramLabel.setVisible(false);
-
-		GridBagConstraints gbc_ramText = new GridBagConstraints();
-		gbc_ramText.fill = GridBagConstraints.HORIZONTAL;	
-		gbc_ramText.gridx = 1;
-		gbc_ramText.gridy = 11;
-		gbc_ramText.insets = new Insets(0, 0, 5, 5);
-		ram = new JTextField(10);
-		add(ram, gbc_ramText);
-		//		ram.setVisible(false);
-
-		GridBagConstraints gbc_storageLbl = new GridBagConstraints();
-		gbc_storageLbl.insets = new Insets(0, 0, 5, 5);
-		gbc_storageLbl.fill = GridBagConstraints.HORIZONTAL;	
-		gbc_storageLbl.gridx = 0;
-		gbc_storageLbl.gridy = 12;
-		storageLabel = new JLabel("Storage [GB]");
-		add(storageLabel, gbc_storageLbl);
-		//		storageLabel.setVisible(false);
-
-		GridBagConstraints gbc_storageTxt = new GridBagConstraints();
-		gbc_storageTxt.fill = GridBagConstraints.HORIZONTAL;	
-		gbc_storageTxt.gridx = 1;
-		gbc_storageTxt.gridy = 12;
-		gbc_storageTxt.insets = new Insets(0, 0, 5, 5);
-		storage = new JTextField(10);
-		add(storage, gbc_storageTxt);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		add(new JLabel(""), c);
+		
+		JPanel panel = new JPanel();
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.insets = new Insets(0, 0, 0, 5);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 6;
+		add(panel, gbc_panel);
+		
+		this.configurationWindow = configurationWindow;
 	}
 
 	@Override
@@ -322,14 +213,6 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		} else if(e.getSource().equals(usePrivateCloud)){
 			updatePrivateCloudVisibility();
 		}
-		else if(e.getSource().equals(randomEnvironmentButton)){
-			File randomEnvFile = FileLoader.loadFile("Random Enviroment specification");
-			if(randomEnvFile!=null){
-				Configuration.RANDOM_ENV_FILE=randomEnvFile.getAbsolutePath();
-				Configuration.PROJECT_BASE_FOLDER=randomEnvFile.getParent().toString();
-				randomEnvironmentText.setText(randomEnvFile.getAbsolutePath());
-			}
-		}
 	}
 
 	/**
@@ -342,13 +225,8 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 			setSolver(Configuration.SOLVER);
 		dbConfText.setText(Configuration.DB_CONNECTION_FILE);
 		lineConfText.setText(Configuration.LINE_PROP_FILE);
-		randomEnvironmentText.setText(Configuration.RANDOM_ENV_FILE);
+		
 		usePrivateCloud.setSelected(Configuration.USE_PRIVATE_CLOUD);
-		cpus.setText(Integer.toString(Configuration.PRIVATE_CPUS));
-		cpuPower.setText(Double.toString(Configuration.PRIVATE_CPUPOWER));
-		ram.setText(Integer.toString(Configuration.PRIVATE_RAM));
-		storage.setText(Integer.toString(Configuration.PRIVATE_STORAGE));
-
 		updatePrivateCloudVisibility();
 	}
 
@@ -360,33 +238,19 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	private void setSolver(Solver solver){
 		solverBox.setSelectedItem(solver);
 		if(solver.equals(Solver.LINE)){
-			//show LINE configuration and random environment
 			lineConfButton.setVisible(true);
 			lineConfText.setVisible(true);
 			linePropLabel.setVisible(true);
 			emptyLabel2.setVisible(true);
-
-			randomEnvironmentButton.setVisible(true);
-			randomEnvironmentText.setVisible(true);
-			randomEnvironmentLabel.setVisible(true);
-			emptyLabel3.setVisible(true);
-		}else{			
-
-			//hide LINE configuration and random environment
+		}else{
 			lineConfButton.setVisible(false);
 			lineConfText.setVisible(false);
 			linePropLabel.setVisible(false);
 			emptyLabel2.setVisible(false);
-
-			randomEnvironmentButton.setVisible(false);
-			randomEnvironmentText.setVisible(false);
-			randomEnvironmentLabel.setVisible(false);
-			emptyLabel3.setVisible(false);
-
 		}
 	}
-
-
+	
+	
 	/**
 	 * Updates the selection of the functionality firing the change of the related property
 	 * @param functionality
@@ -396,21 +260,14 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		operationBox.setSelectedItem(functionality);
 		firePropertyChange(functionalityProperty, oldFun, functionality);
 	}
-
+	
 	/**
 	 * Updates the visibility of the private cloud parameters according to the box selection
 	 */
-	private void updatePrivateCloudVisibility(){
+	private void updatePrivateCloudVisibility() {
 		boolean shown = usePrivateCloud.isSelected();
-
-		cpus.setVisible(shown);
-		cpuPower.setVisible(shown);
-		ram.setVisible(shown);
-		storage.setVisible(shown);
-		cpusLabel.setVisible(shown);
-		cpuPowerLabel.setVisible(shown);
-		ramLabel.setVisible(shown);
-		storageLabel.setVisible(shown);
+		if (configurationWindow != null)
+			configurationWindow.setVisibilityCloudBurstingPanel(shown);
 	}
 
 	/**
@@ -421,41 +278,19 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		Configuration.SOLVER = (Solver) solverBox.getSelectedItem();
 		Configuration.DB_CONNECTION_FILE = dbConfText.getText();
 		Configuration.LINE_PROP_FILE = lineConfText.getText();
-		Configuration.RANDOM_ENV_FILE = randomEnvironmentText.getText();
-
-		try{
-			Configuration.PRIVATE_CPUS = Integer.parseInt(cpus.getText());
-		} catch (NumberFormatException e){
-			Configuration.PRIVATE_CPUS = -1;
-		}
-		try{
-			Configuration.PRIVATE_CPUPOWER = Double.parseDouble(cpuPower.getText());
-		} catch (NumberFormatException e){
-			Configuration.PRIVATE_CPUPOWER = -1;
-		}
-		try{
-			Configuration.PRIVATE_RAM = Integer.parseInt(ram.getText());
-		} catch (NumberFormatException e){
-			Configuration.PRIVATE_RAM = -1;
-		}
-		try{
-			Configuration.PRIVATE_STORAGE = Integer.parseInt(storage.getText());
-		} catch (NumberFormatException e){
-			Configuration.PRIVATE_STORAGE = -1;
-		}
 		Configuration.USE_PRIVATE_CLOUD = usePrivateCloud.isSelected();
 	}
-
+	
 	public static void main(String[] args) {
 		JFrame gui = new JFrame();
 		gui.setMinimumSize(new Dimension(900,500));
 		gui.setLocationRelativeTo(null);
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
-
-		FunctionalityPanel panel = new FunctionalityPanel();
-		gui.getContentPane().add(panel);
-
+		
+		FunctionalityPanel panel = new FunctionalityPanel(null);
+		gui.add(panel);
+		
 		gui.setVisible(true);
 	}
-
+	
 }

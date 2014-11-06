@@ -104,8 +104,16 @@ public class ConstraintHandler {
 			case RAM:
 				constraint = new RamConstraint(cons);
 				break;
+
 			case REPLICATION:
 				constraint = new ReplicasConstraint(cons);
+
+			case WORKLOADPERCENTAGE:
+				constraint = new WorkloadPercentageConstraint(cons);
+				break;
+			case AVAILABILITY:
+				constraint = new AvailabilityConstraint(cons);
+
 				break;
 				//add other constraints
 			case MACHINETYPE:
@@ -125,6 +133,7 @@ public class ConstraintHandler {
 			logger.info("\tpriority: "+c.getPriority());
 
 			logger.info("\tmetric: "+c.getMetric());
+
 			if(c instanceof AvgRTConstraint){
 				logger.info("\tmetric: "+AVERAGE_AGGREGATION);
 				logger.info("\tmax: "+((AvgRTConstraint)c).getMax());			
@@ -135,11 +144,18 @@ public class ConstraintHandler {
 			}
 			else if(c instanceof UsageConstraint){
 				logger.info("\tmax: "+((UsageConstraint)c).getMax());			
-			}else if(c instanceof RamConstraint){
+			} else if(c instanceof RamConstraint) {
 				logger.info("\tmin: "+((RamConstraint)c).getMin());			
+
 			}else if(c instanceof ReplicasConstraint){
 				logger.info("\tmin: "+((ReplicasConstraint)c).getMin());
 				logger.info("\tmax: "+((ReplicasConstraint)c).getMax());
+
+
+			} else if (c instanceof WorkloadPercentageConstraint) {
+				logger.info("\tmin: "+((WorkloadPercentageConstraint)c).getMin());
+			} else if (c instanceof AvailabilityConstraint) {
+				logger.info("\tmin: "+((AvailabilityConstraint)c).getMin());
 
 			}
 
@@ -227,6 +243,14 @@ public class ConstraintHandler {
 
 
 
+	}
+	
+	public double getWorkloadPercentageConstraint() {
+		for (Constraint c : constraints) {
+			if (c instanceof WorkloadPercentageConstraint)
+				return c.range.getHasMinValue();
+		}
+		return 0.0;
 	}
 
 	/**
