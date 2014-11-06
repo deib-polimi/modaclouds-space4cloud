@@ -449,7 +449,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		// print the results
 		SolutionMulti providedSolutions = engine.getInitialSolution();
 
-		assesmentWindow = new AssessmentWindow();
+		assesmentWindow = new AssessmentWindow(constraintHandler);
 		
 		assesmentWindow.addPropertyChangeListener(this);
 		

@@ -47,11 +47,15 @@ import org.xml.sax.SAXException;
  */
 public class ConstraintHandler {
 
-	List<Constraint> constraints = new ArrayList<>();
+	private List<Constraint> constraints = new ArrayList<>();
 	private static final Logger logger = LoggerFactory.getLogger(ConstraintHandler.class);
 	public void addConstraint(Constraint constraint){
 		constraints.add(constraint);
-	}	
+	}
+	
+	public List<Constraint> getConstraints() {
+		return constraints;
+	}
 
 
 	public void loadConstraints()

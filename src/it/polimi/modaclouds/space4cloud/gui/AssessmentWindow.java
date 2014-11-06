@@ -17,15 +17,22 @@ package it.polimi.modaclouds.space4cloud.gui;
 
 import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -42,7 +49,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.FieldPosition;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -61,6 +70,18 @@ import javax.swing.border.TitledBorder;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.CategoryItemLabelGenerator;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.CategoryItemRenderer;
+import org.jfree.chart.renderer.category.LineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+
 public class AssessmentWindow extends WindowAdapter implements PropertyChangeListener, ActionListener {
 
 	private JFrame frame;
@@ -68,6 +89,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 	private JTabbedPane tab;
 	
 	private class InternalSolution {
+		String provider;
+		
 		Logger2JFreeChartImage vmLogger, rtLogger, utilLogger;
 		JPanel vmPanel, rtPanel, utilPanel;
 		JLabel vmImgLabel, rtImgLabel, utilImgLabel;
@@ -80,7 +103,35 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 		
 		JButton addPlot;
 		JButton remPlot;
+		JButton addAllPlot;
+		JButton remAllPlot;
 		JButton update;
+		
+		boolean constrained(String name) {
+			if (constraintHandler == null || solutionMulti == null)
+				return false;
+			
+			List<Constraint> constraints = constraintHandler.getConstraints();
+			Solution s = solutionMulti.get(provider);
+			Instance app = s.getApplication(0); 
+			
+			for (Constraint c : constraints) {
+				if (app.getConstrainableResources().containsKey(c.getResourceID())) {
+					
+					IConstrainable resource = app.getConstrainableResources().get(c.getResourceID());
+					
+					if (resource instanceof Functionality) {
+						if (((Functionality)resource).getName().equals(name))
+							return true;
+					} else if (resource instanceof Tier)
+						if (((Tier)resource).getName().equals(name))
+							return true;
+					
+				}
+			}
+			
+			return false;
+		}
 		
 		boolean toBeShown(String name) {
 			for (int i = 0; i < plotsModel.size(); ++i) {
@@ -93,6 +144,16 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 		}
 	}
 	
+	private JFreeChart workloadGraph;
+	private JPanel workloadPanel;
+	private JLabel workloadLabel;
+	private DefaultCategoryDataset workload;
+	
+	private JFreeChart availabilityGraph;
+	private JPanel availabilityPanel;
+	private JLabel availabilityLabel;
+	private DefaultCategoryDataset availability;
+	
 	private HashMap<String, InternalSolution> solutions = new HashMap<String, InternalSolution>();
 	
 	public final static String FRAME_NAME = "Assessment Results Window";
@@ -102,11 +163,14 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 	/**
 	 * Create the application.
 	 */
-	public AssessmentWindow() {
+	public AssessmentWindow(ConstraintHandler constraintHandler) {
+		this.constraintHandler = constraintHandler;
 		initialize();
 	}
 	
 	private SolutionMulti solutionMulti = null;
+	
+	private ConstraintHandler constraintHandler;
 	
 	public void considerSolution(SolutionMulti solution) throws NumberFormatException, IOException {
 		frame.setVisible(false);
@@ -114,12 +178,17 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 		solutions.clear();
 		tab.removeAll();
 		
+		workload = new DefaultCategoryDataset();
+		availability = new DefaultCategoryDataset();
+		
 		this.solutionMulti = solution;
 		
 		for (Solution providedSolution : solution.getAll()) {
 			String provider = providedSolution.getProvider();
 			
 			InternalSolution is = new InternalSolution();
+			is.provider = provider;
+			
 			solutions.put(provider, is);
 			
 			JPanel imageContainerPanel = new JPanel();
@@ -187,13 +256,17 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 //				c.gridx++;
 				c.gridy = 1;
 //				c.insets = new Insets(10, 0, 0, 10);
-				is.addPlot = new JButton("\\/");
-				is.remPlot = new JButton("/\\");
+				is.addPlot = new JButton(((char)8615) + ""); // "\\/");
+				is.addAllPlot = new JButton(((char)8615) + "" + ((char)8615) + "" + ((char)8615)); // "\\/\\/");
+				is.remPlot = new JButton(((char)8613) + ""); // "/\\");
+				is.remAllPlot = new JButton(((char)8613) + "" + ((char)8613) + "" + ((char)8613)); // "/\\/\\");
 				is.update = new JButton("Update");
 				
 				JPanel pan = new JPanel(new GridLayout(1, 2));
+				pan.add(is.addAllPlot);
 				pan.add(is.addPlot);
 				pan.add(is.remPlot);
+				pan.add(is.remAllPlot);
 				
 				configurationPan.add(pan, c);
 				
@@ -205,6 +278,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				
 				is.addPlot.addActionListener(this);
 				is.remPlot.addActionListener(this);
+				is.addAllPlot.addActionListener(this);
+				is.remAllPlot.addActionListener(this);
 				is.update.addActionListener(this);
 				
 				c.fill = GridBagConstraints.BOTH;
@@ -245,8 +320,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 												int diff = widthFrame - location;
 												int border = (widthFrame - getSize().width) + getInsets().right + getDividerSize();
 												
-												if (location >= 0 && location < 200)
-													return 200;
+												if (location >= 0 && location < 400)
+													return 400;
 												if (diff < 350 && diff > border)
 													return widthFrame - 350;
 												
@@ -289,6 +364,9 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 			
 			{
 				for (Tier t : providedSolution.getApplication(0).getTiers()) {
+					if (is.constrained(t.getName()))
+						continue;
+					
 					double sum = 0.0;
 					for (int i = 0; i < 24; i++) {
 						sum += ((Compute) providedSolution.getApplication(i).getTierById(t.getId()).getCloudService()).getUtilization();
@@ -319,23 +397,55 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				otherSymbols.setDecimalSeparator('.');
 				DecimalFormat formatter = new DecimalFormat("0.000", otherSymbols);
 				
-				for (String key : sums.keySet())
-					is.plotsModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " ms)");
+				for (String key : sums.keySet()) {
+					if (!is.constrained(key))
+						is.plotsModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " ms)");
+				}
 			}
+			
+//			{
+//				for (int hour = 0; hour < 24; ++hour) {
+//					workload.addValue(providedSolution.getPercentageWorkload(hour), provider, "" + hour);
+//				}
+//			}
 			
 		}
 		
 		{
-			JPanel details = new JPanel();
+			JPanel details = new JPanel(new GridLayout(2, 1));
 			tab.addTab("Details", details);
 			
-			// TODO: add the information about the workloads and the availabilities
+			for (int hour = 0; hour < 24; ++hour) {
+				boolean goOn = true;
+				for (int i = 0; i < solution.size() && goOn; ++i) {
+					Solution s = solution.get(i);
+					double wp = s.getPercentageWorkload(hour);
+					if (wp > 0) {
+						int workload = (int)Math.round((double)s.getApplication(hour).getWorkload() / wp);
+						this.workload.addValue(workload, "Workload", "" + hour);
+						goOn = false;
+					}
+				}
+				availability.addValue(0.95, "Availability", "" + hour);
+			}
+			
+			workloadPanel = new JPanel();
+			details.add(workloadPanel);
+			workloadLabel = new JLabel();
+			workloadLabel.setIcon(null);
+			workloadPanel.add(workloadLabel);
+			
+			availabilityPanel = new JPanel();
+			details.add(availabilityPanel);
+			availabilityLabel = new JLabel();
+			availabilityLabel.setIcon(null);
+			availabilityPanel.add(availabilityLabel);
 		}
+		updateGraphs();
 		
 		frame.setVisible(true);
 		frame.validate();
 		
-		updateGraphs();
 		updateImages();
 		
 		pcs.firePropertyChange("AssessmentEnded", false, true);
@@ -412,7 +522,41 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				is.utilPanel.setPreferredSize(is.utilImgLabel.getPreferredSize());
 			}
 		}
+		
+		if (workload != null) {
+			ImageIcon icon;
+			try {
+				icon = new ImageIcon(workloadGraph.createBufferedImage(
+						workloadPanel.getSize().width,
+						workloadPanel.getSize().height));
+			} catch (NullPointerException e) {
+				icon = new ImageIcon();
+			}
+			workloadLabel.setIcon(icon);
+			workloadLabel.setVisible(true);
+			workloadPanel
+					.setPreferredSize(workloadLabel.getPreferredSize());
 
+			workloadLabel.validate();
+		}
+		
+		if (availability != null) {
+			ImageIcon icon;
+			try {
+				icon = new ImageIcon(availabilityGraph.createBufferedImage(
+						availabilityPanel.getSize().width,
+						availabilityPanel.getSize().height));
+			} catch (NullPointerException e) {
+				icon = new ImageIcon();
+			}
+			availabilityLabel.setIcon(icon);
+			availabilityLabel.setVisible(true);
+			availabilityPanel
+					.setPreferredSize(availabilityLabel.getPreferredSize());
+
+			availabilityLabel.validate();
+		}
+		
 		alreadyUpdating = false;
 	}
 	
@@ -461,10 +605,23 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				}
 				
 				updateImages();
+			} else if (e.getSource().equals(is.addAllPlot)) {
+				while (is.sourcesModel.size() > 0) {
+					String el = is.sourcesModel.getElementAt(0);
+					is.plotsModel.addElement(el);
+					is.sourcesModel.removeElementAt(0);
+				}
+			} else if (e.getSource().equals(is.remAllPlot)) {
+				while (is.plotsModel.size() > 0) {
+					String el = is.plotsModel.getElementAt(0);
+					is.sourcesModel.addElement(el);
+					is.plotsModel.removeElementAt(0);
+				}
 			}
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	private void updateGraphs() throws NumberFormatException, IOException {
 		if (alreadyUpdating)
 			return;
@@ -480,12 +637,12 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 					"vmCount.properties");
 			Map<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
 			for (Tier t : providedSolution.getApplication(0).getTiers()) {
-				if (is.toBeShown(t.getName()))
+				if (is.constrained(t.getName()) || is.toBeShown(t.getName()))
 					vmSeriesHandlers.put(t.getId(), is.vmLogger.newSeries(t.getName()));
 			}
 			for (int i = 0; i < 24; i++) {
 				for (Tier t : providedSolution.getApplication(i).getTiers()) {
-					if (is.toBeShown(t.getName()))
+					if (is.constrained(t.getName()) || is.toBeShown(t.getName()))
 						is.vmLogger.addPoint2Series(vmSeriesHandlers.get(t.getId()), i,
 								((IaaS) t.getCloudService()).getReplicas());
 				}
@@ -498,7 +655,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 			for (Tier t : providedSolution.getApplication(0).getTiers())
 				for (Component c : t.getComponents())
 					for (Functionality f : c.getFunctionalities())
-						if (is.toBeShown(f.getName()))
+						if (is.constrained(f.getName()) || is.toBeShown(f.getName()))
 							rtSeriesHandlers.put(f.getName(),
 									is.rtLogger.newSeries(f.getName()));
 	
@@ -506,7 +663,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				for (Tier t : providedSolution.getApplication(i).getTiers())
 					for (Component c : t.getComponents())
 						for (Functionality f : c.getFunctionalities()){
-							if(is.toBeShown(f.getName()) && f.isEvaluated())
+							if (f.isEvaluated() && (is.constrained(f.getName()) || is.toBeShown(f.getName())))
 								is.rtLogger.addPoint2Series(
 										rtSeriesHandlers.get(f.getName()), i,
 										f.getResponseTime());
@@ -517,14 +674,124 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 					"utilization.properties");
 			Map<String, SeriesHandle> utilSeriesHandlers = new HashMap<>();
 			for (Tier t : providedSolution.getApplication(0).getTiers())
-				if (is.toBeShown(t.getName()))
+				if (is.constrained(t.getName()) || is.toBeShown(t.getName()))
 					utilSeriesHandlers.put(t.getId(), is.utilLogger.newSeries(t.getName()));
 	
 			for (int i = 0; i < 24; i++)
 				for (Tier t : providedSolution.getApplication(i).getTiers())
-					if (is.toBeShown(t.getName()))
+					if (is.constrained(t.getName()) || is.toBeShown(t.getName()))
 						is.utilLogger.addPoint2Series(utilSeriesHandlers.get(t.getId()),
 								i, ((Compute) t.getCloudService()).getUtilization());
+		}
+		
+		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+		BasicStroke stroke = new BasicStroke(2.0f,                     // Line width
+				BasicStroke.CAP_ROUND,     // End-cap style
+				BasicStroke.JOIN_ROUND);   // Vertex join style
+		
+		workloadGraph = ChartFactory.createLineChart("Workload", "Hour", 
+				"Y", workload, PlotOrientation.VERTICAL, true, true, false);
+		{
+			CategoryPlot plot = (CategoryPlot) workloadGraph.getPlot();
+			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+					.getRenderer();
+			renderer.setShapesVisible(true);
+			renderer.setDrawOutlines(true);
+			renderer.setUseFillPaint(true);
+			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setTickLabelFont(font);
+			
+//			rangeAxis.setRange(-0.1, 1.1);
+			
+			int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE, tmp;
+            for (int i = 0; i < workload.getColumnCount(); ++i)
+                for (int j = 0; j < workload.getRowCount(); ++j) {
+                    tmp = workload.getValue(j, i).intValue();
+                    if (tmp < min)
+                        min = tmp;
+                    if (tmp > max)
+                        max = tmp;
+                }
+            if (min == Integer.MAX_VALUE)
+                min = 0;
+            if (max == Integer.MIN_VALUE)
+                max = (int) rangeAxis.getRange().getUpperBound() + 1;
+
+            rangeAxis.setRange(/* 0 */min - 100, /*
+                                                 * rangeAxis.getRange().
+                                                 * getUpperBound() + 1
+                                                 */max + 100);
+			
+			
+
+			CategoryAxis categoryAxis = plot.getDomainAxis();
+			categoryAxis.setLowerMargin(0.02);
+			categoryAxis.setUpperMargin(0.02);
+			categoryAxis.setTickLabelFont(font);
+
+			CategoryItemRenderer renderer2 = plot
+					.getRenderer();
+			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+					"{2}", new DecimalFormat("0") {
+
+						private static final long serialVersionUID = 1L;
+
+						@Override
+						public StringBuffer format(double number,
+								StringBuffer result, FieldPosition fieldPosition) {
+							result = new StringBuffer((int)Math.round(number) + "");
+							return result;
+						}
+
+					});
+			renderer2.setItemLabelGenerator(generator);
+			renderer2.setItemLabelsVisible(true);
+			renderer2.setItemLabelFont(font);
+		}
+		
+		availabilityGraph = ChartFactory.createLineChart("Availability", "Hour", 
+				"Y", availability, PlotOrientation.VERTICAL, true, true, false);
+		{
+			CategoryPlot plot = (CategoryPlot) availabilityGraph.getPlot();
+			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+					.getRenderer();
+			renderer.setShapesVisible(true);
+			renderer.setDrawOutlines(true);
+			renderer.setUseFillPaint(true);
+			renderer.setFillPaint(Color.white);
+			renderer.setStroke(stroke);
+			
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setTickLabelFont(font);
+			
+			rangeAxis.setRange(-0.1, 1.1);
+
+			CategoryAxis categoryAxis = plot.getDomainAxis();
+			categoryAxis.setLowerMargin(0.02);
+			categoryAxis.setUpperMargin(0.02);
+			categoryAxis.setTickLabelFont(font);
+
+			CategoryItemRenderer renderer2 = plot
+					.getRenderer();
+			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+					"{2}", new DecimalFormat("0") {
+
+						private static final long serialVersionUID = 1L;
+
+						@Override
+						public StringBuffer format(double number,
+								StringBuffer result, FieldPosition fieldPosition) {
+							result = new StringBuffer((int)(number * 100) + "%");
+							return result;
+						}
+
+					});
+			renderer2.setItemLabelGenerator(generator);
+			renderer2.setItemLabelsVisible(true);
+			renderer2.setItemLabelFont(font);
 		}
 		
 		alreadyUpdating = false;
