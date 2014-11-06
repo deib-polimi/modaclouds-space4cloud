@@ -74,12 +74,20 @@ public class Main {
 		instance.start();
 	}
 	
+	public static void mainBatchAssessment(String[] args) {
+		String folder = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\OfBiz\\";
+		String configuration = folder + "conf-assessment.properties";
+		
+		Space4Cloud instance = new Space4Cloud(configuration);
+		instance.start();
+	}
+	
 	public static void mainRedrawRobustness(String[] args) {
 		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\private\\");
 	}
 	
 	public static void main(String[] args) {
-		mainRedrawRobustness(args);
+		mainBatchAssessment(args);
 	}
 
 }

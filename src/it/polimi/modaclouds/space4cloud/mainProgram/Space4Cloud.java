@@ -34,7 +34,6 @@ import it.polimi.modaclouds.space4cloud.gui.AssessmentWindow;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
-import it.polimi.modaclouds.space4cloud.gui.SolutionWindow;
 import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
@@ -509,7 +508,10 @@ ConstraintHandlerFactory.clearHandler();
 		// print the results
 		SolutionMulti providedSolution = engine.getInitialSolution();
 
-		assesmentWindow = new AssessmentWindow();
+		assesmentWindow = new AssessmentWindow(constraintHandler);
+		
+		assesmentWindow.addPropertyChangeListener(this);
+		
 		try {
 			assesmentWindow.considerSolution(providedSolution);
 		} catch (NumberFormatException | IOException e) {
@@ -518,46 +520,45 @@ ConstraintHandlerFactory.clearHandler();
 
 		// export the solution
 		providedSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME,Configuration.SOLUTION_FILE_EXTENSION));
-		SolutionWindow.show(providedSolution);
 	}
 
 
 
 
-private void cleanResources() {
-	logger.info("Exiting SPACE4Cloud");		
-	//close the connection with the database
-	try {
-		if(DatabaseConnector.getConnection() != null)
-			DatabaseConnector.getConnection().close();
-	} catch (SQLException e) {
-		logger.error("Error in closing the connection with the database",e);
-	}
-	if(Configuration.SOLVER == Solver.LINE){
-		if(LineServerHandlerFactory.getHandler() != null){
-			LineServerHandlerFactory.getHandler().closeConnections();
+	private void cleanResources() {
+		logger.info("Exiting SPACE4Cloud");		
+		//close the connection with the database
+		try {
+			if(DatabaseConnector.getConnection() != null)
+				DatabaseConnector.getConnection().close();
+		} catch (SQLException e) {
+			logger.error("Error in closing the connection with the database",e);
 		}
+		if(Configuration.SOLVER == Solver.LINE){
+			if(LineServerHandlerFactory.getHandler() != null){
+				LineServerHandlerFactory.getHandler().closeConnections();
+			}
+		}
+		if(engine != null){
+			engine.exportSolution();
+			engine.cancel(true);
+			engine = null;
+		}
+		DatabaseConnector.closeConnection();
+		LineServerHandlerFactory.clearHandler();
+		ConstraintHandlerFactory.clearHandler();
+		refreshProject();
+		compleated = true;
 	}
-	if(engine != null){
-		engine.exportSolution();
-		engine.cancel(true);
-		engine = null;
-	}
-	DatabaseConnector.closeConnection();
-	LineServerHandlerFactory.clearHandler();
-	ConstraintHandlerFactory.clearHandler();
-	refreshProject();
-	compleated = true;
-}
 		
 
 
-private void performGenerateInitialSolution() {
-	consoleLogger.info("Generating the initial solution with the MILP engine");
-	MILPEvaluator re = new MILPEvaluator();
+	private void performGenerateInitialSolution() {
+		consoleLogger.info("Generating the initial solution with the MILP engine");
+		MILPEvaluator re = new MILPEvaluator();
 
-	if (providersInitialSolution.size() > 0)
-		re.setProviders(getProvidersInitialSolution());
+		if (providersInitialSolution.size() > 0)
+			re.setProviders(getProvidersInitialSolution());
 		try {
 			re.eval();
 		} catch (Exception e) {
@@ -710,28 +711,7 @@ private void performGenerateInitialSolution() {
 		} catch (JAXBException | IOException | SAXException e) {
 			throw new RobustnessException("Error generating the mofigied usage model extension",e);
 		}
-		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
-				.newFixedThreadPool(1);
-
-		RobustnessProgressWindow rpw = new RobustnessProgressWindow(
-				usageModelExtFiles.size() + 1);
-
-//		String duration = "";
-//		{
-//			// an average of 5 minutes per attempt... maybe it's too little, but
-//			// whatever...
-//			int res = (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60;
-//			if (res > 60 * 60) {
-//				duration += (res / (60 * 60)) + " h ";
-//				res = res % (60 * 60);
-//			}
-//			if (res > 60) {
-//				duration += (res / 60) + " m ";
-//				res = res % 60;
-//			}
-//			duration += res + " s";
-//		}
-		/*ThreadPoolExecutor*/ executor = (ThreadPoolExecutor) Executors
+		executor = (ThreadPoolExecutor) Executors
 				.newFixedThreadPool(1);
 
 		robustnessWindow = new RobustnessProgressWindow(
