@@ -4,7 +4,6 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,22 +18,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 public class DataExporter {
 	
 	public static final int DEFAULT_T = 24;
 //	public static final int DEFAULT_C = 6;
 	
+	private static final Logger logger = LoggerFactory.getLogger(DataExporter.class);
 	private Path sourcesBasePath;
 	
 	public static List<File> perform(Path sourcesBasePath) {
@@ -81,12 +80,13 @@ public class DataExporter {
 		Map<String, Integer[]> upperReplicasMap = getReplicas(upper);
 		
 		ResourceEnvironmentExtensionParser resourceEnvParser = null;
-		try {
-			resourceEnvParser = new ResourceEnvironmentExtentionLoader(Paths.get(Configuration.RESOURCE_ENVIRONMENT_EXTENSION).toFile());
-		} catch (ParserConfigurationException | SAXException | IOException
-				| JAXBException e1) {
-			e1.printStackTrace();
-		}
+	
+			try {
+				resourceEnvParser = new ResourceEnvironmentExtensionParser();
+			} catch (ResourceEnvironmentLoadingException e) {
+				logger.error("Error exporting the solution",e);
+			}
+	
 		
 		List<String> totalKeyset = new ArrayList<String>(nominalReplicasMap.keySet());
 		for (String s : lowerReplicasMap.keySet())

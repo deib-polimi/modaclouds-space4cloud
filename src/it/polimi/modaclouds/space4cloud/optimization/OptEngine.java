@@ -34,6 +34,7 @@ import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
@@ -1590,7 +1591,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	}
 
 	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour) throws OptimizationException {
-		double wpMin = constraintHandler.getWorkloadPercentageConstraint();
+		double wpMin = 0.0;
+		List<Constraint> constraints = constraintHandler.getConstraintByResourceId(Configuration.APPLICATION_ID);
+		for(Constraint c:constraints)
+			if(c instanceof WorkloadPercentageConstraint)
+				wpMin = ((WorkloadPercentageConstraint)c).getMin();
 
 		Tier leastUsedTier = null;
 		String leastUsedProvider = null;

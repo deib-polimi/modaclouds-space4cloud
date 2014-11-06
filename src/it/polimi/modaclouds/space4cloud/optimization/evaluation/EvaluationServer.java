@@ -331,9 +331,14 @@ public class EvaluationServer implements ActionListener {
 			incrementTotalNumberOfEvaluations();
 		}
 
-		// evaluate feasibility
-		if (constraintHandler != null)
-			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+
+			try {
+				// evaluate feasibility
+				if (constraintHandler != null)
+					sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+			} catch (ConstraintEvaluationException e) {
+				throw new EvaluationException("Error in evaluating the empty solution ",e);
+			}
 		sol.updateEvaluation();
 
 		// evaluate costs		
@@ -374,7 +379,7 @@ public class EvaluationServer implements ActionListener {
 			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
 		}else
 			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
-		sol.setEvaluationTime(timer.getSplitTime());
+		sol.setGenerationTime(timer.getSplitTime());		
 		
 		
 		
@@ -521,7 +526,7 @@ public class EvaluationServer implements ActionListener {
 			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
 		}else
 			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
-		sol.setEvaluationTime(timer.getSplitTime());
+		sol.setGenerationTime(timer.getSplitTime());
 		
 		
 		
@@ -612,15 +617,18 @@ public class EvaluationServer implements ActionListener {
 			counters.remove(sol);
 			incrementTotalNumberOfEvaluations();
 		}
-
-		// evaluate feasibility
-		if (constraintHandler != null)
-			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+		try {
+			// evaluate feasibility
+			if (constraintHandler != null)
+				sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
+		} catch (ConstraintEvaluationException e) {
+			throw new EvaluationException("Erro evaluatinga private solution",e);
+		}
 		sol.updateEvaluation();
 
-		
-		
-		
+
+
+
 		// evaluate costs		
 		deriveCosts(sol);
 		timer.split();

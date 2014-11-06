@@ -29,6 +29,7 @@ public class Configuration {
 	public static final String DEFAULT_DB_CONNECTION_FILE = "/config/DBConnection.properties";
 	public static final String RANDOM_ENVIRONMENT_SOLUTION_TAG = "+RandomEnvironments";
 	public static final String LINE_SOLUTION_TAG = "_line";
+	public static final String APPLICATION_ID="Application";
 
 	//Configuration for the current run of space4cloud	
 	public static String PALLADIO_REPOSITORY_MODEL;
@@ -66,6 +67,8 @@ public class Configuration {
 
 
 	public static boolean REDISTRIBUTE_WORKLOAD = false;
+	
+	
 
 
 	// For the Private Cloud part:

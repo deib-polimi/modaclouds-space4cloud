@@ -113,7 +113,6 @@ public class ConstraintHandler {
 				break;
 			case AVAILABILITY:
 				constraint = new AvailabilityConstraint(cons);
-
 				break;
 				//add other constraints
 			case MACHINETYPE:
@@ -245,13 +244,6 @@ public class ConstraintHandler {
 
 	}
 	
-	public double getWorkloadPercentageConstraint() {
-		for (Constraint c : constraints) {
-			if (c instanceof WorkloadPercentageConstraint)
-				return c.range.getHasMinValue();
-		}
-		return 0.0;
-	}
 
 	/**
 	 * Remove from the tier list the tier for which the maximum replica constraint has been reached
