@@ -97,7 +97,7 @@ public class SolutionEvaluator implements Runnable {
 			resultParser = new LQNSResultParser(Paths.get(resultfilePath));
 		} else {
 			String randomEnvironmentName = "";						
-			if(!Configuration.RANDOM_ENV_FILE.equals(""))
+			if (Configuration.RANDOM_ENV_FILE != null && !Configuration.RANDOM_ENV_FILE.equals(""))
 				randomEnvironmentName="+"+Paths.get(Configuration.RANDOM_ENV_FILE).getFileName().toString().replace(".xml","");
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
 					+randomEnvironmentName+Configuration.LINE_SOLUTION_TAG+".xml";
@@ -159,7 +159,7 @@ public class SolutionEvaluator implements Runnable {
 		}		
 
 		String randomEnvFile = null;
-		if(!Configuration.RANDOM_ENV_FILE.equals(""))
+		if (Configuration.RANDOM_ENV_FILE != null && !Configuration.RANDOM_ENV_FILE.equals(""))
 			randomEnvFile = Configuration.RANDOM_ENV_FILE;
 		handler.solve(filePath,randomEnvFile);
 		// wait for the model to be solved
