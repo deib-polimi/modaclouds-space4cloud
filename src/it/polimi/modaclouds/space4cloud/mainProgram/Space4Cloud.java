@@ -47,6 +47,7 @@ import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 import it.polimi.modaclouds.space4cloud.utils.DataExporter;
 import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
+import it.polimi.modaclouds.space4cloud.utils.PluginConsoleAppender;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentLoadingException;
 import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
@@ -91,6 +92,8 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -312,6 +315,13 @@ ConstraintHandlerFactory.clearHandler();
 		// launch it
 		consoleLogger.info("Launching Palladio transformation.");
 		runConfigHandler.launch();
+		
+		//bring up the Space4Cloud console
+		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		for(IConsole c:consoles){			
+			if(c.getName().equals(PluginConsoleAppender.CONSOLE_NAME))
+				ConsolePlugin.getDefault().getConsoleManager().showConsoleView(c);				
+		}
 		consoleLogger.info("Transformation terminated");
 
 

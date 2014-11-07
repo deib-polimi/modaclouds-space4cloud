@@ -34,7 +34,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -119,6 +119,17 @@ public class Logger2JFreeChartImage {
 
 	public SeriesHandle newSeries(String seriesTitle) {
 
+
+
+		int counter = 1;
+		for(XYSeries s:seriesList){
+			//there can not be two series with the same name
+			if(s.getKey().equals(seriesTitle)){
+				seriesTitle = seriesTitle+counter;
+				counter++;
+			}
+		}
+
 		final XYSeries series = new XYSeries(seriesTitle);
 
 		if (seriesList.add(series)) {
@@ -131,7 +142,8 @@ public class Logger2JFreeChartImage {
 	}
 
 
-	@SuppressWarnings("deprecation")
+
+	
 	public BufferedImage save2buffer(Dimension dim) {
 
 		XYSeriesCollection dataSet = new XYSeriesCollection();
@@ -148,32 +160,36 @@ public class Logger2JFreeChartImage {
 			dim.height=1;
 		if(dim.getWidth()<=0)
 			dim.width=1;
+
+
+		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
+
+		BasicStroke stroke = new BasicStroke(2.0f,                     // Line width
+				BasicStroke.CAP_ROUND,     // End-cap style
+				BasicStroke.JOIN_ROUND);   // Vertex join style
+
+		XYPlot plot = (XYPlot) chart.getPlot();
+
+		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot
+				.getRenderer();
 		
-		
-		////////////////////////
-		{
-			Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
-
-			BasicStroke stroke = new BasicStroke(2.0f,                     // Line width
-												BasicStroke.CAP_ROUND,     // End-cap style
-												BasicStroke.JOIN_ROUND);   // Vertex join style
-			
-			XYPlot plot = (XYPlot) chart.getPlot();
-			
-			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot
-					.getRenderer();
-			renderer.setStroke(stroke);
-
-			ValueAxis valueAxis = plot.getDomainAxis();
-			valueAxis.setLowerMargin(0.02);
-			valueAxis.setUpperMargin(0.02);
-			valueAxis.setTickLabelFont(font);
-
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setTickLabelFont(font);
+		for(int i=0;i<seriesList.size();i++){
+			renderer.setSeriesStroke(i, stroke);
 		}
-		////////////////////////
+
 		
+		NumberAxis domainAxis = new NumberAxis(plot.getDomainAxis().getLabel());		
+		domainAxis.setLowerMargin(0.02);
+		domainAxis.setUpperMargin(0.02);
+		domainAxis.setTickLabelFont(font);
+		domainAxis.setTickUnit(new NumberTickUnit(1));
+		domainAxis.setRange(0, 24);
+		plot.setDomainAxis(domainAxis);
+
+		NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+		rangeAxis.setTickLabelFont(font);
+		
+
 
 
 		return chart.createBufferedImage((int) (dim.getWidth() * 0.9),

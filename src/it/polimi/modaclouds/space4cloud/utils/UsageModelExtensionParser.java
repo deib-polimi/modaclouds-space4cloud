@@ -14,8 +14,6 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 public class UsageModelExtensionParser {
@@ -25,7 +23,6 @@ public class UsageModelExtensionParser {
 	private Map<String, Double[]> arrivalRates = new HashMap<String, Double[]>();
 	private File extensionFile;
 	private UsageModelExtension extension = null;
-	private static final Logger logger = LoggerFactory.getLogger(UsageModelExtensionParser.class);
 
 
 	
