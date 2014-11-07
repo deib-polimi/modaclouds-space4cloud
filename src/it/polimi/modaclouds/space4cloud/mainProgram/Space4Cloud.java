@@ -1222,6 +1222,14 @@ ConstraintHandlerFactory.clearHandler();
 			if(!batch)
 				robustnessWindow.signalCompletion();
 			cleanResources();
+		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("WindowClosed")){
+			logger.info("Assessment window closed");
+			pcs.firePropertyChange("assessmentClosed", false, true);
+			cleanResources();
+		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("AssessmentEnded")){
+			logger.info("Assessment ended");
+			pcs.firePropertyChange("assessmentEnded", false, true);
+			cleanResources();
 		}
 
 	}

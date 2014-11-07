@@ -24,11 +24,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigurationWindow extends WindowAdapter implements ActionListener, PropertyChangeListener {
+public class ConfigurationWindow extends WindowAdapter implements ActionListener, PropertyChangeListener, ChangeListener {
 
 	private JFrame frame;
 	private JTabbedPane tabbedPane;	
@@ -149,11 +151,10 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		extensionSelectionPane.setPreferredSize(frame.getContentPane().getPreferredSize());
 		tabbedPane.addTab(extensionSelectionPane.getName(), extensionSelectionPane);
 
-		//TODO:check merge
-		functionalityPane = new FunctionalityPanel(this);
-
+		functionalityPane = new FunctionalityPanel();
 		functionalityPane.setPreferredSize(frame.getContentPane().getPreferredSize());
 		functionalityPane.addPropertyChangeListener(FunctionalityPanel.functionalityProperty,this);
+		functionalityPane.addPropertyChangeListener(FunctionalityPanel.privateCloudProperty,this);
 		tabbedPane.addTab(functionalityPane.getName(), functionalityPane);		
 
 		optimizationConfigurationPane = new OptimizationConfigurationPanel();
@@ -177,6 +178,8 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		tabbedPane.setEnabledAt(tabNumber, false);
 
 		loadConfiguration();
+		
+		tabbedPane.addChangeListener(this);
 	}
 
 	@Override
@@ -270,6 +273,11 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 				tabNumber = tabbedPane.indexOfComponent(robustnessConfigurationPane);
 				tabbedPane.setEnabledAt(tabNumber, false);
 			}
+		} else if(evt.getPropertyName().equals(FunctionalityPanel.privateCloudProperty)) {
+			boolean visibility = Configuration.USE_PRIVATE_CLOUD;
+			cloudBurstingPanel.setEnabled(visibility);
+			int tabNumber = tabbedPane.indexOfComponent(cloudBurstingPanel);
+			tabbedPane.setEnabledAt(tabNumber, visibility);
 		}
 	}
 
@@ -301,11 +309,15 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		robustnessConfigurationPane.loadConfiguration();
 		cloudBurstingPanel.loadConfiguration();
 	}
-	
-	public void setVisibilityCloudBurstingPanel(boolean visibility) {
-		cloudBurstingPanel.setEnabled(visibility);
-		int tabNumber = tabbedPane.indexOfComponent(cloudBurstingPanel);
-		tabbedPane.setEnabledAt(tabNumber, visibility);
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		int index = tabbedPane.getSelectedIndex();
+		String tabTitle = tabbedPane.getTitleAt(index);
+		
+		if (tabTitle.equals(optimizationConfigurationPane.getName()))
+			optimizationConfigurationPane.updateSSHVisibility();
+			
 	}
 
 }

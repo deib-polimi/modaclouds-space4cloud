@@ -219,7 +219,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_lblHost.insets = new Insets(0, 0, 5, 5);
 		gbc_lblHost.gridx = 0;
 		gbc_lblHost.gridy = 9;
-		sshHostLabel.setVisible(false);
+		sshHostLabel.setEnabled(false); //setVisible(false);
 		add(sshHostLabel, gbc_lblHost);
 		
 		sshHostText = new JTextField();
@@ -229,7 +229,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_textFieldHost.gridx = 1;
 		gbc_textFieldHost.gridy = 9;
 		add(sshHostText, gbc_textFieldHost);
-		sshHostText.setVisible(false);
+		sshHostText.setEnabled(false); //setVisible(false);
 		sshHostText.setColumns(10);
 		
 		sshNameLabel = new JLabel("SSH User Name");
@@ -238,7 +238,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = 10;
-		sshNameLabel.setVisible(false);
+		sshNameLabel.setEnabled(false); //setVisible(false);
 		add(sshNameLabel, gbc_lblNewLabel);
 		
 		sshNameText = new JTextField();
@@ -248,7 +248,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_textField.gridx = 1;
 		gbc_textField.gridy = 10;
 		add(sshNameText, gbc_textField);
-		sshNameText.setVisible(false);
+		sshNameText.setEnabled(false); //setVisible(false);
 		sshNameText.setColumns(10);
 		
 		sshPasswordLabel = new JLabel("SSH Password");
@@ -257,7 +257,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_SSHpassword.insets = new Insets(0, 0, 5, 5);
 		gbc_SSHpassword.gridx = 0;
 		gbc_SSHpassword.gridy = 11;
-		sshPasswordLabel.setVisible(false);
+		sshPasswordLabel.setEnabled(false); //setVisible(false);
 		add(sshPasswordLabel, gbc_SSHpassword);
 		
 		sshPasswordText = new JTextField();
@@ -267,7 +267,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_textField_1.gridx = 1;
 		gbc_textField_1.gridy = 11;
 		add(sshPasswordText, gbc_textField_1);
-		sshPasswordText.setVisible(false);
+		sshPasswordText.setEnabled(false); //setVisible(false);
 		sshPasswordText.setColumns(10);
 		
 		panel = new JPanel();
@@ -291,15 +291,15 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	/**
 	 * Updates the visibility of the ssh connection parameters according to the initial solution generation box selection
 	 */
-	private void updateSSHVisibility(){
-		boolean shown = initialSolutionBox.isSelected() || redistributeWorkloadBox.isSelected();
+	public void updateSSHVisibility(){
+		boolean shown = initialSolutionBox.isSelected() || redistributeWorkloadBox.isSelected() || Configuration.USE_PRIVATE_CLOUD;
 		
-		sshNameLabel.setVisible(shown);
-		sshNameText.setVisible(shown);
-		sshPasswordLabel.setVisible(shown);
-		sshPasswordText.setVisible(shown);
-		sshHostLabel.setVisible(shown);
-		sshHostText.setVisible(shown);
+		sshNameLabel.setEnabled(shown); //setVisible(shown);
+		sshNameText.setEnabled(shown); //setVisible(shown);
+		sshPasswordLabel.setEnabled(shown); //setVisible(shown);
+		sshPasswordText.setEnabled(shown); //setVisible(shown);
+		sshHostLabel.setEnabled(shown); //setVisible(shown);
+		sshHostText.setEnabled(shown); //setVisible(shown);
 	}
 
 	/**

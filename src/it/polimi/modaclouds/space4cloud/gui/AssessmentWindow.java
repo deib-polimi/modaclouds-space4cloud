@@ -19,12 +19,10 @@ import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
 import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -89,6 +87,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 	private JTabbedPane tab;
 	
 	private class InternalSolution {
+		@SuppressWarnings("unused")
 		String provider;
 		
 		Logger2JFreeChartImage vmLogger, rtLogger, utilLogger;
@@ -107,30 +106,13 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 		JButton remAllPlot;
 		JButton update;
 		
-		boolean constrained(String name) {
+		boolean constrained(String resourceId) {
 			if (constraintHandler == null || solutionMulti == null)
 				return false;
 			
-			List<Constraint> constraints = constraintHandler.getConstraints();
-			Solution s = solutionMulti.get(provider);
-			Instance app = s.getApplication(0); 
+			List<Constraint> constraints = constraintHandler.getConstraintByResourceId(resourceId); // .getConstraints();
 			
-			for (Constraint c : constraints) {
-				if (app.getConstrainableResources().containsKey(c.getResourceID())) {
-					
-					IConstrainable resource = app.getConstrainableResources().get(c.getResourceID());
-					
-					if (resource instanceof Functionality) {
-						if (((Functionality)resource).getName().equals(name))
-							return true;
-					} else if (resource instanceof Tier)
-						if (((Tier)resource).getName().equals(name))
-							return true;
-					
-				}
-			}
-			
-			return false;
+			return (constraints.size() > 0);
 		}
 		
 		boolean toBeShown(String name) {
@@ -364,7 +346,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 			
 			{
 				for (Tier t : providedSolution.getApplication(0).getTiers()) {
-					if (is.constrained(t.getName()))
+					if (is.constrained(t.getId())) //t.getName()))
 						continue;
 					
 					double sum = 0.0;
@@ -376,6 +358,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				}
 				
 				HashMap<String, Double> sums = new HashMap<String, Double>();
+				HashMap<String, String> ids = new HashMap<String, String>();
 				
 				for (Tier t : providedSolution.getApplication(0).getTiers()) {
 					for (int i = 0; i < 24; i++)
@@ -389,6 +372,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 									sum += f.getResponseTime();
 									
 									sums.put(f.getName(), sum);
+									ids.put(f.getName(), f.getId());
 								}
 							}
 				}
@@ -398,7 +382,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				DecimalFormat formatter = new DecimalFormat("0.000", otherSymbols);
 				
 				for (String key : sums.keySet()) {
-					if (!is.constrained(key))
+					if (!is.constrained(ids.get(key) /*key*/))
 						is.plotsModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " ms)");
 				}
 			}
@@ -637,12 +621,12 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 					"vmCount.properties");
 			Map<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
 			for (Tier t : providedSolution.getApplication(0).getTiers()) {
-				if (is.constrained(t.getName()) || is.toBeShown(t.getName()))
+				if (is.constrained(t.getId() /*t.getName()*/) || is.toBeShown(t.getName()))
 					vmSeriesHandlers.put(t.getId(), is.vmLogger.newSeries(t.getName()));
 			}
 			for (int i = 0; i < 24; i++) {
 				for (Tier t : providedSolution.getApplication(i).getTiers()) {
-					if (is.constrained(t.getName()) || is.toBeShown(t.getName()))
+					if (is.constrained(t.getId() /*t.getName()*/) || is.toBeShown(t.getName()))
 						is.vmLogger.addPoint2Series(vmSeriesHandlers.get(t.getId()), i,
 								((IaaS) t.getCloudService()).getReplicas());
 				}
@@ -655,7 +639,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 			for (Tier t : providedSolution.getApplication(0).getTiers())
 				for (Component c : t.getComponents())
 					for (Functionality f : c.getFunctionalities())
-						if (is.constrained(f.getName()) || is.toBeShown(f.getName()))
+						if (is.constrained(f.getId() /*f.getName()*/) || is.toBeShown(f.getName()))
 							rtSeriesHandlers.put(f.getName(),
 									is.rtLogger.newSeries(f.getName()));
 	
@@ -663,7 +647,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				for (Tier t : providedSolution.getApplication(i).getTiers())
 					for (Component c : t.getComponents())
 						for (Functionality f : c.getFunctionalities()){
-							if (f.isEvaluated() && (is.constrained(f.getName()) || is.toBeShown(f.getName())))
+							if (f.isEvaluated() && (is.constrained(f.getId() /*f.getName()*/) || is.toBeShown(f.getName())))
 								is.rtLogger.addPoint2Series(
 										rtSeriesHandlers.get(f.getName()), i,
 										f.getResponseTime());
@@ -674,12 +658,12 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 					"utilization.properties");
 			Map<String, SeriesHandle> utilSeriesHandlers = new HashMap<>();
 			for (Tier t : providedSolution.getApplication(0).getTiers())
-				if (is.constrained(t.getName()) || is.toBeShown(t.getName()))
+				if (is.constrained(t.getId() /*t.getName()*/) || is.toBeShown(t.getName()))
 					utilSeriesHandlers.put(t.getId(), is.utilLogger.newSeries(t.getName()));
 	
 			for (int i = 0; i < 24; i++)
 				for (Tier t : providedSolution.getApplication(i).getTiers())
-					if (is.constrained(t.getName()) || is.toBeShown(t.getName()))
+					if (is.constrained(t.getId() /*t.getName()*/) || is.toBeShown(t.getName()))
 						is.utilLogger.addPoint2Series(utilSeriesHandlers.get(t.getId()),
 								i, ((Compute) t.getCloudService()).getUtilization());
 		}
