@@ -78,7 +78,7 @@ public class PrivateCloud implements CloudProvider {
 		this.startingSolution = solutionMulti;
 		
 		if (Configuration.USE_PRIVATE_CLOUD)
-			this.owns = Host.getFromFile(new File(Configuration.PRIVATE_CLOUD_HOSTS));
+			this.owns = Host.getFromFile(new File(Configuration.PRIVATE_CLOUD_HOSTS_TMP));
 		else
 			this.owns = new ArrayList<Host>();
 		

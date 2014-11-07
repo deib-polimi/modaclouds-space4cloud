@@ -188,6 +188,8 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			modelSelectionPane.updateConfiguration();
 			extensionSelectionPane.updateConfiguration();
 			functionalityPane.updateConfiguration();
+			if(Configuration.USE_PRIVATE_CLOUD)
+				cloudBurstingPanel.updateConfiguration();
 			if (Configuration.FUNCTIONALITY == Operation.Optimization)
 				optimizationConfigurationPane.updateConfiguration();
 			else if (Configuration.FUNCTIONALITY == Operation.Robustness) {
@@ -201,9 +203,17 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 					message +=s+"\n";
 				JOptionPane.showMessageDialog(frame, message, "Configuration Error", JOptionPane.ERROR_MESSAGE);
 				return;
-			}			
+			}
 			//log the configuration
 			Configuration.flushLog();
+			if(Configuration.USE_PRIVATE_CLOUD)
+				try {
+					File tempFile = File.createTempFile("space4cloudBurst", ".properties");
+					Configuration.PRIVATE_CLOUD_HOSTS_TMP = tempFile.getAbsolutePath();
+					CloudBurstingPanel.saveFile(tempFile);
+				} catch (IOException e1) {
+					logger.error("Could not save the temporary file for the private cloud configuration");
+				}
 			cancelled = false;
 			disposed = true;
 			frame.dispose();

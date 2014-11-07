@@ -492,7 +492,6 @@ public class EvaluationServer implements ActionListener {
 		deriveCosts(sol);
 		
 		logger.trace("" + sol.getCost() + ", "
-				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
 				+ sol.isFeasible());
 
 		long middleTime = System.nanoTime();

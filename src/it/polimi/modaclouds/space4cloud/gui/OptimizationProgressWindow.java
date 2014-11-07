@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 public class OptimizationProgressWindow extends WindowAdapter implements PropertyChangeListener, ActionListener {
 
-	private JFrame frmOptimizationProgress;
+	private static JFrame frmOptimizationProgress;
 
 	JProgressBar progressBar;
 	private JPanel upperPanel;
@@ -306,7 +306,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		btnInspectSolution.setEnabled(false);
 	}
 
-	public void signalError(String message) {
+	public static void signalError(String message) {
 		JOptionPane.showMessageDialog(frmOptimizationProgress, message, "Error",  JOptionPane.ERROR_MESSAGE);		
 	}
 

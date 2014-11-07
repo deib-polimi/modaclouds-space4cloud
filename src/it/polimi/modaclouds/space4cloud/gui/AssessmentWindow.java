@@ -344,7 +344,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 				tab.addTab(provider, splitPane);
 			}
 
-			{
+			{	
+				//add tiers and utilizations
 				for (Tier t : providedSolution.getApplication(0).getTiers()) {
 					if (is.constrained(t.getId())) //t.getName()))
 						continue;

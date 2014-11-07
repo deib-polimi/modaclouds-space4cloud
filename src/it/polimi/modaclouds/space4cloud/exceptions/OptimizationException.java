@@ -1,5 +1,7 @@
 package it.polimi.modaclouds.space4cloud.exceptions;
 
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+
 import java.util.concurrent.ExecutionException;
 
 public class OptimizationException extends ExecutionException {
@@ -29,4 +31,5 @@ public class OptimizationException extends ExecutionException {
 		super(message,e);
 		message = "Optimization error occurred during phase "+phase+". "+message;
 	}
+
 }
