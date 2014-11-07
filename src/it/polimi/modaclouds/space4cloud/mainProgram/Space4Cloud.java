@@ -1239,7 +1239,7 @@ ConstraintHandlerFactory.clearHandler();
 		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("AssessmentEnded")){
 			logger.info("Assessment ended");
 			pcs.firePropertyChange("assessmentEnded", false, true);
-			cleanResources();
+//			cleanResources();
 		}
 
 	}
