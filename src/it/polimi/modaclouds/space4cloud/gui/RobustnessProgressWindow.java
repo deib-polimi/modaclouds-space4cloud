@@ -851,24 +851,15 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			return;
 		alreadyUpdating = true;
 		
-		if (populations != null)
-			populations.updateGraph();
-		if (costs != null)
-			costs.updateGraph();
-		if (solutions != null)
-			solutions.updateGraph();
-		if (solutions2 != null)
-			solutions2.updateGraph();
-		if (tiers != null)
-			tiers.updateGraph();
-		if (tiers2 != null)
-			tiers2.updateGraph();
-		if (tiersBasic != null)
-			tiersBasic.updateGraph();
-		if (feasibilities != null)
-			feasibilities.updateGraph();
-		if (durations != null)
-			durations.updateGraph();
+		populations.updateGraph();
+		costs.updateGraph();
+		solutions.updateGraph();
+		solutions2.updateGraph();
+		tiers.updateGraph();
+		tiers2.updateGraph();
+		tiersBasic.updateGraph();
+		feasibilities.updateGraph();
+		durations.updateGraph();
 		
 		for (Integer key : privateHostsMap.keySet()) {
 			GenericChart<DefaultCategoryDataset> privateHosts = privateHostsMap.get(key);
@@ -891,24 +882,15 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			return;
 		alreadyUpdating = true;
 		
-		if (populations != null)
-			populations.updateImage();
-		if (costs != null)
-			costs.updateImage();
-		if (solutions != null)
-			solutions.updateImage();
-		if (solutions2 != null)
-			solutions2.updateImage();
-		if (tiers != null)
-			tiers.updateImage();
-		if (tiers2 != null)
-			tiers2.updateImage();
-		if (tiersBasic != null)
-			tiersBasic.updateImage();
-		if (feasibilities != null)
-			feasibilities.updateImage();
-		if (durations != null)
-			durations.updateImage();
+		populations.updateImage();
+		costs.updateImage();
+		solutions.updateImage();
+		solutions2.updateImage();
+		tiers.updateImage();
+		tiers2.updateImage();
+		tiersBasic.updateImage();
+		feasibilities.updateImage();
+		durations.updateImage();
 		
 		for (Integer key : privateHostsMap.keySet()) {
 			GenericChart<DefaultCategoryDataset> privateHosts = privateHostsMap.get(key);
