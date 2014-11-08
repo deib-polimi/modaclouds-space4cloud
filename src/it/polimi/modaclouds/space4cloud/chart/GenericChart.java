@@ -5,6 +5,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.util.ArrayList;
@@ -15,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
@@ -266,6 +270,16 @@ public class GenericChart<E> extends JPanel {
 	
 	public String getFormattedValue(double number) {
 		return (int)Math.round(number) + "";
+	}
+	
+	public void save2png(String path, String fileName, int width, int height) throws IOException {
+		ChartUtilities.writeChartAsPNG(
+				new FileOutputStream(Paths.get(path, fileName)
+						.toFile()), graph, width, height);
+	}
+	
+	public void save2png(String path, String fileName) throws IOException {
+		this.save2png(path, fileName, 1350, 700);
 	}
 	
 }
