@@ -43,10 +43,12 @@ public class Component implements Cloneable, IResponseTimeConstrainable,
 	private String id;
 	private List<Functionality> functionalities = new ArrayList<Functionality>();
 	private Tier container;
+	private String name;
 	private static final Logger logger = LoggerFactory.getLogger(Component.class);
 
-	public Component(String id) {
+	public Component(String id, String name) {
 		this.id = id;
+		this.name = name;
 	}
 
 	public void addFunctionality(Functionality functionality) {
@@ -64,7 +66,7 @@ public class Component implements Cloneable, IResponseTimeConstrainable,
 			logger.error(
 					"Component cloned not supported, building a new component",
 					e);
-			c = new Component(this.getId());
+			c = new Component(this.getId(),this.getName());
 		}
 
 		// now we have to clone the list of Functionality
@@ -100,6 +102,10 @@ public class Component implements Cloneable, IResponseTimeConstrainable,
 	@Override
 	public String getId() {
 		return id;
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	/* (non-Javadoc)

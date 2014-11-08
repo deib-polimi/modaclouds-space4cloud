@@ -1042,7 +1042,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 							.getEncapsulatedComponent__AssemblyContext();
 
 					// create the component
-					Component comp = new Component(repositoryComp.getId());
+					Component comp = new Component(repositoryComp.getId(),repositoryComp.getEntityName());
 
 					// add the functionalities (from SEFFs)
 					EList<ServiceEffectSpecification> seffs = ((BasicComponent) repositoryComp)
