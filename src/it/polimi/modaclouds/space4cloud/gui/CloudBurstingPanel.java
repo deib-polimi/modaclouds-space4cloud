@@ -39,7 +39,7 @@ public class CloudBurstingPanel extends JPanel implements ActionListener, MouseL
 	private static final String PANEL_NAME = "Cloud Bursting";
 	
 	private JList<Host> list;
-	private DefaultListModel<Host> lm;
+	private static DefaultListModel<Host> lm;
 	private JButton add, remove;
 	private JButton save, load;
 	private JTextField configuration;
@@ -138,7 +138,7 @@ public class CloudBurstingPanel extends JPanel implements ActionListener, MouseL
 	 */
 	public void loadConfiguration() {
 		String file = Configuration.PRIVATE_CLOUD_HOSTS;
-		if (file != null && Files.exists(Paths.get(file)))
+		if (file != null && !file.equals("") && Files.exists(Paths.get(file)))
 			loadFile(Paths.get(file).toFile());
 	}
 	
@@ -152,7 +152,7 @@ public class CloudBurstingPanel extends JPanel implements ActionListener, MouseL
 			addElement(h);
 	}
 	
-	private void saveFile(File f) {
+	public static void saveFile(File f) {
 		List<Host> hosts = new ArrayList<Host>();
 		for (int i = 0; i < lm.size(); ++i) {
 			hosts.add(lm.get(i));
@@ -165,7 +165,7 @@ public class CloudBurstingPanel extends JPanel implements ActionListener, MouseL
 	 * Updates values in the Configuration class according to those selected in the panel
 	 */
 	public void updateConfiguration() {
-		Configuration.PRIVATE_CLOUD_HOSTS = configuration.getText();
+		Configuration.PRIVATE_CLOUD_HOSTS = configuration.getText();		
 	}
 	
 	@Override
@@ -241,6 +241,10 @@ public class CloudBurstingPanel extends JPanel implements ActionListener, MouseL
             lm.removeElementAt(sel);
         }
     }
+	
+	public static boolean hasHosts(){
+		return !CloudBurstingPanel.lm.isEmpty();
+	}
 
 	@Override
 	public void mousePressed(MouseEvent e) { }

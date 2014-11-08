@@ -47,6 +47,7 @@ import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 import it.polimi.modaclouds.space4cloud.utils.DataExporter;
 import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
+import it.polimi.modaclouds.space4cloud.utils.PalladioRunException;
 import it.polimi.modaclouds.space4cloud.utils.PluginConsoleAppender;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
 import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentLoadingException;
@@ -123,21 +124,21 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	}
 
 
-//	/**
-//	 * Robustness Variables
-//	 * */
-//	private int testFrom, testTo, step;
-//	private int attempts = 5;
-	
+	//	/**
+	//	 * Robustness Variables
+	//	 * */
+	//	private int testFrom, testTo, step;
+	//	private int attempts = 5;
+
 
 
 	public Space4Cloud(boolean batch) { //, int testFrom, int testTo, int step) {
 		this.batch = batch;		
-//		if (batch) {
-//			this.testFrom = testFrom;
-//			this.testTo = testTo;
-//			this.step = step;			
-//		}
+		//		if (batch) {
+		//			this.testFrom = testFrom;
+		//			this.testTo = testTo;
+		//			this.step = step;			
+		//		}
 	}
 
 
@@ -173,23 +174,23 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			engine.cancel(true);
 			engine = null;
 		}
-		
+
 		//this.interrupt();
 		refreshProject();
 		compleated = true;
 	}
 
 	private StopWatch duration;
-	
+
 	@Override
 	public void  run(){
 		duration = new StopWatch();
 		duration.start();
 		duration.split();
 
-//clear singleton instances from previous runs
-LineServerHandlerFactory.clearHandler();
-ConstraintHandlerFactory.clearHandler();
+		//clear singleton instances from previous runs
+		LineServerHandlerFactory.clearHandler();
+		ConstraintHandlerFactory.clearHandler();
 
 		//load the configuration
 		if (!batch) {
@@ -276,7 +277,7 @@ ConstraintHandlerFactory.clearHandler();
 			signalError("An error occured connecting to the database"+e.getLocalizedMessage());
 			return;
 		}		
-		
+
 		try {
 			dbConfigurationStream.close();
 		} catch (IOException e) {
@@ -314,8 +315,14 @@ ConstraintHandlerFactory.clearHandler();
 		refreshProject();
 		// launch it
 		consoleLogger.info("Launching Palladio transformation.");
-		runConfigHandler.launch();
-		
+		try {
+			runConfigHandler.launch();
+		} catch (PalladioRunException e) {
+			logger.error("Error running Palladio",e);
+			signalError("An error occurred running Palladio"+e.getLocalizedMessage());
+			return;
+		}
+
 		//bring up the Space4Cloud console
 		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		for(IConsole c:consoles){			
@@ -354,7 +361,7 @@ ConstraintHandlerFactory.clearHandler();
 		}
 
 		consoleLogger.info("Parsing the constraints");
-	
+
 		// Parse the constraints and initialize the handler
 		constraintHandler = ConstraintHandlerFactory.getConstraintHandler();
 		try {
@@ -412,7 +419,6 @@ ConstraintHandlerFactory.clearHandler();
 			} catch (OptimizationException e) {
 				logger.error("Error in the optimization", e);
 				signalError("An error occured performing the optimization.\n"+e.getLocalizedMessage());
-				
 				return;
 			}
 			break;
@@ -433,7 +439,7 @@ ConstraintHandlerFactory.clearHandler();
 			logger.info("User exit at functionality choiche");
 			break;
 		}
-		
+
 		refreshProject();
 		logger.debug("Space4Cloud sleeping while the engine works..");
 		while(!compleated){
@@ -450,15 +456,15 @@ ConstraintHandlerFactory.clearHandler();
 
 	private void signalError(String message) {		
 		consoleLogger.error(message);		
-		progressWindow.signalError(message);
+		OptimizationProgressWindow.signalError(message);
 		cleanResources();		
 	}
-	
+
 	private void getProvidersFromExtension()
 			throws ResourceEnvironmentLoadingException {
 		// parse the extension file		
 		ResourceEnvironmentExtensionParser resourceEnvParser = new ResourceEnvironmentExtensionParser();			
-		
+
 		providersInitialSolution = new ArrayList<String>();
 		for (String s : resourceEnvParser.getProviders().values()) {
 			if (!providersInitialSolution.contains(s))
@@ -519,9 +525,9 @@ ConstraintHandlerFactory.clearHandler();
 		SolutionMulti providedSolution = engine.getInitialSolution();
 
 		assesmentWindow = new AssessmentWindow(constraintHandler);
-		
+
 		assesmentWindow.addPropertyChangeListener(this);
-		
+
 		try {
 			assesmentWindow.considerSolution(providedSolution);
 		} catch (NumberFormatException | IOException e) {
@@ -558,9 +564,10 @@ ConstraintHandlerFactory.clearHandler();
 		LineServerHandlerFactory.clearHandler();
 		ConstraintHandlerFactory.clearHandler();
 		refreshProject();
+		FileUtils.deleteQuietly(Paths.get(Configuration.PRIVATE_CLOUD_HOSTS_TMP).toFile());
 		compleated = true;
 	}
-		
+
 
 
 	private void performGenerateInitialSolution() {
@@ -618,9 +625,7 @@ ConstraintHandlerFactory.clearHandler();
 		try {
 			engine = new PartialEvaluationOptimizationEngine(constraintHandler, batch);
 		} catch (DatabaseConnectionFailureExteption e) {
-			logger.error("Error in connecting to the database",e);
-			cleanResources();
-			return;
+			throw new OptimizationException("Optinization error. ",e);		
 		}
 
 
@@ -633,12 +638,7 @@ ConstraintHandlerFactory.clearHandler();
 			engine.loadInitialSolution(initialSolution, initialMce);
 
 		} catch (InitializationException e) {
-			logger.error("Error in loading the initial solution", e);
-			String message = "An error occured during the initialization: "+e.getLocalizedMessage();
-			consoleLogger.error(message);
-			progressWindow.signalError(message);
-			cleanResources();
-			return;	
+			throw new OptimizationException("Error in loading the initial solution", e);
 		}
 		engine.setDuration(duration);
 
@@ -659,7 +659,7 @@ ConstraintHandlerFactory.clearHandler();
 		logger.info("Starting the optimization");
 		engine.execute();
 	}
-	
+
 	private ThreadPoolExecutor executor;
 
 
@@ -678,7 +678,7 @@ ConstraintHandlerFactory.clearHandler();
 
 		// if we want to check the robustness of the solution, a number of
 		// modifications of the usage model file must be created.
-//		ArrayList<File> usageModelExtFiles = new ArrayList<File>();
+		//		ArrayList<File> usageModelExtFiles = new ArrayList<File>();
 		TreeMap<Integer, File> usageModelExtFiles = new TreeMap<Integer, File>();
 		File usageModelExtFile = new File(Configuration.USAGE_MODEL_EXTENSION);
 
@@ -726,11 +726,11 @@ ConstraintHandlerFactory.clearHandler();
 
 		robustnessWindow = new RobustnessProgressWindow(
 				usageModelExtFiles.size());
-		
+
 		robustnessWindow.addPropertyChangeListener(this);
-		
+
 		String duration = durationToString(1000 * (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60);
-		
+
 
 		logger
 		.info("Starting the robustness test, considering each problem "
@@ -782,14 +782,14 @@ ConstraintHandlerFactory.clearHandler();
 
 		for (int key : usageModelExtFiles.keySet()) {
 			File f = usageModelExtFiles.get(key);
-			
-//			step++;
+
+			//			step++;
 			File bestSolution = null;
 			double bestCost = Double.MAX_VALUE;
-			
+
 			Configuration.USAGE_MODEL_EXTENSION = f.getAbsolutePath();
 			Configuration.FUNCTIONALITY = Operation.Optimization;
-			
+
 
 			try {
 				Files.copy(Paths.get(f.getAbsolutePath()),
@@ -797,10 +797,10 @@ ConstraintHandlerFactory.clearHandler();
 						StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) { }
 
-			
-//			TODO: check this
-//			if (initialSolution != null)
-//				Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
+
+			//			TODO: check this
+			//			if (initialSolution != null)
+			//				Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
 
 
 			boolean alreadyThere = false;
@@ -852,10 +852,10 @@ ConstraintHandlerFactory.clearHandler();
 
 				{
 
-//					File g = Paths.get(c.PROJECT_PATH, resFolder,
-//							"" + testValue + File.separator + attempt,
-//							"solution.xml").toFile();
-					
+					//					File g = Paths.get(c.PROJECT_PATH, resFolder,
+					//							"" + testValue + File.separator + attempt,
+					//							"solution.xml").toFile();
+
 
 					File g = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
 							Configuration.SOLUTION_LIGHT_FILE_NAME + Configuration.SOLUTION_FILE_EXTENSION).toFile();
@@ -867,37 +867,37 @@ ConstraintHandlerFactory.clearHandler();
 
 							//save the solution
 
-/////////
-// Or don't, because we only need to save the best one.
+							/////////
+							// Or don't, because we only need to save the best one.
 
-//Files.createDirectories(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts", "step"+step));
-//Files.copy(
-//		Paths.get(g.getAbsolutePath()),
-//		Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts", "step"+step, Configuration.SOLUTION_LIGHT_FILE_NAME + attempt + Configuration.SOLUTION_FILE_EXTENSION)
-//		);
+							//Files.createDirectories(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts", "step"+step));
+							//Files.copy(
+							//		Paths.get(g.getAbsolutePath()),
+							//		Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts", "step"+step, Configuration.SOLUTION_LIGHT_FILE_NAME + attempt + Configuration.SOLUTION_FILE_EXTENSION)
+							//		);
 
 
-// to save space on hd I remove the results as soon
-// as i get the solution.xml file, because that's
-// all I need
+							// to save space on hd I remove the results as soon
+							// as i get the solution.xml file, because that's
+							// all I need
 
 							{
 								Path performanceResults = Paths.get(g.getParent(), "performance_results");
-							
+
 								while (performanceResults.toFile().exists()) {
 									try {
 										cleanFolders(performanceResults);
-//										cleanFolders(Paths.get(g.getParent(), "performance_results"));
+										//										cleanFolders(Paths.get(g.getParent(), "performance_results"));
 									} catch (Exception e) {
 										logger.warn("Exception raised while clearing folder: "+performanceResults,e);
 									}
 								}
-							
+
 							}
 
 
-							
-							
+
+
 
 							double cost = SolutionMulti.getCost(g);
 
@@ -956,8 +956,8 @@ ConstraintHandlerFactory.clearHandler();
 
 			try {
 				robustnessWindow.add(usageModelExtFiles.get(key), solutions.get(el));			
-			robustnessWindow.setValue(terminated);
-			robustnessWindow.save2png(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory).toString());
+				robustnessWindow.setValue(terminated);
+				robustnessWindow.save2png(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory).toString());
 			} catch (JAXBException | SAXException | IOException e) {
 				logger.error("Error showing the results",e);
 			}
@@ -979,35 +979,35 @@ ConstraintHandlerFactory.clearHandler();
 		logger.info("Check ended!");
 
 
-//		String actualDuration = "";
-//		{
-//			int res = (int) timer.getTime() / 1000;
-//			if (res > 60 * 60) {
-//				actualDuration += (res / (60 * 60)) + " h ";
-//				res = res % (60 * 60);
-//			}
-//			if (res > 60) {
-//				actualDuration += (res / 60) + " m ";
-//				res = res % 60;
-//			}
-//			actualDuration += res + " s";
-//		}
+		//		String actualDuration = "";
+		//		{
+		//			int res = (int) timer.getTime() / 1000;
+		//			if (res > 60 * 60) {
+		//				actualDuration += (res / (60 * 60)) + " h ";
+		//				res = res % (60 * 60);
+		//			}
+		//			if (res > 60) {
+		//				actualDuration += (res / 60) + " m ";
+		//				res = res % 60;
+		//			}
+		//			actualDuration += res + " s";
+		//		}
 		String actualDuration = durationToString(timer.getTime());
 
 		logger.info("Expected time of execution: " + duration
 				+ ", actual time of execution: " + actualDuration);
-		
+
 		if (Configuration.ROBUSTNESS_VARIABILITY > 0) {
 			logger.info("Exporting the data in the simplified output format...");
 			DataExporter.perform(resultsFolder);
 		}
-		
+
 		robustnessWindow.testEnded();
 
 		logger.info("Check ended!");
 
 	}
-	
+
 	public static String durationToString(long duration) {
 		String actualDuration = "";
 		{
@@ -1026,7 +1026,7 @@ ConstraintHandlerFactory.clearHandler();
 
 		return actualDuration;
 	}
-	
+
 
 
 	//	private void refreshProject() throws CoreException {
@@ -1048,9 +1048,9 @@ ConstraintHandlerFactory.clearHandler();
 
 
 
-//	public void setRobustnessAttempts(int attempts) {
-//		this.attempts = attempts;
-//	}
+	//	public void setRobustnessAttempts(int attempts) {
+	//		this.attempts = attempts;
+	//	}
 
 
 
@@ -1218,7 +1218,7 @@ ConstraintHandlerFactory.clearHandler();
 			if(engine!=null)
 				engine.inspect();
 
-		//stop the optimization process if the user closes the window	
+			//stop the optimization process if the user closes the window	
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed")){
 			logger.info("Robustness Process cancelled by the user");
 			pcs.firePropertyChange("robustnessEnded", false, true);

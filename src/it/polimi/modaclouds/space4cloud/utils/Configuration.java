@@ -1,5 +1,7 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
+import it.polimi.modaclouds.space4cloud.gui.CloudBurstingPanel;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -74,6 +76,7 @@ public class Configuration {
 	// For the Private Cloud part:
 	public static boolean USE_PRIVATE_CLOUD = false;
 	public static String PRIVATE_CLOUD_HOSTS = "";
+	public static String PRIVATE_CLOUD_HOSTS_TMP= "";
 	//Used to start or stop the optimization process
 	public static boolean run = true;
 
@@ -247,9 +250,9 @@ public class Configuration {
 		FUNCTIONALITY = Operation.valueOf(prop.getProperty("FUNCTIONALITY", FUNCTIONALITY.toString()));
 		SOLVER = Solver.valueOf(prop.getProperty("SOLVER", SOLVER.toString()));
 		LINE_PROP_FILE= prop.getProperty("LINE_PROP_FILE", LINE_PROP_FILE);		
-		RANDOM_ENV_FILE= prop.getProperty("RANDOM_ENV_FILE");	
-		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
-		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
+		RANDOM_ENV_FILE= prop.getProperty("RANDOM_ENV_FILE",RANDOM_ENV_FILE);	
+		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD",SSH_PASSWORD);
+		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME",SSH_USER_NAME);
 		PRIVATE_CLOUD_HOSTS = prop.getProperty("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
 		try{
 			TABU_MEMORY_SIZE= Integer.parseInt(prop.getProperty("TABU_MEMORY_SIZE"));
@@ -345,11 +348,11 @@ public class Configuration {
 					errors.add("The host for SSH connection has to be provided to perform the initial solution generation");
 			}
 
-			
-			if (USE_PRIVATE_CLOUD) {
-				if (PRIVATE_CLOUD_HOSTS == null || PRIVATE_CLOUD_HOSTS.length() == 0)
-					errors.add("You need to specify the file describing the private hosts.");
-			}
+	
+		}
+		if (USE_PRIVATE_CLOUD) {
+			if (!CloudBurstingPanel.hasHosts())
+				errors.add("You need to specify the file describing the private hosts.");
 		}
 		if (FUNCTIONALITY == Operation.Robustness) {
 			if(ROBUSTNESS_ATTEMPTS < 1)
@@ -407,6 +410,7 @@ public class Configuration {
 		logger.debug("REDISTRIBUTE_WORKLOAD: " + Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		logger.debug("USE_PRIVATE_CLOUD: " + Boolean.toString(USE_PRIVATE_CLOUD));
 		logger.debug("PRIVATE_CLOUD_HOSTS: " + PRIVATE_CLOUD_HOSTS);
+		logger.debug("PRIVATE_CLOUD_HOSTS_TMP: " + PRIVATE_CLOUD_HOSTS_TMP);
 	}
 	
 	

@@ -147,7 +147,7 @@ public class RunConfigurationsHandler {
 	/**
 	 * Launch.
 	 */
-	public void launch() {
+	public void launch() throws PalladioRunException {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		Path launchConfigPath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.LAUNCH_CONFIG);
 		IPath location = org.eclipse.core.runtime.Path.fromOSString(launchConfigPath.toString());
@@ -156,10 +156,9 @@ public class RunConfigurationsHandler {
 		launchConfig = DebugPlugin.getDefault().getLaunchManager()
 				.getLaunchConfiguration(ifile);
 		try {
-			launchConfig.launch("run", new NullProgressMonitor());
-		
-		} catch (CoreException e) {
-			logger.error("Error while running launch configuration "+launchConfig.getName(),e);			
+			launchConfig.launch("run", new NullProgressMonitor());		
+		} catch (CoreException | RuntimeException e) {
+			throw new PalladioRunException("Error while running launch configuration "+launchConfig.getName(),e);			
 		}
 	}
 

@@ -12,5 +12,10 @@ public class InitalFolderCreationException extends IOException {
 	public InitalFolderCreationException(Throwable cause) {
 		super(cause);
 	}
+	
+	public InitalFolderCreationException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	
 
 }
