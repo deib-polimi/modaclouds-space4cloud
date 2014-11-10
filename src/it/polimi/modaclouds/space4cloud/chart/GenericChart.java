@@ -360,10 +360,6 @@ public class GenericChart<E> extends JPanel {
 		imageHeight = Integer.parseInt(properties.getProperty("ImageHeight"));
 	}
 	
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	
 	public static GenericChart<DefaultCategoryDataset> createConstraintsLogger() throws NumberFormatException, IOException {
 		GenericChart<DefaultCategoryDataset> constraintsLogger = new GenericChart<DefaultCategoryDataset>("Iteration", "Y");
 		constraintsLogger.dataset = new DefaultCategoryDataset();

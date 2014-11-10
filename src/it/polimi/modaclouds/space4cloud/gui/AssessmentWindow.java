@@ -122,7 +122,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
             		return constraint.getMax();
             	} else if (c instanceof UsageConstraint) {
             		UsageConstraint constraint = (UsageConstraint) c;
-            		return constraint.getMax() / (100 * 100); // TODO: check the constraints! this shouldn't be done here!
+            		return constraint.getMax() / (100); // * 100); // TODO: check the constraints! this shouldn't be done here!
             	}
             }
             
