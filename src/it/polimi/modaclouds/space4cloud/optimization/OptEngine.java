@@ -1223,7 +1223,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		}
 		// optimLogger.trace(sol.showStatus());
 		if (sol.isFeasible())
-			logger.info("\n\t Solution made feasible");
+			logger.info("Solution made feasible");
 		else
 			logger.info("Max number of feasibility iterations reached");
 	}

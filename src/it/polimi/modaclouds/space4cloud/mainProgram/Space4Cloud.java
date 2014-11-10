@@ -396,13 +396,14 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			performGenerateInitialSolution();
 		}
 
+		processEnded = false;
 
 		switch (Configuration.FUNCTIONALITY) {
 		case Assessment:
 			try {
 				consoleLogger.info("Performing Assesment");
 				performAssessment();
-				consoleLogger.info("Assesment finished");
+//				consoleLogger.info("Assesment finished");
 			} catch (AssesmentException e) {
 				logger.error("Error in performing the assesment", e);
 				signalError("An error occured performing the assesment.\n"+e.getLocalizedMessage());				
@@ -415,7 +416,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 				consoleLogger.info("Performing Optimization");
 				performOptimization();
-				consoleLogger.info("Optimization finished");
+//				consoleLogger.info("Optimization finished");
 			} catch (OptimizationException e) {
 				logger.error("Error in the optimization", e);
 				signalError("An error occured performing the optimization.\n"+e.getLocalizedMessage());
@@ -427,7 +428,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			try {
 				consoleLogger.info("Performing Robustness Analysis");
 				performRobustnessAnalysis();
-				consoleLogger.info("Robustness Analysis finished");
+//				consoleLogger.info("Robustness Analysis finished");
 			} catch (RobustnessException e) {
 				logger.error("Error in the robustness analysis", e);
 				signalError("An error occured performing the robustness analysis.\n"+e.getLocalizedMessage());
@@ -1186,12 +1187,15 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		} while (!s.equals(possibilities[0]));
 	}
+	
+	private boolean processEnded = false;
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		//when the worker with the engine has done
 		if(evt.getSource().equals(engine) && evt.getPropertyName().equals("state") && evt.getNewValue()== StateValue.DONE && !engine.isCancelled()){
-			logger.info("Optimization ended");										
+			logger.info("Optimization ended");		
+			processEnded = true;
 			pcs.firePropertyChange("optimizationEnded", false, true);
 			if(!batch)
 				progressWindow.signalCompletion();
@@ -1203,7 +1207,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			logger.info("Progress: "+(int) evt.getNewValue());			
 		}
 		//stop the optimization process if the user closes the window
-		else if(evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed")){
+		else if(evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed") && !processEnded){
 			if(engine != null){
 				engine.exportSolution();
 				engine.cancel(true);
@@ -1216,27 +1220,29 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				engine.inspect();
 
 			//stop the optimization process if the user closes the window	
-		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed")){
+		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed") && !processEnded){
 			logger.info("Robustness Process cancelled by the user");
-			pcs.firePropertyChange("robustnessEnded", false, true);
+			pcs.firePropertyChange("robustnessClosed", false, true);
 			try {
 				executor.shutdownNow();
 			} catch (Exception e) { }
 			cleanExit();
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")){
 			logger.info("Robustness ended");
+			processEnded = true;
 			pcs.firePropertyChange("robustnessEnded", false, true);
 			if(!batch)
 				robustnessWindow.signalCompletion();
 			cleanResources();
-		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("WindowClosed")){
+		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("WindowClosed") && !processEnded){
 			logger.info("Assessment window closed");
 			pcs.firePropertyChange("assessmentClosed", false, true);
 			cleanResources();
 		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("AssessmentEnded")){
 			logger.info("Assessment ended");
+			processEnded = true;
 			pcs.firePropertyChange("assessmentEnded", false, true);
-//			cleanResources();
+			cleanResources();
 		}
 
 	}
