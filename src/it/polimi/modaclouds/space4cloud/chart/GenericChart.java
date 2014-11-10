@@ -1,5 +1,7 @@
 package it.polimi.modaclouds.space4cloud.chart;
 
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -7,11 +9,13 @@ import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -81,6 +85,40 @@ public class GenericChart<E> extends JPanel {
 		add(label);
 		
 		markers = new ArrayList<Marker>();
+	}
+	
+	public GenericChart(String x, String y) {
+		this(null, x, y);
+	}
+	
+	public GenericChart() {
+		this(null, "X", "Y");
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void initDataset(Class<?> type) throws InstantiationException, IllegalAccessException {
+		dataset = (E) type.newInstance();
+	}
+	
+	public void initDataset() {
+		try {
+			initDataset(DefaultCategoryDataset.class);
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void add(String series, double x, double y) {
+		if (dataset instanceof DefaultCategoryDataset)
+			((DefaultCategoryDataset) dataset).addValue(y, series, x + "");
+		
+		updateGraph();
+		updateImage();
+	}
+	
+	@Deprecated
+	public void addPoint2Series(SeriesHandle series, double x, double y) {
+		add("Series " + series.getPosition(), x, y);
 	}
 	
 	public void clear() {
@@ -280,6 +318,109 @@ public class GenericChart<E> extends JPanel {
 	
 	public void save2png(String path, String fileName) throws IOException {
 		this.save2png(path, fileName, 1350, 700);
+	}
+	
+	public void save2png(String fileName) throws IOException {
+		this.save2png(
+				Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY).toString(),
+				fileName, 1350, 700);
+	}
+	
+	public void save2png() throws IOException {
+		this.save2png(
+				Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY).toString(),
+				path2save, imageWidth, imageHeight);
+	}
+	
+	private String path2save;
+	private int imageWidth;
+	private int imageHeight;
+	
+	/**
+	 * @throws NumberFormatException
+	 * @throws IOException
+	 */
+	public void initByProperties(String propertiesFileName)
+			throws NumberFormatException, IOException {
+
+		InputStream fileInput = this.getClass().getResourceAsStream(
+				propertiesFileName);
+		Properties properties = new Properties();
+		properties.load(fileInput);
+		fileInput.close();
+		title = properties.getProperty("ImageTitle");
+		path2save = properties.getProperty("path2save");
+		imageWidth = Integer.parseInt(properties.getProperty("ImageWidth"));
+		imageHeight = Integer.parseInt(properties.getProperty("ImageHeight"));
+	}
+	
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
+	public static GenericChart<DefaultCategoryDataset> createConstraintsLogger() throws NumberFormatException, IOException {
+		GenericChart<DefaultCategoryDataset> constraintsLogger = new GenericChart<DefaultCategoryDataset>("Iteration", "Y");
+		constraintsLogger.dataset = new DefaultCategoryDataset();
+		constraintsLogger.defaultRange = true;
+		constraintsLogger.labelsVisible = false;
+		constraintsLogger.pointsVisible = false;
+		
+		constraintsLogger.initByProperties("constraints.properties");
+		constraintsLogger.title = "Violated Constraints";
+		
+		return constraintsLogger;
+	}
+	
+	public static GenericChart<DefaultCategoryDataset> createVmLogger() throws NumberFormatException, IOException {
+		GenericChart<DefaultCategoryDataset> vmLogger = new GenericChart<DefaultCategoryDataset>("Iteration", "Y");
+		vmLogger.dataset = new DefaultCategoryDataset();
+		vmLogger.defaultRange = true;
+		vmLogger.labelsVisible = false;
+		vmLogger.pointsVisible = false;
+		
+		vmLogger.initByProperties("vmCount.properties");
+		vmLogger.title = "Total Number of VMs";
+		
+		return vmLogger;
+	}
+	
+	public static GenericChart<DefaultCategoryDataset> createCostLogger() throws NumberFormatException, IOException {
+		GenericChart<DefaultCategoryDataset> costLogger = new GenericChart<DefaultCategoryDataset>("Iteration", "Y");
+		costLogger.dataset = new DefaultCategoryDataset();
+		costLogger.defaultRange = true;
+		costLogger.labelsVisible = false;
+		costLogger.pointsVisible = false;
+		
+		costLogger.initByProperties("conf.properties");
+		costLogger.title = "Solution Cost";
+		
+		return costLogger;
+	}
+	
+	public static GenericChart<DefaultCategoryDataset> createResponseTimeLogger() throws NumberFormatException, IOException {
+		GenericChart<DefaultCategoryDataset> costLogger = new GenericChart<DefaultCategoryDataset>("Iteration", "Y");
+		costLogger.dataset = new DefaultCategoryDataset();
+		costLogger.defaultRange = true;
+		costLogger.labelsVisible = false;
+		costLogger.pointsVisible = false;
+		
+		costLogger.initByProperties("responseTime.properties");
+		costLogger.title = "Average Response Times";
+		
+		return costLogger;
+	}
+	
+	public static GenericChart<DefaultCategoryDataset> createUtilizationLogger() throws NumberFormatException, IOException {
+		GenericChart<DefaultCategoryDataset> costLogger = new GenericChart<DefaultCategoryDataset>("Iteration", "Y");
+		costLogger.dataset = new DefaultCategoryDataset();
+		costLogger.defaultRange = true;
+		costLogger.labelsVisible = false;
+		costLogger.pointsVisible = false;
+		
+		costLogger.initByProperties("utilization.properties");
+		costLogger.title = "CPU Utilization";
+		
+		return costLogger;
 	}
 	
 }

@@ -118,39 +118,74 @@ public class DataHandler {
 	
 	public static final int MAX_ATTEMPTS = 2;
 	
+	public static final int MAX_TOTAL_RESETS = 10;
+	
+	private int resets = 0;
+	
+	private void resetDatabase() {
+		if (resets < MAX_TOTAL_RESETS) {
+			try {
+				cloudProviders = new CloudProvidersDictionary();
+				logger.debug("Database resetted!");
+				resets++;
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
 		
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+			
+			CloudResource res = getCloudResourceInternal(provider, serviceName, resourceName);
+			if (res != null)
+				return res;
 		
-			ProviderDBConnector pdb = cloudProviders
-					.getProviderDBConnectors().get(provider); // provider
-			
-			List<CloudResource> cloudResourceList = pdb
-					.getIaaSServicesHashMap().get(serviceName) // service
-					.getComposedOf();
-	
-			// TODO: Controllare questa cosa :(
-			for (CloudResource cr : cloudResourceList) {
-				if (cr.getName().equals(resourceName)
-						&&(cr.getHasCost() != null)
-						&& (cr.getHasCost().size() > 0))
-						return cr;
-			}
-			
-			try {
-				cloudProviders = new CloudProvidersDictionary();
-				logger.debug("Database resetted!");
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-			
+			resetDatabase();
 		}
 		
 		return null;
 	}
+	
+	private CloudResource getCloudResourceInternal(String provider, String serviceName,
+			String resourceName) {
+		
+		ProviderDBConnector pdb = cloudProviders
+				.getProviderDBConnectors().get(provider); // provider
+		
+		List<CloudResource> cloudResourceList = pdb
+				.getIaaSServicesHashMap().get(serviceName) // service
+				.getComposedOf();
 
+		// TODO: Controllare questa cosa :(
+		for (CloudResource cr : cloudResourceList) {
+			if (cr.getName().equals(resourceName)
+					&&(cr.getHasCost() != null)
+					&& (cr.getHasCost().size() > 0))
+					return cr;
+		}
+		
+		return null;
+	}
+	
 	public List<String> getCloudResourceSizes(String provider,
+			String serviceName) {
+		
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+			
+			List<String> res = getCloudResourceSizesInternal(provider, serviceName);
+			if (res != null && res.size() > 0)
+				return res;
+		
+			resetDatabase();
+		}
+		
+		return new ArrayList<>();
+	}
+
+	private List<String> getCloudResourceSizesInternal(String provider,
 			String serviceName) {
 		List<CloudResource> cloudResourceList = cloudProviders
 				.getProviderDBConnectors().get(provider) // provider
@@ -235,6 +270,22 @@ public class DataHandler {
 
 	}
 	
+	
+	public double getProcessingRate(String provider, String serviceName,
+			String resourceName) {
+		
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+			
+			double res = getProcessingRateInternal(provider, serviceName, resourceName);
+			if (res > -1)
+				return res;
+		
+			resetDatabase();
+		}
+		
+		return -1;
+	}
+	
 	/**
 	 * Gets the processing rate of the cpus.
 	 * 
@@ -246,7 +297,7 @@ public class DataHandler {
 	 *            the id resource
 	 * @return the speed
 	 */
-	public double getProcessingRate(String provider, String serviceName,
+	private double getProcessingRateInternal(String provider, String serviceName,
 			String resourceName) {
 		List<CloudResource> cloudResourceList = cloudProviders
 				.getProviderDBConnectors().get(provider) // provider
@@ -269,6 +320,20 @@ public class DataHandler {
 		return -1;
 
 	}
+	
+	public List<IaaS> getSameServiceResource(CloudService service, String region) {
+		
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+			
+			List<IaaS> res = getSameServiceResourceInternal(service, region);
+			if (res != null && res.size() > 0)
+				return res;
+		
+			resetDatabase();
+		}
+		
+		return new ArrayList<>();
+	}
 
 	/**
 	 * returns a list of IaaS services with the provider and sarvice name equals
@@ -280,7 +345,7 @@ public class DataHandler {
 	 *            - the region
 	 * @return a list of IaaS services
 	 */
-	public List<IaaS> getSameServiceResource(CloudService service, String region) {
+	private List<IaaS> getSameServiceResourceInternal(CloudService service, String region) {
 		List<IaaS> resources = new ArrayList<>();
 		for (CloudResource cr : cloudProviders.getProviderDBConnectors()
 				.get(service.getProvider()) // provider
@@ -300,8 +365,22 @@ public class DataHandler {
 		}
 		return resources;
 	}
-
+	
 	public List<String> getServices(String provider, String serviceType) {
+		
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+			
+			List<String> res = getServicesInternal(provider, serviceType);
+			if (res != null && res.size() > 0)
+				return res;
+		
+			resetDatabase();
+		}
+		
+		return new ArrayList<>();
+	}
+
+	private List<String> getServicesInternal(String provider, String serviceType) {
 
 		CloudResource expectedResource = null;
 		switch (serviceType) {

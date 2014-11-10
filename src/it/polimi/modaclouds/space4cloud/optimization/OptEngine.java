@@ -18,8 +18,7 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
-import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
@@ -94,6 +93,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.emf.common.util.EList;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -170,9 +170,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 */
 	protected Map<String, Cache<String, Integer>> longTermFrequencyMemory;
 
-	protected SeriesHandle bestSolutionSerieHandler;
-	protected SeriesHandle localBestSolutionSerieHandler;
-
 	protected Random random;
 	protected int numIterNoImprov = 0;
 
@@ -184,11 +181,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected Logger optimLogger = LoggerFactory.getLogger("optimLogger");
 	protected Logger scrambleLogger = LoggerFactory.getLogger("scrambleLogger");
 
-	protected Logger2JFreeChartImage costLogImage;
-
-	protected Logger2JFreeChartImage logVm;
-	protected Logger2JFreeChartImage logConstraints;
-
+	protected GenericChart<DefaultCategoryDataset> costLogImage;
+	protected GenericChart<DefaultCategoryDataset> logVm;
+	protected GenericChart<DefaultCategoryDataset> logConstraints;
+	
+	protected String bestSolutionSerieHandler;
+	protected String localBestSolutionSerieHandler;
 
 	private boolean batch = false;
 
@@ -208,16 +206,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			boolean batch) throws DatabaseConnectionFailureExteption {
 
 		loadConfiguration();
-
+		
 		try {
-			costLogImage = new Logger2JFreeChartImage();
-			logVm = new Logger2JFreeChartImage("vmCount.properties");
-			logConstraints = new Logger2JFreeChartImage(
-					"constraints.properties");
-
+			costLogImage = GenericChart.createCostLogger();
+			logVm = GenericChart.createVmLogger();
+			logConstraints = GenericChart.createConstraintsLogger();
 		} catch (NumberFormatException | IOException e) {
 			logger.error("Unable to create chart loggers", e);
-
 		}
 
 		optimLogger.debug("Random seed: " + Configuration.RANDOM_SEED);
@@ -508,11 +503,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return constraintHandler;
 	}
 
-	public Logger2JFreeChartImage getConstraintsLogger() {
+	public GenericChart<DefaultCategoryDataset> getConstraintsLogger() {
 		return logConstraints;
 	}
 
-	public Logger2JFreeChartImage getCostLogger() {
+	public GenericChart<DefaultCategoryDataset> getCostLogger() {
 		return costLogImage;
 	}
 
@@ -528,7 +523,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return MAX_SCRUMBLE_ITERS;
 	}
 
-	public Logger2JFreeChartImage getVMLogger() {
+	public GenericChart<DefaultCategoryDataset> getVMLogger() {
 		return logVm;
 	}
 
@@ -1277,15 +1272,16 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		bestSolution = initialSolution.clone();
 		localBestSolution = initialSolution.clone();
-		bestSolutionSerieHandler = costLogImage.newSeries("Best Solution");
-		timer.split();
 
-		localBestSolutionSerieHandler = costLogImage
-				.newSeries("Local Best Solution");
-		costLogImage.addPoint2Series(localBestSolutionSerieHandler,
+		timer.split();
+		
+		bestSolutionSerieHandler = "Best Solution";
+		localBestSolutionSerieHandler = "Local Best Solution";
+
+		costLogImage.add(localBestSolutionSerieHandler,
 				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 				localBestSolution.getCost());
-		costLogImage.addPoint2Series(bestSolutionSerieHandler,
+		costLogImage.add(bestSolutionSerieHandler,
 				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 				bestSolution.getCost());
 		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
@@ -1546,6 +1542,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					newRes = res;
 					break;
 				}
+			}
+			if (newRes == null) {
+				throw new OptimizationException("longTermMemoryRestart: No resource found!");
 			}
 			moveVM.changeMachine(t.getId(), (Compute) newRes);
 		}
@@ -1966,7 +1965,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.warn("" + bestSolution.getCost() + ", "
 					+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())
 					+ ", " + bestSolution.isFeasible());
-			costLogImage.addPoint2Series(bestSolutionSerieHandler,
+			costLogImage.add(bestSolutionSerieHandler,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					bestSolution.getCost());
 			optimLogger.info("updated best solution");
@@ -2002,7 +2001,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.warn("" + localBestSolution.getCost() + ", "
 					+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())
 					+ ", " + localBestSolution.isFeasible());
-			costLogImage.addPoint2Series(localBestSolutionSerieHandler,
+			costLogImage.add(localBestSolutionSerieHandler,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					localBestSolution.getCost());
 			timer.unsplit();

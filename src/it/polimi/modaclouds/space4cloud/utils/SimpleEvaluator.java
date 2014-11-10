@@ -15,8 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
-import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
@@ -38,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,10 +47,10 @@ public class SimpleEvaluator {
 	protected LqnResultParser parser;
 	protected Solution initialSolution;
 	// private EvaluationServer evalServer = new EvaluationServer();
-
-	private Logger2JFreeChartImage vmLogger;
-	private Logger2JFreeChartImage rtLogger;
-	private Logger2JFreeChartImage utilLogger;
+	
+	private GenericChart<DefaultCategoryDataset> vmLogger;
+	private GenericChart<DefaultCategoryDataset> rtLogger;
+	private GenericChart<DefaultCategoryDataset> utilLogger;
 
 	protected static final Logger logger = LoggerFactory.getLogger(SimpleEvaluator.class);
 
@@ -66,15 +66,15 @@ public class SimpleEvaluator {
 
 	}
 
-	public Logger2JFreeChartImage getRTLogger() {
+	public GenericChart<DefaultCategoryDataset> getRTLogger() {
 		return rtLogger;
 	}
 
-	public Logger2JFreeChartImage getUtilLogger() {
+	public GenericChart<DefaultCategoryDataset> getUtilLogger() {
 		return utilLogger;
 	}
 
-	public Logger2JFreeChartImage getVMLogger() {
+	public GenericChart<DefaultCategoryDataset> getVMLogger() {
 		return vmLogger;
 	}
 
@@ -320,27 +320,27 @@ public class SimpleEvaluator {
 
 		// init vm Logger
 		try {
-			vmLogger = new Logger2JFreeChartImage("vmCount.properties");
+			vmLogger = GenericChart.createVmLogger();
 		} catch (NumberFormatException | IOException e) {
 			logger.error("Unable to create vmLogger", e);
 		}
-		HashMap<String, SeriesHandle> vmSeriesHandlers = new HashMap<>();
+		HashMap<String, String> vmSeriesHandlers = new HashMap<>();
 		for (Tier t : initialSolution.getApplication(0).getTiers())
 			if (t.getId().contains("CPU"))
-				vmSeriesHandlers.put(t.getId(), vmLogger.newSeries(t.getId()));
+				vmSeriesHandlers.put(t.getId(), t.getId());
 		for (int i = 0; i < 24; i++)
 			for (Tier t : initialSolution.getApplication(i).getTiers())
 				if (t.getId().contains("CPU"))
-					vmLogger.addPoint2Series(vmSeriesHandlers.get(t.getId()),
+					vmLogger.add(vmSeriesHandlers.get(t.getId()),
 							i, ((IaaS) t.getCloudService()).getReplicas());
 
 		// initialize response time logger
 		try {
-			rtLogger = new Logger2JFreeChartImage("responseTime.properties");
+			rtLogger = GenericChart.createResponseTimeLogger();
 		} catch (NumberFormatException | IOException e) {
 			logger.error("Unable to create rtLogger", e);
 		}
-		HashMap<String, SeriesHandle> rtSeriesHandlers = new HashMap<>();
+		HashMap<String, String> rtSeriesHandlers = new HashMap<>();
 
 		ArrayList<String> functionalities = new ArrayList<>();
 		for (Tier t : initialSolution.getApplication(0).getTiers())
@@ -351,33 +351,33 @@ public class SimpleEvaluator {
 		for (String s : responseTimes.get(0).keySet())
 			if (functionalities.contains(s)
 					|| Configuration.SOLVER == Solver.LINE)
-				rtSeriesHandlers.put(s, rtLogger.newSeries(s));
+				rtSeriesHandlers.put(s, s);
 
 		for (int i = 0; i < 24; i++) {
 			logger.info("responseTime: " + i);
 			for (String s : responseTimes.get(i).keySet())
 				if (functionalities.contains(s)
 						|| Configuration.SOLVER == Solver.LINE)
-					rtLogger.addPoint2Series(rtSeriesHandlers.get(s), i,
+					rtLogger.add(rtSeriesHandlers.get(s), i,
 							responseTimes.get(i).get(s));
 		}
 
 		// init utilization logger
 		try {
-			utilLogger = new Logger2JFreeChartImage("utilization.properties");
+			utilLogger = GenericChart.createUtilizationLogger();
 		} catch (NumberFormatException | IOException e) {
 			logger.error("Unable to create utilLogger", e);
 		}
-		HashMap<String, SeriesHandle> utilSeriesHandlers = new HashMap<>();
+		HashMap<String, String> utilSeriesHandlers = new HashMap<>();
 
 		for (String s : utilizations.get(0).keySet())
 			if (s.contains("CPU"))
-				utilSeriesHandlers.put(s, utilLogger.newSeries(s));
+				utilSeriesHandlers.put(s, s);
 
 		for (int i = 0; i < 24; i++)
 			for (String s : utilizations.get(i).keySet())
 				if (s.contains("CPU"))
-					utilLogger.addPoint2Series(utilSeriesHandlers.get(s), i,
+					utilLogger.add(utilSeriesHandlers.get(s), i,
 							utilizations.get(i).get(s));
 
 		logger.info("Utilizations");

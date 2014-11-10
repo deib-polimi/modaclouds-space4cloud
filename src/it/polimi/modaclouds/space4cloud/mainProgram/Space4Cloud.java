@@ -645,10 +645,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		// create the progress window
 		if (!batch) {
 			progressWindow = new OptimizationProgressWindow();
-			progressWindow.setMax(100);
 			progressWindow.setCostLogger(engine.getCostLogger());
 			progressWindow.setVMLogger(engine.getVMLogger());
 			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
+			progressWindow.setMax(100);
 			progressWindow.addPropertyChangeListener(this);
 			engine.addPropertyChangeListener(progressWindow);
 			engine.getEvalServer().addPropertyChangeListener(progressWindow);

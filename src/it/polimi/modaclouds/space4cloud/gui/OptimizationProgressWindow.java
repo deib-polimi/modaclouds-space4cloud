@@ -15,7 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.awt.Dimension;
@@ -34,16 +34,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.WindowConstants;
-import javax.swing.border.TitledBorder;
 
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,18 +52,10 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	private JPanel upperPanel;
 	private JPanel middlePanel;
 
-	private JPanel vmPanel;
-	private JLabel vmLabel;
-	private JPanel costPanel;
-	private JLabel costLabel;
-	private JPanel constraintPanel;
-	private JLabel constraintLabel;
-
-	private Logger2JFreeChartImage costLogger;
-
-	private Logger2JFreeChartImage vmLogger;
-
-	private Logger2JFreeChartImage constraintsLogger;
+	private GenericChart<DefaultCategoryDataset> vmLogger;
+	private GenericChart<DefaultCategoryDataset> costLogger;
+	private GenericChart<DefaultCategoryDataset> constraintsLogger;
+	
 	private static final Logger logger = LoggerFactory.getLogger(OptimizationProgressWindow.class);
 
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -89,14 +78,13 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		frmOptimizationProgress = new JFrame();
 		frmOptimizationProgress.setTitle("Optimization");
 		//		frmOptimizationProgress.setBounds(100, 100, 450, 300);
-		frmOptimizationProgress.setMinimumSize(new Dimension(400, 300));
+		frmOptimizationProgress.setMinimumSize(new Dimension(900, 600));
 		frmOptimizationProgress.setLocationRelativeTo(null);
-		frmOptimizationProgress
-		.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
+//		frmOptimizationProgress.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frmOptimizationProgress.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frmOptimizationProgress.addWindowListener(this);
-		frmOptimizationProgress.setExtendedState(frmOptimizationProgress.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+//		frmOptimizationProgress.setExtendedState(frmOptimizationProgress.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{100, 0};
 		gridBagLayout.rowHeights = new int[]{17, 100, 10, 0};
@@ -127,44 +115,15 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		gbc_middlePanel.gridx = 0;
 		gbc_middlePanel.gridy = 1;
 		frmOptimizationProgress.getContentPane().add(middlePanel, gbc_middlePanel);
-		middlePanel.setLayout(new GridLayout(0, 3, 0, 0));
-
-		// vmPanel for VM image
-		vmPanel = new JPanel();
-		vmPanel.setBorder(new TitledBorder(null, "Total Number of VMs",
-				TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		middlePanel.add(vmPanel);
-		vmPanel.setLayout(new GridLayout(0, 1, 0, 0));
-
-		// vmLabel for VM image
-		vmLabel = new JLabel();
-		vmLabel.setIcon(null);
-		vmPanel.add(vmLabel);
-
-		// Cost panel for cost image
-		costPanel = new JPanel();
-		costPanel.setBorder(new TitledBorder(null, "Solution Cost",
-				TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		middlePanel.add(costPanel);
-		costPanel.setLayout(new GridLayout(0, 1, 0, 0));
-
-		// Cost label for cost image
-		costLabel = new JLabel();
-		costLabel.setIcon(null);
-		costPanel.add(costLabel);
-
-		// Constraint panel for constraint image
-		constraintPanel = new JPanel();
-		constraintPanel.setBorder(new TitledBorder(null,
-				"Violated Constraints", TitledBorder.LEADING, TitledBorder.TOP,
-				null, null));
-		middlePanel.add(constraintPanel);
-		constraintPanel.setLayout(new GridLayout(0, 1, 0, 0));
-
-		// Constraint label for constraint image
-		constraintLabel = new JLabel();
-		constraintLabel.setIcon(null);
-		constraintPanel.add(constraintLabel);
+		middlePanel.setLayout(new GridLayout(3, 1));
+		
+//		middlePanel.add(vmLogger);
+//		
+//		middlePanel.add(costLogger);
+//		
+//		middlePanel.add(constraintsLogger);
+		
+		initializeGraphs();
 
 		lowerPane = new JPanel();
 		GridBagConstraints gbc_lowerPane = new GridBagConstraints();
@@ -187,15 +146,10 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		frmOptimizationProgress.addComponentListener(new ComponentListener() {
 
 			@Override
-			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub
-			}
+			public void componentHidden(ComponentEvent e) { }
 
 			@Override
-			public void componentMoved(ComponentEvent e) {
-				// TODO Auto-generated method stub
-
-			}
+			public void componentMoved(ComponentEvent e) { }
 
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -203,9 +157,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 			}
 
 			@Override
-			public void componentShown(ComponentEvent e) {
-				// TODO Auto-generated method stub
-			}
+			public void componentShown(ComponentEvent e) { }
 		});
 
 
@@ -239,60 +191,78 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 	}
 
-	public void setConstraintsLogger(Logger2JFreeChartImage constraintsLogger) {
+	public void setConstraintsLogger(GenericChart<DefaultCategoryDataset> constraintsLogger) {
 		this.constraintsLogger = constraintsLogger;
+		
+		initializeGraphs();
 	}
 
-	public void setCostLogger(Logger2JFreeChartImage costLogger) {
+	public void setCostLogger(GenericChart<DefaultCategoryDataset> costLogger) {
 		this.costLogger = costLogger;
+		
+		initializeGraphs();
+	}
+	
+	private void initializeGraphs() {
+		if (middlePanel == null)
+			return;
+		middlePanel.removeAll();
+		if (vmLogger != null)
+			middlePanel.add(vmLogger);
+		if (costLogger != null)
+			middlePanel.add(costLogger);
+		if (constraintsLogger != null)
+			middlePanel.add(constraintsLogger);
 	}
 
 	public void setMax(int max) {
 		progressBar.setMaximum(max);
+	
 		frmOptimizationProgress.setVisible(true);
 	}
 
-	public void setVMLogger(Logger2JFreeChartImage vmLogger) {
+	public void setVMLogger(GenericChart<DefaultCategoryDataset> vmLogger) {
 		this.vmLogger = vmLogger;
 
+		initializeGraphs();
 	}
+	
+	private boolean alreadyUpdating = false;
 
 	private void updateImages() {
-		if (costLogger != null) {
-			ImageIcon icon;
-			try {
-				icon = new ImageIcon(costLogger.save2buffer(costPanel.getSize()));
-			} catch (NullPointerException e) {
-				icon = new ImageIcon();
-			}
-			costLabel.setIcon(icon);
-			costLabel.setVisible(true);
-			//costPanel.setPreferredSize(costLabel.getPreferredSize());
-		}
+		if (alreadyUpdating)
+			return;
+		
+		alreadyUpdating = true;
+		
+		if (costLogger != null)
+			costLogger.updateImage();
 
-		if (vmLogger != null) {
-			ImageIcon icon;
-			try {
-				icon = new ImageIcon(vmLogger.save2buffer(vmPanel.getSize()));
-			} catch (NullPointerException e) {
-				icon = new ImageIcon();
-			}
-			vmLabel.setIcon(icon);
-			vmLabel.setVisible(true);
-			//vmPanel.setPreferredSize(vmLabel.getPreferredSize());
-		}
+		if (vmLogger != null)
+			vmLogger.updateImage();
 
-		if (constraintsLogger != null) {
-			ImageIcon icon;
-			try {
-				icon = new ImageIcon(constraintsLogger.save2buffer(constraintPanel.getSize()));
-			} catch (NullPointerException e) {
-				icon = new ImageIcon();
-			}
-			constraintLabel.setIcon(icon);
-			constraintLabel.setVisible(true);
-			//constraintPanel.setPreferredSize(constraintLabel.getPreferredSize());
-		}
+		if (constraintsLogger != null)
+			constraintsLogger.updateImage();
+		
+		alreadyUpdating = false;
+	}
+	
+	public void updateGraphs() {
+		if (alreadyUpdating)
+			return;
+		
+		alreadyUpdating = true;
+		
+		if (costLogger != null)
+			costLogger.updateGraph();
+
+		if (vmLogger != null)
+			vmLogger.updateGraph();
+
+		if (constraintsLogger != null)
+			constraintsLogger.updateGraph();
+		
+		alreadyUpdating = false;
 	}
 
 	private void updateProgressBar(int progress) {
@@ -326,12 +296,12 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		if(e.getSource().equals(btnStop))
 			if(Configuration.isPaused()){
 				Configuration.resume();
-				btnStop.setText("Resuming..");
+				btnStop.setText("Resuming...");
 				btnStop.setEnabled(false);;				
 			}
 			else{
 				Configuration.pause();
-				btnStop.setText("Pausing..");
+				btnStop.setText("Pausing...");
 				btnStop.setEnabled(false);
 			}
 		else if(e.getSource().equals(btnInspectSolution)){

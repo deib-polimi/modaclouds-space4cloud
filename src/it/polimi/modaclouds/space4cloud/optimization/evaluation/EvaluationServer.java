@@ -16,8 +16,7 @@
 
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.space4cloud.chart.Logger2JFreeChartImage;
-import it.polimi.modaclouds.space4cloud.chart.SeriesHandle;
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
@@ -47,6 +46,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.time.StopWatch;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,14 +68,14 @@ public class EvaluationServer implements ActionListener {
 	protected PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 	protected Logger logger = LoggerFactory.getLogger(EvaluationServer.class);
 
-	protected Logger2JFreeChartImage log2png;
-	protected Logger2JFreeChartImage logVm;
-	protected Logger2JFreeChartImage logConstraint;
+	protected String seriesHandleExecution;
+	protected Map<String,String> seriesHandleTiers;
+	protected String seriesHandleConstraint;
 	
-
-	protected SeriesHandle seriesHandleExecution;
-	protected Map<String,SeriesHandle> seriesHandleTiers;
-	protected SeriesHandle seriesHandleConstraint;
+	protected GenericChart<DefaultCategoryDataset> log2png;
+	protected GenericChart<DefaultCategoryDataset> logVm;
+	protected GenericChart<DefaultCategoryDataset> logConstraint;
+	
 	protected StopWatch timer = new StopWatch();
 	protected long costEvaluationTime = 0;
 	protected int costEvaluations = 0;
@@ -352,22 +352,22 @@ public class EvaluationServer implements ActionListener {
 		if (log2png != null && logVm != null && logConstraint != null
 				&& timer != null) {
 			timer.split();
-			log2png.addPoint2Series(seriesHandleExecution,
+			log2png.add(seriesHandleExecution,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getCost());
 			if(seriesHandleTiers==null){
 				seriesHandleTiers = new HashMap<>();
 				for(Tier t:sol.getApplication(0).getTiers()){					
-					seriesHandleTiers.put(t.getId(),logVm.newSeries(t.getName()));					
+					seriesHandleTiers.put(t.getId(), t.getName());
 				}
 			}
 				
 			for(Tier t:sol.getApplication(0).getTiers()){
-			logVm.addPoint2Series(seriesHandleTiers.get(t.getId()),
+			logVm.add(seriesHandleTiers.get(t.getId()),
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getVmNumberPerTier(t.getId()));			
 			}
-			logConstraint.addPoint2Series(seriesHandleConstraint,
+			logConstraint.add(seriesHandleConstraint,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getNumberOfViolatedConstraints());
 		}
@@ -498,22 +498,22 @@ public class EvaluationServer implements ActionListener {
 		if (log2png != null && logVm != null && logConstraint != null
 				&& timer != null) {
 			timer.split();
-			log2png.addPoint2Series(seriesHandleExecution,
+			log2png.add(seriesHandleExecution,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getCost());
 			if(seriesHandleTiers==null){
 				seriesHandleTiers = new HashMap<>();
 				for(Tier t:sol.getApplication(0).getTiers()){					
-					seriesHandleTiers.put(t.getId(),logVm.newSeries(t.getName()));					
+					seriesHandleTiers.put(t.getId(), t.getName());					
 				}
 			}
 				
 			for(Tier t:sol.getApplication(0).getTiers()){
-			logVm.addPoint2Series(seriesHandleTiers.get(t.getId()),
+			logVm.add(seriesHandleTiers.get(t.getId()),
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getVmNumberPerTier(t.getId()));			
 			}
-			logConstraint.addPoint2Series(seriesHandleConstraint,
+			logConstraint.add(seriesHandleConstraint,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getNumberOfViolatedConstraints());
 		}
@@ -637,22 +637,22 @@ public class EvaluationServer implements ActionListener {
 		long middleTime = System.nanoTime();
 		if (log2png != null && logVm != null && logConstraint != null
 				&& timer != null) {
-			log2png.addPoint2Series(seriesHandleExecution,
+			log2png.add(seriesHandleExecution,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getCost());
 			if(seriesHandleTiers==null){
 				seriesHandleTiers = new HashMap<>();
 				for(Tier t:sol.getApplication(0).getTiers()){					
-					seriesHandleTiers.put(t.getId(),logVm.newSeries(t.getName()));					
+					seriesHandleTiers.put(t.getId(), t.getName());
 				}
 			}
 				
 			for(Tier t:sol.getApplication(0).getTiers()){
-			logVm.addPoint2Series(seriesHandleTiers.get(t.getId()),
+			logVm.add(seriesHandleTiers.get(t.getId()),
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getVmNumberPerTier(t.getId()));			
 			}
-			logConstraint.addPoint2Series(seriesHandleConstraint,
+			logConstraint.add(seriesHandleConstraint,
 					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 					sol.getNumberOfViolatedConstraints());
 		}
@@ -725,18 +725,18 @@ public class EvaluationServer implements ActionListener {
 		this.constraintHandler = constraintHandler;
 	}
 
-	public void setConstraintLog(Logger2JFreeChartImage logConstraint) {
+	public void setConstraintLog(GenericChart<DefaultCategoryDataset> logConstraint) {
 		this.logConstraint = logConstraint;
-		seriesHandleConstraint = logConstraint.newSeries("violatedConstraints");
+		seriesHandleConstraint = "violatedConstraints";
 	}
 
-	public void setLog2png(Logger2JFreeChartImage log2png) {
+	public void setLog2png(GenericChart<DefaultCategoryDataset> log2png) {
 		this.log2png = log2png;
-		seriesHandleExecution = log2png.newSeries("Current Solutions");
+		seriesHandleExecution = "Current Solutions";
 
 	}
 
-	public void setMachineLog(Logger2JFreeChartImage logVM) {
+	public void setMachineLog(GenericChart<DefaultCategoryDataset> logVM) {
 		this.logVm = logVM;		
 	}
 
