@@ -387,12 +387,12 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
                     if (is.isConstrained(ids.get(key))) {
                     	Double constraint = is.constraint(ids.get(key));
                     	if (constraint != null)
-                    		is.plotsModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " ms, c: " + constraint +" ms)");
+                    		is.plotsModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " s, c: " + constraint +" s)");
                     	else
-                    		is.plotsModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " ms)");
+                    		is.plotsModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " s)");
                     }
                     else
-                    	is.sourcesModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " ms)");
+                    	is.sourcesModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " s)");
                 }
             }
 
