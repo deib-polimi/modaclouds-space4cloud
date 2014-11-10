@@ -28,11 +28,11 @@ public abstract class CloudService implements Cloneable, Serializable, IConstrai
 	 * 
 	 */
 	private static final long serialVersionUID = 9126279019777559621L;
-	private String resourceName; 
-	private String LQNPropertyTAG;
-	private String provider;
-	private String serviceType;
-	private String serviceName;
+	protected String resourceName; 
+	protected String LQNPropertyTAG;
+	protected String provider;
+	protected String serviceType;
+	protected String serviceName;
 
 	public CloudService(String provider,
 			String serviceType, String serviceName, String resourceName) {

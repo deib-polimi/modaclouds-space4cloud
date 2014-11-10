@@ -126,7 +126,10 @@ public class Compute extends IaaS {
 
 		return new EqualsBuilder().append(replicas, comp.replicas)
 				.append(speed, comp.speed).append(ram, comp.ram)
-				.append(numberOfCores, comp.numberOfCores).isEquals();
+				.append(numberOfCores, comp.numberOfCores)
+				.append(serviceName, comp.serviceName)
+				.append(resourceName, comp.resourceName)
+				.append(provider, comp.provider).isEquals();
 	}
 
 	/**
