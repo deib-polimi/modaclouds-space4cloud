@@ -115,7 +115,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		gbc_middlePanel.gridx = 0;
 		gbc_middlePanel.gridy = 1;
 		frmOptimizationProgress.getContentPane().add(middlePanel, gbc_middlePanel);
-		middlePanel.setLayout(new GridLayout(3, 1));
+		middlePanel.setLayout(new GridLayout(1, 3));
 		
 //		middlePanel.add(vmLogger);
 //		

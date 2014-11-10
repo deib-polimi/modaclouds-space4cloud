@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -317,9 +318,11 @@ public class GenericChart<E> extends JPanel {
 	}
 	
 	public void save2png(String path, String fileName, int width, int height) throws IOException {
+		File f = Paths.get(path, fileName).toFile();
+		if (f.isDirectory() || !f.getParentFile().mkdirs())
+			return;
 		ChartUtilities.writeChartAsPNG(
-				new FileOutputStream(Paths.get(path, fileName)
-						.toFile()), graph, width, height);
+				new FileOutputStream(f), graph, width, height);
 	}
 	
 	public void save2png(String path, String fileName) throws IOException {
