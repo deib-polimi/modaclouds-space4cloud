@@ -213,6 +213,9 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 			middlePanel.add(costLogger);
 		if (constraintsLogger != null)
 			middlePanel.add(constraintsLogger);
+		
+		updateGraphs();
+		updateImages();
 	}
 
 	public void setMax(int max) {

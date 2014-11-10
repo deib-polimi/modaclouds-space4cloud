@@ -136,10 +136,16 @@ public class GenericChart<E> extends JPanel {
 		
 		if (dataset != null && graph != null) {
 			ImageIcon icon;
+			int width = getSize().width;
+			if (width == 0)
+				width = 400;
+			int height = getSize().height;
+			if (height == 0)
+				height = 300;
 			try {
 				icon = new ImageIcon(graph.createBufferedImage(
-						getSize().width,
-						getSize().height));
+						width,
+						height));
 			} catch (NullPointerException e) {
 				icon = new ImageIcon();
 			}
