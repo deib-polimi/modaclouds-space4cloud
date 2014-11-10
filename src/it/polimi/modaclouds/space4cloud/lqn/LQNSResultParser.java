@@ -174,7 +174,7 @@ public class LQNSResultParser extends LqnResultParser implements Serializable {
 					.getFirstChild().getNextSibling();
 			double utilization = Double.parseDouble(resultProcessor
 					.getAttribute("utilization")) / cores;
-			// LQNS uses values from 0 to 100 we use from 0 to 1
+			
 
 			// add the processor utilization to the hashmap	
 			if(utilization > 1){

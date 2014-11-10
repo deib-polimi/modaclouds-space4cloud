@@ -1460,7 +1460,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Unable to create charts", e);
 		}
 
-		exportSolution();
+//		exportSolution(); TODO: this is always called twice, becaue Space4Cloud calls it at the end of the process! Disabled here.
 		evalServer.showStatistics();        
 
 //		if (!batch)
@@ -2053,8 +2053,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	public void exportSolution() {
 		if (bestSolution == null) {
-			logger.warn("The solution has not been created yet!");
-			return;
+			logger.warn("The solution has not been created yet! Trying to export the initial solution...");
+			bestSolution = initialSolution;
 		}
 
 

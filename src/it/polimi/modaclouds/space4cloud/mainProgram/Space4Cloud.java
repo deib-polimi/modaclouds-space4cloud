@@ -521,7 +521,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			throw new AssesmentException("Error in evaluating the initial solution",e);						
 		}
 
-		// print the results
 		SolutionMulti providedSolution = engine.getInitialSolution();
 
 		assesmentWindow = new AssessmentWindow(constraintHandler);
@@ -533,9 +532,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		} catch (NumberFormatException | IOException e) {
 			throw new AssesmentException("Could not load the solution in the assesment window", e);			
 		}
-
-		// export the solution
-		providedSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME,Configuration.SOLUTION_FILE_EXTENSION));
+		
 	}
 
 
