@@ -431,11 +431,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 	}
 
 
-
-
-
-	public float getCost() {
-		return (float)cost;
+	public double getCost() {
+		return cost;
 	}
 	
 	public static DecimalFormat costFormatter = null;

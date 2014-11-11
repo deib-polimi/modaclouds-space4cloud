@@ -433,8 +433,8 @@ public class Solution implements Cloneable, Serializable {
 	 * 
 	 * @return the cost
 	 */
-	public float getCost() {
-		return (float)cost;
+	public double getCost() {
+		return cost;
 	}
 
 	/**
