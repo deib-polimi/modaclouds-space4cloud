@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class SimpleEvaluator {
 	protected Solution initialSolution;
 	// private EvaluationServer evalServer = new EvaluationServer();
 	
-	private GenericChart<DefaultCategoryDataset> vmLogger;
+	private GenericChart<XYSeriesCollection> vmLogger;
 	private GenericChart<DefaultCategoryDataset> rtLogger;
 	private GenericChart<DefaultCategoryDataset> utilLogger;
 
@@ -74,7 +75,7 @@ public class SimpleEvaluator {
 		return utilLogger;
 	}
 
-	public GenericChart<DefaultCategoryDataset> getVMLogger() {
+	public GenericChart<XYSeriesCollection> getVMLogger() {
 		return vmLogger;
 	}
 

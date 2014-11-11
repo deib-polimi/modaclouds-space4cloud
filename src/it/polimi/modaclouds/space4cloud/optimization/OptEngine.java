@@ -93,7 +93,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.emf.common.util.EList;
-import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -181,9 +181,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected Logger optimLogger = LoggerFactory.getLogger("optimLogger");
 	protected Logger scrambleLogger = LoggerFactory.getLogger("scrambleLogger");
 
-	protected GenericChart<DefaultCategoryDataset> costLogImage;
-	protected GenericChart<DefaultCategoryDataset> logVm;
-	protected GenericChart<DefaultCategoryDataset> logConstraints;
+	protected GenericChart<XYSeriesCollection> costLogImage;
+	protected GenericChart<XYSeriesCollection> logVm;
+	protected GenericChart<XYSeriesCollection> logConstraints;
 	
 	protected String bestSolutionSerieHandler;
 	protected String localBestSolutionSerieHandler;
@@ -503,11 +503,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return constraintHandler;
 	}
 
-	public GenericChart<DefaultCategoryDataset> getConstraintsLogger() {
+	public GenericChart<XYSeriesCollection> getConstraintsLogger() {
 		return logConstraints;
 	}
 
-	public GenericChart<DefaultCategoryDataset> getCostLogger() {
+	public GenericChart<XYSeriesCollection> getCostLogger() {
 		return costLogImage;
 	}
 
@@ -523,7 +523,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return MAX_SCRUMBLE_ITERS;
 	}
 
-	public GenericChart<DefaultCategoryDataset> getVMLogger() {
+	public GenericChart<XYSeriesCollection> getVMLogger() {
 		return logVm;
 	}
 

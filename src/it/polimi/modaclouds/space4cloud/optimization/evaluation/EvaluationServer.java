@@ -46,7 +46,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.time.StopWatch;
-import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,9 +72,9 @@ public class EvaluationServer implements ActionListener {
 	protected Map<String,String> seriesHandleTiers;
 	protected String seriesHandleConstraint;
 	
-	protected GenericChart<DefaultCategoryDataset> log2png;
-	protected GenericChart<DefaultCategoryDataset> logVm;
-	protected GenericChart<DefaultCategoryDataset> logConstraint;
+	protected GenericChart<XYSeriesCollection> log2png;
+	protected GenericChart<XYSeriesCollection> logVm;
+	protected GenericChart<XYSeriesCollection> logConstraint;
 	
 	protected StopWatch timer = new StopWatch();
 	protected long costEvaluationTime = 0;
@@ -725,18 +725,18 @@ public class EvaluationServer implements ActionListener {
 		this.constraintHandler = constraintHandler;
 	}
 
-	public void setConstraintLog(GenericChart<DefaultCategoryDataset> logConstraint) {
+	public void setConstraintLog(GenericChart<XYSeriesCollection> logConstraint) {
 		this.logConstraint = logConstraint;
 		seriesHandleConstraint = "violatedConstraints";
 	}
 
-	public void setLog2png(GenericChart<DefaultCategoryDataset> log2png) {
+	public void setLog2png(GenericChart<XYSeriesCollection> log2png) {
 		this.log2png = log2png;
 		seriesHandleExecution = "Current Solutions";
 
 	}
 
-	public void setMachineLog(GenericChart<DefaultCategoryDataset> logVM) {
+	public void setMachineLog(GenericChart<XYSeriesCollection> logVM) {
 		this.logVm = logVM;		
 	}
 

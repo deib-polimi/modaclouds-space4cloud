@@ -40,7 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,9 +52,9 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	private JPanel upperPanel;
 	private JPanel middlePanel;
 
-	private GenericChart<DefaultCategoryDataset> vmLogger;
-	private GenericChart<DefaultCategoryDataset> costLogger;
-	private GenericChart<DefaultCategoryDataset> constraintsLogger;
+	private GenericChart<XYSeriesCollection> vmLogger;
+	private GenericChart<XYSeriesCollection> costLogger;
+	private GenericChart<XYSeriesCollection> constraintsLogger;
 	
 	private static final Logger logger = LoggerFactory.getLogger(OptimizationProgressWindow.class);
 
@@ -191,13 +191,13 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 	}
 
-	public void setConstraintsLogger(GenericChart<DefaultCategoryDataset> constraintsLogger) {
+	public void setConstraintsLogger(GenericChart<XYSeriesCollection> constraintsLogger) {
 		this.constraintsLogger = constraintsLogger;
 		
 		initializeGraphs();
 	}
 
-	public void setCostLogger(GenericChart<DefaultCategoryDataset> costLogger) {
+	public void setCostLogger(GenericChart<XYSeriesCollection> costLogger) {
 		this.costLogger = costLogger;
 		
 		initializeGraphs();
@@ -224,7 +224,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		frmOptimizationProgress.setVisible(true);
 	}
 
-	public void setVMLogger(GenericChart<DefaultCategoryDataset> vmLogger) {
+	public void setVMLogger(GenericChart<XYSeriesCollection> vmLogger) {
 		this.vmLogger = vmLogger;
 
 		initializeGraphs();
