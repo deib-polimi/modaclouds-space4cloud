@@ -420,4 +420,12 @@ public class DataHandler {
 		return filteredServices;
 	}
 	
+	public double getAvailability(String provider) {
+		
+		ProviderDBConnector pdb = cloudProviders
+				.getProviderDBConnectors().get(provider); // provider
+		
+		return pdb.getAvailability();
+	}
+	
 }

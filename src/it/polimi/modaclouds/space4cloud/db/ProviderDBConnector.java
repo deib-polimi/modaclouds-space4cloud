@@ -793,5 +793,17 @@ public class ProviderDBConnector implements GenericDBConnector {
 				lbs.add((BlobStorage) cr);
 		return lbs;
 	}
+	
+	public double getAvailability() {
+		try {
+			// TODO: fix this query!
+			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
+					"SELECT id, name, 0.95 as value FROM cloudprovider WHERE id = " + provider.getId());
+			while (rs.next())
+				return rs.getDouble(3); 
+		} catch (SQLException e) { }
+		
+		return 0.95;
+	}
 
 }

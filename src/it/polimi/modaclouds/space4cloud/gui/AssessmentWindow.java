@@ -16,6 +16,8 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.AvgRTConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
@@ -176,6 +178,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         availability.pointsVisible = false;
 
         this.solutionMulti = solution;
+        
+        double unavailabilityTot = 1;
 
         for (Solution providedSolution : solution.getAll()) {
             String provider = providedSolution.getProvider();
@@ -395,6 +399,12 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
                     	is.sourcesModel.addElement(key + " (" + formatter.format(sums.get(key)/24) + " s)");
                 }
             }
+            
+            try {
+				unavailabilityTot *= (1 - DataHandlerFactory.getHandler().getAvailability(provider));
+			} catch (DatabaseConnectionFailureExteption e) {
+				e.printStackTrace();
+			}
 
         }
 
@@ -413,7 +423,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
                         goOn = false;
                     }
                 }
-                availability.dataset.addValue(0.95, "Availability", "" + hour);
+                availability.dataset.addValue(1 - unavailabilityTot, "Availability", "" + hour);
             }
 
             availability.markers.add(new GenericChart.Marker(1.0));
