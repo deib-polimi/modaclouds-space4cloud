@@ -250,14 +250,14 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 			Configuration.SOLVER = (Solver) solverBox.getSelectedItem();
 			setSolver((Solver) solverBox.getSelectedItem());
 		}else if(e.getSource().equals(dbLoadButton)){
-			File dbConnectionFile = FileLoader.loadFile("Database Connection Parameters");
+			File dbConnectionFile = FileLoader.loadFile("Database Connection Parameters", "properties");
 			if(dbConnectionFile!=null){
 				Configuration.DB_CONNECTION_FILE=dbConnectionFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=dbConnectionFile.getParent().toString();
 				dbConfText.setText(dbConnectionFile.getAbsolutePath());
 			}
 		}else if(e.getSource().equals(lineConfButton)){
-			File linePropFile = FileLoader.loadFile("LINE Server Connection Parameters");
+			File linePropFile = FileLoader.loadFile("LINE Server Connection Parameters", "properties");
 			if(linePropFile!=null){
 				Configuration.LINE_PROP_FILE=linePropFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=linePropFile.getParent().toString();
@@ -268,7 +268,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 			setPrivateCloudVisibility(usePrivateCloud.isSelected());
 		}
 		else if(e.getSource().equals(randomEnvironmentButton)){
-			File randomEnvFile = FileLoader.loadFile("Random Enviroment specification");
+			File randomEnvFile = FileLoader.loadFile("Random Enviroment specification"); // TODO: what extension should this have?
 			if(randomEnvFile!=null){
 				Configuration.RANDOM_ENV_FILE=randomEnvFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=randomEnvFile.getParent().toString();

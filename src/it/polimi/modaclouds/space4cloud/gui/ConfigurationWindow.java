@@ -218,7 +218,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			disposed = true;
 			frame.dispose();
 		}else if (e.getSource().equals(loadConfigurationButton)){
-			File configurationFile = FileLoader.loadFile("Load SPACE4Cloud Configuration");
+			File configurationFile = FileLoader.loadFile("Load SPACE4Cloud Configuration", "properties", "prop");
 			if(configurationFile !=  null){
 				try {
 					Configuration.loadConfiguration(configurationFile.getAbsolutePath());					
@@ -245,7 +245,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			if (Configuration.USE_PRIVATE_CLOUD == true)
 				cloudBurstingPanel.updateConfiguration();
 			
-			File configurationFile = FileLoader.saveFile("Load SPACE4Cloud Configuration");
+			File configurationFile = FileLoader.saveFile("Load SPACE4Cloud Configuration", "properties");
 			if(configurationFile!=null){
 				try {					
 					Configuration.saveConfiguration(configurationFile.getAbsolutePath());

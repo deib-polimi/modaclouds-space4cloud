@@ -213,35 +213,35 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 	public void actionPerformed(ActionEvent e) {
 		File loadedFile = null;
 		if(e.getSource().equals(repositoryButton)){
-			loadedFile = FileLoader.loadFile("Load Repository Model");
+			loadedFile = FileLoader.loadFile("Load Repository Model", "repository");
 			if(loadedFile!=null){
 				reposirotyTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_REPOSITORY_MODEL=loadedFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(systemButton)){
-			loadedFile = FileLoader.loadFile("Load System Model");
+			loadedFile = FileLoader.loadFile("Load System Model", "system");
 			if(loadedFile!=null){
 				systemTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_SYSTEM_MODEL=loadedFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(allocationButton)){
-			loadedFile = FileLoader.loadFile("Load Allocation Model");
+			loadedFile = FileLoader.loadFile("Load Allocation Model", "allocation");
 			if(loadedFile!=null){
 				allocationTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_ALLOCATION_MODEL=loadedFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(resourceButton)){
-			loadedFile = FileLoader.loadFile("Load Resource Model");
+			loadedFile = FileLoader.loadFile("Load Resource Model", "resourceenvironment");
 			if(loadedFile!=null){
 				resourceTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_RESOURCE_MODEL=loadedFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}else if(e.getSource().equals(usageButton)){
-			loadedFile = FileLoader.loadFile("Load Usage Model");
+			loadedFile = FileLoader.loadFile("Load Usage Model", "usagemodel");
 			if(loadedFile!=null){
 				usageTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.PALLADIO_USAGE_MODEL=loadedFile.getAbsolutePath();

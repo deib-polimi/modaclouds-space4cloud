@@ -67,9 +67,8 @@ public class FileLoader {
 
 		return file;
 	}
-
-
-	public static  File loadFile(String title){
+	
+	public static  File loadFile(String title, String... ext){
 		JFileChooser fileChooser;
 		File file=null;
 		if(Configuration.PROJECT_BASE_FOLDER!= null)
@@ -77,6 +76,10 @@ public class FileLoader {
 		else
 			fileChooser = new JFileChooser();
 
+		if (ext != null && ext.length > 0) {
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(ext[0].toUpperCase() + " files", ext);
+			fileChooser.setFileFilter(filter);
+		}
 		fileChooser.setDialogTitle(title);
 		int returnVal = fileChooser.showOpenDialog(null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -86,9 +89,8 @@ public class FileLoader {
 		}
 		return file;
 	}
-	
 
-	public static File saveFile(String title) {
+	public static File saveFile(String title, String... ext) {
 		JFileChooser fileChooser;
 		File file=null;
 		if(Configuration.PROJECT_BASE_FOLDER!= null)
@@ -96,6 +98,10 @@ public class FileLoader {
 		else
 			fileChooser = new JFileChooser();
 
+		if (ext != null && ext.length > 0) {
+			FileNameExtensionFilter filter = new FileNameExtensionFilter(ext[0].toUpperCase() + " files", ext);
+			fileChooser.setFileFilter(filter);
+		}
 		fileChooser.setDialogTitle(title);
 		int returnVal = fileChooser.showSaveDialog(null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {

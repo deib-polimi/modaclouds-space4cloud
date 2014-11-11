@@ -217,13 +217,13 @@ public class CloudBurstingPanel extends JPanel implements ActionListener, MouseL
 					lm.removeElementAt(sel);
 			}
 		} else if (e.getSource().equals(save)) {
-			File f = FileLoader.saveFile("Configuration file for the Private Hosts");
+			File f = FileLoader.saveFile("Configuration file for the Private Hosts", "properties");
 			if (f != null) {
 				configuration.setText(f.getAbsolutePath());
 				saveFile(f);
 			}
 		} else if (e.getSource().equals(load)) {
-			File f = FileLoader.loadFile("Configuration file for the Private Hosts");
+			File f = FileLoader.loadFile("Configuration file for the Private Hosts", "properties");
 			if (f != null) {
 				configuration.setText(f.getAbsolutePath());
 				loadFile(f);
