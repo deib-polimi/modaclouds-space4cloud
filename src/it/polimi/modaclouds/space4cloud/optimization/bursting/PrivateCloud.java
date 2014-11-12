@@ -168,6 +168,7 @@ public class PrivateCloud implements CloudProvider {
 		}
 		
 		solution.setFrom(solutionFiles.get(0), null);
+		String startingProvider = solution.get(0).getProvider();
 		
 //		{
 //			Solution s = solution.get(0);
@@ -186,7 +187,7 @@ public class PrivateCloud implements CloudProvider {
 			if (SolutionMulti.isEmpty(solutionFiles.get(i)))
 				continue;
 			SolutionMulti tmp = new SolutionMulti();
-			tmp.add(solution.get(0).clone());
+			tmp.add(solution.get(startingProvider).clone());
 			
 			for (Solution sol : tmp.getAll()) {
 				for (Instance inst : sol.getApplications()) {
