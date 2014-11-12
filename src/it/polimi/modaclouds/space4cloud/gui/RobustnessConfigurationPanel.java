@@ -8,7 +8,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,7 +21,6 @@ public class RobustnessConfigurationPanel extends JPanel {
 	private static final long serialVersionUID = 2986951359583819299L;
 	private static final String PANEL_NAME = "Robustness Configuration";
 	private JTextField peakFrom, peakTo, stepSize, attempts, variability, q, g, h;
-	private JCheckBox initialSolution;
 	
 	public RobustnessConfigurationPanel() {
 		setName(PANEL_NAME);
@@ -83,16 +81,6 @@ public class RobustnessConfigurationPanel extends JPanel {
 		c.insets = new Insets(0, 0, 5, 0);
 		attempts = new JTextField(10);
 		add(attempts, c);
-		
-		c.gridx = 0;
-		c.gridy++;
-		c.insets = new Insets(0, 0, 5, 5);
-		initialSolution = new JCheckBox("Generate relaxed initial solution");
-		add(initialSolution, c);
-		c.gridx = 1;
-		c.insets = new Insets(0, 0, 5, 0);
-		add(new JLabel(""), c);
-		
 
 		c.gridx = 0;
 		c.gridy++;
@@ -131,7 +119,6 @@ public class RobustnessConfigurationPanel extends JPanel {
 		peakTo.setText(Integer.toString(Configuration.ROBUSTNESS_PEAK_TO));
 		stepSize.setText(Integer.toString(Configuration.ROBUSTNESS_STEP_SIZE));
 		attempts.setText(Integer.toString(Configuration.ROBUSTNESS_ATTEMPTS));
-		initialSolution.setSelected(Configuration.RELAXED_INITIAL_SOLUTION);
 
 		variability.setText(Integer.toString(Configuration.ROBUSTNESS_VARIABILITY));
 		
@@ -171,7 +158,6 @@ public class RobustnessConfigurationPanel extends JPanel {
 		} catch (NumberFormatException e){
 			Configuration.ROBUSTNESS_VARIABILITY = -1;
 		}
-		Configuration.RELAXED_INITIAL_SOLUTION = initialSolution.isSelected();
 		
 		try{
 			Configuration.ROBUSTNESS_Q = Double.parseDouble(q.getText());
