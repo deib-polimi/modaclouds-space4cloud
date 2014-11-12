@@ -125,8 +125,8 @@ public class Logger implements Runnable {
 		
 		String modelName = tokens[1];
 		
-		if (modelName.indexOf("xml") == -1) {
-			modelName += " " + tokens[2];
+		while (modelName.indexOf("xml") == -1) {
+			modelName += " " + tokens[2 + offset];
 			offset++;
 		}
 		
