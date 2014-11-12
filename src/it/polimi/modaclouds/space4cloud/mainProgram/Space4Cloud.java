@@ -507,7 +507,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		// configuration and the extension
 		logger.info("Parsing The Solution");
 		try {
-			engine.loadInitialSolution();
+			File mce = Paths.get(Configuration.MULTI_CLOUD_EXTENSION).toFile();
+			if (!mce.exists())
+				mce = null;
+			engine.loadInitialSolution(null, mce);
 
 		} catch (InitializationException e) {
 			throw new AssesmentException("",e);			

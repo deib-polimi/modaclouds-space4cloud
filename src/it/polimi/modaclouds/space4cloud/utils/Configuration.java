@@ -41,6 +41,7 @@ public class Configuration {
 	public static String PALLADIO_RESOURCE_MODEL;
 	public static String USAGE_MODEL_EXTENSION;
 	public static String RESOURCE_ENVIRONMENT_EXTENSION;
+	public static String MULTI_CLOUD_EXTENSION;
 	public static String CONSTRAINTS;
 	public static String PROJECT_BASE_FOLDER;
 	public static String DB_CONNECTION_FILE;
@@ -156,6 +157,7 @@ public class Configuration {
 		prop.put("PALLADIO_RESOURCE_MODEL", PALLADIO_RESOURCE_MODEL);
 		prop.put("USAGE_MODEL_EXTENSION", USAGE_MODEL_EXTENSION);
 		prop.put("RESOURCE_ENVIRONMENT_EXTENSION", RESOURCE_ENVIRONMENT_EXTENSION);
+		prop.put("MULTI_CLOUD_EXTENSION", MULTI_CLOUD_EXTENSION);
 		prop.put("CONSTRAINTS", CONSTRAINTS);
 		prop.put("PROJECT_BASE_FOLDER", PROJECT_BASE_FOLDER);
 		prop.put("DB_CONNECTION_FILE", DB_CONNECTION_FILE);
@@ -194,42 +196,6 @@ public class Configuration {
 		fos.flush();
 	}
 
-	//	public static void loadConfiguration(String filePath) throws IOException {
-	//		Properties prop = new Properties();
-	//		FileInputStream fis = new FileInputStream(filePath);
-	//		prop.load(fis);
-	//		PALLADIO_REPOSITORY_MODEL = prop.getProperty("PALLADIO_REPOSITORY_MODEL");
-	//		PALLADIO_SYSTEM_MODEL = prop.getProperty("PALLADIO_SYSTEM_MODEL");
-	//		PALLADIO_ALLOCATION_MODEL = prop.getProperty("PALLADIO_ALLOCATION_MODEL");
-	//		PALLADIO_USAGE_MODEL = prop.getProperty("PALLADIO_USAGE_MODEL");
-	//		PALLADIO_RESOURCE_MODEL = prop.getProperty("PALLADIO_RESOURCE_MODEL");
-	//		USAGE_MODEL_EXTENSION = prop.getProperty("USAGE_MODEL_EXTENSION");
-	//		RESOURCE_ENVIRONMENT_EXTENSION = prop.getProperty("RESOURCE_ENVIRONMENT_EXTENSION");
-	//		CONSTRAINTS = prop.getProperty("CONSTRAINTS");
-	//		PROJECT_BASE_FOLDER = prop.getProperty("PROJECT_BASE_FOLDER");
-	//		DB_CONNECTION_FILE= prop.getProperty("DB_CONNECTION_FILE");
-	//		FUNCTIONALITY = Operation.valueOf(prop.getProperty("FUNCTIONALITY"));
-	//		SOLVER = Solver.valueOf(prop.getProperty("SOLVER"));
-	//		LINE_PROP_FILE= prop.getProperty("LINE_PROP_FILE");		
-	//		TABU_MEMORY_SIZE= Integer.parseInt(prop.getProperty("TABU_MEMORY_SIZE"));
-	//		SCRUMBLE_ITERS= Integer.parseInt(prop.getProperty("SCRUMBLE_ITERS"));
-	//		FEASIBILITY_ITERS= Integer.parseInt(prop.getProperty("FEASIBILITY_ITERS"));
-	//		SCALE_IN_CONV_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_CONV_ITERS"));
-	//		SCALE_IN_FACTOR= Double.parseDouble(prop.getProperty("SCALE_IN_FACTOR"));
-	//		SCALE_IN_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_ITERS"));
-	//		SELECTION_POLICY= Policy.valueOf(prop.getProperty("SELECTION_POLICY"));
-	//		RELAXED_INITIAL_SOLUTION= Boolean.parseBoolean(prop.getProperty("RELAXED_INITIAL_SOLUTION"));
-	//		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD");
-	//		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME");
-	//		RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
-	//		
-	//		ROBUSTNESS_PEAK_FROM = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_FROM"));
-	//		ROBUSTNESS_PEAK_TO = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_TO"));
-	//		ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE"));
-	//		ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS"));
-	//	}
-
-
 	public static void loadConfiguration(String filePath) throws IOException {
 		Properties prop = new Properties();
 		FileInputStream fis = new FileInputStream(filePath);
@@ -241,6 +207,7 @@ public class Configuration {
 		PALLADIO_RESOURCE_MODEL = prop.getProperty("PALLADIO_RESOURCE_MODEL", PALLADIO_RESOURCE_MODEL);
 		USAGE_MODEL_EXTENSION = prop.getProperty("USAGE_MODEL_EXTENSION", USAGE_MODEL_EXTENSION);
 		RESOURCE_ENVIRONMENT_EXTENSION = prop.getProperty("RESOURCE_ENVIRONMENT_EXTENSION", RESOURCE_ENVIRONMENT_EXTENSION);
+		MULTI_CLOUD_EXTENSION = prop.getProperty("MULTI_CLOUD_EXTENSION", MULTI_CLOUD_EXTENSION);
 		CONSTRAINTS = prop.getProperty("CONSTRAINTS", CONSTRAINTS);
 		PROJECT_BASE_FOLDER = prop.getProperty("PROJECT_BASE_FOLDER", PROJECT_BASE_FOLDER);
 
@@ -378,6 +345,7 @@ public class Configuration {
 		logger.debug("PALLADIO_RESOURCE_MODEL: "+ PALLADIO_RESOURCE_MODEL);
 		logger.debug("USAGE_MODEL_EXTENSION: "+ USAGE_MODEL_EXTENSION);
 		logger.debug("RESOURCE_ENVIRONMENT_EXTENSION: "+ RESOURCE_ENVIRONMENT_EXTENSION);
+		logger.debug("MULTI_CLOUD_EXTENSION: "+ MULTI_CLOUD_EXTENSION);
 		logger.debug("CONSTRAINTS: "+ CONSTRAINTS);
 		logger.debug("PROJECT_BASE_FOLDER: "+ PROJECT_BASE_FOLDER);
 

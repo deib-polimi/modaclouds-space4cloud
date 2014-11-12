@@ -327,6 +327,8 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		
 		if (tabTitle.equals(optimizationConfigurationPane.getName()))
 			optimizationConfigurationPane.updateSSHVisibility();
+		if (tabTitle.equals(extensionSelectionPane.getName()))
+			extensionSelectionPane.updateMceVisibility();
 			
 	}
 

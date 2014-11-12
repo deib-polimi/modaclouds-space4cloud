@@ -1,6 +1,7 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
 import it.polimi.modaclouds.qos_models.schema.Constraints;
+import it.polimi.modaclouds.qos_models.schema.MultiCloudExtensions;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
@@ -29,9 +30,14 @@ public class ExtensionModelSpecificationPanel extends JPanel implements ActionLi
 	private JTextField usageExtensionTextField;
 	private JTextField resourceEnvironmentTextField;
 	private JTextField constraintTextField;
+	private JTextField mceTextField;
 	private JButton usageExtensionButton;
 	private JButton resourceEnvironmentButton;
 	private JButton constraintButton;
+	private JButton mceButton;
+
+
+	private JLabel mceLabel;
 	/**
 	 * Create the panel.
 	 */
@@ -39,9 +45,9 @@ public class ExtensionModelSpecificationPanel extends JPanel implements ActionLi
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{350, 50, 0};
-		gridBagLayout.rowHeights = new int[] {30, 30, 30, 30, 30, 30, 0};
+		gridBagLayout.rowHeights = new int[] {30, 30, 30, 30, 30, 30, 30, 30, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 		setLayout(gridBagLayout);
 
 		JLabel usageExtensionLabel = new JLabel("Usage Model Extension");
@@ -141,13 +147,46 @@ public class ExtensionModelSpecificationPanel extends JPanel implements ActionLi
 		gbc_constraintButton.gridx = 1;
 		gbc_constraintButton.gridy = 5;
 		add(constraintButton, gbc_constraintButton);
+		
+		mceLabel = new JLabel("Multi Cloud Extension (used only for the assessment)");
+		GridBagConstraints gbc_mceLabel = new GridBagConstraints();
+		gbc_mceLabel.anchor = GridBagConstraints.WEST;
+		gbc_mceLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_mceLabel.gridx = 0;
+		gbc_mceLabel.gridy = 6;
+		add(mceLabel, gbc_mceLabel);
+		JLabel emptyLabel3 = new JLabel("");
+		GridBagConstraints gbc_emptyLabel3 = new GridBagConstraints();
+		gbc_emptyLabel3.fill = GridBagConstraints.BOTH;
+		gbc_emptyLabel3.insets = new Insets(0, 0, 5, 0);
+		gbc_emptyLabel3.gridx = 1;
+		gbc_emptyLabel3.gridy = 6;
+		add(emptyLabel3, gbc_emptyLabel3);
+
+
+		mceTextField = new JTextField();
+		GridBagConstraints gbc_mceTextField = new GridBagConstraints();
+		gbc_mceTextField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_mceTextField.insets = new Insets(0, 0, 5, 5);
+		gbc_mceTextField.gridx = 0;
+		gbc_mceTextField.gridy = 7;
+		add(mceTextField, gbc_mceTextField);
+		mceTextField.setColumns(10);
+
+		mceButton = new JButton("Load Model");
+		mceButton.addActionListener(this);
+		GridBagConstraints gbc_mceButton = new GridBagConstraints();
+		gbc_mceButton.insets = new Insets(0, 0, 5, 0);
+		gbc_mceButton.gridx = 1;
+		gbc_mceButton.gridy = 7;
+		add(mceButton, gbc_mceButton);
 
 		JPanel panel = new JPanel();
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.insets = new Insets(0, 0, 0, 5);
 		gbc_panel.fill = GridBagConstraints.BOTH;
 		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 6;
+		gbc_panel.gridy = 8;
 		add(panel, gbc_panel);
 	}
 
@@ -162,18 +201,25 @@ public class ExtensionModelSpecificationPanel extends JPanel implements ActionLi
 				Configuration.USAGE_MODEL_EXTENSION=loadedFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
-		}else if(e.getSource().equals(resourceEnvironmentButton)){
+		} else if(e.getSource().equals(resourceEnvironmentButton)){
 			loadedFile = FileLoader.loadExtensionFile("Load Resource Environment Extension",ResourceModelExtension.class);
 			if(loadedFile!=null){
 				resourceEnvironmentTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.RESOURCE_ENVIRONMENT_EXTENSION=loadedFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
-		}else if(e.getSource().equals(constraintButton)){
+		} else if(e.getSource().equals(constraintButton)){
 			loadedFile = FileLoader.loadExtensionFile("Load Constraints",Constraints.class);
 			if(loadedFile!=null){
 				constraintTextField.setText(loadedFile.getAbsolutePath());
 				Configuration.CONSTRAINTS=loadedFile.getAbsolutePath();
+				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
+			}
+		} else if(e.getSource().equals(mceButton)){
+			loadedFile = FileLoader.loadExtensionFile("Load Multi Cloud Extension",MultiCloudExtensions.class);
+			if(loadedFile!=null){
+				mceTextField.setText(loadedFile.getAbsolutePath());
+				Configuration.MULTI_CLOUD_EXTENSION=loadedFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=loadedFile.getParent().toString();
 			}
 		}
@@ -186,6 +232,8 @@ public class ExtensionModelSpecificationPanel extends JPanel implements ActionLi
 		usageExtensionTextField.setText(Configuration.USAGE_MODEL_EXTENSION);
 		resourceEnvironmentTextField.setText(Configuration.RESOURCE_ENVIRONMENT_EXTENSION);
 		constraintTextField.setText(Configuration.CONSTRAINTS);
+		mceTextField.setText(Configuration.MULTI_CLOUD_EXTENSION);
+		updateMceVisibility();
 	}
 	
 	/**
@@ -195,6 +243,14 @@ public class ExtensionModelSpecificationPanel extends JPanel implements ActionLi
 		Configuration.USAGE_MODEL_EXTENSION = usageExtensionTextField.getText();
 		Configuration.RESOURCE_ENVIRONMENT_EXTENSION = resourceEnvironmentTextField.getText();
 		Configuration.CONSTRAINTS = constraintTextField.getText();
+		Configuration.MULTI_CLOUD_EXTENSION = mceTextField.getText();
+	}
+
+	public void updateMceVisibility() {
+		boolean enabled = Configuration.FUNCTIONALITY == Configuration.Operation.Assessment;
+		mceTextField.setEnabled(enabled);
+		mceButton.setEnabled(enabled);
+		mceLabel.setEnabled(enabled);
 	}
 
 
