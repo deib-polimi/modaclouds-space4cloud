@@ -160,19 +160,17 @@ public class CostEvaluator {
 		}
 		
 		double cost = 0;
-		// sum up costs for each tier
-		for (Tier t : application.getTiers()) {
-			CloudService service = t.getCloudService();
-			if (service instanceof IaaS) {
-				IaaS iaasResource = (IaaS) service;
-				Host h = PrivateCloud.getInstance().getHost(application.getFather().getProvider());
-				
-				CostProfile cp = h.energyCost;
-				
-				cost += deriveCosts(null, cp, iaasResource.getReplicas(), hour);
-			}
-			// TODO Add Platform costs
+		
+		List<Host> usedHosts = PrivateCloud.getInstance().getUsedHosts();
+		for (Host h : usedHosts) {
+			Boolean b = h.isOn.get(hour);
+			if (b != null && b)
+				cost += deriveCosts(null, h.energyCost, 1, hour);
 		}
+		
+		// TODO: add VM cost, because we consider now a fixed cost either if the
+		// 		 host is on or not, independently on the number of vms it's running
+		
 		return cost;
 	}
 

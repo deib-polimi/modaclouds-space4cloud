@@ -34,6 +34,8 @@ public class Host {
 	
 	public List<CloudResource> hostedOn;
 	
+	public List<Boolean> isOn;
+	
 	public Host(String name, int cpu_cores, double cpu_speed, int ram, int storage, double density, double[] hourlyCosts) {
 		this.name = name;
 		
@@ -45,6 +47,10 @@ public class Host {
 		
 		hostedOn = new ArrayList<CloudResource>();
 		setHourlyCosts(hourlyCosts);
+		
+		isOn = new ArrayList<Boolean>();
+		for (int h = 0; h < 24; ++h)
+			isOn.add(false);
 	}
 	
 	public void addResource(CloudResource resource) {

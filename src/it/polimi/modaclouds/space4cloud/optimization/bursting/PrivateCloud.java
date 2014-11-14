@@ -3,6 +3,8 @@ package it.polimi.modaclouds.space4cloud.optimization.bursting;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.optimization.MoveChangeWorkload;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
@@ -52,7 +54,7 @@ public class PrivateCloud implements CloudProvider {
 	
 	private DataHandler dataHandler;
 	
-	public static final String BASE_PROVIDER_NAME = "PrivateHost";
+	public static final String BASE_PROVIDER_NAME = "PrivateCloud"; // "PrivateHost";
 	
 	public static PrivateCloud instance = null;
 	
@@ -60,21 +62,21 @@ public class PrivateCloud implements CloudProvider {
 		return instance;
 	}
 	
-	public static PrivateCloud getInstance(SolutionMulti solutionMulti, DataHandler dataHandler) {
-		instance = new PrivateCloud(solutionMulti, dataHandler);
+	public static PrivateCloud getInstance(SolutionMulti solutionMulti) throws DatabaseConnectionFailureExteption {
+		instance = new PrivateCloud(solutionMulti);
 		
 		return instance;
 	}
 	
-	public static SolutionMulti getSolution(SolutionMulti solutionMulti, DataHandler dataHandler) throws Exception {
-		PrivateCloud pc = getInstance(solutionMulti, dataHandler);
+	public static SolutionMulti getSolution(SolutionMulti solutionMulti) throws Exception {
+		PrivateCloud pc = getInstance(solutionMulti);
 		
 		SolutionMulti s = pc.getSolution();
 		
 		return s;
 	}
 	
-	private PrivateCloud(SolutionMulti solutionMulti, DataHandler dataHandler) {
+	private PrivateCloud(SolutionMulti solutionMulti) throws DatabaseConnectionFailureExteption {
 		this.startingSolution = solutionMulti;
 		
 		if (Configuration.USE_PRIVATE_CLOUD)
@@ -82,7 +84,7 @@ public class PrivateCloud implements CloudProvider {
 		else
 			this.owns = new ArrayList<Host>();
 		
-		this.dataHandler = dataHandler;
+		this.dataHandler = DataHandlerFactory.getHandler();
 		
 		reset();
 		
@@ -99,7 +101,7 @@ public class PrivateCloud implements CloudProvider {
 	
 	public static final int MAX_ATTEMPTS = 2;
 	
-	public SolutionMulti getSolution() throws Exception {
+	public SolutionMulti getSolutionOld() throws Exception {
 		if (solution != null) {
 			logger.info("Solution already computed, returned that.");
 			return solution;
@@ -302,6 +304,230 @@ public class PrivateCloud implements CloudProvider {
 		return solution;
 	}
 	
+	public SolutionMulti getSolution() throws Exception {
+		if (solution != null) {
+			logger.info("Solution already computed, returned that.");
+			return solution;
+		}
+		
+		logger.info("Computing the solution that will be allocated in the private cloud...");
+		
+		if (this.startingSolution.size() < 1) {
+			logger.error("The SolutionMulti object has no Solution! Aborting.");
+			return null;
+		} else if (this.startingSolution.size() > 1) {
+			
+			Solution solutionMax = this.startingSolution.get(0);
+			double costMax = solutionMax.getCost();
+			
+			for (int i = 1; i < this.startingSolution.size(); ++i) {
+				Solution s = this.startingSolution.get(i);
+				if (s.getCost() > costMax) {
+					costMax = s.getCost();
+					solutionMax = s;
+				}
+			}
+			
+			solution = new SolutionMulti();
+			solution.add(solutionMax);
+			
+		} else {
+			solution = this.startingSolution.clone();
+		}
+		
+		Path tempSol = Files.createTempFile("solution", ".xml"), tempConf = Files.createTempFile("conf", ".properties");
+		solution.exportLight(tempSol);
+		Configuration.saveConfiguration(tempConf.toString());
+		
+		int[] startingHourlyMachines = getTotalHourlyMachines(solution.get(0));
+		double[] startingPercentages = new double[24];
+		{
+			Solution s = solution.get(0);
+			for (int h = 0; h < startingPercentages.length; ++h) {
+				startingPercentages[h] = s.getPercentageWorkload(h);
+			}
+		}
+		
+		List<File> solutionFiles = null;
+		boolean done = false;
+		
+		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+			it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud pc =
+					new it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud(tempConf.toString(), tempSol.toString());
+			
+//			it.polimi.modaclouds.space4cloud.privatecloud.PrivateCloud.removeTempFiles = false;
+			
+			solutionFiles = pc.getSolutions(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY));
+			
+			for (int i = 0; i < solutionFiles.size() && !done; ++i) {
+				if (SolutionMulti.getCost(solutionFiles.get(i)) > 0) {
+					done = true;
+					attempt = MAX_ATTEMPTS;
+				}
+			}
+		}
+		if (!done) {
+			logger.error("Error in computing the solution!");
+			reset();
+			return null;
+		}
+		
+		solution.setFrom(solutionFiles.get(0), null);
+		String startingProvider = solution.get(0).getProvider();
+		
+//		{
+//			Solution s = solution.get(0);
+//			int[] hourlyMachines = getTotalHourlyMachines(s);
+//			double[] rates = new double[hourlyMachines.length];
+//			for (int h = 0; h < hourlyMachines.length; ++h) {
+//				rates[h] = ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h];
+////				changeWorkload(s, h, ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h]);
+//			}
+//			changeWorkload(s, rates);
+//		}
+		
+		UsageModelExtensionParser usageModelParser = new UsageModelExtensionParser(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
+		
+		SolutionMulti tmp = new SolutionMulti();
+		tmp.add(solution.get(startingProvider).clone());
+		
+		for (Solution sol : tmp.getAll()) {
+			for (Instance inst : sol.getApplications()) {
+				for (Tier tier : inst.getTiers()) {
+					IaaS res = (IaaS) tier.getCloudService();
+					res.setReplicas(0);
+				}
+			}
+		}
+		
+		for (int i = 1; i < solutionFiles.size(); ++i) {
+			if (SolutionMulti.isEmpty(solutionFiles.get(i)))
+				continue;
+			
+			tmp.addFrom(solutionFiles.get(i));
+			
+			Host h = owns.get(i - 1);
+			
+			for (Solution s : tmp.getAll()) {
+				s.setRegion(null);
+				
+				for (Tier t : s.getApplication(0).getTiers()) {
+					CloudService service = t.getCloudService();
+					
+					CloudResource res = dataHandler.getCloudResource(
+							service.getProvider(),
+							service.getServiceName(),
+							service.getResourceName());
+					
+					h.addResource(res);
+				}
+			}
+			
+			SolutionMulti onCheck = new SolutionMulti();
+			onCheck.add(solution.get(startingProvider).clone());
+			
+			for (Solution sol : onCheck.getAll()) {
+				for (Instance inst : sol.getApplications()) {
+					for (Tier tier : inst.getTiers()) {
+						IaaS res = (IaaS) tier.getCloudService();
+						res.setReplicas(0);
+					}
+				}
+			}
+			
+			onCheck.setFrom(solutionFiles.get(i), null);
+			
+			for (int hour = 0; hour < 24; ++hour) {
+				Instance app = onCheck.get(0).getApplication(hour);
+				for (Tier t : app.getTiers()) {
+					IaaS res = (IaaS) t.getCloudService();
+					if (res.getReplicas() > 0)
+						h.isOn.set(hour, true);
+				}
+			}
+		}
+			
+		for (Solution s : tmp.getAll()) {
+			s.setRegion(null);
+			String provider = BASE_PROVIDER_NAME;
+			
+			for (Tier t : s.getApplication(0).getTiers()) {
+				ArrayList<String> propertyNames = new ArrayList<String>();
+				ArrayList<Object> propertyValues = new ArrayList<Object>();
+				propertyNames.add("provider");
+				propertyValues.add(provider);
+				s.changeValues(t.getId(), propertyNames, propertyValues);
+			}
+			
+			s.buildFolderStructure();
+			for (int hour = 0; hour < 24; ++hour) {
+                Instance application = s.getApplication(hour);
+                File[] models = Paths
+                        .get(Configuration.PROJECT_BASE_FOLDER, 
+                                Configuration.WORKING_DIRECTORY, 
+                                Configuration.PERFORMANCE_RESULTS_FOLDER, 
+                                provider,
+                                Configuration.FOLDER_PREFIX + hour).toFile()
+                                .listFiles(new FilenameFilter() {
+                                    @Override
+                                    public boolean accept(File dir, String name) {
+                                        return name.endsWith(".xml");
+                                    }
+                                });
+                // suppose there is just 1 model
+                Path lqnModelPath = models[0].toPath();
+                application.initLqnHandler(lqnModelPath);
+
+                // add population and think time from usage model extension
+                int population = -1;
+                double thinktime = -1;
+                if (usageModelParser.getPopulations().size() == 1)
+                    population = usageModelParser.getPopulations().values()
+                    .iterator().next()[hour];
+                if (usageModelParser.getThinkTimes().size() == 1)
+                    thinktime = usageModelParser.getThinkTimes().values()
+                    .iterator().next()[hour];
+
+                double percentage = 1.0; //(double) 1 / providers.size();
+                
+//	                double percentage = ((double)getTotalHourlyMachines(s, hour) / startingHourlyMachines[hour]) * startingPercentages[hour];
+
+                population = (int) Math.ceil(population * percentage);
+                
+                s.setPercentageWorkload(hour, percentage);
+
+                application.getLqnHandler().setPopulation(population);
+                application.getLqnHandler().setThinktime(thinktime);
+                application.getLqnHandler().saveToFile();
+			}
+			
+			solution.add(s);
+		}
+		
+		for (Solution s : solution.getAll()) {
+//			Solution s = solution.get(0);
+			int[] hourlyMachines = getTotalHourlyMachines(s);
+			double[] rates = new double[hourlyMachines.length];
+			for (int h = 0; h < hourlyMachines.length; ++h) {
+				rates[h] = ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h];
+//				changeWorkload(s, h, ((double)hourlyMachines[h] / startingHourlyMachines[h]) * startingPercentages[h]);
+			}
+			changeWorkload(s, rates);
+			
+			logger.debug(solution.showStatus());
+		}
+		
+		for (Solution s : startingSolution.getAll()) {
+			if (solution.get(s.getProvider()) == null)
+				solution.add(s);
+		}
+		
+//		solution.removeUselessSolutions();
+		
+		logger.info("Solution computed!");
+		return solution;
+	}
+	
 	private int[] getTotalHourlyMachines(Solution s) {
 		int[] res = new int[24];
 		
@@ -400,13 +626,21 @@ public class PrivateCloud implements CloudProvider {
 
     }
 	
-	public Host getHost(String provider) {
-		if (provider.indexOf(BASE_PROVIDER_NAME) == -1)
-			return null;
-		int i = Integer.parseInt(provider.substring(BASE_PROVIDER_NAME.length(), provider.indexOf(" "))) - 1;
-		if (i >= owns.size() || i < 0)
-			return null;
-		return owns.get(i);
+	public List<Host> getUsedHosts() {
+		List<Host> res = new ArrayList<Host>();
+		
+		for (Host h : owns) {
+			boolean goOn = true;
+			for (int i = 0; i < h.isOn.size() && goOn; ++i) {
+				Boolean on = h.isOn.get(i);
+				if (on != null && on) {
+					res.add(h);
+					goOn = false;
+				}
+			}
+		}
+		
+		return res;
 	}
 
 	@Override
