@@ -63,14 +63,11 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -885,9 +882,24 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 							{
 								Path performanceResults = Paths.get(g.getParent(), "performance_results");
 
+								// TODO: qui
+//								if(Configuration.SOLVER ==Solver.LINE){
+//									consoleLogger.info("Resetting the LINE server");			
+//									LineServerHandler lineHandler = LineServerHandlerFactory.getHandler();
+//									lineHandler.terminateLine();
+//									lineHandler.connectToLINEServer();
+//									lineHandler.closeConnections();
+//									consoleLogger.info("Succesfully connected to LINE server");
+//									try {
+//										Thread.sleep(1000);
+//									} catch (InterruptedException e) {
+//										logger.error("Error while waiting for LINE first connection, will try to proceed",e);
+//									}//give time to LINE to close the connection on his side
+//								}
+								
 								while (performanceResults.toFile().exists()) {
 									try {
-										cleanFolders(performanceResults);
+										FileUtils.deleteQuietly(performanceResults.toFile());
 										//										cleanFolders(Paths.get(g.getParent(), "performance_results"));
 									} catch (Exception e) {
 										logger.warn("Exception raised while clearing folder: "+performanceResults,e);
@@ -964,11 +976,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			}
 			el++;
 
-			try {
-				cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, testValue + ""));
-			} catch (IOException e) {
-				logger.error("Error cleaning folders",e);
-			}
+			FileUtils.deleteQuietly(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, testValue + "").toFile());
 
 			testValue += stepSize;
 
@@ -1098,29 +1106,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		return g;
 
 	}
-
-	public static void cleanFolders(Path path) throws IOException {			
-		Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				//skip deleting hidden files and directories
-				if(!file.toString().contains(".svn"))
-					Files.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				//skip deleting hidden files and directories
-				if(!dir.toString().contains(".svn"))
-					Files.delete(dir);
-				return FileVisitResult.CONTINUE;
-			}
-
-		});
-	}
-
-
 
 	public static int getMaxPopulation(File usageModelExtension) {
 		UsageModelExtensions umes = null;
