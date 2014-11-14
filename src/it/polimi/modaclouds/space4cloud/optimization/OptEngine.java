@@ -184,7 +184,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected GenericChart<XYSeriesCollection> costLogImage;
 	protected GenericChart<XYSeriesCollection> logVm;
 	protected GenericChart<XYSeriesCollection> logConstraints;
-	
+
 	protected String bestSolutionSerieHandler;
 	protected String localBestSolutionSerieHandler;
 
@@ -206,7 +206,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			boolean batch) throws DatabaseConnectionFailureExteption {
 
 		loadConfiguration();
-		
+
 		try {
 			costLogImage = GenericChart.createCostLogger();
 			logVm = GenericChart.createVmLogger();
@@ -1058,7 +1058,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 								// add the id of the called functionality to the
 								// list of external calls
 								OperationSignature sig = ((ExternalCallAction) a)
-								.getCalledService_ExternalService();
+										.getCalledService_ExternalService();
 								function.addExternalCall(sig
 										.getInterface__OperationSignature()
 										.getEntityName()
@@ -1274,7 +1274,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		bestSolution = initialSolution.clone();
 		localBestSolution = initialSolution.clone();
-		
+
 		bestSolutionSerieHandler = "Best Solution";
 		localBestSolutionSerieHandler = "Local Best Solution";
 
@@ -1461,11 +1461,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Unable to create charts", e);
 		}
 
-//		exportSolution(); TODO: this is always called twice, becaue Space4Cloud calls it at the end of the process! Disabled here.
+		//		exportSolution(); TODO: this is always called twice, becaue Space4Cloud calls it at the end of the process! Disabled here.
 		evalServer.showStatistics();        
 
-//		if (!batch)
-//			SolutionWindow.show(bestSolution);
+		//		if (!batch)
+		//			SolutionWindow.show(bestSolution);
 
 		return -1;
 
@@ -1955,41 +1955,59 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 *            new solution
 	 * @return true if sol has become the new best solution
 	 */
-
-	protected boolean updateBestSolution(Solution sol, boolean force) {
+	protected boolean checkBestSolution(Solution sol, boolean force) {
 		if (force || sol.greaterThan(bestSolution)) {    
 			if(bestSolutions !=  null)
 				bestSolutions.add(bestSolution.clone());
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
 			timer.split();
-			logger.warn("" + bestSolution.getCost() + ", "
-					+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())
-					+ ", " + bestSolution.isFeasible());
-			costLogImage.add(bestSolutionSerieHandler,
-					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-					bestSolution.getCost());
-			optimLogger.info("updated best solution");
-
 			clone.setGenerationIteration(numberOfIterations);
 			clone.setGenerationTime(timer.getSplitTime());
 			bestSolution.setGenerationIteration(numberOfIterations);
 			bestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
-
-
+			optimLogger.info("updated best solution");
 			return true;
 		}
 		return false;
 	}
 
+
 	protected boolean updateBestSolution(Solution sol) {
 		return updateBestSolution(sol, false);
 	}
 
+	protected boolean updateBestSolution(Solution sol, boolean force) {
+		boolean result = checkBestSolution(sol, force);
+		if(result) 
+			updateCostLogImage(bestSolution,bestSolutionSerieHandler);
+		return result;
+	}
+
+	protected void updateBestSolution(SolutionMulti sol) {
+		updateBestSolution(sol, false);
+	}
+
+	protected void updateBestSolution(SolutionMulti sol, boolean force) {
+		boolean updated = false;
+		for (Solution s : sol.getAll())
+			updated = updated || checkBestSolution(s, force);
+		if(updated)
+			updateCostLogImage(bestSolution,bestSolutionSerieHandler);
+	}
 
 
-	protected boolean updateLocalBestSolution(Solution sol, boolean force) {
+	private void updateCostLogImage(SolutionMulti solution, String seriesHandler){
+		logger.warn("" + solution.getCost() + ", "
+				+ TimeUnit.MILLISECONDS.toSeconds(solution.getGenerationTime())
+				+ ", " + solution.isFeasible());
+		costLogImage.add(seriesHandler,
+				TimeUnit.MILLISECONDS.toSeconds(solution.getGenerationTime()),
+				solution.getCost());
+	}
+
+	protected boolean checkLocalBestSolution(Solution sol, boolean force) {
 		if (force || sol.greaterThan(localBestSolution)) {
 
 			// updating the best solution
@@ -1998,21 +2016,22 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// sol.exportLight(filename);
 			localBestSolution.add(sol.clone());
 			this.numIterNoImprov = 0;
-			timer.split();
-			logger.warn("" + localBestSolution.getCost() + ", "
-					+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime())
-					+ ", " + localBestSolution.isFeasible());
-			costLogImage.add(localBestSolutionSerieHandler,
-					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-					localBestSolution.getCost());
+			timer.split();			
+			localBestSolution.setGenerationIteration(numberOfIterations);
+			localBestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
-
 			optimLogger.info("updated local best solution");
 			return true;
 		}
 		return false;
 	}
 
+	protected boolean updateLocalBestSolution(Solution sol, boolean force) {
+		boolean result = checkLocalBestSolution(sol, force);
+		if(result)
+			updateCostLogImage(localBestSolution, localBestSolutionSerieHandler);
+		return result;
+	}
 
 	protected boolean updateLocalBestSolution(Solution sol) {
 		return updateLocalBestSolution(sol, false);
@@ -2023,18 +2042,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	}
 
 	protected void updateLocalBestSolution(SolutionMulti sol, boolean force) {
+		boolean updated = false;
 		for (Solution s : sol.getAll())
-			updateLocalBestSolution(s, force);
+			updated = updated || checkLocalBestSolution(s, force);
+		if(updated)
+			updateCostLogImage(localBestSolution, localBestSolutionSerieHandler);
 	}
 
-	protected void updateBestSolution(SolutionMulti sol) {
-		updateBestSolution(sol, false);
-	}
-
-	protected void updateBestSolution(SolutionMulti sol, boolean force) {
-		for (Solution s : sol.getAll())
-			updateBestSolution(s, force);
-	}
 
 	protected void loadConfiguration() {
 		MAXFEASIBILITYITERATIONS = Configuration.FEASIBILITY_ITERS;
@@ -2073,7 +2087,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 
 	private StopWatch duration = null;
-	
+
 	public void setDuration(StopWatch duration) {
 		this.duration = duration;
 	}
