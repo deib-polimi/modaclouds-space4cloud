@@ -158,8 +158,7 @@ public class LINEResultParser extends LqnResultParser implements Serializable {
 	@Override
 	public double getUtilization(String resourceID) {
 		if (utilizations.get(resourceID) != null)
-			return utilizations.get(resourceID);
-		System.out.println("");
+			return utilizations.get(resourceID);		
 		return -1;
 
 	}
