@@ -2,6 +2,7 @@ package it.polimi.modaclouds.space4cloud.gui;
 
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -42,7 +43,9 @@ public class BestSolutionExplorer implements ActionListener {
 	private void initialize() {
 		frmBestSolutionsExplorer = new JFrame();
 		frmBestSolutionsExplorer.setTitle("Best Solutions Explorer");
-		frmBestSolutionsExplorer.setBounds(100, 100, 450, 300);
+//		frmBestSolutionsExplorer.setBounds(100, 100, 450, 300);
+		frmBestSolutionsExplorer.setMinimumSize(new Dimension(900, 600));
+		frmBestSolutionsExplorer.setLocationRelativeTo(null);
 		frmBestSolutionsExplorer.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0};
