@@ -830,6 +830,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return result;
 	}
 
+	/**
+	 * Updates the feasibility of the solution
+	 */
 	public void updateEvaluation() {
 		boolean evaluated = true, feasible = true;
 		// int previousCost = cost;

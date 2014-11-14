@@ -153,8 +153,10 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 	@Override
 	public void update(LqnResultParser results) {
 		// update resource
+		
 		if(cloudService instanceof Compute)
 			((Compute)cloudService).updateUtilization(results.getUtilization(getName()));
+	
 
 		// update components
 		for (Component c : components)

@@ -267,27 +267,27 @@ public class Configuration {
 		ArrayList<String> errors = new ArrayList<String>();
 
 		//check Palladio Model Files
-		if(PALLADIO_REPOSITORY_MODEL == null || PALLADIO_REPOSITORY_MODEL.isEmpty())
+		if(fileNotSpecifiedORNotExist(PALLADIO_REPOSITORY_MODEL))
 			errors.add("The palladio repository model has not been specified");
-		if(PALLADIO_SYSTEM_MODEL== null|| PALLADIO_SYSTEM_MODEL.isEmpty())
+		if(fileNotSpecifiedORNotExist(PALLADIO_SYSTEM_MODEL))
 			errors.add("The palladio system model has not been specified");
-		if(PALLADIO_RESOURCE_MODEL== null|| PALLADIO_RESOURCE_MODEL.isEmpty())
+		if(fileNotSpecifiedORNotExist(PALLADIO_RESOURCE_MODEL))
 			errors.add("The palladio resource environment model has not been specified");
-		if(PALLADIO_ALLOCATION_MODEL== null|| PALLADIO_ALLOCATION_MODEL.isEmpty())
+		if(fileNotSpecifiedORNotExist(PALLADIO_ALLOCATION_MODEL))
 			errors.add("The palladio allocation model has not been specified");
-		if(PALLADIO_USAGE_MODEL== null|| PALLADIO_USAGE_MODEL.isEmpty())
+		if(fileNotSpecifiedORNotExist(PALLADIO_USAGE_MODEL))
 			errors.add("The palladio usage model has not been specified");
 		//check extensions
-		if(USAGE_MODEL_EXTENSION==null|| USAGE_MODEL_EXTENSION.isEmpty())
+		if(fileNotSpecifiedORNotExist(USAGE_MODEL_EXTENSION))
 			errors.add("The usage model extension has not been specified");
-		if(RESOURCE_ENVIRONMENT_EXTENSION==null|| RESOURCE_ENVIRONMENT_EXTENSION.isEmpty())
+		if(fileNotSpecifiedORNotExist(RESOURCE_ENVIRONMENT_EXTENSION))
 			errors.add("The resource environment extension has not been specified");
-		if(CONSTRAINTS==null|| CONSTRAINTS.isEmpty())
+		if(fileNotSpecifiedORNotExist(CONSTRAINTS))
 			errors.add("The constraint file has not been specified");
 		//check functionality and the solver
-		if(DB_CONNECTION_FILE==null|| DB_CONNECTION_FILE.isEmpty())
+		if(fileNotSpecifiedORNotExist(DB_CONNECTION_FILE))
 			errors.add("The database connection file has not been specified");		
-		if(SOLVER== Solver.LINE && (LINE_PROP_FILE == null || LINE_PROP_FILE.isEmpty()))
+		if(SOLVER== Solver.LINE && fileNotSpecifiedORNotExist(LINE_PROP_FILE))
 			errors.add("The LINE configuration file has not been specified");		
 		//check the optimization if it has been selected
 		if(FUNCTIONALITY==Operation.Optimization || FUNCTIONALITY == Operation.Robustness) {
@@ -335,6 +335,10 @@ public class Configuration {
 		}
 
 		return errors;
+	}
+	
+	private static boolean fileNotSpecifiedORNotExist(String filePath){
+		return filePath == null || filePath.isEmpty() || !Paths.get(filePath).toFile().exists();
 	}
 
 	public static void flushLog() {
