@@ -1234,14 +1234,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	private SolutionMulti considerPrivateCloud(SolutionMulti solutionMulti) throws Exception {
 		SolutionMulti sol = PrivateCloud.getSolution(solutionMulti);
 		if (sol != null) {
-			logger.info("Solution found!");
+			logger.info("A solution using the private cloud has been found!");
 			evalServer.EvaluateSolution(sol);
-			logger.info("Solution evaluated!");
 			logger.info(sol.showStatus());
-			//			sol.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+ "-evaluated" + Configuration.SOLUTION_FILE_EXTENSION));
 		}
 		else
-			logger.info("No solution!");
+			logger.info("No solution considering the private cloud!");
 
 		return sol;
 	}
@@ -1314,26 +1312,27 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			updateBestSolution(currentSolution, true);
 		}
 
-		//        if (Configuration.USE_PRIVATE_CLOUD) {
-		//        	// make feasible:
-		//            makeFeasible(currentSolution);
-		//            
-		//            // scale in:
-		//            InternalOptimization(currentSolution);
-		//            
-		//            evalServer.EvaluateSolution(currentSolution);
-		//        	
-		//    		try {
-		//		    	currentSolution = considerPrivateCloud(currentSolution);
-		//		    	evalServer.EvaluateSolution(currentSolution);
-		//		    	SolutionWindow.show(currentSolution);
-		//		    	
-		//				return 0;
-		//    		} catch (Exception e) {
-		//    			e.printStackTrace();
-		//    			return -1;
-		//    		}
-		//    	}
+//        if (Configuration.USE_PRIVATE_CLOUD) {
+//        	// make feasible:
+//            makeFeasible(currentSolution);
+//            
+//            // scale in:
+//            InternalOptimization(currentSolution);
+//        	
+//    		try {
+//    			evalServer.EvaluateSolution(currentSolution);
+//		    	currentSolution = considerPrivateCloud(currentSolution);
+//		    	bestSolution = currentSolution.clone();
+//		    	localBestSolution = currentSolution.clone();
+//		    	updateBestSolution(currentSolution, true);
+//		    	updateLocalBestSolution(currentSolution, true);
+//		    	
+//				return 0;
+//    		} catch (Exception e) {
+//    			logger.error("Error while dealing with the private cloud!", e);
+//    			return -1;
+//    		}
+//    	}
 
 		while (!isMaxNumberOfIterations()) {
 
@@ -1439,6 +1438,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					currentSolution = sol;
 					bestSolution = currentSolution.clone();
 					localBestSolution = currentSolution.clone();
+					
+					updateBestSolution(currentSolution, true);
+					updateLocalBestSolution(currentSolution, true);
 
 					// TODO: fix this solution!
 				}

@@ -304,7 +304,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 							hourAllocation.setAttribute("allocation", ""
 									+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
 							if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
-                                hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHosts(i));
+                                hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHosts(i).size());
 						}
 					}
 				}
