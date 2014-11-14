@@ -769,9 +769,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			throw new RobustnessException("Error saving the configuration",e);
 		}
 		try {
-			FileUtils.deleteDirectory(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "performance_results").toFile());
+			FileUtils.deleteDirectory(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, Configuration.PERFORMANCE_RESULTS_FOLDER).toFile());
 		} catch (IOException e) {
-			throw new RobustnessException("Error cleaning directory: "+Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "performance_results"),e);
+			throw new RobustnessException("Error cleaning directory: "+Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, Configuration.PERFORMANCE_RESULTS_FOLDER),e);
 		}	
 		//		try {
 		//			cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, "attempts"));
@@ -880,7 +880,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 							// all I need
 
 							{
-								Path performanceResults = Paths.get(g.getParent(), "performance_results");
+								Path performanceResults = Paths.get(g.getParent(), Configuration.PERFORMANCE_RESULTS_FOLDER);
 
 								// TODO: qui
 //								if(Configuration.SOLVER ==Solver.LINE){
@@ -897,14 +897,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 //									}//give time to LINE to close the connection on his side
 //								}
 								
-								while (performanceResults.toFile().exists()) {
-									try {
-										FileUtils.deleteQuietly(performanceResults.toFile());
-										//										cleanFolders(Paths.get(g.getParent(), "performance_results"));
-									} catch (Exception e) {
-										logger.warn("Exception raised while clearing folder: "+performanceResults,e);
-									}
-								}
+								FileUtils.deleteQuietly(performanceResults.toFile());
 
 							}
 

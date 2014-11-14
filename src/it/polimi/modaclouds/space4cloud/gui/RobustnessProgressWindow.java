@@ -677,8 +677,11 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			boolean feasibility = Boolean
 					.parseBoolean(solutionResult.getAttributes()
 							.getNamedItem("feasibility").getNodeValue());
-			long duration = Long.parseLong(solutionResult.getAttributes()
-					.getNamedItem("time").getNodeValue());
+			
+			Node n = solutionResult.getAttributes().getNamedItem("generationTime");
+			if (n == null)
+				n = solutionResult.getAttributes().getNamedItem("time");
+			long duration = Long.parseLong(n.getNodeValue());
 
 			costs.dataset.addValue(cost, "Solution"/* name */, "" + "" + maxPopulation);
 			feasibilities.dataset.addValue(feasibility ? 1 : 0, "Solution"/* name */, "" + maxPopulation);
