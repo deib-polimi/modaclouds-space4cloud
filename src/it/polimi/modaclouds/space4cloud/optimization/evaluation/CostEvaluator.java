@@ -161,11 +161,9 @@ public class CostEvaluator {
 		
 		double cost = 0;
 		
-		List<Host> usedHosts = PrivateCloud.getInstance().getUsedHosts();
+		List<Host> usedHosts = PrivateCloud.getInstance().getUsedHosts(hour);
 		for (Host h : usedHosts) {
-			Boolean b = h.isOn.get(hour);
-			if (b != null && b)
-				cost += deriveCosts(null, h.energyCost, 1, hour);
+			cost += deriveCosts(null, h.energyCost, 1, hour);
 		}
 		
 		// TODO: add VM cost, because we consider now a fixed cost either if the

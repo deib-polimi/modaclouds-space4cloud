@@ -626,17 +626,13 @@ public class PrivateCloud implements CloudProvider {
 
     }
 	
-	public List<Host> getUsedHosts() {
+	public List<Host> getUsedHosts(int hour) {
 		List<Host> res = new ArrayList<Host>();
 		
 		for (Host h : owns) {
-			boolean goOn = true;
-			for (int i = 0; i < h.isOn.size() && goOn; ++i) {
-				Boolean on = h.isOn.get(i);
-				if (on != null && on) {
-					res.add(h);
-					goOn = false;
-				}
+			Boolean on = h.isOn.get(hour);
+			if (on != null && on) {
+				res.add(h);
 			}
 		}
 		

@@ -10,7 +10,6 @@ import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 import java.awt.BorderLayout;
@@ -344,7 +343,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		solutions = new GenericChart<DefaultCategoryDataset>(null, "Max Population", "Allocation");
 		solutions2 = new GenericChart<DefaultCategoryDataset>(null, "Max Population", "Allocation");
 		solutions.dataset = new DefaultCategoryDataset();
-		solutions2.dataset = new DefaultCategoryDataset();
+		solutions2.dataset = solutions.dataset;
 		solutions.shownValsAboveMax = 0.5;
 		solutions.shownValsBelowMin = 0.5;
 		solutions2.shownValsAboveMax = 0.5;
@@ -365,7 +364,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			}
 		};
 		tiers.dataset = new DefaultCategoryDataset();
-		tiers2.dataset = new DefaultCategoryDataset();
+		tiers2.dataset = tiers.dataset;
 		tiers.shownValsAboveMax = 0.5;
 		tiers.shownValsBelowMin = 0.5;
 		tiers2.shownValsAboveMax = 0.5;
@@ -476,7 +475,11 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 
 		NodeList nl = doc.getElementsByTagName("Tier");
 		
-		LinkedHashMap<String, Integer[]> usageHosts = new LinkedHashMap<String, Integer[]>();
+		Integer[] usageHosts = new Integer[24];
+		for (int h = 0; h < 24; ++h) {
+			usageHosts[h] = 0;
+			
+		}
 		
 		LinkedHashMap<String, Integer[]> machinesOnPrivate = new LinkedHashMap<String, Integer[]>();
 
@@ -503,7 +506,6 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 				
 	
 				tiers.dataset.addValue(s.ordinal(), /*"Tier " + i*/ tierName, "" + maxPopulation);
-				tiers2.dataset.addValue(s.ordinal(), /*"Tier " + i*/ tierName, "" + maxPopulation);
 				tiersBasic.dataset.addValue(s.basicId, /*"Tier " + i*/ tierName, "" + maxPopulation);
 	
 				Element tierEl = (Element) tier;
@@ -521,23 +523,10 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 												.getNamedItem("allocation")
 												.getNodeValue()), /*"Tier " + i*/ tierName, ""
 												+ maxPopulation);
-						solutions2.dataset
-						.addValue(
-								Integer.valueOf(hour.getAttributes()
-										.getNamedItem("allocation")
-										.getNodeValue()), /*"Tier " + i*/ tierName, ""
-										+ maxPopulation);
 					}
 	
 				}
 			} else {
-				Integer[] usage = usageHosts.get(provider);
-				if (usage == null) {
-					usage = new Integer[24];
-					for (int h = 0; h < 24; ++h)
-						usage[h] = 0;
-				}
-				
 				String key = tier.getAttributes().getNamedItem("name").getNodeValue() + "@" + size;
 				
 				Integer[] machines = machinesOnPrivate.get(key);
@@ -557,12 +546,15 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 					int valAllocation = Integer.valueOf(hour.getAttributes()
 							.getNamedItem("allocation")
 							.getNodeValue());
+					int valHosts = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("hosts")
+							.getNodeValue());
 					
-					usage[valHour] += valAllocation;
+					if (usageHosts[valHour] < valHosts)
+						usageHosts[valHour] = valHosts;
 					machines[valHour] += valAllocation;
 				}
 				
-				usageHosts.put(provider, usage);
 				machinesOnPrivate.put(key, machines);
 			}
 		}
@@ -659,9 +651,6 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 							solutions.dataset.setValue(
 										allocation, /*"Tier " + i*/ tierName + "@" + provider, ""
 												+ maxPopulation);
-							solutions2.dataset.setValue(
-									allocation, /*"Tier " + i*/ tierName + "@" + provider, ""
-											+ maxPopulation);
 						}
 					}
 				}
@@ -669,12 +658,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		}
 		
 		for (int h = 0; h < 24; ++h) {
-			int hourlyValue = 0;
-			for (String provider : usageHosts.keySet()) {
-				if (usageHosts.get(provider)[h] > 0)
-					hourlyValue++;
-			}
-			privateHosts.dataset.addValue(hourlyValue, name, "" + h);
+			privateHosts.dataset.addValue(usageHosts[h], name, "" + h);
 			
 			for (String tier : machinesOnPrivate.keySet())
 				privateMachines.dataset.addValue(machinesOnPrivate.get(tier)[h], tier.substring(0, tier.indexOf('@')), "" + h);
@@ -779,8 +763,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		privateHostsTabs = new JTabbedPane();
 		lowerPanel.add(privateHostsTabs);
 		int tabNumber = tabbedPane.indexOfComponent(lowerPanel);
-		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
-//		tabbedPane.setEnabledAt(tabNumber, true);
+//		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
+		tabbedPane.setEnabledAt(tabNumber, true);
 		
 		lowerPanel = new JPanel();
 		lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
@@ -788,8 +772,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		publicVsPrivateTabs = new JTabbedPane();
 		lowerPanel.add(publicVsPrivateTabs);
 		tabNumber = tabbedPane.indexOfComponent(lowerPanel);
-		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
-//		tabbedPane.setEnabledAt(tabNumber, true);
+//		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
+		tabbedPane.setEnabledAt(tabNumber, true);
 		
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
