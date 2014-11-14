@@ -347,10 +347,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return null;
 	}
 
+	/**
+	 * Calls the evaluation server to perform a single evaluation (only to used in the assesment mode)
+	 * @throws EvaluationException
+	 */
 	public void evaluate() throws EvaluationException {
-
 		timer.start();
-		timer.split();
 		evalServer.EvaluateSolution(initialSolution);
 		logger.trace(initialSolution.showStatus());
 	}
@@ -1230,7 +1232,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 
 	private SolutionMulti considerPrivateCloud(SolutionMulti solutionMulti) throws Exception {
-		SolutionMulti sol = PrivateCloud.getSolution(solutionMulti, dataHandler);
+		SolutionMulti sol = PrivateCloud.getSolution(solutionMulti);
 		if (sol != null) {
 			logger.info("Solution found!");
 			evalServer.EvaluateSolution(sol);
@@ -1258,8 +1260,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		if (this.initialSolution == null)
 			return -1;
 		optimLogger.trace("starting the optimization");
+		//start the timer
 		timer.start();
-		timer.split();
 		try {
 			evalServer.EvaluateSolution(initialSolution);
 		} catch (EvaluationException e) {
@@ -1272,12 +1274,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		bestSolution = initialSolution.clone();
 		localBestSolution = initialSolution.clone();
-
-		timer.split();
 		
 		bestSolutionSerieHandler = "Best Solution";
 		localBestSolutionSerieHandler = "Local Best Solution";
 
+		timer.split();
 		costLogImage.add(localBestSolutionSerieHandler,
 				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 				localBestSolution.getCost());
@@ -1844,7 +1845,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	/**
 	 * Calculates the efficiency of the reousce. The efficiency is calculated by
-	 * numberOfCores*speed/*averageCost
+	 * numberOfCores*speed/averageCost
 	 * 
 	 * @param resource
 	 * @param region
