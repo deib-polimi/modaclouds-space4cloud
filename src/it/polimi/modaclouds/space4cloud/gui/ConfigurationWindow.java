@@ -209,7 +209,8 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			if(Configuration.USE_PRIVATE_CLOUD)
 				try {
 					File tempFile = File.createTempFile("space4cloudBurst", ".properties");
-					Configuration.PRIVATE_CLOUD_HOSTS_TMP = tempFile.getAbsolutePath();
+//					Configuration.PRIVATE_CLOUD_HOSTS_TMP = tempFile.getAbsolutePath();
+					Configuration.PRIVATE_CLOUD_HOSTS = tempFile.getAbsolutePath();
 					CloudBurstingPanel.saveFile(tempFile);
 				} catch (IOException e1) {
 					logger.error("Could not save the temporary file for the private cloud configuration");

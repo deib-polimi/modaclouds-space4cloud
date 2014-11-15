@@ -77,7 +77,7 @@ public class Configuration {
 	// For the Private Cloud part:
 	public static boolean USE_PRIVATE_CLOUD = false;
 	public static String PRIVATE_CLOUD_HOSTS = "";
-	public static String PRIVATE_CLOUD_HOSTS_TMP= "";
+//	public static String PRIVATE_CLOUD_HOSTS_TMP= "";
 	//Used to start or stop the optimization process
 	public static boolean run = true;
 
@@ -382,7 +382,7 @@ public class Configuration {
 		logger.debug("REDISTRIBUTE_WORKLOAD: " + Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		logger.debug("USE_PRIVATE_CLOUD: " + Boolean.toString(USE_PRIVATE_CLOUD));
 		logger.debug("PRIVATE_CLOUD_HOSTS: " + PRIVATE_CLOUD_HOSTS);
-		logger.debug("PRIVATE_CLOUD_HOSTS_TMP: " + PRIVATE_CLOUD_HOSTS_TMP);
+//		logger.debug("PRIVATE_CLOUD_HOSTS_TMP: " + PRIVATE_CLOUD_HOSTS_TMP);
 	}
 	
 	

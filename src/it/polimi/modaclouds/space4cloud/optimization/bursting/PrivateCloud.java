@@ -78,10 +78,11 @@ public class PrivateCloud implements CloudProvider {
 	private PrivateCloud(SolutionMulti solutionMulti) throws DatabaseConnectionFailureExteption {
 		this.startingSolution = solutionMulti;
 		
-		if (Configuration.USE_PRIVATE_CLOUD)
-			this.owns = Host.getFromFile(new File(Configuration.PRIVATE_CLOUD_HOSTS_TMP));
-		else
-			this.owns = new ArrayList<Host>();
+		this.owns = new ArrayList<Host>();
+		
+		if (Configuration.USE_PRIVATE_CLOUD) {
+			this.owns = Host.getFromFile(new File(Configuration.PRIVATE_CLOUD_HOSTS)); //_TMP));
+		}
 		
 		this.dataHandler = DataHandlerFactory.getHandler();
 		
@@ -451,6 +452,8 @@ public class PrivateCloud implements CloudProvider {
 		
 		return res;
 	}
+	
+	public static final double PLATFORM_COST_MULTIPLIER = 2.102; 
 
 	@Override
 	public int getId() {

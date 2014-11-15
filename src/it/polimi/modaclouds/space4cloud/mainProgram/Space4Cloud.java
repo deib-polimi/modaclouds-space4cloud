@@ -499,7 +499,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		LineServerHandlerFactory.clearHandler();
 		ConstraintHandlerFactory.clearHandler();
 		refreshProject();
-		FileUtils.deleteQuietly(Paths.get(Configuration.PRIVATE_CLOUD_HOSTS_TMP).toFile());
+//		FileUtils.deleteQuietly(Paths.get(Configuration.PRIVATE_CLOUD_HOSTS_TMP).toFile());
 		compleated = true;
 	}
 
