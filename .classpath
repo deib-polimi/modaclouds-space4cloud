@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="target/dependency/privatecloud-0.0.15.jar"/>
-	<classpathentry exported="true" kind="lib" path="target/dependency/milp-0.0.20.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/milp-0.0.21.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/privatecloud-0.0.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/qos-models-2.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/xml-apis-1.4.01.jar"/>
 	<classpathentry exported="true" kind="lib" path="log/"/>
