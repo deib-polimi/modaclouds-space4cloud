@@ -360,7 +360,7 @@
 		<dependency>
             <groupId>it.polimi.modaclouds.space4cloud</groupId>
             <artifactId>privatecloud</artifactId>
-            <version>0.0.13-SNAPSHOT</version>
+            <version>0.0.14</version>
         </dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

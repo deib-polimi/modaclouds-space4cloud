@@ -227,6 +227,8 @@ public class LINEResultParser extends LqnResultParser implements Serializable {
 				}
 			}
 		}
+		
+		return;
 
 
 	}

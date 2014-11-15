@@ -1352,9 +1352,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				currentSolution = bestSolution.clone();
 
-				System.out.println(currentSolution.showWorkloadPercentages());
+				logger.trace(currentSolution.showWorkloadPercentages());
 				setWorkloadPercentagesFromMILP(currentSolution);
-				System.out.println("MILP:\n"
+				logger.trace("MILP:\n"
 						+ currentSolution.showWorkloadPercentages());
 
 				for (int hour = 0; hour < 24; ++hour) {
@@ -1366,14 +1366,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				System.out.println("My method:\n" + currentSolution.showWorkloadPercentages());
 
 				optimLogger.info("Updating best solutions");
-
+				
+				//both sohuld be feasible
 				bestSolution = currentSolution.clone();
 				localBestSolution = currentSolution.clone();
-
-				// scale in:
-				InternalOptimization(currentSolution);
-				updateLocalBestSolution(currentSolution);
-				updateBestSolution(currentSolution);
 
 				bestSolutionUpdated = false;
 

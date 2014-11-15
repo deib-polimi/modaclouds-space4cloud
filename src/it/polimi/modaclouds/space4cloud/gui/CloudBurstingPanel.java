@@ -198,9 +198,9 @@ public class CloudBurstingPanel extends JPanel implements ActionListener, MouseL
 		if (e.getSource().equals(add)) {
 			new SetHostWindow(this);
 		} else if (e.getSource().equals(remove)) {
-			int sel = list.getSelectedIndex();
-			Host host = lm.get(sel);
+			int sel = list.getSelectedIndex();						
 			if (sel > -1) {
+				Host host = lm.get(sel);
 				Object[] options = {"Yes",
 	                    "No"};
 				int n = JOptionPane.showOptionDialog(null,

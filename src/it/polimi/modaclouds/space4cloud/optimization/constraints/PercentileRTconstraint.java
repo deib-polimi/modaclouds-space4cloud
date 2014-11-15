@@ -44,7 +44,8 @@ public class PercentileRTconstraint extends RTConstraint {
 			if(constResource.getRtPercentiles() != null){
 				//if the desired percentile has been produced
 				if(constResource.getRtPercentiles().containsKey(level)){
-					double percentileValue = ((IPercentileRTConstrainable)resource).getRtPercentiles().get(level);
+					double percentileValue = ((IPercentileRTConstrainable)resource).getRtPercentiles().get(level);					
+					logger.trace("Percentile found for functionality: "+constResource.getId());
 					return checkConstraintDistance(percentileValue);
 				}else{
 					String errorMessage = "The evaluation of the resource did not produce the desired percentile, the percentile level specified in the constraint is: "+level+"\n";
@@ -55,7 +56,7 @@ public class PercentileRTconstraint extends RTConstraint {
 					throw new ConstraintEvaluationException(errorMessage);
 				}				
 			}else{				
-				logger.warn("No percentile was derived by the LQN evaluation, ignoring percentile response time constraint");
+				logger.warn("No percentile was derived by the LQN evaluation, ignoring percentile response time constraint for functionality: "+constResource.getId());
 				return Double.NEGATIVE_INFINITY;
 			}
 		}else{
