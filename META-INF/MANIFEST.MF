@@ -44,7 +44,7 @@ Bundle-ClassPath: .,
  target/dependency/qos-models-2.1.2.jar,
  target/dependency/xml-apis-1.4.01.jar,
  target/dependency/privatecloud-0.0.13-SNAPSHOT.jar,
- target/dependency/milp-0.0.18.jar
+ target/dependency/milp-0.0.19.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.EMFHelper;
   uses:="org.eclipse.emf.ecore,

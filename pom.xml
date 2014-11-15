@@ -355,7 +355,7 @@
 		<dependency>
 			<groupId>it.polimi.modaclouds.space4cloud</groupId>
 			<artifactId>milp</artifactId>
-			<version>0.0.18</version>
+			<version>0.0.19</version>
 		</dependency>
 		<dependency>
             <groupId>it.polimi.modaclouds.space4cloud</groupId>
