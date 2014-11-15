@@ -21,7 +21,6 @@ import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
 import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
@@ -49,8 +48,6 @@ import it.polimi.modaclouds.space4cloud.utils.DataExporter;
 import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
 import it.polimi.modaclouds.space4cloud.utils.PalladioRunException;
 import it.polimi.modaclouds.space4cloud.utils.PluginConsoleAppender;
-import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
-import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentLoadingException;
 import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
 
 import java.beans.PropertyChangeEvent;
@@ -71,7 +68,6 @@ import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -79,7 +75,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingWorker.StateValue;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -108,7 +103,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	private boolean batch;
 	private ConstraintHandler constraintHandler;	
 	private File initialSolution = null, initialMce = null;
-	private List<String> providersInitialSolution = new ArrayList<String>();
 	private String batchConfigurationFile;
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
@@ -120,22 +114,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		this(false); 
 	}
 
-
-	//	/**
-	//	 * Robustness Variables
-	//	 * */
-	//	private int testFrom, testTo, step;
-	//	private int attempts = 5;
-
-
-
 	public Space4Cloud(boolean batch) { //, int testFrom, int testTo, int step) {
-		this.batch = batch;		
-		//		if (batch) {
-		//			this.testFrom = testFrom;
-		//			this.testTo = testTo;
-		//			this.step = step;			
-		//		}
+		this.batch = batch;
 	}
 
 
@@ -148,9 +128,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		batchConfigurationFile = batchConfFile;
 		batch = true;
 	}
-
-
-
 
 	private void cleanExit() {
 		logger.info("Exiting SPACE4Cloud");		
@@ -369,27 +346,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			return;
 		}
 
-		if (Configuration.RELAXED_INITIAL_SOLUTION  && Configuration.FUNCTIONALITY == Operation.Robustness) {
-			consoleLogger.info("Retrieving the candidate providers");
-			try {
-				getProvidersFromExtension();
-			} catch (ResourceEnvironmentLoadingException e) {
-				logger.error("Error in loading the selected providers from the resource environemnt extension file",e);
-				consoleLogger.warn("Could not retrieve providers from the extension file");
-			}
-			if (providersInitialSolution.size() == 0)
-				askProvidersForInitialSolution();
-
-		} else if (Configuration.RELAXED_INITIAL_SOLUTION && Configuration.FUNCTIONALITY == Operation.Optimization) {
-			consoleLogger.info("Retrieving the candidate providers");
-			try {
-				getProvidersFromExtension();
-			} catch (ResourceEnvironmentLoadingException e) {
-				logger.error("Error in loading the selected providers from the resource environemnt extension file",e);
-				consoleLogger.warn("Could not retrieve providers from the extension file");
-			}
-			if (providersInitialSolution.size() == 0)
-				askProvidersForInitialSolution();
+		if (Configuration.RELAXED_INITIAL_SOLUTION && Configuration.FUNCTIONALITY == Operation.Optimization) {
 			performGenerateInitialSolution();
 		}
 
@@ -456,26 +413,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		consoleLogger.error(message);		
 		OptimizationProgressWindow.signalError(message);
 		cleanResources();		
-	}
-
-	private void getProvidersFromExtension()
-			throws ResourceEnvironmentLoadingException {
-		// parse the extension file		
-		ResourceEnvironmentExtensionParser resourceEnvParser = new ResourceEnvironmentExtensionParser();			
-
-		providersInitialSolution = new ArrayList<String>();
-		for (String s : resourceEnvParser.getProviders().values()) {
-			if (!providersInitialSolution.contains(s))
-				providersInitialSolution.add(s);
-		}
-	}
-
-	public String[] getProvidersInitialSolution() {
-		String[] res = new String[providersInitialSolution.size()];
-		int i = 0;
-		for (String s : providersInitialSolution)
-			res[i++] = s;
-		return res;
 	}
 
 	/**
@@ -572,8 +509,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		consoleLogger.info("Generating the initial solution with the MILP engine");
 		MILPEvaluator re = new MILPEvaluator();
 
-		if (providersInitialSolution.size() > 0)
-			re.setProviders(getProvidersInitialSolution());
 		try {
 			re.eval();
 		} catch (Exception e) {
@@ -839,8 +774,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				// if initialSolution isn't null, it was because we generated
 				// it! so we must keep generating them!
 
-				s4c.setProvidersInitialSolution(getProvidersInitialSolution());
-
 				Future<?> fut = executor.submit(s4c);
 				try {
 					fut.get();
@@ -980,20 +913,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		logger.info("Check ended!");
 
-
-		//		String actualDuration = "";
-		//		{
-		//			int res = (int) timer.getTime() / 1000;
-		//			if (res > 60 * 60) {
-		//				actualDuration += (res / (60 * 60)) + " h ";
-		//				res = res % (60 * 60);
-		//			}
-		//			if (res > 60) {
-		//				actualDuration += (res / 60) + " m ";
-		//				res = res % 60;
-		//			}
-		//			actualDuration += res + " s";
-		//		}
 		String actualDuration = durationToString(timer.getTime());
 
 		logger.info("Expected time of execution: " + duration
@@ -1039,19 +958,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	//		.refreshLocal(IResource.DEPTH_INFINITE,
 	//				new NullProgressMonitor());
 	//
-	//	}
-
-	public void setProvidersInitialSolution(String... providers) {
-		providersInitialSolution.clear();
-
-		for (String s : providers)
-			providersInitialSolution.add(s);
-	}
-
-
-
-	//	public void setRobustnessAttempts(int attempts) {
-	//		this.attempts = attempts;
 	//	}
 
 
@@ -1132,41 +1038,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 
 		return maxPopulation;
-	}
-
-	private void askProvidersForInitialSolution() {
-		DataHandler db = null;
-		try {
-			db = DataHandlerFactory.getHandler();
-		} catch (DatabaseConnectionFailureExteption e) {
-			logger.error("Error in connecting to the database",e);
-
-			cleanResources();
-
-			return;			
-		}
-		Set<String> providers = db.getCloudProviders();
-
-		Object[] possibilities = new Object[providers.size() + 1];
-		possibilities[0] = "None";
-		int i = 1;
-		for (String provider : providers)
-			possibilities[i++] = provider;
-
-		String s = (String) possibilities[0];
-		do {
-			s = (String) JOptionPane
-					.showInputDialog(
-							null,
-							"Select a provider if you want to restrict the search, or none to continue:",
-							"Initial Solution", JOptionPane.PLAIN_MESSAGE,
-							null, possibilities, possibilities[0]);
-
-			if (!s.equals(possibilities[0])
-					&& !providersInitialSolution.contains(s))
-				providersInitialSolution.add(s);
-
-		} while (!s.equals(possibilities[0]));
 	}
 	
 	private boolean processEnded = false;
