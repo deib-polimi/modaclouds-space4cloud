@@ -37,9 +37,9 @@ public abstract class Constraint {
 
 	public Constraint(
 			it.polimi.modaclouds.qos_models.schema.Constraint constraint) {
-		this.id = constraint.getId();
-		this.name = constraint.getName();
-		this.resourceId = constraint.getTargetResourceIDRef();
+		this.id = constraint.getId().trim();
+		this.name = constraint.getName().trim();
+		this.resourceId = constraint.getTargetResourceIDRef().trim();
 		this.metric = Metric.getMetricFromTag(constraint.getMetric());
 		this.priority = (constraint.getPriority() == null ? 0 : constraint
 				.getPriority()).intValue();
