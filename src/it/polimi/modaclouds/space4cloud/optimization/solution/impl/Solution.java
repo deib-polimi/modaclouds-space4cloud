@@ -657,6 +657,15 @@ public class Solution implements Cloneable, Serializable {
 				}
 			i++;
 		}
+		
+		
+		for (Instance tmp : hourApplication) {
+			if(tmp.getWorkload()==0){
+				tmp.setFeasible(true);
+				setFeasible(true);
+			}
+		}
+		
 	}
 
 

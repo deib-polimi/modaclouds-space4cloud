@@ -103,7 +103,7 @@ public class PrivateCloud implements CloudProvider {
 	
 	public SolutionMulti getSolution() throws Exception {
 		if (solution != null) {
-			logger.info("Solution already computed, returned that.");
+			logger.trace("Solution already computed, returned that.");
 			return solution;
 		}
 		

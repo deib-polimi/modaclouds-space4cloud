@@ -41,8 +41,8 @@ public class MoveChangeWorkloadHour extends AbsMoveHour {
 		propertyValues.clear();
 		propertyNames.add("workload");
 		int newPopulation = (int) Math.ceil(population * rate);
-		if (newPopulation == 0)
-			newPopulation=1;
+//		if (newPopulation == 0)
+//			newPopulation=1;
 		propertyValues.add(newPopulation);
 		this.rate = rate;
 		changed = true;

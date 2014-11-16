@@ -1428,7 +1428,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		// We now consider the private cloud, if we have to
 		if (Configuration.USE_PRIVATE_CLOUD) {
-			exportSolution();
+			//Debuggin 
+			//exportSolution();
 			
 			try {
 				SolutionMulti sol = considerPrivateCloud(bestSolution);

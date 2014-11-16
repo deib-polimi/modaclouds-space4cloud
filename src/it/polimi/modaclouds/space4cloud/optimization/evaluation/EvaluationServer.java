@@ -362,7 +362,14 @@ public class EvaluationServer implements ActionListener {
 			}
 
 			// evaluate hourly solutions
-			for (Instance i : instanceList) {				
+			for (Instance i : instanceList) {
+				
+				//if the instance has no user then skip the evaluation
+				if(i.getWorkload()==0)
+					i.setEvaluated(true);
+				
+				
+				
 				// we need to reevaluate it only if something has changed.
 				if (!i.isEvaluated()) {
 					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
