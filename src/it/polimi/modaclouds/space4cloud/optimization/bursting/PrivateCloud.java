@@ -136,7 +136,6 @@ public class PrivateCloud implements CloudProvider {
 		solution.exportLight(tempSol);
 		Configuration.saveConfiguration(tempConf.toString());
 		
-		int[] startingHourlyMachines = getTotalHourlyMachines(solution.get(0));
 		double[] startingPercentages = new double[24];
 		{
 			Solution s = solution.get(0);
@@ -312,6 +311,18 @@ public class PrivateCloud implements CloudProvider {
 			}
 			
 			solution.add(s);
+		}
+		
+		int[] startingHourlyMachines = new int[24];
+		{
+			for (int i = 0; i < startingHourlyMachines.length; ++i)
+				startingHourlyMachines[i] = 0;
+			
+			for (Solution s : solution.getAll()) {
+				int[] machines = getTotalHourlyMachines(s);
+				for (int i = 0; i < startingHourlyMachines.length; ++i)
+					startingHourlyMachines[i] += machines[i];
+			}
 		}
 		
 		for (Solution s : solution.getAll()) {
