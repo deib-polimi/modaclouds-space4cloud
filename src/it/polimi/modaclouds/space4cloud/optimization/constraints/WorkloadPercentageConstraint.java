@@ -10,6 +10,9 @@ public class WorkloadPercentageConstraint extends QoSConstraint {
 	public WorkloadPercentageConstraint(Constraint constraint) {
 		super(constraint);
 		id=Configuration.APPLICATION_ID;
+		Float min = this.range.getHasMinValue();
+		if (min > 1)
+			this.range.setHasMinValue(min/100);
 	}
 
 	//Workload percentage are used only to set MILP and the optimization, never checked.

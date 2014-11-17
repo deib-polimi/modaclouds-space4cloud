@@ -29,7 +29,9 @@ public class UsageConstraint extends QoSConstraint {
 		// or wait, we need it in the form 0.x, because getUtilization() method on a resource return is in that range
 //		this.range.setHasMaxValue(this.range.getHasMaxValue());
 //		this.range.setHasMaxValue(this.range.getHasMaxValue()*100);
-		this.range.setHasMaxValue(this.range.getHasMaxValue()/100);
+		Float max = this.range.getHasMaxValue();
+		if (max > 1)
+			this.range.setHasMaxValue(max/100);
 
 	}
 
