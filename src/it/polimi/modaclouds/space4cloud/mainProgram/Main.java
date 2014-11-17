@@ -83,7 +83,7 @@ public class Main {
 	}
 	
 	public static void mainRedrawRobustness(String[] args) {
-		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\private\\");
+		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\private-22\\");
 	}
 	
 	public static void main(String[] args) {

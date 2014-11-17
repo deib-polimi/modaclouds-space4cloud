@@ -10,6 +10,7 @@ import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.privatecloud.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 import java.awt.BorderLayout;
@@ -766,8 +767,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		privateHostsTabs = new JTabbedPane();
 		lowerPanel.add(privateHostsTabs);
 		int tabNumber = tabbedPane.indexOfComponent(lowerPanel);
-//		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
-		tabbedPane.setEnabledAt(tabNumber, true);
+		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
+//		tabbedPane.setEnabledAt(tabNumber, true);
 		
 		lowerPanel = new JPanel();
 		lowerPanel.setLayout(new GridLayout(1, 1, 0, 0));
@@ -775,8 +776,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		publicVsPrivateTabs = new JTabbedPane();
 		lowerPanel.add(publicVsPrivateTabs);
 		tabNumber = tabbedPane.indexOfComponent(lowerPanel);
-//		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
-		tabbedPane.setEnabledAt(tabNumber, true);
+		tabbedPane.setEnabledAt(tabNumber, Configuration.USE_PRIVATE_CLOUD); // TODO: here
+//		tabbedPane.setEnabledAt(tabNumber, true);
 		
 		// listener to resize images
 		gui.addComponentListener(new ComponentListener() {
@@ -812,15 +813,16 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		feasibilities.save2png(path, "feasibilities.png");
 		durations.save2png(path, "durations.png");
 		
-		for (Integer key : privateHostsMap.keySet()) {
-			GenericChart<DefaultCategoryDataset> privateHosts = privateHostsMap.get(key);
-			GenericChart<DefaultCategoryDataset> privateMachines = privateMachinesMap.get(key);
-			GenericChart<DefaultCategoryDataset> hourlySolutions = hourlySolutionsMap.get(key);
-			
-			privateHosts.save2png(path, key + "-privateHosts.png");
-			privateMachines.save2png(path, key + "-machinesOnPrivate.png");
-			hourlySolutions.save2png(path, key + "-machinesOnPublic.png");
-		}
+		if (Configuration.USE_PRIVATE_CLOUD) // TODO: here
+			for (Integer key : privateHostsMap.keySet()) {
+				GenericChart<DefaultCategoryDataset> privateHosts = privateHostsMap.get(key);
+				GenericChart<DefaultCategoryDataset> privateMachines = privateMachinesMap.get(key);
+				GenericChart<DefaultCategoryDataset> hourlySolutions = hourlySolutionsMap.get(key);
+				
+				privateHosts.save2png(path, key + "-privateHosts.png");
+				privateMachines.save2png(path, key + "-machinesOnPrivate.png");
+				hourlySolutions.save2png(path, key + "-machinesOnPublic.png");
+			}
 		
 	}
 

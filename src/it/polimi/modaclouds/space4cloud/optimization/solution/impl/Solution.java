@@ -761,14 +761,10 @@ public class Solution implements Cloneable, Serializable {
 			}
 	}
 	
-	/**
-	 * Export the solution in the format of the extension used as input for space4cloud
-	 */
-	public void exportAsExtension(Path fileName){
-		
+	public ResourceModelExtension getAsExtension() {
 		//Build the objects
 		ObjectFactory factory = new ObjectFactory();
-		ResourceModelExtension extension = factory.createResourceModelExtension();		
+		ResourceModelExtension extension = factory.createResourceModelExtension();
 		List<ResourceContainer> resourceContainers = extension.getResourceContainer();
 		Map<String,ResourceContainer> containersByID = new HashMap<>();
 		//initialize fields common to all hours by looking at the first one
@@ -822,6 +818,14 @@ public class Solution implements Cloneable, Serializable {
 			}
 		}
 		
+		return extension;
+	}
+	
+	/**
+	 * Export the solution in the format of the extension used as input for space4cloud
+	 */
+	public void exportAsExtension(Path fileName){
+		ResourceModelExtension extension = getAsExtension();
 		//serialize them		
 		try {			
 			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()));

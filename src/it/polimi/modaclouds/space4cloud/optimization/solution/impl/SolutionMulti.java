@@ -2,7 +2,10 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.qos_models.schema.MultiCloudExtension;
 import it.polimi.modaclouds.qos_models.schema.MultiCloudExtensions;
+import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
 import it.polimi.modaclouds.qos_models.schema.Provider;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
@@ -852,16 +855,6 @@ public class SolutionMulti implements Cloneable, Serializable {
 		// System.out.printf("DEBUG: Cost updated from %d to %d.\n",
 		// previousCost, cost);
 	}
-
-
-//	private Solution privateCloudSolution = null;
-//	
-//	public void setPrivateCloudSolution(Solution privateCloudSolution) {
-//		this.privateCloudSolution = privateCloudSolution;
-//	}
-//	public Solution getPrivateCloudSolution() {
-//		return privateCloudSolution;
-//	}
 	
 	public boolean isUsingPrivateCloud() {
 		for (String provider : solutions.keySet())
@@ -941,6 +934,39 @@ public class SolutionMulti implements Cloneable, Serializable {
 		
 		return res;
 
+	}
+	
+	public ResourceModelExtension getAsExtension() {
+		//Build the objects
+		ObjectFactory factory = new ObjectFactory();
+		ResourceModelExtension extension = factory.createResourceModelExtension();
+		List<ResourceContainer> resourceContainers = extension.getResourceContainer();
+		
+		for (Solution s : getAll()) {
+			ResourceModelExtension ext = s.getAsExtension();
+			List<ResourceContainer> rcs = ext.getResourceContainer();
+			
+			for (ResourceContainer rc : rcs)
+				resourceContainers.add(rc);
+		}
+		
+		return extension;
+	}
+	
+	/**
+	 * Export the solution in the format of the extension used as input for space4cloud
+	 */
+	public void exportAsExtension(Path fileName){
+		ResourceModelExtension extension = getAsExtension();
+		//serialize them		
+		try {			
+			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()));
+		} catch (JAXBException e) {
+			logger.error("The generated solution is not valid",e);
+		} catch (FileNotFoundException e) {
+			logger.error("Error exporting the solution",e);
+		}
+		
 	}
 
 }
