@@ -1622,30 +1622,42 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			lastSolution = currentSolution.clone();
 
 			for(int hour=0;hour<24;hour++){
+				if(!keepGoing[hour])
+					continue;
 
 				//retrieve the least used provider
-				Tier leastUsedTier = null;
-				String leastUsedProvider = null;
-				
-				//TODO: change the least to be the max used tier (so that we minimize the free utilization)
-
-				for (Solution sol : currentSolution.getAll()) {
-					for (Tier i : sol.getApplication(hour).getTiers()) {
-						if (leastUsedTier == null) {
-							leastUsedTier = i;
-							leastUsedProvider = sol.getProvider();
+				Map<Solution,Tier> mostUsedTiers = new HashMap<Solution,Tier>(currentSolution.getAll().size());
+				//retrieve the most used tier for all the solutions
+				for (Solution sol : currentSolution.getAll()) {					
+					for (Tier t : sol.getApplication(hour).getTiers()) {
+						//base case
+						if (!mostUsedTiers.containsKey(sol)) {
+							mostUsedTiers.put(sol, t);
 						} else {
-							if (i.getUtilization() < leastUsedTier.getUtilization()) {
-								leastUsedTier = i;
-								leastUsedProvider = sol.getProvider();
+							if (t.getUtilization() > mostUsedTiers.get(sol).getUtilization()) {
+								mostUsedTiers.put(sol,t);
 							}
 						}
 					}
 				}
 
+				//the least used provider (According to the maximum used tiers only)
+				Solution leastUsedProvider = null;				
+				
+				//get the less used provider (looking only at the most used tier)
+				for(Solution sol: mostUsedTiers.keySet()){
+					//base case
+					if(leastUsedProvider == null){
+						leastUsedProvider = sol;
+					}else{
+						if(mostUsedTiers.get(sol).getUtilization() < mostUsedTiers.get(leastUsedProvider).getUtilization()){
+							leastUsedProvider=sol;
+						}
+					}
+				}
 
 				//calculate the increment of workload for the minimum used provider
-				double wpStar = currentSolution.get(leastUsedProvider).getPercentageWorkload(hour);
+				double wpStar = leastUsedProvider.getPercentageWorkload(hour);
 				double diff = 1 - wpStar;
 				double rate = increments[hour];
 				//keep the remainder of the difference to split it on other proividers if needed
@@ -1659,14 +1671,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 
 				
-				changeWorkload(currentSolution.get(leastUsedProvider), hour, wpStar + rate);
+				changeWorkload(leastUsedProvider, hour, wpStar + rate);
 				//update the workload percentage with the new value (re-read in order to avoid wrong rounding should be wpStar+rate)
-				wpStar = currentSolution.get(leastUsedProvider).getPercentageWorkload(hour);
+				wpStar = leastUsedProvider.getPercentageWorkload(hour);
 				
 				
 				//fix the workload of other providers by removing the one used for the increment and splitting the remainder (if any) 
 				for (Solution sol : currentSolution.getAll()) {
-					if (!sol.getProvider().equals(leastUsedProvider)) {
+					if (!sol.equals(leastUsedProvider)) {
 						double wp = sol.getPercentageWorkload(hour);
 						//avoid breaking theminimum workload constraint, in case it is violated then fix it
 						if (wp > 0 && wp < wpMin) {
@@ -1692,7 +1704,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				
 				if (remainder != 0.0) {
 					//              System.out.println(currentSolution.showWorkloadPercentages());
-					changeWorkload(currentSolution.get(leastUsedProvider), hour, wpStar - remainder);
+					changeWorkload(leastUsedProvider, hour, wpStar - remainder);
 					//              System.out.println(currentSolution.showWorkloadPercentages());
 
 

@@ -107,7 +107,8 @@ public class ConstraintHandler {
 
 			case REPLICATION:
 				constraint = new ReplicasConstraint(cons);
-
+				break;
+				
 			case WORKLOADPERCENTAGE:
 				constraint = new WorkloadPercentageConstraint(cons);
 				break;
