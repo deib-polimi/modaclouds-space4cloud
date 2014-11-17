@@ -2084,8 +2084,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		logger.info(bestSolution.showStatus());
 		bestSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+Configuration.SOLUTION_FILE_EXTENSION));
+		
 		for(Solution sol:bestSolution.getAll())
 			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
+		
+		// TODO: here
+		if (bestSolution.size() > 1)
+			bestSolution.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
+		
 		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
 	}
 

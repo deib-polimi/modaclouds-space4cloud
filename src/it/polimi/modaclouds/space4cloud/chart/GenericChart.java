@@ -444,8 +444,9 @@ public class GenericChart<E> extends JPanel {
 	
 	public void save2png(String path, String fileName, int width, int height) throws IOException {
 		File f = Paths.get(path, fileName).toFile();
-		if (f.isDirectory() || !f.getParentFile().mkdirs())
+		if (f.isDirectory())
 			return;
+		f.getParentFile().mkdirs();
 		ChartUtilities.writeChartAsPNG(
 				new FileOutputStream(f), graph, width, height);
 	}
