@@ -1312,27 +1312,27 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			updateBestSolution(currentSolution, true);
 		}
 
-//        if (Configuration.USE_PRIVATE_CLOUD) {
-//        	// make feasible:
-//            makeFeasible(currentSolution);
-//            
-//            // scale in:
-//            InternalOptimization(currentSolution);
-//        	
-//    		try {
-//    			evalServer.EvaluateSolution(currentSolution);
-//		    	currentSolution = considerPrivateCloud(currentSolution);
-//		    	bestSolution = currentSolution.clone();
-//		    	localBestSolution = currentSolution.clone();
-//		    	updateBestSolution(currentSolution, true);
-//		    	updateLocalBestSolution(currentSolution, true);
-//		    	
-//				return 0;
-//    		} catch (Exception e) {
-//    			logger.error("Error while dealing with the private cloud!", e);
-//    			return -1;
-//    		}
-//    	}
+		//        if (Configuration.USE_PRIVATE_CLOUD) {
+		//        	// make feasible:
+		//            makeFeasible(currentSolution);
+		//            
+		//            // scale in:
+		//            InternalOptimization(currentSolution);
+		//        	
+		//    		try {
+		//    			evalServer.EvaluateSolution(currentSolution);
+		//		    	currentSolution = considerPrivateCloud(currentSolution);
+		//		    	bestSolution = currentSolution.clone();
+		//		    	localBestSolution = currentSolution.clone();
+		//		    	updateBestSolution(currentSolution, true);
+		//		    	updateLocalBestSolution(currentSolution, true);
+		//		    	
+		//				return 0;
+		//    		} catch (Exception e) {
+		//    			logger.error("Error while dealing with the private cloud!", e);
+		//    			return -1;
+		//    		}
+		//    	}
 
 		while (!isMaxNumberOfIterations()) {
 
@@ -1357,16 +1357,15 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				optimLogger.trace("MILP:\n"
 						+ currentSolution.showWorkloadPercentages());
 
-				for (int hour = 0; hour < 24; ++hour) {
-					optimLogger.debug(currentSolution.showWorkloadPercentages());
-					maximizeWorkloadPercentagesForLeastUsedTier(currentSolution, hour);
-					optimLogger.debug(currentSolution.showWorkloadPercentages());
-				}
+				optimLogger.debug(currentSolution.showWorkloadPercentages());
+				maximizeWorkloadPercentagesForLeastUsedTier(currentSolution);
+				optimLogger.debug(currentSolution.showWorkloadPercentages());
+
 
 				optimLogger.debug("My method:\n" + currentSolution.showWorkloadPercentages());
 
 				optimLogger.info("Updating best solutions");
-				
+
 				//both sohuld be feasible
 				bestSolution = currentSolution.clone();
 				localBestSolution = currentSolution.clone();
@@ -1430,14 +1429,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		if (Configuration.USE_PRIVATE_CLOUD) {
 			//Debuggin 
 			//exportSolution();
-			
+
 			try {
 				SolutionMulti sol = considerPrivateCloud(bestSolution);
 				if (sol != null) {
 					currentSolution = sol;
 					bestSolution = currentSolution.clone();
 					localBestSolution = currentSolution.clone();
-					
+
 					updateBestSolution(currentSolution, true);
 					updateLocalBestSolution(currentSolution, true);
 
@@ -1591,107 +1590,135 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return currentSolution;
 	}
 
-	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution, int hour) throws OptimizationException {
-		double wpMin = 0.0;
+	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution) throws OptimizationException {	
+		double wpMin = 0.0; //the minimum workload balance constraint
 		List<Constraint> constraints = constraintHandler.getConstraintByResourceId(Configuration.APPLICATION_ID);
 		for(Constraint c:constraints)
 			if(c instanceof WorkloadPercentageConstraint)
 				wpMin = ((WorkloadPercentageConstraint)c).getMin();
-		
+
 		if(wpMin>1)
 			wpMin /= 100;
 
-		Tier leastUsedTier = null;
-		String leastUsedProvider = null;
 
-		for (Solution sol : currentSolution.getAll()) {
-			for (Tier i : sol.getApplication(hour).getTiers()) {
-				if (leastUsedTier == null) {
-					leastUsedTier = i;
-					leastUsedProvider = sol.getProvider();
-				} else {
-					if (i.getUtilization() < leastUsedTier.getUtilization()) {
-						leastUsedTier = i;
-						leastUsedProvider = sol.getProvider();
-					}
-				}
-			}
+		//the increments
+		double[] increments = new double[24];		
+		//the ending conditions
+		boolean[] keepGoing = new boolean[24];
+		//the or of the previous conditions
+		boolean stillWork= true;		
+		//a single solution memory to rollback
+		SolutionMulti lastSolution;
+
+
+		//initialize variables
+		for(int i=0;i<24;i++){
+			increments[i]=0.1;
+			keepGoing[i]=true;
 		}
 
-
-		//      double inc = 0.05;
-		double inc = 0.1;
-		SolutionMulti lastSolution = null;
-		boolean keepGoing = true;
-
-		do {
+		do{
+			//ave the current solution in the memory (should always be feasible)
 			lastSolution = currentSolution.clone();
 
+			for(int hour=0;hour<24;hour++){
 
-			double wpStar = currentSolution.get(leastUsedProvider).getPercentageWorkload(hour);
-			double diff = 1 - wpStar;
-			double rate = inc;
-			double remainder = 0.0;
-			if (diff < rate) {
-				rate = diff;
-				if (inc == 0.1)
-					inc = 0.05;
-				else
-					keepGoing = false;
-			}
+				//retrieve the least used provider
+				Tier leastUsedTier = null;
+				String leastUsedProvider = null;
+				
+				//TODO: change the least to be the max used tier (so that we minimize the free utilization)
 
-
-			//          System.out.println(currentSolution.showWorkloadPercentages());
-			changeWorkload(currentSolution.get(leastUsedProvider), hour, wpStar + rate);
-			//          System.out.println(currentSolution.showWorkloadPercentages());
-
-			wpStar = currentSolution.get(leastUsedProvider).getPercentageWorkload(hour);
-
-			for (Solution sol : currentSolution.getAll()) {
-				if (!sol.getProvider().equals(leastUsedProvider)) {
-					double wp = sol.getPercentageWorkload(hour);
-
-					if (wp < wpMin) {
-						remainder += wpMin - wp + rate;
-
-						changeWorkload(sol, hour, wpMin);
-					} else {
-						//                  double wpMin = 0.0;
-						diff = wp - wpMin;
-						double dec = rate / (currentSolution.size() - 1) + remainder;
-
-
-						if (diff < dec) {
-							remainder = dec - diff;
-							dec = diff;
+				for (Solution sol : currentSolution.getAll()) {
+					for (Tier i : sol.getApplication(hour).getTiers()) {
+						if (leastUsedTier == null) {
+							leastUsedTier = i;
+							leastUsedProvider = sol.getProvider();
+						} else {
+							if (i.getUtilization() < leastUsedTier.getUtilization()) {
+								leastUsedTier = i;
+								leastUsedProvider = sol.getProvider();
+							}
 						}
-
-
-						//                  System.out.println(currentSolution.showWorkloadPercentages());
-						changeWorkload(sol, hour, wp - dec);
-						//                  System.out.println(currentSolution.showWorkloadPercentages());
 					}
 				}
+
+
+				//calculate the increment of workload for the minimum used provider
+				double wpStar = currentSolution.get(leastUsedProvider).getPercentageWorkload(hour);
+				double diff = 1 - wpStar;
+				double rate = increments[hour];
+				//keep the remainder of the difference to split it on other proividers if needed
+				double remainder = 0.0;
+				if (diff < rate) {
+					rate = diff;
+					if (increments[hour] == 0.1)
+						increments[hour] = 0.05;
+					else
+						keepGoing[hour] = false;
+				}
+
+				
+				changeWorkload(currentSolution.get(leastUsedProvider), hour, wpStar + rate);
+				//update the workload percentage with the new value (re-read in order to avoid wrong rounding should be wpStar+rate)
+				wpStar = currentSolution.get(leastUsedProvider).getPercentageWorkload(hour);
+				
+				
+				//fix the workload of other providers by removing the one used for the increment and splitting the remainder (if any) 
+				for (Solution sol : currentSolution.getAll()) {
+					if (!sol.getProvider().equals(leastUsedProvider)) {
+						double wp = sol.getPercentageWorkload(hour);
+						//avoid breaking theminimum workload constraint, in case it is violated then fix it
+						if (wp > 0 && wp < wpMin) {
+							remainder += wpMin - wp + rate;
+							changeWorkload(sol, hour, wpMin);
+						} else {
+							//                  double wpMin = 0.0;
+							diff = wp - wpMin;
+							double dec = rate / (currentSolution.size() - 1) + remainder;
+
+							if (diff < dec) {
+								remainder = dec - diff;
+								dec = diff;
+							}
+
+
+							//                  System.out.println(currentSolution.showWorkloadPercentages());
+							changeWorkload(sol, hour, wp - dec);
+							//                  System.out.println(currentSolution.showWorkloadPercentages());
+						}
+					}
+				}
+				
+				if (remainder != 0.0) {
+					//              System.out.println(currentSolution.showWorkloadPercentages());
+					changeWorkload(currentSolution.get(leastUsedProvider), hour, wpStar - remainder);
+					//              System.out.println(currentSolution.showWorkloadPercentages());
+
+
+					if (increments[hour] == 0.1)
+						increments[hour] = 0.05;
+					else
+						keepGoing[hour] = false;
+				}
+
 			}
-
-			if (remainder != 0.0) {
-				//              System.out.println(currentSolution.showWorkloadPercentages());
-				changeWorkload(currentSolution.get(leastUsedProvider), hour, wpStar - remainder);
-				//              System.out.println(currentSolution.showWorkloadPercentages());
-
-
-				if (inc == 0.1)
-					inc = 0.05;
-				else
-					keepGoing = false;
-			}
-
+			
+			//evaluate the solution only after all the moves have been performed
 			try {
 				evalServer.EvaluateSolution(currentSolution);
 			} catch (EvaluationException e) {
 				throw new OptimizationException("","workloadDistribution",e);
 			}
-		} while (currentSolution.isFeasible() && keepGoing);
+
+			//a big or of all the ending conditions to check if some hour still has some balancing work to do	
+			stillWork = false;
+			for(int i=0;i<24;i++){
+				stillWork = stillWork || keepGoing[i];
+			}
+
+		}while(currentSolution.isFeasible() && stillWork);
+
 
 		if (!currentSolution.isFeasible())
 			currentSolution = lastSolution.clone();
@@ -2084,14 +2111,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		logger.info(bestSolution.showStatus());
 		bestSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+Configuration.SOLUTION_FILE_EXTENSION));
-		
+
 		for(Solution sol:bestSolution.getAll())
 			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
-		
+
 		// TODO: here
 		if (bestSolution.size() > 1)
 			bestSolution.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
-		
+
 		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
 	}
 
