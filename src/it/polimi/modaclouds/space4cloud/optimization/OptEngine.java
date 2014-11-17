@@ -1352,18 +1352,18 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				currentSolution = bestSolution.clone();
 
-				logger.trace(currentSolution.showWorkloadPercentages());
+				optimLogger.trace(currentSolution.showWorkloadPercentages());
 				setWorkloadPercentagesFromMILP(currentSolution);
-				logger.trace("MILP:\n"
+				optimLogger.trace("MILP:\n"
 						+ currentSolution.showWorkloadPercentages());
 
 				for (int hour = 0; hour < 24; ++hour) {
-					// System.out.println(currentSolution.showWorkloadPercentages());
+					optimLogger.debug(currentSolution.showWorkloadPercentages());
 					maximizeWorkloadPercentagesForLeastUsedTier(currentSolution, hour);
-					// System.out.println(currentSolution.showWorkloadPercentages());
+					optimLogger.debug(currentSolution.showWorkloadPercentages());
 				}
 
-				System.out.println("My method:\n" + currentSolution.showWorkloadPercentages());
+				optimLogger.debug("My method:\n" + currentSolution.showWorkloadPercentages());
 
 				optimLogger.info("Updating best solutions");
 				
@@ -1597,6 +1597,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		for(Constraint c:constraints)
 			if(c instanceof WorkloadPercentageConstraint)
 				wpMin = ((WorkloadPercentageConstraint)c).getMin();
+		
+		if(wpMin>1)
+			wpMin /= 100;
 
 		Tier leastUsedTier = null;
 		String leastUsedProvider = null;
