@@ -74,36 +74,51 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		t1micro("micro", 1), m1small("small", 2),
 		m1medium("medium", 3), c1medium("medium", 3),
 		m1large("large", 4), c3large("large", 4),
-		m1xlarge("xlarge", 5), m2xlarge("xlarge", 5), m3xlarge("xlarge", 5), c1xlarge("xlarge", 5), c3xlarge("xlarge", 5),
-		m22xlarge("xxlarge", 6), m32xlarge("xxlarge", 6), c32xlarge("xxlarge", 6),
-		cg14xlarge("xxxxlarge", 7),
+		m1xlarge("xlarge", 5), m2xlarge("xlarge", 5), m3xlarge("xlarge", 5), c1xlarge("xlarge", 5), c3xlarge("xlarge", 5), i2xlarge("xlarge", 5),
+		m22xlarge("xxlarge", 6), m32xlarge("xxlarge", 6), c32xlarge("xxlarge", 6), g22xlarge("xxlarge", 6), i22xlarge("xxlarge", 6),
+		cg14xlarge("xxxxlarge", 7), hi14xlarge("xxxxlarge", 7), m24xlarge("xxxxlarge", 7), i24xlarge("xxxxlarge", 7), c34xlarge("xxxxlarge", 7),
+		cr18xlarge("xxxxxxxxlarge", 8), hs18xlarge("xxxxxxxxlarge", 8), cc28xlarge("xxxxxxxxlarge", 8), i28xlarge("xxxxxxxxlarge", 8), c38xlarge("xxxxxxxxlarge", 8),
 
 		// Microsoft
-		GeneralAvailabilityExtraSmallInstance("ExtraSmall", 8),	PreviewExtraSmallInstance("ExtraSmall", 8),
-		GeneralAvailabilitySmallInstance("Small", 9), PreviewSmallInstance("Small", 9),
-		GeneralAvailabilityMediumInstance("Medium", 10), PreviewMediumInstance("Medium", 10),
-		GeneralAvailabilityLargeInstance("Large", 11), PreviewLargeInstance("Large", 11),
-		GeneralAvailabilityExtraLargeInstance("ExtraLarge", 12), PreviewExtraLargeInstance("ExtraLarge", 12),
+		GeneralAvailabilityExtraSmallInstance("ExtraSmall", 9),	PreviewExtraSmallInstance("ExtraSmall", 9),
+		GeneralAvailabilitySmallInstance("Small", 10), PreviewSmallInstance("Small", 10),
+		GeneralAvailabilityMediumInstance("Medium", 11), PreviewMediumInstance("Medium", 11),
+		GeneralAvailabilityLargeInstance("Large", 12), PreviewLargeInstance("Large", 12),
+		GeneralAvailabilityExtraLargeInstance("ExtraLarge", 13), PreviewExtraLargeInstance("ExtraLarge", 13),
 
 		// Flexiscale
-		Flexiscale512MB1CPUServer("512 MB/1 CPU", 13), Flexiscale512MB1CPUServerWindows("512 MB/1 CPU", 13),
-		Flexiscale1GB1CPUServer("1 GB/1 CPU", 14), Flexiscale1GB1CPUServerWindows("1 GB/1 CPU", 14),
-		Flexiscale2GB1CPUServer("2 GB/1 CPU", 15), Flexiscale2GB1CPUServerWindows("2 GB/1 CPU", 15),
-		Flexiscale2GB2CPUServer("2 GB/2 CPU", 16), Flexiscale2GB2CPUServerWindows("2 GB/2 CPU", 16),
-		Flexiscale4GB2CPUServer("4 GB/2 CPU", 17), Flexiscale4GB2CPUServerWindows("4 GB/2 CPU", 17),
-		Flexiscale4GB3CPUServer("4 GB/3 CPU", 18), Flexiscale4GB3CPUServerWindows("4 GB/3 CPU", 18),
-		Flexiscale4GB4CPUServer("4 GB/4 CPU", 19), Flexiscale4GB4CPUServerWindows("4 GB/4 CPU", 19),
-		Flexiscale6GB3CPUServer("6 GB/3 CPU", 20), Flexiscale6GB3CPUServerWindows("6 GB/3 CPU", 20),
-		Flexiscale6GB4CPUServer("6 GB/4 CPU", 21), Flexiscale6GB4CPUServerWindows("6 GB/4 CPU", 21),
-		Flexiscale6GB5CPUServer("6 GB/5 CPU", 22), Flexiscale6GB5CPUServerWindows("6 GB/5 CPU", 22),
-		Flexiscale6GB6CPUServer("6 GB/6 CPU", 23), Flexiscale6GB6CPUServerWindows("6 GB/6 CPU", 23),
-		Flexiscale8GB4CPUServer("8 GB/4 CPU", 24), Flexiscale8GB4CPUServerWindows("8 GB/4 CPU", 24),
-		Flexiscale8GB5CPUServer("8 GB/5 CPU", 25), Flexiscale8GB5CPUServerWindows("8 GB/5 CPU", 25),
-		Flexiscale8GB6CPUServer("8 GB/6 CPU", 26), Flexiscale8GB6CPUServerWindows("8 GB/6 CPU", 26),
-		Flexiscale8GB7CPUServer("8 GB/7 CPU", 27), Flexiscale8GB7CPUServerWindows("8 GB/7 CPU", 27),
-		Flexiscale8GB8CPUServer("8 GB/8 CPU", 28), Flexiscale8GB8CPUServerWindows("8 GB/8 CPU", 28);
+		Flexiscale512MB1CPUServer("512 MB/1 CPU", 14), Flexiscale512MB1CPUServerWindows("512 MB/1 CPU", 14),
+		Flexiscale1GB1CPUServer("1 GB/1 CPU", 15), Flexiscale1GB1CPUServerWindows("1 GB/1 CPU", 15),
+		Flexiscale2GB1CPUServer("2 GB/1 CPU", 16), Flexiscale2GB1CPUServerWindows("2 GB/1 CPU", 16),
+		Flexiscale2GB2CPUServer("2 GB/2 CPU", 17), Flexiscale2GB2CPUServerWindows("2 GB/2 CPU", 17),
+		Flexiscale4GB2CPUServer("4 GB/2 CPU", 18), Flexiscale4GB2CPUServerWindows("4 GB/2 CPU", 18),
+		Flexiscale4GB3CPUServer("4 GB/3 CPU", 19), Flexiscale4GB3CPUServerWindows("4 GB/3 CPU", 19),
+		Flexiscale4GB4CPUServer("4 GB/4 CPU", 20), Flexiscale4GB4CPUServerWindows("4 GB/4 CPU", 20),
+		Flexiscale6GB3CPUServer("6 GB/3 CPU", 21), Flexiscale6GB3CPUServerWindows("6 GB/3 CPU", 21),
+		Flexiscale6GB4CPUServer("6 GB/4 CPU", 22), Flexiscale6GB4CPUServerWindows("6 GB/4 CPU", 22),
+		Flexiscale6GB5CPUServer("6 GB/5 CPU", 23), Flexiscale6GB5CPUServerWindows("6 GB/5 CPU", 23),
+		Flexiscale6GB6CPUServer("6 GB/6 CPU", 24), Flexiscale6GB6CPUServerWindows("6 GB/6 CPU", 24),
+		Flexiscale8GB4CPUServer("8 GB/4 CPU", 25), Flexiscale8GB4CPUServerWindows("8 GB/4 CPU", 25),
+		Flexiscale8GB5CPUServer("8 GB/5 CPU", 26), Flexiscale8GB5CPUServerWindows("8 GB/5 CPU", 26),
+		Flexiscale8GB6CPUServer("8 GB/6 CPU", 27), Flexiscale8GB6CPUServerWindows("8 GB/6 CPU", 27),
+		Flexiscale8GB7CPUServer("8 GB/7 CPU", 28), Flexiscale8GB7CPUServerWindows("8 GB/7 CPU", 28),
+		Flexiscale8GB8CPUServer("8 GB/8 CPU", 29), Flexiscale8GB8CPUServerWindows("8 GB/8 CPU", 29),
+		
+		// ProfitBricks
+		GeneralMedium("Medium", 30), ComputeMedium("Medium", 30),
+		GeneralLarge("Large", 31), ComputeLarge("Large", 31),
+		GeneralExtraLarge("ExtraLarge", 32), ComputeExtraLarge("ExtraLarge", 32),
+		General2xExtraLarge("2xExtraLarge", 33), Compute2xExtraLarge("2xExtraLarge", 33),
+		
+		// CloudSigma
+		medium("Medium", 34), cpumedium("Medium", 34),
+		large("Large", 35), cpularge("Large", 35),
+		extralarge("ExtraLarge", 36), cpuextralarge("ExtraLarge", 36),
+		_2xextralarge("2xExtraLarge", 37), cpu2xextralarge("2xExtraLarge", 37)
+		
+		;
 
-		private static final int lastAmazonId = 7, lastMicrosoftId = 12, lastFlexiscaleId = 28;
+		private static final int lastAmazonId = 8, lastMicrosoftId = 13, lastFlexiscaleId = 29, lastProfitBricksId = 33, lastCloudSigmaId = 37;
 
 		public static Size getSizeByBasicId(int basicId) {
 			for (Size s : Size.values())
@@ -114,7 +129,11 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		public static Size parse(String size) {
 			Size s;
 			try {
-				s = Size.valueOf(size.replace('.', '-').replaceAll("-", "")
+				if (size.charAt(0) >= '0' && size.charAt(0) <= '9')
+					size = "_" + size;
+				s = Size.valueOf(size.replace('.', '-')
+						.replace('(', '-').replace(')', '-')
+						.replaceAll("-", "")
 						.replaceAll(" ", "").replaceAll("/", ""));
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -140,7 +159,13 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 							&& basicId <= lastMicrosoftId && s.basicId <= lastMicrosoftId)
 					|| (basicId > lastMicrosoftId
 							&& s.basicId > lastMicrosoftId
-							&& basicId <= lastFlexiscaleId && s.basicId <= lastFlexiscaleId))
+							&& basicId <= lastFlexiscaleId && s.basicId <= lastFlexiscaleId)
+					|| (basicId > lastFlexiscaleId
+							&& s.basicId > lastFlexiscaleId
+							&& basicId <= lastProfitBricksId && s.basicId <= lastProfitBricksId)
+					|| (basicId > lastProfitBricksId
+							&& s.basicId > lastProfitBricksId
+							&& basicId <= lastCloudSigmaId && s.basicId <= lastCloudSigmaId))
 				return basicId > s.basicId;
 			return false;
 		}
