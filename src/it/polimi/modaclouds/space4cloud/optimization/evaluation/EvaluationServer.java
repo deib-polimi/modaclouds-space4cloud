@@ -305,7 +305,7 @@ public class EvaluationServer implements ActionListener {
 	//
 	//	}
 
-	
+
 
 	/**
 	 * Evaluates a single cloud solution and updates the image loggers
@@ -318,7 +318,7 @@ public class EvaluationServer implements ActionListener {
 		timer.unsplit();
 	}
 
-	
+
 	/**
 	 * Evaluates a multicloud solution and updates the image loggers
 	 * @param sol
@@ -337,7 +337,7 @@ public class EvaluationServer implements ActionListener {
 	 * @param sol
 	 * @throws EvaluationException
 	 */
-	private void runEvaluation(Solution sol) throws EvaluationException  {
+	private void runEvaluation(Solution sol) throws EvaluationException  {		
 		if (!sol.hasAtLeastOneReplicaInOneHour()) {
 			runEmptyEvaluation(sol);
 			return;
@@ -363,13 +363,13 @@ public class EvaluationServer implements ActionListener {
 
 			// evaluate hourly solutions
 			for (Instance i : instanceList) {
-				
+
 				//if the instance has no user then skip the evaluation
 				if(i.getWorkload()==0)
 					i.setEvaluated(true);
-				
-				
-				
+
+
+
 				// we need to reevaluate it only if something has changed.
 				if (!i.isEvaluated()) {
 					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
@@ -454,20 +454,20 @@ public class EvaluationServer implements ActionListener {
 		logger.debug("Evaluation ended");
 
 	}
-	
+
 	/**
 	 * Evaluates and empty solution (a solution with no replicas)
 	 * @param sol
 	 * @throws EvaluationException
 	 */
 	private void runEmptyEvaluation(Solution sol) throws EvaluationException {
-		
+
 		if (sol.hasAtLeastOneReplicaInOneHour()) {
 			EvaluateSolution(sol);
 			logger.error("Evaluating a not empty solution with the wrong function, this should never happen!");
 			return;
 		}
-	
+
 		error = false;
 		if (!sol.isEvaluated()) {
 			ArrayList<Instance> instanceList = sol.getHourApplication();
@@ -517,7 +517,7 @@ public class EvaluationServer implements ActionListener {
 		}
 		logger.debug("Evaluation ended");
 	}
-	
+
 	/**
 	 * Evaluiates a solutioin in the Provate Cloud
 	 * @param sol
@@ -766,8 +766,8 @@ public class EvaluationServer implements ActionListener {
 			logCost.add(seriesHandleExecution,
 					TimeUnit.MILLISECONDS.toSeconds(time),
 					sol.getCost());
-			
-			
+
+
 			//build a list of tiers with their ids
 			if(seriesHandleTiers==null){
 				seriesHandleTiers = new HashMap<>();
@@ -794,8 +794,24 @@ public class EvaluationServer implements ActionListener {
 			logConstraint.add(seriesHandleConstraint,
 					TimeUnit.MILLISECONDS.toSeconds(time),
 					violationCounters);
-			
-			
+
+
+		}
+	}
+
+	public void StartTimer() {
+		try{
+			timer.start();
+		}catch(IllegalStateException e) {
+			logger.warn("Starting a timer that was already started");
+		}
+	}
+
+	public void StopTimer() {
+		try{
+			timer.stop();
+		}catch(IllegalStateException e) {
+			logger.warn("Stopping a timer that was not running");
 		}
 	}
 

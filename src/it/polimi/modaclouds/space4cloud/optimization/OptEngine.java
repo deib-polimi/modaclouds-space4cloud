@@ -900,9 +900,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					arrivalRate = usageModelParser.getArrivalRates().values()
 					.iterator().next()[i];
 
-
+				
 				double percentage = (double) 1 / providers.size();
-
+				
 				population = (int) Math.ceil(population * percentage);
 
 
@@ -1134,7 +1134,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// use the initial evaluation to initialize parser and
 				// structures
 
-				evalServer.evaluateInstance(application);
+				//evalServer.evaluateInstance(application);
 
 
 				// initialSolution.showStatus();
@@ -1145,6 +1145,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		this.initialSolution.setFrom(generatedInitialSolution,
 				generatedInitialMce);
+		
+		try {
+			evalServer.StartTimer();
+			evalServer.EvaluateSolution(initialSolution);
+			evalServer.StopTimer();
+		} catch (EvaluationException e) {
+			throw new InitializationException("Could not evaulate the initial solution",e);
+		}
 		logger.info(this.initialSolution.showStatus());
 	}
 
