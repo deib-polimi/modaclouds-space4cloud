@@ -970,8 +970,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					String actualProvider = provider;
 					if (actualProvider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
 						boolean keepGoing = true;
-						for (int pi = 0; pi < providers.size() && keepGoing; ++pi) {
+						for (int pi = 0; pi < providers.size() && keepGoing; ++pi) {							
 							String p = providers.get(pi);
+							if (p.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
+								continue;
 							double speed = dataHandler.getProcessingRate(p,
 									serviceName, resourceSize);
 							if (speed > -1) {
