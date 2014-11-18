@@ -810,6 +810,7 @@ public class EvaluationServer implements ActionListener {
 	public void StopTimer() {
 		try{
 			timer.stop();
+			timer.reset();
 		}catch(IllegalStateException e) {
 			logger.warn("Stopping a timer that was not running");
 		}
