@@ -58,6 +58,13 @@ public class PrivateCloud implements CloudProvider {
 	public static PrivateCloud instance = null;
 	
 	public static PrivateCloud getInstance() {
+		if (instance == null) {
+			try {
+				return new PrivateCloud(null);
+			} catch (Exception e) {
+				return null;
+			}
+		}
 		return instance;
 	}
 	
@@ -69,6 +76,8 @@ public class PrivateCloud implements CloudProvider {
 	
 	public static SolutionMulti getSolution(SolutionMulti solutionMulti) throws Exception {
 		PrivateCloud pc = getInstance(solutionMulti);
+		
+		logger.info("PrivateCloud initialized.");
 		
 		SolutionMulti s = pc.getSolution();
 		
@@ -88,7 +97,6 @@ public class PrivateCloud implements CloudProvider {
 		
 		reset();
 		
-		logger.info("PrivateCloud initialized.");
 	}
 	
 	public void reset() {

@@ -25,6 +25,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Memory;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
@@ -421,6 +422,8 @@ public class DataHandler {
 	}
 	
 	public double getAvailability(String provider) {
+		if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
+			return 0.95;
 		
 		ProviderDBConnector pdb = cloudProviders
 				.getProviderDBConnectors().get(provider); // provider

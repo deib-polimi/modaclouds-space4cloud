@@ -32,6 +32,7 @@ import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
@@ -853,6 +854,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			// set the region
 			initialSolution.setRegion(resourceEnvParser.getRegion(provider));
+			
+			
 
 			for (int i = 0; i < 24; i++) {
 				logger.info("Initializing hour " + i);
@@ -963,34 +966,49 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 						logger.info("provider: " + provider + " default: "
 								+ defaultProvider);
 					logger.trace("serviceType: " + serviceType);
-					for (String st : dataHandler.getServices(provider, // cloudProvider,
+					
+					String actualProvider = provider;
+					if (actualProvider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
+						boolean keepGoing = true;
+						for (int pi = 0; pi < providers.size() && keepGoing; ++pi) {
+							String p = providers.get(pi);
+							double speed = dataHandler.getProcessingRate(p,
+									serviceName, resourceSize);
+							if (speed > -1) {
+								actualProvider = p;
+								keepGoing = false;
+							}
+						}
+					}
+					
+					for (String st : dataHandler.getServices(actualProvider, // cloudProvider,
 							serviceType))
 						logger.trace("\tService Name: " + st);
-					serviceName = dataHandler.getServices(provider, // cloudProvider,
+					serviceName = dataHandler.getServices(actualProvider, // cloudProvider,
 							serviceType).get(0);
 					// if the resource size has not been decided pick one
 					if (resourceSize == null){
 						logger.trace("Defaulting on resource Size");
 						resourceSize = dataHandler
-								.getCloudResourceSizes(provider,/*
+								.getCloudResourceSizes(actualProvider,/*
 								 * cloudProvider,
 								 */serviceName)
 								 .iterator().next();
 					}
 					logger.trace("default size"+resourceSize);
+					
 
-
-					double speed = dataHandler.getProcessingRate(provider, // cloudProvider,
+					double speed = dataHandler.getProcessingRate(actualProvider, // cloudProvider,
 							serviceName, resourceSize);
 					logger.trace("processing rate "+speed);
 
-					int ram = dataHandler.getAmountMemory(provider, // cloudProvider,
+					int ram = dataHandler.getAmountMemory(actualProvider, // cloudProvider,
 							serviceName, resourceSize);
 					logger.trace("ram "+ram);
 
 
 					int numberOfCores = dataHandler.getNumberOfReplicas(
-							provider, /* cloudProvider, */serviceName,
+							actualProvider, /* cloudProvider, */serviceName,
 							resourceSize);
 
 					logger.trace("cores "+numberOfCores);
@@ -1148,8 +1166,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		}
 		logger.info("Deserialized: " + initialSolution);
 	}
-
-
+	
+	
 	protected void makeFeasible(SolutionMulti sol) throws OptimizationException {
 		for (Solution s : sol.getAll())
 			makeFeasible(s);
@@ -1168,15 +1186,40 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		final double MIN_FACTOR = 1.2;
 		numberOfFeasibilityIterations = 0;
 		while (!sol.isFeasible() && !isMaxNumberOfFesibilityIterations()) {
-
-			//if the unfeasibility is due to a violated ram constraint this procedure is ineffective and should be terminated          
-			//since vmType is constant among hours we can just look at the first one
+			boolean evaluateAgain = false;
+			
 			for(Constraint constraint:sol.getViolatedConstraints()){
 				if(constraint instanceof RamConstraint){
+					//if the unfeasibility is due to a violated ram constraint this procedure is ineffective and should be terminated          
+					//since vmType is constant among hours we can just look at the first one
 					logger.info("Wrong type of VM selected, make feasible will not be executed");
 					return;
+				} else if (constraint instanceof ReplicasConstraint) {
+					// if the unfeasibility is due to a replicas constraint, we fix it here
+					ReplicasConstraint rconstraint = (ReplicasConstraint) constraint;
+					
+					for (int h = 0; h < 24; ++h) {
+						Tier t = sol.getApplication(h).getTierById(constraint.getResourceID());
+						IaaS service = (IaaS) t.getCloudService();
+						if (rconstraint.hasMaxReplica(service)) {
+							service.setReplicas(rconstraint.getMax());
+							evaluateAgain = true;
+						}
+						else if (rconstraint.hasMinReplica(service)) {
+							service.setReplicas(rconstraint.getMin());
+							evaluateAgain = true;
+						}
+					}
 				}
 			}
+			
+			if (evaluateAgain)
+				try {
+					evalServer.EvaluateSolution(sol);
+				} catch (EvaluationException e) {
+					e.printStackTrace();
+				}
+			
 			logger.info("\tFeasibility iteration: "
 					+ numberOfFeasibilityIterations);   
 
