@@ -609,7 +609,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 						ArrayList<Object> propertyValues = new ArrayList<Object>();
 
 						int value = wp.getValue();
-						int minimumValue = 1;
+						int minimumValue = 0;
 						if (value < minimumValue) {
 							diff = minimumValue - value;
 							value = minimumValue;

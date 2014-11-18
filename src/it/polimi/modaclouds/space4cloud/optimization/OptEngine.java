@@ -348,16 +348,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return null;
 	}
 
-	/**
-	 * Calls the evaluation server to perform a single evaluation (only to used in the assesment mode)
-	 * @throws EvaluationException
-	 */
-	public void evaluate() throws EvaluationException {
-		timer.start();
-		evalServer.EvaluateSolution(initialSolution);
-		logger.trace(initialSolution.showStatus());
-	}
-
 	protected Tier findResource(Instance application, String id) {
 		return findResource(application, id, SELECTION_POLICY);
 	}

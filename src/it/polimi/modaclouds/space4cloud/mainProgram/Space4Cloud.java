@@ -25,7 +25,6 @@ import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.exceptions.AssesmentException;
-import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.exceptions.RobustnessException;
@@ -450,14 +449,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			throw new AssesmentException("",e);			
 		}
 
-		// evaluate the solution
-		logger.info("Evaluating the solution");
 
-		try {
-			engine.evaluate();
-		} catch (EvaluationException e) {			
-			throw new AssesmentException("Error in evaluating the initial solution",e);						
-		}
 
 		SolutionMulti providedSolution = engine.getInitialSolution();
 
@@ -472,8 +464,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		
 	}
-
-
 
 
 	private void cleanResources() {
