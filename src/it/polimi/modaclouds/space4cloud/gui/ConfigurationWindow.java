@@ -46,7 +46,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	private static final Logger logger = LoggerFactory.getLogger(ConfigurationWindow.class);
 	private boolean disposed = false;
 	private boolean cancelled = true;
-	private static final String FRAME_NAME = "Space4Cloud Configuration Window";
+	private static final String FRAME_NAME = "Space 4Clouds Configuration Window";
 
 	/**
 	 * Launch the application.

@@ -44,7 +44,7 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
-		JLabel repositoryLabel = new JLabel("Reporisoty Model");
+		JLabel repositoryLabel = new JLabel("Repository Model");
 		GridBagConstraints gbc_repositoryLabel = new GridBagConstraints();
 		gbc_repositoryLabel.anchor = GridBagConstraints.WEST;
 		gbc_repositoryLabel.insets = new Insets(0, 0, 5, 5);
