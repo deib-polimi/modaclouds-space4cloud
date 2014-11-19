@@ -55,7 +55,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	private GenericChart<XYSeriesCollection> vmLogger;
 	private GenericChart<XYSeriesCollection> costLogger;
 	private GenericChart<XYSeriesCollection> constraintsLogger;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(OptimizationProgressWindow.class);
 
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -80,11 +80,11 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		//		frmOptimizationProgress.setBounds(100, 100, 450, 300);
 		frmOptimizationProgress.setMinimumSize(new Dimension(900, 600));
 		frmOptimizationProgress.setLocationRelativeTo(null);
-//		frmOptimizationProgress.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		//		frmOptimizationProgress.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frmOptimizationProgress.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frmOptimizationProgress.addWindowListener(this);
-//		frmOptimizationProgress.setExtendedState(frmOptimizationProgress.getExtendedState() | JFrame.MAXIMIZED_BOTH);
-		
+		//		frmOptimizationProgress.setExtendedState(frmOptimizationProgress.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{100, 0};
 		gridBagLayout.rowHeights = new int[]{17, 100, 10, 0};
@@ -116,13 +116,13 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		gbc_middlePanel.gridy = 1;
 		frmOptimizationProgress.getContentPane().add(middlePanel, gbc_middlePanel);
 		middlePanel.setLayout(new GridLayout(1, 3));
-		
-//		middlePanel.add(vmLogger);
-//		
-//		middlePanel.add(costLogger);
-//		
-//		middlePanel.add(constraintsLogger);
-		
+
+		//		middlePanel.add(vmLogger);
+		//		
+		//		middlePanel.add(costLogger);
+		//		
+		//		middlePanel.add(constraintsLogger);
+
 		initializeGraphs();
 
 		lowerPane = new JPanel();
@@ -163,46 +163,19 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getPropertyName().equals("progress")) {
-			updateProgressBar((int) evt.getNewValue());
-			updateImages();
-		} else if (evt.getPropertyName().equals("totalNumberOfEvaluations")) {
-			updateImages();
-		} 	
-		//forward stopped status to listeners (windows)
-		else if (evt.getPropertyName().equals("Stopped")){
-			if((boolean) evt.getNewValue()){
-				btnInspectSolution.setEnabled(true);
-				btnStop.setText("Resume");
-				btnStop.setEnabled(true);
-				progressBar.setEnabled(false);
-			}else{
-				btnInspectSolution.setEnabled(false);
-				btnStop.setText("Pause");
-				btnStop.setEnabled(true);
-				progressBar.setEnabled(true);
-			}
-
-		}else {
-			logger.debug("property: " + evt.getPropertyName());
-		}
-
-	}
 
 	public void setConstraintsLogger(GenericChart<XYSeriesCollection> constraintsLogger) {
 		this.constraintsLogger = constraintsLogger;
-		
+
 		initializeGraphs();
 	}
 
 	public void setCostLogger(GenericChart<XYSeriesCollection> costLogger) {
 		this.costLogger = costLogger;
-		
+
 		initializeGraphs();
 	}
-	
+
 	private void initializeGraphs() {
 		if (middlePanel == null)
 			return;
@@ -213,14 +186,14 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 			middlePanel.add(costLogger);
 		if (constraintsLogger != null)
 			middlePanel.add(constraintsLogger);
-		
+
 		updateGraphs();
 		updateImages();
 	}
 
 	public void setMax(int max) {
 		progressBar.setMaximum(max);
-	
+
 		frmOptimizationProgress.setVisible(true);
 	}
 
@@ -229,15 +202,15 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 		initializeGraphs();
 	}
-	
+
 	private boolean alreadyUpdating = false;
 
 	private void updateImages() {
 		if (alreadyUpdating)
 			return;
-		
+
 		alreadyUpdating = true;
-		
+
 		if (costLogger != null)
 			costLogger.updateImage();
 
@@ -246,16 +219,16 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 		if (constraintsLogger != null)
 			constraintsLogger.updateImage();
-		
+
 		alreadyUpdating = false;
 	}
-	
+
 	public void updateGraphs() {
 		if (alreadyUpdating)
 			return;
-		
+
 		alreadyUpdating = true;
-		
+
 		if (costLogger != null)
 			costLogger.updateGraph();
 
@@ -264,7 +237,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 		if (constraintsLogger != null)
 			constraintsLogger.updateGraph();
-		
+
 		alreadyUpdating = false;
 	}
 
@@ -300,16 +273,48 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 			if(Configuration.isPaused()){
 				Configuration.resume();
 				btnStop.setText("Resuming...");
-				btnStop.setEnabled(false);;				
+				btnStop.setEnabled(false);		
+				progressBar.setEnabled(true);
+				btnInspectSolution.setEnabled(false);
 			}
 			else{
 				Configuration.pause();
 				btnStop.setText("Pausing...");
 				btnStop.setEnabled(false);
+				btnInspectSolution.setEnabled(true);
+				progressBar.setEnabled(false);
 			}
 		else if(e.getSource().equals(btnInspectSolution)){
 			pcs.firePropertyChange("InspectSolution",false,true);
 		}		
 	}
+
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getPropertyName().equals("progress")) {
+			updateProgressBar((int) evt.getNewValue());
+			updateImages();
+		} else if (evt.getPropertyName().equals("totalNumberOfEvaluations")) {
+			updateImages();
+		} 	
+		//forward stopped status to listeners (windows)
+		else if (evt.getPropertyName().equals("Stopped")){
+			if((boolean) evt.getNewValue()){
+				btnStop.setText("Resume");
+				btnStop.setEnabled(true);				
+			}else{
+				btnInspectSolution.setEnabled(false);
+				btnStop.setText("Pause");
+				btnStop.setEnabled(true);
+				progressBar.setEnabled(true);
+			}
+
+		}else {
+			logger.debug("property: " + evt.getPropertyName());
+		}
+
+	}
+
 
 }

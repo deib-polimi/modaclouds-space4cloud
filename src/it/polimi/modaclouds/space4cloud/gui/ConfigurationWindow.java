@@ -118,8 +118,8 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		loadConfigurationButton = new JButton("Load Configuration");
 		loadConfigurationButton.addActionListener(this);
 		
-		Icon icon = new ImageIcon("icons/logo.png"); 
-		logoLabel = new JLabel(icon);
+		Icon icon = new ImageIcon(this.getClass().getResource("logo.png"));
+		logoLabel = new JLabel("");
 		GridBagConstraints gbc_logoLabel = new GridBagConstraints();
 		gbc_logoLabel.insets = new Insets(0, 0, 0, 5);
 		gbc_logoLabel.gridx = 0;
