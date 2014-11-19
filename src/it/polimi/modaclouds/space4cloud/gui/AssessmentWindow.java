@@ -62,6 +62,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
@@ -324,7 +325,12 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
                         new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent pce) {
-                        updateImages();
+                    	SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                            	updateImages();
+                            }
+                        });
                     }
                 });
 
@@ -486,13 +492,17 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         frame.setVisible(true);
     }
 
-    private boolean alreadyUpdating;
+    private boolean alreadyUpdating = false;
+    private boolean alreadyUpdatingImages = false;
+    private boolean updateAgain = false;
 
     private void updateImages() {
-        if (alreadyUpdating)
-            return;
+        if (alreadyUpdatingImages) {
+        	updateAgain = true;
+        	return;
+        }
 
-        alreadyUpdating = true;
+        alreadyUpdatingImages = true;
 
         for (String provider : solutions.keySet()) {
             InternalSolution is = solutions.get(provider);
@@ -518,7 +528,11 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
             availability.updateImage();
         }
 
-        alreadyUpdating = false;
+        alreadyUpdatingImages = false;
+        if (updateAgain) {
+        	updateAgain = false;
+        	updateImages();
+        }
     }
 
     @Override
