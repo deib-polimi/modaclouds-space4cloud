@@ -272,6 +272,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	public void windowClosing(WindowEvent e) {		
 		super.windowClosing(e);
 		frmOptimizationProgress.dispose();
+		BestSolutionExplorer.close();
 		pcs.firePropertyChange("WindowClosed", false, true);
 	}
 

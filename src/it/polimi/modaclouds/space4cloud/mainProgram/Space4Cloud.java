@@ -1037,7 +1037,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	public void propertyChange(PropertyChangeEvent evt) {
 		//when the worker with the engine has done
 		if(evt.getSource().equals(engine) && evt.getPropertyName().equals("state") && evt.getNewValue()== StateValue.DONE && !engine.isCancelled()){
-			logger.info("Optimization ended");		
+			consoleLogger.info("Optimization ended");		
 			processEnded = true;
 			pcs.firePropertyChange("optimizationEnded", false, true);
 			if(!batch)
@@ -1047,7 +1047,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		//forward progress to window
 		else if (evt.getSource().equals(engine) && evt.getPropertyName().equals("progress")) {
-			logger.info("Progress: "+(int) evt.getNewValue());			
+			consoleLogger.info("Progress: "+(int) evt.getNewValue());			
 		}
 		//stop the optimization process if the user closes the window
 		else if(evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed") && !processEnded){
@@ -1055,7 +1055,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				engine.exportSolution();
 				engine.cancel(true);
 			}
-			logger.info("Optimization Process cancelled by the user");
+			consoleLogger.info("Optimization Process cancelled by the user");
 			pcs.firePropertyChange("optimizationEnded", false, true);
 			cleanResources();
 		}else if (evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("InspectSolution")){
@@ -1064,25 +1064,25 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 			//stop the optimization process if the user closes the window	
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed") && !processEnded){
-			logger.info("Robustness Process cancelled by the user");
+			consoleLogger.info("Robustness Process cancelled by the user");
 			pcs.firePropertyChange("robustnessClosed", false, true);
 			try {
 				executor.shutdownNow();
 			} catch (Exception e) { }
 			cleanExit();
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")){
-			logger.info("Robustness ended");
+			consoleLogger.info("Robustness ended");
 			processEnded = true;
 			pcs.firePropertyChange("robustnessEnded", false, true);
 			if(!batch)
 				robustnessWindow.signalCompletion();
 			cleanResources();
 		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("WindowClosed") && !processEnded){
-			logger.info("Assessment window closed");
+			consoleLogger.info("Assessment window closed");
 			pcs.firePropertyChange("assessmentClosed", false, true);
 			cleanResources();
 		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("AssessmentEnded")){
-			logger.info("Assessment ended");
+			consoleLogger.info("Assessment ended");
 			processEnded = true;
 			pcs.firePropertyChange("assessmentEnded", false, true);
 			cleanResources();

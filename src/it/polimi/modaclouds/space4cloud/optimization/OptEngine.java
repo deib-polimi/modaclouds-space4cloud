@@ -342,7 +342,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected Void doInBackground() throws Exception {
 		if (initialSolution.size() == 1)
 			Configuration.REDISTRIBUTE_WORKLOAD = false;
+		try{
 		optimize();
+		}catch(OptimizationException e){
+			logger.error("Optimization raised an exception",e);
+		}
 		if (!batch)
 			BestSolutionExplorer.show(this);
 		return null;

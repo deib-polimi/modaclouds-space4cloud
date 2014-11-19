@@ -313,7 +313,11 @@ public class EvaluationServer implements ActionListener {
 	 * @throws EvaluationException
 	 */
 	public void EvaluateSolution(Solution sol) throws EvaluationException{
-		runEvaluation(sol);
+		try{
+			runEvaluation(sol);
+		}catch(EvaluationException e){
+			throw e;
+		}
 		updateLogImage(sol);
 		timer.unsplit();
 	}

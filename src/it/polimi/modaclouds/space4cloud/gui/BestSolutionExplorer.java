@@ -24,7 +24,7 @@ import org.osgi.framework.FrameworkUtil;
 
 public class BestSolutionExplorer extends WindowAdapter implements ActionListener, PropertyChangeListener {
 
-	private JFrame frmBestSolutionsExplorer;
+	private static JFrame frmBestSolutionsExplorer;
 	private SolutionWindowPanel solutionWindowTab;	
 	private int current;
 	private JButton btnPrevious;
@@ -163,7 +163,7 @@ public class BestSolutionExplorer extends WindowAdapter implements ActionListene
 		super.windowClosing(e);
 		frmBestSolutionsExplorer.dispose();
 		shown = false;
-		pcs.firePropertyChange(PROPERTY_WINDOW_CLOSED, false, true);
+		pcs.firePropertyChange(PROPERTY_WINDOW_CLOSED, false, true);		
 	}
 
 	@Override
@@ -177,6 +177,11 @@ public class BestSolutionExplorer extends WindowAdapter implements ActionListene
 				btnPrevious.setEnabled(true);
 		}
 		
+	}
+	
+	public static void close() {
+		if(shown)
+			frmBestSolutionsExplorer.dispatchEvent(new WindowEvent(frmBestSolutionsExplorer, WindowEvent.WINDOW_CLOSING));
 	}
 
 }
