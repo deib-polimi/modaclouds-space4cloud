@@ -1,6 +1,6 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -9,8 +9,11 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -19,24 +22,25 @@ import javax.swing.JPanel;
 
 import org.osgi.framework.FrameworkUtil;
 
-public class BestSolutionExplorer implements ActionListener {
+public class BestSolutionExplorer extends WindowAdapter implements ActionListener, PropertyChangeListener {
 
 	private JFrame frmBestSolutionsExplorer;
-	private List<SolutionMulti> solutions;
 	private SolutionWindowPanel solutionWindowTab;	
 	private int current;
 	private JButton btnPrevious;
 	private JButton btnNext;
 	private GridBagConstraints gbc_solutionPanel;
-
-
+	
+	private OptEngine engine = null;
+	
 
 	/**
 	 * Create the application.
 	 */
-	private BestSolutionExplorer(List<SolutionMulti> solutions) {
-		this.solutions = new ArrayList<SolutionMulti>(solutions.size());
-		this.solutions.addAll(solutions);
+	private BestSolutionExplorer(OptEngine engine) {
+		this.engine = engine;
+		addPropertyChangeListener(engine);
+		engine.addPropertyChangeListener(this);
 		initialize();
 		frmBestSolutionsExplorer.setVisible(true);
 	}
@@ -50,7 +54,8 @@ public class BestSolutionExplorer implements ActionListener {
 //		frmBestSolutionsExplorer.setBounds(100, 100, 450, 300);
 		frmBestSolutionsExplorer.setMinimumSize(new Dimension(900, 600));
 		frmBestSolutionsExplorer.setLocationRelativeTo(null);
-		frmBestSolutionsExplorer.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frmBestSolutionsExplorer.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // .DISPOSE_ON_CLOSE);
+		frmBestSolutionsExplorer.addWindowListener(this);
 		Image favicon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/Cloud.png")).getImage();
 		frmBestSolutionsExplorer.setIconImage(favicon);
 		
@@ -60,9 +65,9 @@ public class BestSolutionExplorer implements ActionListener {
 		gridBagLayout.columnWeights = new double[]{1.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
 		frmBestSolutionsExplorer.getContentPane().setLayout(gridBagLayout);
-
-		current = solutions.size()-1;
-		solutionWindowTab = new SolutionWindowPanel(solutions.get(current));
+		
+		current = engine.getBestSolutions().size()-1;
+		solutionWindowTab = new SolutionWindowPanel(engine.getBestSolutions().get(current));
 		gbc_solutionPanel = new GridBagConstraints();
 		gbc_solutionPanel.insets = new Insets(0, 0, 5, 0);
 		gbc_solutionPanel.fill = GridBagConstraints.BOTH;
@@ -88,28 +93,31 @@ public class BestSolutionExplorer implements ActionListener {
 		btnNext.addActionListener(this);
 		btnNext.setEnabled(false);
 		commandPanel.add(btnNext);
+		
+		shown = true;
 	}
 
-	
+	private static boolean shown = false;
 
 	/**
 	 * Shows the window with the set of solutions specified. If the window has already shown it updates  the window according to the specified solutions
 	 * @param solutions
 	 */
-	public static void show(List<SolutionMulti> solutions){
-		new BestSolutionExplorer(solutions);		
+	public static void show(OptEngine engine){
+		if (!shown)
+			new BestSolutionExplorer(engine);
 	}
 
 
 
 	private void next(){
-		if(current < solutions.size()-1){
+		if(current < engine.getBestSolutions().size()-1){
 			current++;			
 			frmBestSolutionsExplorer.getContentPane().remove(solutionWindowTab);			
-			solutionWindowTab = new SolutionWindowPanel(solutions.get(current));
+			solutionWindowTab = new SolutionWindowPanel(engine.getBestSolutions().get(current));
 			frmBestSolutionsExplorer.getContentPane().add(solutionWindowTab, gbc_solutionPanel);
 			frmBestSolutionsExplorer.getContentPane().validate();
-			if(current==solutions.size()-1)
+			if(current==engine.getBestSolutions().size()-1)
 				btnNext.setEnabled(false);
 			if(current!=0)
 				btnPrevious.setEnabled(true);
@@ -120,10 +128,10 @@ public class BestSolutionExplorer implements ActionListener {
 		if(current > 0){
 			current--;
 			frmBestSolutionsExplorer.getContentPane().remove(solutionWindowTab);			
-			solutionWindowTab = new SolutionWindowPanel(solutions.get(current));
+			solutionWindowTab = new SolutionWindowPanel(engine.getBestSolutions().get(current));
 			frmBestSolutionsExplorer.getContentPane().add(solutionWindowTab, gbc_solutionPanel);
 			frmBestSolutionsExplorer.getContentPane().validate();
-			if(current<solutions.size()-1)
+			if(current<engine.getBestSolutions().size()-1)
 				btnNext.setEnabled(true);
 			if(current==0)
 				btnPrevious.setEnabled(false);
@@ -137,6 +145,36 @@ public class BestSolutionExplorer implements ActionListener {
 			next();
 		}else if(e.getSource().equals(btnPrevious)){
 			previous();
+		}
+		
+	}
+	
+	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+	
+	public void addPropertyChangeListener(PropertyChangeListener listener){
+		pcs.addPropertyChangeListener(listener);
+	}
+	
+	public static final String PROPERTY_WINDOW_CLOSED = "BSEWindowClosed";
+	public static final String PROPERTY_ADDED_VALUE = "BSEAddedValue";
+	
+	@Override
+	public void windowClosing(WindowEvent e) {		
+		super.windowClosing(e);
+		frmBestSolutionsExplorer.dispose();
+		shown = false;
+		pcs.firePropertyChange(PROPERTY_WINDOW_CLOSED, false, true);
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getPropertyName().equals(PROPERTY_ADDED_VALUE)) {
+			if(current==engine.getBestSolutions().size()-1)
+				btnNext.setEnabled(false);
+			else
+				btnNext.setEnabled(true);
+			if(current!=0)
+				btnPrevious.setEnabled(true);
 		}
 		
 	}

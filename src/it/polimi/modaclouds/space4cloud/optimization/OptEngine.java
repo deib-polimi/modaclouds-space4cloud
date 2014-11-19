@@ -344,7 +344,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			Configuration.REDISTRIBUTE_WORKLOAD = false;
 		optimize();
 		if (!batch)
-			BestSolutionExplorer.show(bestSolutions);
+			BestSolutionExplorer.show(this);
 		return null;
 	}
 
@@ -1144,6 +1144,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			throw new InitializationException("Could not evaulate the initial solution",e);
 		}
 		logger.info(this.initialSolution.showStatus());
+		
+		bestSolutions.add(initialSolution);
 	}
 
 	/**
@@ -2043,8 +2045,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 */
 	protected boolean checkBestSolution(Solution sol, boolean force) {
 		if (force || sol.greaterThan(bestSolution)) {    
-			if(bestSolutions !=  null)
+			if(bestSolutions !=  null) {
 				bestSolutions.add(bestSolution.clone());
+				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
+//				bse.propertyChange(new PropertyChangeEvent(this, "BSEAddedValue", false, true));
+			}
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
 			timer.split();
@@ -2149,6 +2154,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		if(evt.getSource().equals(evalServer) && evt.getPropertyName().equals("EvaluationError")){
 			logger.error("Optimizaiton ending due to evaluation error");
 			cancel(true);
+		} else if(evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED)){
+			firePropertyChange(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED, false, true);
 		}
 	}
 
@@ -2186,9 +2193,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	public void inspect() {
 		if(bestSolutions != null && bestSolutions.size() >0)
-			BestSolutionExplorer.show(bestSolutions);
+			BestSolutionExplorer.show(this);
 		/*if(bestSolution != null)
 	            SolutionWindow.show(bestSolution);*/
+	}
+	
+	public synchronized List<SolutionMulti> getBestSolutions() {
+		return bestSolutions;
 	}
 }
 

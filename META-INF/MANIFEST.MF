@@ -24,6 +24,7 @@ Import-Package: de.uka.ipd.sdq.identifier,
  de.uka.ipd.sdq.pcm.seff,
  de.uka.ipd.sdq.pcm.system,
  de.uka.ipd.sdq.pcm.usagemodel,
+ it.polimi.modaclouds.space4cloud.optimization,
  org.eclipse.emf.ecore.xmi.impl
 Bundle-ClassPath: .,
  target/dependency/mysql-connector-java-5.1.30.jar,

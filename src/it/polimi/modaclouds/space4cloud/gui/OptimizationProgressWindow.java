@@ -16,7 +16,6 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -59,11 +58,12 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	private GenericChart<XYSeriesCollection> costLogger;
 	private GenericChart<XYSeriesCollection> constraintsLogger;
 
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(OptimizationProgressWindow.class);
 
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 	private JPanel lowerPane;
-	private JButton btnStop;
+//	private JButton btnStop;
 	private JButton btnInspectSolution;
 
 	/**
@@ -140,12 +140,13 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		gbc_lowerPane.gridy = 2;
 		frmOptimizationProgress.getContentPane().add(lowerPane, gbc_lowerPane);
 
-		btnStop = new JButton("Pause");
-		btnStop.addActionListener(this);
-		lowerPane.add(btnStop);
+//		btnStop = new JButton("Pause");
+//		btnStop.addActionListener(this);
+//		lowerPane.add(btnStop);
 
 		btnInspectSolution = new JButton("Inspect Solution");
-		btnInspectSolution.setEnabled(false);
+//		btnInspectSolution.setEnabled(false);
+		btnInspectSolution.setEnabled(true);
 		btnInspectSolution.addActionListener(this);
 		lowerPane.add(btnInspectSolution);
 
@@ -254,9 +255,9 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 	public void signalCompletion() {
 		JOptionPane.showMessageDialog(frmOptimizationProgress, "Optimization process compleated");	
-		btnStop.setText("Finished");
-		btnStop.setEnabled(false);
-		btnInspectSolution.setEnabled(false);
+//		btnStop.setText("Finished");
+//		btnStop.setEnabled(false);
+//		btnInspectSolution.setEnabled(false);
 	}
 
 	public static void signalError(String message) {
@@ -276,23 +277,24 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getSource().equals(btnStop))
-			if(Configuration.isPaused()){
-				Configuration.resume();
-				btnStop.setText("Resuming...");
-				btnStop.setEnabled(false);		
-				progressBar.setEnabled(true);
-				btnInspectSolution.setEnabled(false);
-			}
-			else{
-				Configuration.pause();
-				btnStop.setText("Pausing...");
-				btnStop.setEnabled(false);
-				btnInspectSolution.setEnabled(true);
-				progressBar.setEnabled(false);
-			}
-		else if(e.getSource().equals(btnInspectSolution)){
+//		if(e.getSource().equals(btnStop))
+//			if(Configuration.isPaused()){
+//				Configuration.resume();
+//				btnStop.setText("Resuming...");
+//				btnStop.setEnabled(false);		
+//				progressBar.setEnabled(true);
+//				btnInspectSolution.setEnabled(false);
+//			}
+//			else{
+//				Configuration.pause();
+//				btnStop.setText("Pausing...");
+//				btnStop.setEnabled(false);
+//				btnInspectSolution.setEnabled(true);
+//				progressBar.setEnabled(false);
+//			}
+		/*else*/ if(e.getSource().equals(btnInspectSolution)){
 			pcs.firePropertyChange("InspectSolution",false,true);
+			btnInspectSolution.setEnabled(false);
 		}		
 	}
 
@@ -304,22 +306,24 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 			updateImages();
 		} else if (evt.getPropertyName().equals("totalNumberOfEvaluations")) {
 			updateImages();
+		} 	else if (evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED)) {
+			btnInspectSolution.setEnabled(true);
 		} 	
 		//forward stopped status to listeners (windows)
-		else if (evt.getPropertyName().equals("Stopped")){
-			if((boolean) evt.getNewValue()){
-				btnStop.setText("Resume");
-				btnStop.setEnabled(true);				
-			}else{
-				btnInspectSolution.setEnabled(false);
-				btnStop.setText("Pause");
-				btnStop.setEnabled(true);
-				progressBar.setEnabled(true);
-			}
-
-		}else {
-			logger.debug("property: " + evt.getPropertyName());
-		}
+//		else if (evt.getPropertyName().equals("Stopped")){
+//			if((boolean) evt.getNewValue()){
+//				btnStop.setText("Resume");
+//				btnStop.setEnabled(true);				
+//			}else{
+//				btnInspectSolution.setEnabled(false);
+//				btnStop.setText("Pause");
+//				btnStop.setEnabled(true);
+//				progressBar.setEnabled(true);
+//			}
+//
+//		}else {
+//			logger.debug("property: " + evt.getPropertyName());
+//		}
 
 	}
 

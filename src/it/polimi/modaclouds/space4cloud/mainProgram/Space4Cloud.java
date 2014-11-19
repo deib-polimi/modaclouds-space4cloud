@@ -29,6 +29,7 @@ import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.exceptions.RobustnessException;
 import it.polimi.modaclouds.space4cloud.gui.AssessmentWindow;
+import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
@@ -1085,6 +1086,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			processEnded = true;
 			pcs.firePropertyChange("assessmentEnded", false, true);
 			cleanResources();
+		} else if(evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED) || evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_ADDED_VALUE)){
+			progressWindow.propertyChange(evt);
 		}
 
 	}
