@@ -3,13 +3,17 @@ package it.polimi.modaclouds.space4cloud.gui;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
+import java.awt.Image;
 import java.io.File;
 import java.net.MalformedURLException;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.JAXBException;
 
+import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -18,7 +22,7 @@ public class FileLoader {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileLoader.class);	
 
-	public static  <T> File loadExtensionFile(String title, Class<T> clazz) {
+	public static  <T> File loadExtensionFile(String title, JFrame caller, Class<T> clazz) {
 		JFileChooser fileChooser;
 		File file=null;
 		if(Configuration.PROJECT_BASE_FOLDER!= null)
@@ -34,7 +38,7 @@ public class FileLoader {
 		boolean cancelled = false;
 		boolean validSelection = false;
 		while(!cancelled && !validSelection){
-			int returnVal = fileChooser.showOpenDialog(null);
+			int returnVal = fileChooser.showOpenDialog(caller);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				file = fileChooser.getSelectedFile();
 				//save the base directory
@@ -68,7 +72,7 @@ public class FileLoader {
 		return file;
 	}
 	
-	public static  File loadFile(String title, String... ext){
+	public static  File loadFile(String title, JFrame caller, String... ext){
 		JFileChooser fileChooser;
 		File file=null;
 		if(Configuration.PROJECT_BASE_FOLDER!= null)
@@ -81,7 +85,7 @@ public class FileLoader {
 			fileChooser.setFileFilter(filter);
 		}
 		fileChooser.setDialogTitle(title);
-		int returnVal = fileChooser.showOpenDialog(null);
+		int returnVal = fileChooser.showOpenDialog(caller);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			file = fileChooser.getSelectedFile();
 			if(Configuration.PROJECT_BASE_FOLDER==null)
@@ -90,7 +94,7 @@ public class FileLoader {
 		return file;
 	}
 
-	public static File saveFile(String title, String... ext) {
+	public static File saveFile(String title, JFrame caller, String... ext) {
 		JFileChooser fileChooser;
 		File file=null;
 		if(Configuration.PROJECT_BASE_FOLDER!= null)
@@ -103,13 +107,32 @@ public class FileLoader {
 			fileChooser.setFileFilter(filter);
 		}
 		fileChooser.setDialogTitle(title);
-		int returnVal = fileChooser.showSaveDialog(null);
+		int returnVal = fileChooser.showSaveDialog(caller);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			file = fileChooser.getSelectedFile();
 			if(Configuration.PROJECT_BASE_FOLDER==null)
 				Configuration.PROJECT_BASE_FOLDER=file.getParent();
 		}
 		return file;
+	}
+	
+	public static  <T> File loadExtensionFile(String title, Class<T> clazz) {
+		return loadExtensionFile(title, frameWithIcon, clazz);
+	}
+	
+	public static File loadFile(String title, String... ext){
+		return loadFile(title, frameWithIcon, ext);
+	}
+	
+	public static File saveFile(String title, String... ext) {
+		return saveFile(title, frameWithIcon, ext);
+	}
+	
+	private static JFrame frameWithIcon;
+	static {
+		frameWithIcon = new JFrame();
+		Image favicon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/Cloud.png")).getImage();
+		frameWithIcon.setIconImage(favicon);
 	}
 
 

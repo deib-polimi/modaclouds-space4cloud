@@ -5,15 +5,19 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import org.osgi.framework.FrameworkUtil;
 
 public class BestSolutionExplorer implements ActionListener {
 
@@ -47,6 +51,9 @@ public class BestSolutionExplorer implements ActionListener {
 		frmBestSolutionsExplorer.setMinimumSize(new Dimension(900, 600));
 		frmBestSolutionsExplorer.setLocationRelativeTo(null);
 		frmBestSolutionsExplorer.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		Image favicon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/Cloud.png")).getImage();
+		frmBestSolutionsExplorer.setIconImage(favicon);
+		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0};
 		gridBagLayout.rowHeights = new int[]{0, 30, 0};

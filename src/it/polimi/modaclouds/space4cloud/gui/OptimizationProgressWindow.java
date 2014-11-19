@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,6 +35,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -41,6 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
 import org.jfree.data.xy.XYSeriesCollection;
+import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +87,8 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		frmOptimizationProgress.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frmOptimizationProgress.addWindowListener(this);
 //		frmOptimizationProgress.setExtendedState(frmOptimizationProgress.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+		Image favicon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/Cloud.png")).getImage();
+		frmOptimizationProgress.setIconImage(favicon);
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{100, 0};

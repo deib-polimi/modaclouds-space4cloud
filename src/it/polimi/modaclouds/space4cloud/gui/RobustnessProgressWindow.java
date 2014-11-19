@@ -18,6 +18,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -58,6 +60,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.osgi.framework.FrameworkUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -752,6 +755,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		gui.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		gui.addWindowListener(this);
 		gui.getContentPane().setLayout(new BorderLayout(0, 0));
+		Image favicon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/Cloud.png")).getImage();
+		gui.setIconImage(favicon);
 
 		JPanel upperPanel = new JPanel();
 		gui.getContentPane().add(upperPanel, BorderLayout.NORTH);
