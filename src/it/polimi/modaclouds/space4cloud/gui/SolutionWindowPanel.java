@@ -246,7 +246,10 @@ public class SolutionWindowPanel extends JTabbedPane{
 		for (int i = 0; i < solutionMulti.size(); ++i) {
 			String provider = solutionMulti.get(i).getProvider();
 			pan = new JPanel(new GridLayout(2, 1));
+							
 			addTab(provider, pan);
+			if(i==0)
+				setSelectedComponent(pan);
 			
 			JTabbedPane inTab = new JTabbedPane();
 			pan.add(inTab);
@@ -254,6 +257,7 @@ public class SolutionWindowPanel extends JTabbedPane{
 			inTab.addTab("Population Percentage", workloads.get(provider));
 			
 			inTab.addTab("Allocations", allocations.get(provider));
+			inTab.setSelectedComponent(allocations.get(provider));
 			
 			JPanel informationPanel = new JPanel();
 			informationPanels.put(provider, informationPanel);

@@ -16,8 +16,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -47,6 +50,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	private boolean disposed = false;
 	private boolean cancelled = true;
 	private static final String FRAME_NAME = "Space 4Clouds Configuration Window";
+	private JLabel logoLabel;
 
 	/**
 	 * Launch the application.
@@ -76,7 +80,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	 */
 	private void initialize() {
 		frame = new JFrame();
-//		frame.setBounds(100, 100, 701, 431);		
+		//		frame.setBounds(100, 100, 701, 431);		
 		frame.setMinimumSize(new Dimension(950,600));
 		frame.setLocationRelativeTo(null);
 		frame.setTitle(FRAME_NAME);
@@ -105,41 +109,48 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		gbc_lowerPane.gridy = 1;
 		frame.getContentPane().add(lowerPane, gbc_lowerPane);
 		GridBagLayout gbl_lowerPane = new GridBagLayout();
-		gbl_lowerPane.columnWidths = new int[] {342, 100, 100, 100};
+		gbl_lowerPane.columnWidths = new int[] {100, 342, 100, 100, 100};
 		gbl_lowerPane.rowHeights = new int[] {23};
-		gbl_lowerPane.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
+		gbl_lowerPane.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 0.0};
 		gbl_lowerPane.rowWeights = new double[]{0.0};
 		lowerPane.setLayout(gbl_lowerPane);
+
+		loadConfigurationButton = new JButton("Load Configuration");
+		loadConfigurationButton.addActionListener(this);
+		
+		Icon icon = new ImageIcon("icons/logo.png"); 
+		logoLabel = new JLabel(icon);
+		GridBagConstraints gbc_logoLabel = new GridBagConstraints();
+		gbc_logoLabel.insets = new Insets(0, 0, 0, 5);
+		gbc_logoLabel.gridx = 0;
+		gbc_logoLabel.gridy = 0;
+		lowerPane.add(logoLabel, gbc_logoLabel);
 
 		JLabel emptyLabel = new JLabel("");
 		GridBagConstraints gbc_emptyLabel = new GridBagConstraints();
 		gbc_emptyLabel.fill = GridBagConstraints.BOTH;
-		gbc_emptyLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_emptyLabel.gridx = 0;
+		gbc_emptyLabel.insets = new Insets(0, 0, 0, 5);
+		gbc_emptyLabel.gridx = 1;
 		gbc_emptyLabel.gridy = 0;
 		lowerPane.add(emptyLabel, gbc_emptyLabel);
-
-		loadConfigurationButton = new JButton("Load Configuration");
-		loadConfigurationButton.addActionListener(this);
 		GridBagConstraints gbc_loadConfigurationButton = new GridBagConstraints();
-		gbc_loadConfigurationButton.insets = new Insets(0, 0, 5, 5);
-		gbc_loadConfigurationButton.gridx = 1;
+		gbc_loadConfigurationButton.insets = new Insets(0, 0, 0, 5);
+		gbc_loadConfigurationButton.gridx = 2;
 		gbc_loadConfigurationButton.gridy = 0;
 		lowerPane.add(loadConfigurationButton, gbc_loadConfigurationButton);
 
 		saveConfigurationButton = new JButton("Save Configuration");
 		saveConfigurationButton.addActionListener(this);
 		GridBagConstraints gbc_saveConfigurationButton = new GridBagConstraints();
-		gbc_saveConfigurationButton.insets = new Insets(0, 0, 5, 5);
-		gbc_saveConfigurationButton.gridx = 2;
+		gbc_saveConfigurationButton.insets = new Insets(0, 0, 0, 5);
+		gbc_saveConfigurationButton.gridx = 3;
 		gbc_saveConfigurationButton.gridy = 0;
 		lowerPane.add(saveConfigurationButton, gbc_saveConfigurationButton);
 
 		startButton = new JButton("Start");
 		startButton.addActionListener(this);
 		GridBagConstraints gbc_startButton = new GridBagConstraints();
-		gbc_startButton.insets = new Insets(0, 0, 5, 0);
-		gbc_startButton.gridx = 3;
+		gbc_startButton.gridx = 4;
 		gbc_startButton.gridy = 0;
 		lowerPane.add(startButton, gbc_startButton);
 
@@ -163,14 +174,14 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		tabbedPane.addTab(optimizationConfigurationPane.getName(), optimizationConfigurationPane);
 		int tabNumber = tabbedPane.indexOfComponent(optimizationConfigurationPane);
 		tabbedPane.setEnabledAt(tabNumber, false);
-		
+
 		robustnessConfigurationPane = new RobustnessConfigurationPanel();
 		robustnessConfigurationPane.setPreferredSize(frame.getContentPane().getPreferredSize());
 		robustnessConfigurationPane.setEnabled(false);		
 		tabbedPane.addTab(robustnessConfigurationPane.getName(), robustnessConfigurationPane);
 		tabNumber = tabbedPane.indexOfComponent(robustnessConfigurationPane);
 		tabbedPane.setEnabledAt(tabNumber, false);
-		
+
 		cloudBurstingPanel = new CloudBurstingPanel();
 		cloudBurstingPanel.setPreferredSize(frame.getContentPane().getPreferredSize());
 		tabbedPane.addTab(cloudBurstingPanel.getName(), cloudBurstingPanel);
@@ -178,7 +189,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		tabbedPane.setEnabledAt(tabNumber, false);
 
 		loadConfiguration();
-		
+
 		tabbedPane.addChangeListener(this);
 	}
 
@@ -209,7 +220,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			if(Configuration.USE_PRIVATE_CLOUD)
 				try {
 					File tempFile = File.createTempFile("space4cloudBurst", ".properties");
-//					Configuration.PRIVATE_CLOUD_HOSTS_TMP = tempFile.getAbsolutePath();
+					//					Configuration.PRIVATE_CLOUD_HOSTS_TMP = tempFile.getAbsolutePath();
 					Configuration.PRIVATE_CLOUD_HOSTS = tempFile.getAbsolutePath();
 					CloudBurstingPanel.saveFile(tempFile);
 				} catch (IOException e1) {
@@ -223,11 +234,11 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 			if(configurationFile !=  null){
 				try {
 					Configuration.loadConfiguration(configurationFile.getAbsolutePath());					
-//					modelSelectionPane.loadConfiguration();
-//					extensionSelectionPane.loadConfiguration();	
-//					functionalityPane.loadConfiguration();
-//					optimizationConfigurationPane.loadConfiguration();
-//					robustnessConfigurationPane.loadConfiguration();
+					//					modelSelectionPane.loadConfiguration();
+					//					extensionSelectionPane.loadConfiguration();	
+					//					functionalityPane.loadConfiguration();
+					//					optimizationConfigurationPane.loadConfiguration();
+					//					robustnessConfigurationPane.loadConfiguration();
 					loadConfiguration();
 				} catch (IOException ex) {
 					logger.error("Could not load the configuration from the file",e);
@@ -242,10 +253,10 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 				optimizationConfigurationPane.updateConfiguration();
 			else if (Configuration.FUNCTIONALITY == Operation.Robustness)
 				robustnessConfigurationPane.updateConfiguration();
-			
+
 			if (Configuration.USE_PRIVATE_CLOUD == true)
 				cloudBurstingPanel.updateConfiguration();
-			
+
 			File configurationFile = FileLoader.saveFile("Load SPACE4Cloud Configuration", "properties");
 			if(configurationFile!=null){
 				try {					
@@ -311,7 +322,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	public void show() {
 		frame.setVisible(true);
 	}
-	
+
 	public void loadConfiguration() {
 		modelSelectionPane.loadConfiguration();
 		extensionSelectionPane.loadConfiguration();	
@@ -325,12 +336,12 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 	public void stateChanged(ChangeEvent e) {
 		int index = tabbedPane.getSelectedIndex();
 		String tabTitle = tabbedPane.getTitleAt(index);
-		
+
 		if (tabTitle.equals(optimizationConfigurationPane.getName()))
 			optimizationConfigurationPane.updateSSHVisibility();
 		if (tabTitle.equals(extensionSelectionPane.getName()))
 			extensionSelectionPane.updateMceVisibility();
-			
+
 	}
 
 }
