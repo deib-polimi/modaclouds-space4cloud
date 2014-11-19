@@ -34,6 +34,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -65,6 +67,7 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.osgi.framework.FrameworkUtil;
 
 public class AssessmentWindow extends WindowAdapter implements PropertyChangeListener, ActionListener {
 
@@ -454,6 +457,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         //      frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(this);
+        Image favicon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/Cloud.png")).getImage();
+		frame.setIconImage(favicon);
 
         tab = new JTabbedPane();
         frame.getContentPane().add(tab);

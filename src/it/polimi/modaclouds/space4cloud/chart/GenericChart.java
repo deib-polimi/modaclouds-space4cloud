@@ -134,11 +134,6 @@ public class GenericChart<E> extends JPanel {
 		updateImage();
 	}
 	
-	@Deprecated
-	public void addPoint2Series(SeriesHandle series, double x, double y) {
-		add("Series " + series.getPosition(), x, y);
-	}
-	
 	public void clear() {
 		if (dataset instanceof DefaultCategoryDataset)
 			((DefaultCategoryDataset) dataset).clear();
