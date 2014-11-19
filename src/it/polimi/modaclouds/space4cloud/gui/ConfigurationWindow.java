@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,7 +17,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.List;
 
 import javax.swing.Icon;
@@ -30,6 +30,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +85,9 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		frame.setMinimumSize(new Dimension(950,600));
 		frame.setLocationRelativeTo(null);
 		frame.setTitle(FRAME_NAME);
+		Image favicon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/Cloud.png")).getImage();
+		frame.setIconImage(favicon);
+		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{685, 0};
 		gridBagLayout.rowHeights = new int[]{196, 60, 0};
@@ -118,7 +122,7 @@ public class ConfigurationWindow extends WindowAdapter implements ActionListener
 		loadConfigurationButton = new JButton("Load Configuration");
 		loadConfigurationButton.addActionListener(this);
 		
-		Icon icon = new ImageIcon("icons/logo.png"); 
+		Icon icon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/logo.png"));
 		logoLabel = new JLabel(icon);
 		GridBagConstraints gbc_logoLabel = new GridBagConstraints();
 		gbc_logoLabel.insets = new Insets(0, 0, 0, 5);
