@@ -848,4 +848,34 @@ public class Solution implements Cloneable, Serializable {
 		return false;
 	}
 
+	/**
+	 * Gets  the average response time of all the functionalities on all the hours
+	 * @return
+	 */
+	public double getAverageRT() {
+		
+		//initializes the list of functionalities
+		Map<String,Double> functionalities = new HashMap<>(); 
+		for(Tier t:getApplication(0).getTiers())
+			for(Functionality f:t.getFunctionalities())
+				functionalities.put(f.getId(), 0.0);
+		
+		//sum up all the response times for all the hours
+		for(Instance i:getApplications())
+			for(Tier t:i.getTiers())
+				for(Functionality f:t.getFunctionalities())
+					functionalities.put(f.getId(), functionalities.get(f.getId())+f.getResponseTime());
+		
+		//divide all of them by 24
+		for(String f:functionalities.keySet())
+			functionalities.put(f,functionalities.get(f)/24);
+		
+		//average all the results
+		double avg=0;
+		for(Double d:functionalities.values())
+			avg +=d;
+		avg /= functionalities.size();
+		return avg;
+	}
+
 }

@@ -72,9 +72,11 @@ public class EvaluationServer implements ActionListener {
 	protected Map<String,String> seriesHandleTiers;
 	protected String seriesHandleConstraint;
 
+
 	protected GenericChart<XYSeriesCollection> logCost;
 	protected GenericChart<XYSeriesCollection> logVm;
 	protected GenericChart<XYSeriesCollection> logConstraint;
+	
 
 	protected StopWatch timer = new StopWatch();
 	protected long costEvaluationTime = 0;
@@ -664,6 +666,7 @@ public class EvaluationServer implements ActionListener {
 		seriesHandleConstraint = "violatedConstraints";
 	}
 
+
 	public void setLog2png(GenericChart<XYSeriesCollection> log2png) {
 		this.logCost = log2png;
 		seriesHandleExecution = "Current Solutions";
@@ -819,5 +822,7 @@ public class EvaluationServer implements ActionListener {
 			logger.warn("Stopping a timer that was not running");
 		}
 	}
+
+
 
 }

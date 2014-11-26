@@ -45,9 +45,12 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.swing.JTabbedPane;
 
-public class OptimizationProgressWindow extends WindowAdapter implements PropertyChangeListener, ActionListener {
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+public class OptimizationProgressWindow extends WindowAdapter implements PropertyChangeListener, ActionListener, ChangeListener {
 
 	private static JFrame frmOptimizationProgress;
 
@@ -55,17 +58,19 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	private JPanel upperPanel;
 	private JPanel middlePanel;
 	private JPanel imagesPanel;
+	private JPanel paretoPanel;
 
 	private GenericChart<XYSeriesCollection> vmLogger;
 	private GenericChart<XYSeriesCollection> costLogger;
 	private GenericChart<XYSeriesCollection> constraintsLogger;
+	private GenericChart<XYSeriesCollection> paretoLogger;
 
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(OptimizationProgressWindow.class);
 
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 	private JPanel lowerPane;
-//	private JButton btnStop;
+	//	private JButton btnStop;
 	private JButton btnInspectSolution;
 
 	/**
@@ -90,10 +95,10 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		frmOptimizationProgress.addWindowListener(this);
 		//		frmOptimizationProgress.setExtendedState(frmOptimizationProgress.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 
-//		frmOptimizationProgress.setExtendedState(frmOptimizationProgress.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+		//		frmOptimizationProgress.setExtendedState(frmOptimizationProgress.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 		Image favicon = new ImageIcon(FrameworkUtil.getBundle(ConfigurationWindow.class).getEntry("icons/Cloud.png")).getImage();
 		frmOptimizationProgress.setIconImage(favicon);
-		
+
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{100, 0};
 		gridBagLayout.rowHeights = new int[]{17, 100, 10, 0};
@@ -125,12 +130,19 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		gbc_middlePanel.gridy = 1;
 		frmOptimizationProgress.getContentPane().add(middlePanel, gbc_middlePanel);
 		middlePanel.setLayout(new GridLayout(1, 3));
-		
-		tabbedPane = new JTabbedPane(JTabbedPane.TOP);		
+
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.addChangeListener(this);
 		middlePanel.add(tabbedPane);
 		imagesPanel= new JPanel();
-		
+		imagesPanel.setName("Details");
+		imagesPanel.setLayout(new GridLayout(1, 3));
+		paretoPanel= new JPanel();
+		paretoPanel.setName("Pareto");
+		paretoPanel.setLayout(new GridLayout(1,1));
 		tabbedPane.add(imagesPanel);
+		tabbedPane.add(paretoPanel);
+		tabbedPane.setSelectedComponent(imagesPanel);
 
 		//		middlePanel.add(vmLogger);
 		//		
@@ -148,12 +160,12 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		gbc_lowerPane.gridy = 2;
 		frmOptimizationProgress.getContentPane().add(lowerPane, gbc_lowerPane);
 
-//		btnStop = new JButton("Pause");
-//		btnStop.addActionListener(this);
-//		lowerPane.add(btnStop);
+		//		btnStop = new JButton("Pause");
+		//		btnStop.addActionListener(this);
+		//		lowerPane.add(btnStop);
 
 		btnInspectSolution = new JButton("Inspect Solution");
-//		btnInspectSolution.setEnabled(false);
+		//		btnInspectSolution.setEnabled(false);
 		btnInspectSolution.setEnabled(true);
 		btnInspectSolution.addActionListener(this);
 		lowerPane.add(btnInspectSolution);
@@ -193,16 +205,19 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	}
 
 	private void initializeGraphs() {
-		if (middlePanel == null)
+		if (imagesPanel == null)
 			return;
-		middlePanel.removeAll();
+		imagesPanel.removeAll();
 		if (vmLogger != null)
-			middlePanel.add(vmLogger);
+			imagesPanel.add(vmLogger);
 		if (costLogger != null)
-			middlePanel.add(costLogger);
+			imagesPanel.add(costLogger);
 		if (constraintsLogger != null)
-			middlePanel.add(constraintsLogger);
+			imagesPanel.add(constraintsLogger);
 
+		paretoPanel.removeAll();
+		if(paretoLogger != null)
+			paretoPanel.add(paretoLogger);
 		updateGraphs();
 		updateImages();
 	}
@@ -219,6 +234,13 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		initializeGraphs();
 	}
 
+
+	public void setSolutionLogger(
+			GenericChart<XYSeriesCollection> solutionLogger) {
+		paretoLogger = solutionLogger;
+		initializeGraphs();		
+	}
+
 	private boolean alreadyUpdating = false;
 	private JTabbedPane tabbedPane;
 
@@ -228,15 +250,19 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 		alreadyUpdating = true;
 
-		if (costLogger != null)
-			costLogger.updateImage();
+		if(imagesPanel.isShowing()){
+			if (costLogger != null)
+				costLogger.updateImage();
 
-		if (vmLogger != null)
-			vmLogger.updateImage();
+			if (vmLogger != null)
+				vmLogger.updateImage();
 
-		if (constraintsLogger != null)
-			constraintsLogger.updateImage();
-
+			if (constraintsLogger != null)
+				constraintsLogger.updateImage();
+		}else if(paretoPanel.isShowing()){
+			if (paretoLogger !=null)
+				paretoLogger.updateImage();
+		}
 		alreadyUpdating = false;
 	}
 
@@ -246,15 +272,19 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 		alreadyUpdating = true;
 
-		if (costLogger != null)
-			costLogger.updateGraph();
+		if(imagesPanel.isShowing()){
+			if (costLogger != null)
+				costLogger.updateGraph();
 
-		if (vmLogger != null)
-			vmLogger.updateGraph();
+			if (vmLogger != null)
+				vmLogger.updateGraph();
 
-		if (constraintsLogger != null)
-			constraintsLogger.updateGraph();
-
+			if (constraintsLogger != null)
+				constraintsLogger.updateGraph();
+		}else if(paretoPanel.isShowing()){
+			if (paretoLogger != null)
+				paretoLogger.updateGraph();		
+		}
 		alreadyUpdating = false;
 	}
 
@@ -264,9 +294,9 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 	public void signalCompletion() {
 		JOptionPane.showMessageDialog(frmOptimizationProgress, "Optimization process compleated");	
-//		btnStop.setText("Finished");
-//		btnStop.setEnabled(false);
-//		btnInspectSolution.setEnabled(false);
+		//		btnStop.setText("Finished");
+		//		btnStop.setEnabled(false);
+		//		btnInspectSolution.setEnabled(false);
 	}
 
 	public static void signalError(String message) {
@@ -287,21 +317,21 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-//		if(e.getSource().equals(btnStop))
-//			if(Configuration.isPaused()){
-//				Configuration.resume();
-//				btnStop.setText("Resuming...");
-//				btnStop.setEnabled(false);		
-//				progressBar.setEnabled(true);
-//				btnInspectSolution.setEnabled(false);
-//			}
-//			else{
-//				Configuration.pause();
-//				btnStop.setText("Pausing...");
-//				btnStop.setEnabled(false);
-//				btnInspectSolution.setEnabled(true);
-//				progressBar.setEnabled(false);
-//			}
+		//		if(e.getSource().equals(btnStop))
+		//			if(Configuration.isPaused()){
+		//				Configuration.resume();
+		//				btnStop.setText("Resuming...");
+		//				btnStop.setEnabled(false);		
+		//				progressBar.setEnabled(true);
+		//				btnInspectSolution.setEnabled(false);
+		//			}
+		//			else{
+		//				Configuration.pause();
+		//				btnStop.setText("Pausing...");
+		//				btnStop.setEnabled(false);
+		//				btnInspectSolution.setEnabled(true);
+		//				progressBar.setEnabled(false);
+		//			}
 		/*else*/ if(e.getSource().equals(btnInspectSolution)){
 			pcs.firePropertyChange("InspectSolution",false,true);
 			btnInspectSolution.setEnabled(false);
@@ -320,22 +350,33 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 			btnInspectSolution.setEnabled(true);
 		} 	
 		//forward stopped status to listeners (windows)
-//		else if (evt.getPropertyName().equals("Stopped")){
-//			if((boolean) evt.getNewValue()){
-//				btnStop.setText("Resume");
-//				btnStop.setEnabled(true);				
-//			}else{
-//				btnInspectSolution.setEnabled(false);
-//				btnStop.setText("Pause");
-//				btnStop.setEnabled(true);
-//				progressBar.setEnabled(true);
-//			}
-//
-//		}else {
-//			logger.debug("property: " + evt.getPropertyName());
-//		}
+		//		else if (evt.getPropertyName().equals("Stopped")){
+		//			if((boolean) evt.getNewValue()){
+		//				btnStop.setText("Resume");
+		//				btnStop.setEnabled(true);				
+		//			}else{
+		//				btnInspectSolution.setEnabled(false);
+		//				btnStop.setText("Pause");
+		//				btnStop.setEnabled(true);
+		//				progressBar.setEnabled(true);
+		//			}
+		//
+		//		}else {
+		//			logger.debug("property: " + evt.getPropertyName());
+		//		}
 
 	}
+
+	@Override
+	public void stateChanged(ChangeEvent changeEvent) {		
+		if(changeEvent.getSource().equals(tabbedPane)) //should be trivially true since this class only listen to this kind of changes from this interface
+			updateImages();
+		
+	}
+
+
+
+
 
 
 }

@@ -131,7 +131,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			logger.error("Error! The provider isn't defined in the solution!");
 	}
 
-	
+
 	public void remove(Solution s) {
 		String provider = s.getProvider();
 		if (this.solutions.remove(provider) != null) {
@@ -139,7 +139,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
 	}
-	
+
 	public void removeUselessSolutions() {
 		for (Solution s : getAll()) {
 			if (!s.hasAtLeastOneReplicaInOneHour())
@@ -236,11 +236,11 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public void exportLight(Path filePath) {
 		if (!isEvaluated()) {
 			System.err
-					.println("Trying to export a solution that has not been evaluated!");
+			.println("Trying to export a solution that has not been evaluated!");
 			return;
 		}
 
-	
+
 
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory
@@ -251,7 +251,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			Document doc = docBuilder.newDocument();
 			Element rootElement = doc.createElement("SolutionMultiResult");
 			doc.appendChild(rootElement);
-			
+
 			rootElement.setAttribute("generationTime", Long.toString(getGenerationTime()));
 			rootElement.setAttribute("generationIteration", Integer.toString(getGenerationIteration()));
 			// set cost
@@ -276,7 +276,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 				ArrayList<Instance> hourApplication = sol.getApplications();
 
-		
+
 
 
 				// create tier container element
@@ -307,7 +307,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 							hourAllocation.setAttribute("allocation", ""
 									+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
 							if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
-                                hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHostsForTier(i, t.getId()).size());
+								hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHostsForTier(i, t.getId()).size());
 						}
 					}
 				}
@@ -379,7 +379,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public void exportLightNew(String filename) {
 		if (!isEvaluated()) {
 			System.err
-					.println("Trying to export a solution that has not been evaluated!");
+			.println("Trying to export a solution that has not been evaluated!");
 			return;
 		}
 
@@ -439,7 +439,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public double getCost() {
 		return cost;
 	}
-	
+
 	public static DecimalFormat costFormatter = null;
 	static {
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
@@ -482,9 +482,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	public boolean setFrom(File initialSolution, File initialMce) {
 
-		
+
 		boolean res = false;
-		
+
 		if (initialSolution != null) {
 			try {
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
@@ -492,69 +492,69 @@ public class SolutionMulti implements Cloneable, Serializable {
 				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 				Document doc = dBuilder.parse(initialSolution);
 				doc.getDocumentElement().normalize();
-	
+
 				{
 					Element root = (Element) doc.getElementsByTagName(
 							"SolutionMultiResult").item(0);
-	
+
 					cost = (int) Math.round(Double.parseDouble(root
 							.getAttribute("cost")));
 				}
-	
+
 				NodeList tiers = doc.getElementsByTagName("Tier");
-	
+
 				for (int i = 0; i < tiers.getLength(); ++i) {
 					Node n = tiers.item(i);
-	
+
 					if (n.getNodeType() != Node.ELEMENT_NODE)
 						continue;
-	
+
 					Element tier = (Element) n;
 					String provider = tier.getAttribute("providerName");
 					String tierId = tier.getAttribute("id");
 					String resourceName = tier.getAttribute("resourceName");
 					String serviceName = tier.getAttribute("serviceName");
-	
+
 					Solution solution = get(provider);
 					if (solution == null)
 						continue;
-	
+
 					DataHandler dataHandler = DataHandlerFactory.getHandler();
-	
+
 					double speed = dataHandler.getProcessingRate(provider,
 							serviceName, resourceName);
 					int ram = dataHandler.getAmountMemory(provider, serviceName,
 							resourceName);
 					int numberOfCores = dataHandler.getNumberOfReplicas(provider,
 							serviceName, resourceName);
-	
+
 					// System.out.printf("DEBUG: %s, %s, %s <-> %f, %d, %d.\n",
 					// provider, serviceName, resourceName, (float)speed, ram,
 					// numberOfCores);
-	
+
 					NodeList hourAllocations = tier
 							.getElementsByTagName("HourAllocation");
-	
+
 					for (int j = 0; j < hourAllocations.getLength(); ++j) {
 						Node m = hourAllocations.item(j);
-	
+
 						if (m.getNodeType() != Node.ELEMENT_NODE)
 							continue;
-	
+
 						Element hourAllocation = (Element) m;
 						int hour = Integer.parseInt(hourAllocation
 								.getAttribute("hour"));
 						int allocation = Integer.parseInt(hourAllocation
 								.getAttribute("allocation"));
-	
+
 						Instance app = solution.getApplication(hour);
-	
+
 						ArrayList<String> propertyNames = new ArrayList<String>();
 						ArrayList<Object> propertyValues = new ArrayList<Object>();
-	
+
 						propertyNames.add("replicas");
 						propertyValues.add(allocation);
-	
+
 						propertyNames.add("resourceName");
 						propertyNames.add("speed");
 						propertyNames.add("ram");
@@ -563,30 +563,30 @@ public class SolutionMulti implements Cloneable, Serializable {
 						propertyValues.add(speed);
 						propertyValues.add(ram);
 						propertyValues.add(numberOfCores);
-	
+
 						app.changeValues(tierId, propertyNames, propertyValues);
-						
+
 						app.setEvaluated(false);
 					}
 				}
-				
+
 				res = true;
-				
-//				for (Solution s : getAll()) {
-//					System.out.println("DEBUG prima: " + s.getProvider());
-//					for (int i = 0; i < 24; ++i)
-//						System.out.printf("%d (%d) ", s.getApplication(i)
-//								.getWorkload(), (int) (s
-//								.getPercentageWorkload(i) * 100));
-//					System.out.println();
-//				}
-				
+
+				//				for (Solution s : getAll()) {
+				//					System.out.println("DEBUG prima: " + s.getProvider());
+				//					for (int i = 0; i < 24; ++i)
+				//						System.out.printf("%d (%d) ", s.getApplication(i)
+				//								.getWorkload(), (int) (s
+				//								.getPercentageWorkload(i) * 100));
+				//					System.out.println();
+				//				}
+
 			} catch (Exception e) {
 				e.printStackTrace();
 				return false;
 			}
 		}
-		
+
 		if (initialMce != null) {
 			try {
 				MultiCloudExtensions mces = XMLHelper.deserialize(initialMce
@@ -618,8 +618,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 						propertyNames.add("workload");
 						propertyValues.add((int) Math.ceil((app
 								.getWorkload() / s.getPercentageWorkload(wp
-								.getHour()))
-								* value / 100));
+										.getHour()))
+										* value / 100));
 
 						s.setPercentageWorkload(wp.getHour(), value / 100.0);
 						app.changeValues(null, propertyNames, propertyValues);
@@ -649,10 +649,10 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 									propertyNames2.add("workload");
 									propertyValues2
-											.add((int) Math.ceil((app2
-													.getWorkload() / s2
-													.getPercentageWorkload(wp2
-															.getHour()))
+									.add((int) Math.ceil((app2
+											.getWorkload() / s2
+											.getPercentageWorkload(wp2
+													.getHour()))
 													* value2 / 100));
 
 									s2.setPercentageWorkload(wp2.getHour(),
@@ -665,34 +665,34 @@ public class SolutionMulti implements Cloneable, Serializable {
 					}
 
 				}
-			
+
 				res = true;
 
-//				for (Solution s : getAll()) {
-//					System.out.println("DEBUG dopo: " + s.getProvider());
-//					for (int i = 0; i < 24; ++i)
-//						System.out.printf("%d (%d) ", s.getApplication(i)
-//								.getWorkload(), (int) (s
-//								.getPercentageWorkload(i) * 100));
-//					System.out.println();
-//				}
+				//				for (Solution s : getAll()) {
+				//					System.out.println("DEBUG dopo: " + s.getProvider());
+				//					for (int i = 0; i < 24; ++i)
+				//						System.out.printf("%d (%d) ", s.getApplication(i)
+				//								.getWorkload(), (int) (s
+				//								.getPercentageWorkload(i) * 100));
+				//					System.out.println();
+				//				}
 
 			} catch (Exception e) {
 				e.printStackTrace();
 				return false;
 			}
 		}
-		
+
 		updateEvaluation();
-		
+
 		return res;
 	}
-	
+
 	public boolean addFrom(File initialSolution) {
 
-		
+
 		boolean res = false;
-		
+
 		if (initialSolution != null) {
 			try {
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
@@ -700,69 +700,69 @@ public class SolutionMulti implements Cloneable, Serializable {
 				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 				Document doc = dBuilder.parse(initialSolution);
 				doc.getDocumentElement().normalize();
-	
+
 				{
 					Element root = (Element) doc.getElementsByTagName(
 							"SolutionMultiResult").item(0);
-	
+
 					cost = (int) Math.round(Double.parseDouble(root
 							.getAttribute("cost")));
 				}
-	
+
 				NodeList tiers = doc.getElementsByTagName("Tier");
-	
+
 				for (int i = 0; i < tiers.getLength(); ++i) {
 					Node n = tiers.item(i);
-	
+
 					if (n.getNodeType() != Node.ELEMENT_NODE)
 						continue;
-	
+
 					Element tier = (Element) n;
 					String provider = tier.getAttribute("providerName");
 					String tierId = tier.getAttribute("id");
 					String resourceName = tier.getAttribute("resourceName");
 					String serviceName = tier.getAttribute("serviceName");
-	
+
 					Solution solution = get(provider);
 					if (solution == null)
 						continue;
-	
+
 					DataHandler dataHandler = DataHandlerFactory.getHandler();
-	
+
 					double speed = dataHandler.getProcessingRate(provider,
 							serviceName, resourceName);
 					int ram = dataHandler.getAmountMemory(provider, serviceName,
 							resourceName);
 					int numberOfCores = dataHandler.getNumberOfReplicas(provider,
 							serviceName, resourceName);
-	
+
 					// System.out.printf("DEBUG: %s, %s, %s <-> %f, %d, %d.\n",
 					// provider, serviceName, resourceName, (float)speed, ram,
 					// numberOfCores);
-	
+
 					NodeList hourAllocations = tier
 							.getElementsByTagName("HourAllocation");
-	
+
 					for (int j = 0; j < hourAllocations.getLength(); ++j) {
 						Node m = hourAllocations.item(j);
-	
+
 						if (m.getNodeType() != Node.ELEMENT_NODE)
 							continue;
-	
+
 						Element hourAllocation = (Element) m;
 						int hour = Integer.parseInt(hourAllocation
 								.getAttribute("hour"));
 						int allocation = Integer.parseInt(hourAllocation
 								.getAttribute("allocation"));
-	
+
 						Instance app = solution.getApplication(hour);
-	
+
 						ArrayList<String> propertyNames = new ArrayList<String>();
 						ArrayList<Object> propertyValues = new ArrayList<Object>();
-	
+
 						propertyNames.add("replicas");
 						propertyValues.add(allocation + ((IaaS) app.getTierById(tierId).getCloudService()).getReplicas());
-	
+
 						propertyNames.add("resourceName");
 						propertyNames.add("speed");
 						propertyNames.add("ram");
@@ -771,32 +771,32 @@ public class SolutionMulti implements Cloneable, Serializable {
 						propertyValues.add(speed);
 						propertyValues.add(ram);
 						propertyValues.add(numberOfCores);
-	
+
 						app.changeValues(tierId, propertyNames, propertyValues);
-						
+
 						app.setEvaluated(false);
 					}
 				}
-				
+
 				res = true;
-				
-//				for (Solution s : getAll()) {
-//					System.out.println("DEBUG prima: " + s.getProvider());
-//					for (int i = 0; i < 24; ++i)
-//						System.out.printf("%d (%d) ", s.getApplication(i)
-//								.getWorkload(), (int) (s
-//								.getPercentageWorkload(i) * 100));
-//					System.out.println();
-//				}
-				
+
+				//				for (Solution s : getAll()) {
+				//					System.out.println("DEBUG prima: " + s.getProvider());
+				//					for (int i = 0; i < 24; ++i)
+				//						System.out.printf("%d (%d) ", s.getApplication(i)
+				//								.getWorkload(), (int) (s
+				//								.getPercentageWorkload(i) * 100));
+				//					System.out.println();
+				//				}
+
 			} catch (Exception e) {
 				e.printStackTrace();
 				return false;
 			}
 		}
-		
+
 		updateEvaluation();
-		
+
 		return res;
 	}
 
@@ -855,7 +855,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		// System.out.printf("DEBUG: Cost updated from %d to %d.\n",
 		// previousCost, cost);
 	}
-	
+
 	public boolean isUsingPrivateCloud() {
 		for (String provider : solutions.keySet())
 			if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
@@ -863,10 +863,10 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return false;
 
 	}
-	
+
 	public String showWorkloadPercentages() {
 		String result = "SolutionMulti workload percentages";
-		
+
 		int size = Integer.MIN_VALUE;
 		for (Solution s : getAll()) {
 			if (size < s.getProvider().length())
@@ -900,7 +900,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	public static List<String> getAllProviders(File solution) {
 		List<String> res = new ArrayList<String>();
-		
+
 		if (solution != null && solution.exists())
 			try {
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
@@ -908,18 +908,18 @@ public class SolutionMulti implements Cloneable, Serializable {
 				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 				Document doc = dBuilder.parse(solution);
 				doc.getDocumentElement().normalize();
-				
+
 				NodeList tiers = doc.getElementsByTagName("Tier");
-				
+
 				for (int i = 0; i < tiers.getLength(); ++i) {
 					Node n = tiers.item(i);
-	
+
 					if (n.getNodeType() != Node.ELEMENT_NODE)
 						continue;
-	
+
 					Element tier = (Element) n;
 					String provider = tier.getAttribute("providerName");
-					
+
 					boolean alreadyIn = false;
 					for (int j = 0; j < res.size() && !alreadyIn; ++j) {
 						if (res.get(j).equals(provider))
@@ -931,28 +931,28 @@ public class SolutionMulti implements Cloneable, Serializable {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		
+
 		return res;
 
 	}
-	
+
 	public ResourceModelExtension getAsExtension() {
 		//Build the objects
 		ObjectFactory factory = new ObjectFactory();
 		ResourceModelExtension extension = factory.createResourceModelExtension();
 		List<ResourceContainer> resourceContainers = extension.getResourceContainer();
-		
+
 		for (Solution s : getAll()) {
 			ResourceModelExtension ext = s.getAsExtension();
 			List<ResourceContainer> rcs = ext.getResourceContainer();
-			
+
 			for (ResourceContainer rc : rcs)
 				resourceContainers.add(rc);
 		}
-		
+
 		return extension;
 	}
-	
+
 	/**
 	 * Export the solution in the format of the extension used as input for space4cloud
 	 */
@@ -966,7 +966,18 @@ public class SolutionMulti implements Cloneable, Serializable {
 		} catch (FileNotFoundException e) {
 			logger.error("Error exporting the solution",e);
 		}
-		
+
+	}
+	/**
+	 * Gets the average of all the response times of all the funcitonalitis in all the hours in all the providers. 
+	 * @return
+	 */
+	public double getAverageRT() {
+		double avg = 0;
+		for(Solution s:getAll())
+			avg +=s.getAverageRT();
+		avg /= getAll().size();
+		return avg;
 	}
 
 }

@@ -572,6 +572,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			progressWindow.setCostLogger(engine.getCostLogger());
 			progressWindow.setVMLogger(engine.getVMLogger());
 			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
+			progressWindow.setSolutionLogger(engine.getSolutionLogger());
 			progressWindow.setMax(100);
 			progressWindow.addPropertyChangeListener(this);
 			engine.addPropertyChangeListener(progressWindow);

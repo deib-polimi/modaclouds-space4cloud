@@ -38,6 +38,7 @@ import org.jfree.chart.renderer.category.CategoryItemRenderer;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleAnchor;
@@ -45,67 +46,73 @@ import org.jfree.ui.TextAnchor;
 
 public class GenericChart<E> extends JPanel {
 	private static final long serialVersionUID = -7208222758877437049L;
-	
+
 	private JFreeChart graph;
 	private JLabel label;
 	public E dataset;
-	
+	private ChartType type=ChartType.LINE;
+
 	private String title;
 	private String x, y;
 	public boolean pointsVisible = true;
 	public boolean labelsVisible = true;
-	
+
 	public double shownValsBelowMin = 1.0;
 	public double shownValsAboveMax = 1.0;
-	
+
 	public Double exactMin = null;
 	public Double exactMax = null;
-	
+
 	public boolean defaultRange = false;
-	
+
+
+	public static enum ChartType {
+		LINE, SCATTER
+	}
+
 	public static class Marker {
 		double position;
 		String label;
-		
+
 		public Marker(double position, String label) {
 			this.position = position;
 			this.label = label;
 		}
-		
+
 		public Marker(double position) {
 			this(position, "");
 		}
 	}
-	
+
 	public List<Marker> markers;
-	
+
 	public GenericChart(String title, String x, String y) {
 		super();
-		
+
 		this.title = title;
 		this.x = x;
 		this.y = y;
-		
+
 		label = new JLabel();
 		label.setIcon(null);
 		add(label);
-		
+
 		markers = new ArrayList<Marker>();
-	}
-	
+	}	
+
 	public GenericChart(String x, String y) {
 		this(null, x, y);
 	}
-	
+
 	public GenericChart() {
 		this(null, "X", "Y");
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void initDataset(Class<?> type) throws InstantiationException, IllegalAccessException {
 		dataset = (E) type.newInstance();
 	}
-	
+
 	public void initDataset() {
 		try {
 			initDataset(DefaultCategoryDataset.class);
@@ -113,7 +120,7 @@ public class GenericChart<E> extends JPanel {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void add(String series, double x, double y) {
 		if (dataset instanceof DefaultCategoryDataset)
 			((DefaultCategoryDataset) dataset).addValue(y, series, x + "");
@@ -129,26 +136,26 @@ public class GenericChart<E> extends JPanel {
 			}
 			xys.add(x, y);
 		}
-		
+
 		updateGraph();
 		updateImage();
 	}
-	
+
 	public void clear() {
 		if (dataset instanceof DefaultCategoryDataset)
 			((DefaultCategoryDataset) dataset).clear();
 		else if (dataset instanceof XYSeriesCollection)
 			((XYSeriesCollection) dataset).removeAllSeries();
-		
+
 		markers.clear();
 	}
-	
+
 	public void updateImage() {
 		if (alreadyUpdating)
 			return;
-		
+
 		alreadyUpdating = true;
-		
+
 		if (dataset != null && graph != null) {
 			ImageIcon icon;
 			int width = getSize().width;
@@ -170,273 +177,278 @@ public class GenericChart<E> extends JPanel {
 
 			label.validate();
 		}
-		
+
 		alreadyUpdating = false;
 	}
-	
+
 	private boolean alreadyUpdating = false;
-	
+
 	@SuppressWarnings("deprecation")
 	public void updateGraph() {
 		if (alreadyUpdating)
 			return;
-		
+
 		alreadyUpdating = true;
-		
+
 		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
 		Font font2 = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 		BasicStroke stroke = new BasicStroke(2.0f,                     // Line width
 				BasicStroke.CAP_ROUND,     // End-cap style
 				BasicStroke.JOIN_ROUND);   // Vertex join style
-		
+
 		float dash1[] = {10.0f};
 		BasicStroke dotted = new BasicStroke(2.0f,                     // Line width
 				BasicStroke.CAP_ROUND,     // End-cap style
 				BasicStroke.JOIN_ROUND,   // Vertex join style
 				10.0f, dash1, 0.0f);
-		
+
 		if (dataset instanceof DefaultCategoryDataset) {
 			DefaultCategoryDataset dataset = (DefaultCategoryDataset) this.dataset;
-			
-			graph = ChartFactory.createLineChart(title, x, 
-					y, dataset, PlotOrientation.VERTICAL, true, true, false);
-			{
-				CategoryPlot plot = (CategoryPlot) graph.getPlot();
-				LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
-						.getRenderer();
-				
-				graph.setAntiAlias(true);
-				graph.setTextAntiAlias(RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-				
-				if (pointsVisible) {
-					renderer.setShapesVisible(true);
-					renderer.setDrawOutlines(true);
-					renderer.setUseFillPaint(true);
-					renderer.setFillPaint(Color.white);
-				}
-				
-				renderer.setStroke(stroke);
-				
-				double maxMarker = Double.MIN_VALUE, minMarker = Double.MAX_VALUE;
-				
-				for (Marker m : markers) {
-					ValueMarker marker = new ValueMarker(m.position);  // position is the value on the axis
-					marker.setLabel(m.label);
-					marker.setLabelFont(font2);
-					marker.setStroke(dotted);
-					marker.setLabelTextAnchor(TextAnchor.TOP_LEFT);
-					marker.setLabelAnchor(RectangleAnchor.BOTTOM_LEFT);
-//					marker.setLabelOffset(new RectangleInsets(10.0, 10.0, 3.0, 3.0));
-					
-					if (!m.label.equals("")) {
-						Paint p = renderer.lookupSeriesPaint(dataset.getRowIndex(m.label));
-						if (p != null)
-							marker.setPaint(p);
-					}
-					
-					plot.addRangeMarker(marker);
-					
-					if (maxMarker < m.position)
-						maxMarker = m.position;
-					if (minMarker > m.position)
-						minMarker = m.position;
-				}
-	
-				NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-				rangeAxis.setTickLabelFont(font);
-				
-				if (!defaultRange) {
-					double min = Double.MAX_VALUE, max = Double.MIN_VALUE, tmp;
-					for (int i = 0; i < dataset.getColumnCount(); ++i)
-						for (int j = 0; j < dataset.getRowCount(); ++j) {
-							tmp = dataset.getValue(j, i).doubleValue();
-							if (tmp < min)
-								min = tmp;
-							if (tmp > max)
-								max = tmp;
-						}
-					
-					if (min > minMarker)
-						min = minMarker;
-					if (max < maxMarker)
-						max = maxMarker;
-					
-					if (min == Double.MAX_VALUE)
-						min = 0;
-					if (max == Double.MIN_VALUE)
-						max = (int) rangeAxis.getRange().getUpperBound() + 1;
-		
-					if (exactMin != null)
-						min = exactMin;
-					else
-						min = min - shownValsBelowMin;
-					
-					if (exactMax != null)
-						max = exactMax;
-					else
-						max = max + shownValsAboveMax;
-					
-					if (min == max) {
-						min = min - 1;
-						max = max + 1;
-					}
-					
-					rangeAxis.setRange(min, max);
-				} else {
-					double min = rangeAxis.getRange().getLowerBound();
-					double max = rangeAxis.getRange().getUpperBound();
-					
-					if (min > minMarker)
-						min = minMarker;
-					if (max < maxMarker)
-						max = maxMarker;
-					
-					rangeAxis.setRange(min, max);
-				}
-				
-				CategoryAxis categoryAxis = plot.getDomainAxis();
-				categoryAxis.setLowerMargin(0.02);
-				categoryAxis.setUpperMargin(0.02);
-				categoryAxis.setTickLabelFont(font);
-	
-				if (labelsVisible) {
-					CategoryItemRenderer renderer2 = plot
-							.getRenderer();
-					CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
-							"{2}", new DecimalFormat("0") {
-		
-								private static final long serialVersionUID = 1L;
-		
-								@Override
-								public StringBuffer format(double number,
-										StringBuffer result, FieldPosition fieldPosition) {
-									result = new StringBuffer(getFormattedValue(number));
-									return result;
-								}
-		
-							});
-					renderer2.setItemLabelGenerator(generator);
-					renderer2.setItemLabelsVisible(true);
-					renderer2.setItemLabelFont(font);
-				}
+			if(type == ChartType.LINE)
+				graph = ChartFactory.createLineChart(title, x, 
+						y, dataset, PlotOrientation.VERTICAL, true, true, false);
+			else if(type == ChartType.SCATTER && dataset instanceof XYDataset)
+				graph = ChartFactory.createScatterPlot(title, x, y, (XYDataset) dataset, PlotOrientation.VERTICAL, true, true, false);
+
+
+			CategoryPlot plot = (CategoryPlot) graph.getPlot();
+			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
+					.getRenderer();
+
+			graph.setAntiAlias(true);
+			graph.setTextAntiAlias(RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+
+			if (pointsVisible) {
+				renderer.setShapesVisible(true);
+				renderer.setDrawOutlines(true);
+				renderer.setUseFillPaint(true);
+				renderer.setFillPaint(Color.white);
 			}
-		} else if (dataset instanceof XYSeriesCollection) {
-			XYSeriesCollection dataset = (XYSeriesCollection) this.dataset;
-			
-			graph = ChartFactory.createXYLineChart(title, x, 
-					y, dataset, PlotOrientation.VERTICAL, true, true, false);
-			{
-				XYPlot plot = (XYPlot) graph.getPlot();
-				XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot
-						.getRenderer();
-				
-				graph.setAntiAlias(true);
-				graph.setTextAntiAlias(RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-				
-				if (pointsVisible) {
-					renderer.setShapesVisible(true);
-					renderer.setDrawOutlines(true);
-					renderer.setUseFillPaint(true);
-					renderer.setFillPaint(Color.white);
+
+			renderer.setStroke(stroke);
+
+			double maxMarker = Double.MIN_VALUE, minMarker = Double.MAX_VALUE;
+
+			for (Marker m : markers) {
+				ValueMarker marker = new ValueMarker(m.position);  // position is the value on the axis
+				marker.setLabel(m.label);
+				marker.setLabelFont(font2);
+				marker.setStroke(dotted);
+				marker.setLabelTextAnchor(TextAnchor.TOP_LEFT);
+				marker.setLabelAnchor(RectangleAnchor.BOTTOM_LEFT);
+				//					marker.setLabelOffset(new RectangleInsets(10.0, 10.0, 3.0, 3.0));
+
+				if (!m.label.equals("")) {
+					Paint p = renderer.lookupSeriesPaint(dataset.getRowIndex(m.label));
+					if (p != null)
+						marker.setPaint(p);
 				}
-				
-				renderer.setStroke(stroke);
-				
-				double maxMarker = Double.MIN_VALUE, minMarker = Double.MAX_VALUE;
-				
-				for (Marker m : markers) {
-					ValueMarker marker = new ValueMarker(m.position);  // position is the value on the axis
-					marker.setLabel(m.label);
-					marker.setLabelFont(font2);
-					marker.setStroke(dotted);
-					marker.setLabelTextAnchor(TextAnchor.TOP_LEFT);
-					marker.setLabelAnchor(RectangleAnchor.BOTTOM_LEFT);
-//					marker.setLabelOffset(new RectangleInsets(10.0, 10.0, 3.0, 3.0));
-					
-					if (!m.label.equals("")) {
-						Paint p = renderer.lookupSeriesPaint(dataset.getSeriesIndex(m.label));
-						if (p != null)
-							marker.setPaint(p);
-					}
-					
-					plot.addRangeMarker(marker);
-					
-					if (maxMarker < m.position)
-						maxMarker = m.position;
-					if (minMarker > m.position)
-						minMarker = m.position;
-				}
-	
-				ValueAxis rangeAxis = (ValueAxis) plot.getRangeAxis();
-				rangeAxis.setTickLabelFont(font);
-				
-				if (!defaultRange) {
-					double min = Double.MAX_VALUE, max = Double.MIN_VALUE, tmp;
-					
-					for (Object o : dataset.getSeries()) {
-						XYSeries xys = (XYSeries) o;
-						tmp = xys.getMaxY();
-						if (tmp > max)
-							max = tmp;
-						tmp = xys.getMinY();
+
+				plot.addRangeMarker(marker);
+
+				if (maxMarker < m.position)
+					maxMarker = m.position;
+				if (minMarker > m.position)
+					minMarker = m.position;
+			}
+
+			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+			rangeAxis.setTickLabelFont(font);
+
+			if (!defaultRange) {
+				double min = Double.MAX_VALUE, max = Double.MIN_VALUE, tmp;
+				for (int i = 0; i < dataset.getColumnCount(); ++i)
+					for (int j = 0; j < dataset.getRowCount(); ++j) {
+						tmp = dataset.getValue(j, i).doubleValue();
 						if (tmp < min)
 							min = tmp;
+						if (tmp > max)
+							max = tmp;
 					}
-					
-					if (min > minMarker)
-						min = minMarker;
-					if (max < maxMarker)
-						max = maxMarker;
-					
-					if (min == Double.MAX_VALUE)
-						min = 0;
-					if (max == Double.MIN_VALUE)
-						max = (int) rangeAxis.getRange().getUpperBound() + 1;
-		
-					if (exactMin != null)
-						min = exactMin;
-					else
-						min = min - shownValsBelowMin;
-					
-					if (exactMax != null)
-						max = exactMax;
-					else
-						max = max + shownValsAboveMax;
-					
-					if (min == max) {
-						min = min - 1;
-						max = max + 1;
-					}
-					
-					rangeAxis.setRange(min, max);
-				} else {
-					double min = rangeAxis.getRange().getLowerBound();
-					double max = rangeAxis.getRange().getUpperBound();
-					
-					if (min > minMarker)
-						min = minMarker;
-					if (max < maxMarker)
-						max = maxMarker;
-					
-					rangeAxis.setRange(min, max);
+
+				if (min > minMarker)
+					min = minMarker;
+				if (max < maxMarker)
+					max = maxMarker;
+
+				if (min == Double.MAX_VALUE)
+					min = 0;
+				if (max == Double.MIN_VALUE)
+					max = (int) rangeAxis.getRange().getUpperBound() + 1;
+
+				if (exactMin != null)
+					min = exactMin;
+				else
+					min = min - shownValsBelowMin;
+
+				if (exactMax != null)
+					max = exactMax;
+				else
+					max = max + shownValsAboveMax;
+
+				if (min == max) {
+					min = min - 1;
+					max = max + 1;
 				}
-				
-				ValueAxis categoryAxis = plot.getDomainAxis();
-				categoryAxis.setLowerMargin(0.02);
-				categoryAxis.setUpperMargin(0.02);
-				categoryAxis.setTickLabelFont(font);
+
+				rangeAxis.setRange(min, max);
+			} else {
+				double min = rangeAxis.getRange().getLowerBound();
+				double max = rangeAxis.getRange().getUpperBound();
+
+				if (min > minMarker)
+					min = minMarker;
+				if (max < maxMarker)
+					max = maxMarker;
+
+				rangeAxis.setRange(min, max);
 			}
+
+			CategoryAxis categoryAxis = plot.getDomainAxis();
+			categoryAxis.setLowerMargin(0.02);
+			categoryAxis.setUpperMargin(0.02);
+			categoryAxis.setTickLabelFont(font);
+
+			if (labelsVisible) {
+				CategoryItemRenderer renderer2 = plot
+						.getRenderer();
+				CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
+						"{2}", new DecimalFormat("0") {
+
+							private static final long serialVersionUID = 1L;
+
+							@Override
+							public StringBuffer format(double number,
+									StringBuffer result, FieldPosition fieldPosition) {
+								result = new StringBuffer(getFormattedValue(number));
+								return result;
+							}
+
+						});
+				renderer2.setItemLabelGenerator(generator);
+				renderer2.setItemLabelsVisible(true);
+				renderer2.setItemLabelFont(font);
+			}
+
+		} else if (dataset instanceof XYSeriesCollection) {
+			XYSeriesCollection dataset = (XYSeriesCollection) this.dataset;
+			if(type == ChartType.LINE)
+				graph = ChartFactory.createXYLineChart(title, x, 
+						y, dataset, PlotOrientation.VERTICAL, true, true, false);
+			else if(type == ChartType.SCATTER && dataset instanceof XYDataset)
+				graph = ChartFactory.createScatterPlot(title, x, y, (XYDataset) dataset, PlotOrientation.VERTICAL, true, true, false);
+
+			XYPlot plot = (XYPlot) graph.getPlot();
+			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot
+					.getRenderer();
+
+			graph.setAntiAlias(true);
+			graph.setTextAntiAlias(RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+
+			if (pointsVisible) {
+				renderer.setShapesVisible(true);
+				renderer.setDrawOutlines(true);
+				renderer.setUseFillPaint(true);
+				renderer.setFillPaint(Color.white);
+			}
+
+			renderer.setStroke(stroke);
+
+			double maxMarker = Double.MIN_VALUE, minMarker = Double.MAX_VALUE;
+
+			for (Marker m : markers) {
+				ValueMarker marker = new ValueMarker(m.position);  // position is the value on the axis
+				marker.setLabel(m.label);
+				marker.setLabelFont(font2);
+				marker.setStroke(dotted);
+				marker.setLabelTextAnchor(TextAnchor.TOP_LEFT);
+				marker.setLabelAnchor(RectangleAnchor.BOTTOM_LEFT);
+				//					marker.setLabelOffset(new RectangleInsets(10.0, 10.0, 3.0, 3.0));
+
+				if (!m.label.equals("")) {
+					Paint p = renderer.lookupSeriesPaint(dataset.getSeriesIndex(m.label));
+					if (p != null)
+						marker.setPaint(p);
+				}
+
+				plot.addRangeMarker(marker);
+
+				if (maxMarker < m.position)
+					maxMarker = m.position;
+				if (minMarker > m.position)
+					minMarker = m.position;
+			}
+
+			ValueAxis rangeAxis = (ValueAxis) plot.getRangeAxis();
+			rangeAxis.setTickLabelFont(font);
+
+			if (!defaultRange) {
+				double min = Double.MAX_VALUE, max = Double.MIN_VALUE, tmp;
+
+				for (Object o : dataset.getSeries()) {
+					XYSeries xys = (XYSeries) o;
+					tmp = xys.getMaxY();
+					if (tmp > max)
+						max = tmp;
+					tmp = xys.getMinY();
+					if (tmp < min)
+						min = tmp;
+				}
+
+				if (min > minMarker)
+					min = minMarker;
+				if (max < maxMarker)
+					max = maxMarker;
+
+				if (min == Double.MAX_VALUE)
+					min = 0;
+				if (max == Double.MIN_VALUE)
+					max = (int) rangeAxis.getRange().getUpperBound() + 1;
+
+				if (exactMin != null)
+					min = exactMin;
+				else
+					min = min - shownValsBelowMin;
+
+				if (exactMax != null)
+					max = exactMax;
+				else
+					max = max + shownValsAboveMax;
+
+				if (min == max) {
+					min = min - 1;
+					max = max + 1;
+				}
+
+				rangeAxis.setRange(min, max);
+			} else {
+				double min = rangeAxis.getRange().getLowerBound();
+				double max = rangeAxis.getRange().getUpperBound();
+
+				if (min > minMarker)
+					min = minMarker;
+				if (max < maxMarker)
+					max = maxMarker;
+
+				rangeAxis.setRange(min, max);
+			}
+
+			ValueAxis categoryAxis = plot.getDomainAxis();
+			categoryAxis.setLowerMargin(0.02);
+			categoryAxis.setUpperMargin(0.02);
+			categoryAxis.setTickLabelFont(font);
+
 		} else {
 			graph = null;
 		}
-		
+
 		alreadyUpdating = false;
 	}
-	
+
 	public String getFormattedValue(double number) {
 		return (int)Math.round(number) + "";
 	}
-	
+
 	public void save2png(String path, String fileName, int width, int height) throws IOException {
 		File f = Paths.get(path, fileName).toFile();
 		if (f.isDirectory())
@@ -445,27 +457,27 @@ public class GenericChart<E> extends JPanel {
 		ChartUtilities.writeChartAsPNG(
 				new FileOutputStream(f), graph, width, height);
 	}
-	
+
 	public void save2png(String path, String fileName) throws IOException {
 		this.save2png(path, fileName, 1350, 700);
 	}
-	
+
 	public void save2png(String fileName) throws IOException {
 		this.save2png(
 				Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY).toString(),
 				fileName, 1350, 700);
 	}
-	
+
 	public void save2png() throws IOException {
 		this.save2png(
 				Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY).toString(),
 				path2save, imageWidth, imageHeight);
 	}
-	
+
 	private String path2save;
 	private int imageWidth;
 	private int imageHeight;
-	
+
 	/**
 	 * @throws NumberFormatException
 	 * @throws IOException
@@ -483,70 +495,94 @@ public class GenericChart<E> extends JPanel {
 		imageWidth = Integer.parseInt(properties.getProperty("ImageWidth"));
 		imageHeight = Integer.parseInt(properties.getProperty("ImageHeight"));
 	}
-	
+
 	public static GenericChart<XYSeriesCollection> createConstraintsLogger() throws NumberFormatException, IOException {
 		GenericChart<XYSeriesCollection> constraintsLogger = new GenericChart<XYSeriesCollection>("Iteration", "Y");
 		constraintsLogger.dataset = new XYSeriesCollection();
 		constraintsLogger.defaultRange = true;
 		constraintsLogger.labelsVisible = false;
 		constraintsLogger.pointsVisible = false;
-		
+
 		constraintsLogger.initByProperties("constraints.properties");
 		constraintsLogger.title = "Violated Constraints";
-		
+
 		return constraintsLogger;
 	}
-	
+
+	public static GenericChart<XYSeriesCollection> createScatterLogger() throws NumberFormatException, IOException{
+		GenericChart<XYSeriesCollection> scatterLogger = new GenericChart<XYSeriesCollection>("Avg Response Time","Cost");
+		scatterLogger.dataset = new XYSeriesCollection();
+		scatterLogger.defaultRange = true;
+		scatterLogger.labelsVisible = false;
+		scatterLogger.pointsVisible = false;
+
+		scatterLogger.initByProperties("scatter.properties");
+		scatterLogger.title = "Solution Tradeoff";
+		scatterLogger.setType(ChartType.SCATTER);
+		return scatterLogger;
+	}
+
 	public static GenericChart<XYSeriesCollection> createVmLogger() throws NumberFormatException, IOException {
 		GenericChart<XYSeriesCollection> vmLogger = new GenericChart<XYSeriesCollection>("Iteration", "Y");
 		vmLogger.dataset = new XYSeriesCollection();
 		vmLogger.defaultRange = true;
 		vmLogger.labelsVisible = false;
 		vmLogger.pointsVisible = false;
-		
+
 		vmLogger.initByProperties("vmCount.properties");
 		vmLogger.title = "Total Number of VMs";
-		
+
 		return vmLogger;
 	}
-	
+
 	public static GenericChart<XYSeriesCollection> createCostLogger() throws NumberFormatException, IOException {
 		GenericChart<XYSeriesCollection> costLogger = new GenericChart<XYSeriesCollection>("Iteration", "Y");
 		costLogger.dataset = new XYSeriesCollection();
 		costLogger.defaultRange = true;
 		costLogger.labelsVisible = false;
 		costLogger.pointsVisible = false;
-		
+
 		costLogger.initByProperties("conf.properties");
 		costLogger.title = "Solution Cost";
-		
+
 		return costLogger;
 	}
-	
+
 	public static GenericChart<DefaultCategoryDataset> createResponseTimeLogger() throws NumberFormatException, IOException {
 		GenericChart<DefaultCategoryDataset> costLogger = new GenericChart<DefaultCategoryDataset>("Iteration", "Y");
 		costLogger.dataset = new DefaultCategoryDataset();
 		costLogger.defaultRange = true;
 		costLogger.labelsVisible = false;
 		costLogger.pointsVisible = false;
-		
+
 		costLogger.initByProperties("responseTime.properties");
 		costLogger.title = "Average Response Times";
-		
+
 		return costLogger;
 	}
-	
+
 	public static GenericChart<DefaultCategoryDataset> createUtilizationLogger() throws NumberFormatException, IOException {
 		GenericChart<DefaultCategoryDataset> costLogger = new GenericChart<DefaultCategoryDataset>("Iteration", "Y");
 		costLogger.dataset = new DefaultCategoryDataset();
 		costLogger.defaultRange = true;
 		costLogger.labelsVisible = false;
 		costLogger.pointsVisible = false;
-		
+
 		costLogger.initByProperties("utilization.properties");
 		costLogger.title = "CPU Utilization";
-		
+
 		return costLogger;
 	}
-	
+
+
+
+	public ChartType getType() {
+		return type;
+	}
+
+	public void setType(ChartType type) {
+		this.type = type;
+	}
+
+
 }

@@ -185,9 +185,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected GenericChart<XYSeriesCollection> costLogImage;
 	protected GenericChart<XYSeriesCollection> logVm;
 	protected GenericChart<XYSeriesCollection> logConstraints;
+	protected GenericChart<XYSeriesCollection> solutionLogger;
 
 	protected String bestSolutionSerieHandler;
 	protected String localBestSolutionSerieHandler;
+	protected String solutionSeriesHandler;
 
 	private boolean batch = false;
 
@@ -212,6 +214,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			costLogImage = GenericChart.createCostLogger();
 			logVm = GenericChart.createVmLogger();
 			logConstraints = GenericChart.createConstraintsLogger();
+			solutionLogger = GenericChart.createScatterLogger();
 		} catch (NumberFormatException | IOException e) {
 			logger.error("Unable to create chart loggers", e);
 		}
@@ -234,7 +237,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		evalServer.setConstraintHandler(handler);
 		evalServer.setLog2png(costLogImage);
 		evalServer.setMachineLog(logVm);
-		evalServer.setConstraintLog(logConstraints);
+		evalServer.setConstraintLog(logConstraints);		
 		evalServer.setTimer(timer);
 		evalServer.addPropertyChangeListener(this);
 
@@ -343,7 +346,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		if (initialSolution.size() == 1)
 			Configuration.REDISTRIBUTE_WORKLOAD = false;
 		try{
-		optimize();
+			optimize();
 		}catch(OptimizationException e){
 			logger.error("Optimization raised an exception",e);
 		}
@@ -848,8 +851,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			// set the region
 			initialSolution.setRegion(resourceEnvParser.getRegion(provider));
-			
-			
+
+
 
 			for (int i = 0; i < 24; i++) {
 				logger.info("Initializing hour " + i);
@@ -894,9 +897,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					arrivalRate = usageModelParser.getArrivalRates().values()
 					.iterator().next()[i];
 
-				
+
 				double percentage = (double) 1 / providers.size();
-				
+
 				population = (int) Math.ceil(population * percentage);
 
 
@@ -960,7 +963,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 						logger.info("provider: " + provider + " default: "
 								+ defaultProvider);
 					logger.trace("serviceType: " + serviceType);
-					
+
 					String actualProvider = provider;
 					if (actualProvider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
 						boolean keepGoing = true;
@@ -976,7 +979,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 							}
 						}
 					}
-					
+
 					for (String st : dataHandler.getServices(actualProvider, // cloudProvider,
 							serviceType))
 						logger.trace("\tService Name: " + st);
@@ -992,7 +995,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 								 .iterator().next();
 					}
 					logger.trace("default size"+resourceSize);
-					
+
 
 					double speed = dataHandler.getProcessingRate(actualProvider, // cloudProvider,
 							serviceName, resourceSize);
@@ -1139,7 +1142,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		this.initialSolution.setFrom(generatedInitialSolution,
 				generatedInitialMce);
-		
+
 		try {
 			evalServer.StartTimer();
 			evalServer.EvaluateSolution(initialSolution);
@@ -1148,7 +1151,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			throw new InitializationException("Could not evaulate the initial solution",e);
 		}
 		logger.info(this.initialSolution.showStatus());
-		
+
 		bestSolutions.add(initialSolution);
 	}
 
@@ -1172,8 +1175,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		}
 		logger.info("Deserialized: " + initialSolution);
 	}
-	
-	
+
+
 	protected void makeFeasible(SolutionMulti sol) throws OptimizationException {
 		for (Solution s : sol.getAll())
 			makeFeasible(s);
@@ -1193,7 +1196,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		numberOfFeasibilityIterations = 0;
 		while (!sol.isFeasible() && !isMaxNumberOfFesibilityIterations()) {
 			boolean evaluateAgain = false;
-			
+
 			for(Constraint constraint:sol.getViolatedConstraints()){
 				if(constraint instanceof RamConstraint){
 					//if the unfeasibility is due to a violated ram constraint this procedure is ineffective and should be terminated          
@@ -1203,7 +1206,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				} else if (constraint instanceof ReplicasConstraint) {
 					// if the unfeasibility is due to a replicas constraint, we fix it here
 					ReplicasConstraint rconstraint = (ReplicasConstraint) constraint;
-					
+
 					for (int h = 0; h < 24; ++h) {
 						Tier t = sol.getApplication(h).getTierById(constraint.getResourceID());
 						IaaS service = (IaaS) t.getCloudService();
@@ -1218,14 +1221,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					}
 				}
 			}
-			
+
 			if (evaluateAgain)
 				try {
 					evalServer.EvaluateSolution(sol);
 				} catch (EvaluationException e) {
 					e.printStackTrace();
 				}
-			
+
 			logger.info("\tFeasibility iteration: "
 					+ numberOfFeasibilityIterations);   
 
@@ -1324,6 +1327,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		bestSolutionSerieHandler = "Best Solution";
 		localBestSolutionSerieHandler = "Local Best Solution";
+		solutionSeriesHandler = "Candidate Solutions";
 
 		timer.split();
 		costLogImage.add(localBestSolutionSerieHandler,
@@ -1332,6 +1336,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		costLogImage.add(bestSolutionSerieHandler,
 				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 				bestSolution.getCost());
+		solutionLogger.add(solutionSeriesHandler,bestSolution.getAverageRT(),bestSolution.getCost());
+		solutionLogger.add(bestSolutionSerieHandler,bestSolution.getAverageRT(),bestSolution.getCost());
 		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
 				+ bestSolution.isFeasible());
 		timer.unsplit();
@@ -1506,11 +1512,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			costLogImage.save2png();
 			logVm.save2png();
 			logConstraints.save2png();
+			solutionLogger.save2png();
 		} catch (IOException e) {
 			logger.error("Unable to create charts", e);
 		}
 
-		//		exportSolution(); TODO: this is always called twice, becaue Space4Cloud calls it at the end of the process! Disabled here.
+		//		exportSolution(); 
 		evalServer.showStatistics();        
 
 		//		if (!batch)
@@ -1692,7 +1699,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				//the least used provider (According to the maximum used tiers only)
 				Solution leastUsedProvider = null;				
-				
+
 				//get the less used provider (looking only at the most used tier)
 				for(Solution sol: mostUsedTiers.keySet()){
 					//base case
@@ -1719,12 +1726,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 						keepGoing[hour] = false;
 				}
 
-				
+
 				changeWorkload(leastUsedProvider, hour, wpStar + rate);
 				//update the workload percentage with the new value (re-read in order to avoid wrong rounding should be wpStar+rate)
 				wpStar = leastUsedProvider.getPercentageWorkload(hour);
-				
-				
+
+
 				//fix the workload of other providers by removing the one used for the increment and splitting the remainder (if any) 
 				for (Solution sol : currentSolution.getAll()) {
 					if (!sol.equals(leastUsedProvider)) {
@@ -1750,7 +1757,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 						}
 					}
 				}
-				
+
 				if (remainder != 0.0) {
 					//              System.out.println(currentSolution.showWorkloadPercentages());
 					changeWorkload(leastUsedProvider, hour, wpStar - remainder);
@@ -1764,7 +1771,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 
 			}
-			
+
 			//evaluate the solution only after all the moves have been performed
 			try {
 				evalServer.EvaluateSolution(currentSolution);
@@ -2000,7 +2007,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		boolean change = false;
 		for (Solution s : sol.getAll())
 			change = change || scramble(s);
-		// TODO: check effecto of this on the diversification
+
 		return change;
 	}
 
@@ -2052,7 +2059,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			if(bestSolutions !=  null) {
 				bestSolutions.add(bestSolution.clone());
 				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
-//				bse.propertyChange(new PropertyChangeEvent(this, "BSEAddedValue", false, true));
+				//				bse.propertyChange(new PropertyChangeEvent(this, "BSEAddedValue", false, true));
 			}
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
@@ -2075,8 +2082,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	protected boolean updateBestSolution(Solution sol, boolean force) {
 		boolean result = checkBestSolution(sol, force);
-		if(result) 
+		if(result){ 
 			updateCostLogImage(bestSolution,bestSolutionSerieHandler);
+			updateSolutionImage(bestSolution,bestSolutionSerieHandler);
+		}else{
+			updateSolutionImage(currentSolution,solutionSeriesHandler);
+		}
 		return result;
 	}
 
@@ -2088,8 +2099,17 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		boolean updated = false;
 		for (Solution s : sol.getAll())
 			updated = updated || checkBestSolution(s, force);
-		if(updated)
+		if(updated){
 			updateCostLogImage(bestSolution,bestSolutionSerieHandler);
+			updateSolutionImage(bestSolution,bestSolutionSerieHandler);
+		}else{
+			updateSolutionImage(currentSolution,solutionSeriesHandler);
+		}
+	}
+
+	private void updateSolutionImage(SolutionMulti solution, String seriesHandler){	
+		if(solution.isFeasible())
+			solutionLogger.add(seriesHandler,solution.getAverageRT(),solution.getCost());		
 	}
 
 
@@ -2181,7 +2201,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		for(Solution sol:bestSolution.getAll())
 			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
 
-		// TODO: here
 		if (bestSolution.size() > 1)
 			bestSolution.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
 
@@ -2201,9 +2220,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		/*if(bestSolution != null)
 	            SolutionWindow.show(bestSolution);*/
 	}
-	
+
 	public synchronized List<SolutionMulti> getBestSolutions() {
 		return bestSolutions;
+	}
+
+	public GenericChart<XYSeriesCollection> getSolutionLogger() {
+		return solutionLogger;
 	}
 }
 
