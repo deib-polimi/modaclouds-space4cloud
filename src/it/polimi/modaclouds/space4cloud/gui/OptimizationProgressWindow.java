@@ -45,6 +45,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.swing.JTabbedPane;
 
 public class OptimizationProgressWindow extends WindowAdapter implements PropertyChangeListener, ActionListener {
 
@@ -53,6 +54,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	JProgressBar progressBar;
 	private JPanel upperPanel;
 	private JPanel middlePanel;
+	private JPanel imagesPanel;
 
 	private GenericChart<XYSeriesCollection> vmLogger;
 	private GenericChart<XYSeriesCollection> costLogger;
@@ -123,6 +125,12 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		gbc_middlePanel.gridy = 1;
 		frmOptimizationProgress.getContentPane().add(middlePanel, gbc_middlePanel);
 		middlePanel.setLayout(new GridLayout(1, 3));
+		
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);		
+		middlePanel.add(tabbedPane);
+		imagesPanel= new JPanel();
+		
+		tabbedPane.add(imagesPanel);
 
 		//		middlePanel.add(vmLogger);
 		//		
@@ -212,6 +220,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 	}
 
 	private boolean alreadyUpdating = false;
+	private JTabbedPane tabbedPane;
 
 	private void updateImages() {
 		if (alreadyUpdating)
