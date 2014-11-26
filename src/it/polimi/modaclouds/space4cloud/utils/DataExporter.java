@@ -139,9 +139,9 @@ public class DataExporter {
 
 				Path path = null;
 				if (totalKeyset.size() > 1)
-					path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize +  "-" + (resource.replace('.', '_')).replaceAll("_", ""));
+					path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize +  "-" + (resource.replace('.', '_')).replaceAll("_", "") + ".txt");
 				else
-					path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize);
+					path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize + ".txt");
 				
 				PrintWriter out = new PrintWriter(new FileWriter(path.toFile()));
 				
@@ -149,48 +149,48 @@ public class DataExporter {
 				
 				Map<String, Map<String, Double>> costs = getCosts(provider, resource, region);
 				
-				out.printf("T %d\n", DEFAULT_T);
-				out.printf("C %d\n", costs.size() - 2);
-				out.printf("Q %s\n", form.format(Configuration.ROBUSTNESS_Q));
-				out.printf("G %d\n", Configuration.ROBUSTNESS_G);
+				out.printf("T %d\r\n", DEFAULT_T);
+				out.printf("C %d\r\n", costs.size() - 2);
+				out.printf("Q %s\r\n", form.format(Configuration.ROBUSTNESS_Q));
+				out.printf("G %d\r\n", Configuration.ROBUSTNESS_G);
 				
 				double onDemand = costs.get("On-Demand").get("hourly"); // 0.154;
 				
-				out.printf("D %s\n", form.format(onDemand));
-				out.printf("H %d\n", Configuration.ROBUSTNESS_H);
+				out.printf("D %s\r\n", form.format(onDemand));
+				out.printf("H %d\r\n", Configuration.ROBUSTNESS_H);
 				
-				out.println("\nN");
+				out.println("\r\nN");
 				
 				for (int i = 0; i < DEFAULT_T; ++i) {
 					int diffA = Math.abs(nominalReplicas[i] - lowerReplicas[i]);
 					int diffB = Math.abs(nominalReplicas[i] - upperReplicas[i]);
 					
-					out.printf("%d %d\n", nominalReplicas[i], diffA > diffB ? diffA : diffB);
+					out.printf("%d %d\r\n", nominalReplicas[i], diffA > diffB ? diffA : diffB);
 				}
 				
-				out.println("\nS");
+				out.println("\r\nS");
 				
 				double spot = costs.get("Spot").get("hourly");
 				
 				for (int i = 0; i < DEFAULT_T; ++i)
-					out.printf("%s\n", form.format(spot));
+					out.printf("%s\r\n", form.format(spot));
 				
-				out.println("\nF");
+				out.println("\r\nF");
 				
 				for (String s : costs.keySet()) {
 					if (s.indexOf("Reserved") == -1)
 						continue;
 					
-					out.printf("%s\n", form.format(costs.get(s).get("initial")));
+					out.printf("%s\r\n", form.format(costs.get(s).get("initial")));
 				}
 				
-				out.println("\nR");
+				out.println("\r\nR");
 				
 				for (String s : costs.keySet()) {
 					if (s.indexOf("Reserved") == -1)
 						continue;
 					
-					out.printf("%s\n", form.format(costs.get(s).get("hourly")));
+					out.printf("%s\r\n", form.format(costs.get(s).get("hourly")));
 				}
 				
 				out.flush();
