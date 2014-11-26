@@ -41,6 +41,11 @@ public class DataExporter {
 		return data.exportAll();
 	}
 	
+	public static List<File> perform(Path sourcesBasePath, int size) {
+		DataExporter data = new DataExporter(sourcesBasePath);
+		return data.export(size);
+	}
+	
 	public DataExporter(Path sourcesBasePath) {
 		this.sourcesBasePath = sourcesBasePath;
 	}
