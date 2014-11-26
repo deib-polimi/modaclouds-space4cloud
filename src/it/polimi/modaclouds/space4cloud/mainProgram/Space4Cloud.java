@@ -129,31 +129,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		batch = true;
 	}
 
-	private void cleanExit() {
-		logger.info("Exiting SPACE4Cloud");		
-		//close the connection with the database
-		try {
-			if(DatabaseConnector.getConnection() != null)
-				DatabaseConnector.getConnection().close();
-		} catch (SQLException e) {
-			logger.error("Error in closing the connection with the database",e);
-		}
-		if(Configuration.SOLVER == Solver.LINE){
-			if(LineServerHandlerFactory.getHandler() != null){
-				LineServerHandlerFactory.getHandler().closeConnections();
-			}
-		}
-		if(engine != null){
-			engine.exportSolution();
-			engine.cancel(true);
-			engine = null;
-		}
-
-		//this.interrupt();
-		refreshProject();
-		compleated = true;
-	}
-
 	private StopWatch duration;
 
 	@Override
@@ -668,7 +643,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		List<File> solutions = new ArrayList<File>();
 
-//		int testValue = testFrom;
 		int terminated = 0;
 
 		Path resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "results");
@@ -717,7 +691,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 			try {
 				Files.copy(Paths.get(f.getAbsolutePath()),
-//						Paths.get(resultsFolder.toString(), "ume-" + testValue + ".xml"),
 						Paths.get(resultsFolder.toString(), "ume-" + key + ".xml"),
 						StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) { }
@@ -730,7 +703,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 			boolean alreadyThere = false;
 			{
-//				Path p = Paths.get(resultsFolder.toString(), "solution-" + testValue + ".xml");
 				Path p = Paths.get(resultsFolder.toString(), "solution-" + key + ".xml");
 				if (Files.exists(p)) {
 					alreadyThere = true;
@@ -740,7 +712,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 			for (int attempt = 1; attempt <= attempts && !alreadyThere; ++attempt) {
 
-//				Configuration.WORKING_DIRECTORY = Paths.get(baseWorkingDirectory, ""+testValue, ""+attempt).toString();
 				Configuration.WORKING_DIRECTORY = Paths.get(baseWorkingDirectory, ""+key, ""+attempt).toString();
 				Configuration.RANDOM_SEED = attempt;				
 				String tmpConf = null;
@@ -844,11 +815,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 								try {
 									Files.copy(
 											Paths.get(bestSolution.getAbsolutePath()),
-//											Paths.get(resultsFolder.toString(), "solution-" + testValue
 											Paths.get(resultsFolder.toString(), "solution-" + key
 													+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 								} catch (IOException e) {
-//									throw new RobustnessException("Error copying: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ "solution-" + testValue
 									throw new RobustnessException("Error copying: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ "solution-" + key
 											+ ".xml",e);
 								}
@@ -858,19 +827,16 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 									try{
 										Files.copy(
 												Paths.get(bestSolution.getParent(), "generated-solution.xml"),
-//												Paths.get(resultsFolder.toString(), "generated-solution-" + testValue
 												Paths.get(resultsFolder.toString(), "generated-solution-" + key
 														+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 									} catch (IOException e) {
-//										throw new RobustnessException("Error copying generated solution: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ "solution-" + testValue
 										throw new RobustnessException("Error copying generated solution: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ "solution-" + key
 												+ ".xml",e);
 									}
 								
 								if (Configuration.ROBUSTNESS_VARIABILITY > 0) {
-									logger.info("Trying to export the data in the simplified output format...");
-//									DataExporter.perform(resultsFolder, testValue);
-									DataExporter.perform(resultsFolder, key);
+									logger.info("Exporting the data in the simplified output format...");
+									DataExporter.perform(resultsFolder);
 								}
 							}
 						}
@@ -906,10 +872,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			}
 			el++;
 
-//			FileUtils.deleteQuietly(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, testValue + "").toFile());
 			FileUtils.deleteQuietly(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, key + "").toFile());
-
-//			testValue += stepSize;
 
 		}
 
@@ -922,11 +885,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		logger.info("Expected time of execution: " + duration
 				+ ", actual time of execution: " + actualDuration);
-
-//		if (Configuration.ROBUSTNESS_VARIABILITY > 0) {
-//			logger.info("Exporting the data in the simplified output format...");
-//			DataExporter.perform(resultsFolder);
-//		}
 
 		robustnessWindow.testEnded();
 
@@ -1083,7 +1041,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			try {
 				executor.shutdownNow();
 			} catch (Exception e) { }
-			cleanExit();
+			cleanResources();
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")){
 			consoleLogger.info("Robustness ended");
 			processEnded = true;
