@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" attributeFormDefault="unqualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0"
+	targetNamespace="http://www.modaclouds.eu/xsd/2014/11/costs"
+	xmlns="http://www.modaclouds.eu/xsd/2014/11/costs">
+
+	<xs:annotation>
+		<xs:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="it.polimi.modaclouds.space4cloud.generated.costs" />
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+	</xs:annotation>
+
+	<xs:element name="Costs">
+		<xs:annotation>
+			<xs:documentation>The costs for the computed solution.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Total">
+					<xs:complexType>
+						<xs:attribute name="value" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:float">
+									<xs:minInclusive value="0" />
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="Providers" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="Contract" minOccurs="0" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:attribute name="initialCost" use="required">
+										<xs:simpleType>
+											<xs:restriction base="xs:float">
+												<xs:minInclusive value="0" />
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
+									<xs:attribute name="hourCost" type="xs:float" use="required" />
+									<xs:attribute name="contractType" type="xs:string"
+										use="required" />
+									<xs:attribute name="instanceType" type="xs:string"
+										use="required" />
+									<xs:attribute name="replicas" use="required">
+										<xs:simpleType>
+											<xs:restriction base="xs:int">
+												<xs:minInclusive value="0" />
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="cost" use="required">
+							<xs:simpleType>
+								<xs:restriction base="xs:float">
+									<xs:minInclusive value="0" fixed="false" />
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+			<xs:attribute name="solutionID" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

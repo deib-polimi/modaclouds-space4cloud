@@ -20,6 +20,8 @@ package it.polimi.modaclouds.space4cloud.mainProgram;
 
 import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
 
+import javax.swing.UIManager;
+
 /**
  * Main class of the CSPACE tool.<br/>
  * Workflow:
@@ -83,10 +85,16 @@ public class Main {
 	}
 	
 	public static void mainRedrawRobustness(String[] args) {
-		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\private-22\\");
+		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\results-ProfitBricks-Flexi\\");
 	}
 	
 	public static void main(String[] args) {
+//		try {
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+		
 		mainStandard(args);
 	}
 

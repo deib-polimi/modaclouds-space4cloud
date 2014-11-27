@@ -126,7 +126,7 @@
 							</plugins>
 							<extension>true</extension>
 							<schemaDirectory>${project.basedir}/schema</schemaDirectory>
-							<generatePackage>it.polimi.modaclouds.space4cloud.line</generatePackage>
+							<!-- <generatePackage>it.polimi.modaclouds.space4cloud.line</generatePackage> -->
 							<generateDirectory>${project.basedir}/src</generateDirectory>
 						</configuration>
 					</execution>
@@ -163,7 +163,7 @@
 				<plugin>
 					<groupId>org.jvnet.jaxb2.maven2</groupId>
 					<artifactId>maven-jaxb2-plugin</artifactId>
-					<version>0.9.0</version>
+					<version>0.11.0</version>
 					<executions>
 						<execution>
 							<id>common-schemas</id>
@@ -187,7 +187,7 @@
 								</plugins>
 								<extension>true</extension>
 								<schemaDirectory>${project.basedir}/schema</schemaDirectory>
-								<generatePackage>it.polimi.modaclouds.space4cloud.line</generatePackage>
+								<!-- <generatePackage>it.polimi.modaclouds.space4cloud.line</generatePackage> -->
 								<generateDirectory>${project.basedir}/src</generateDirectory>
 							</configuration>
 						</execution>
