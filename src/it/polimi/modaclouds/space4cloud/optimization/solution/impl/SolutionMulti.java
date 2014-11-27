@@ -10,6 +10,9 @@ import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.generated.costs.Costs;
+import it.polimi.modaclouds.space4cloud.generated.costs.Costs.Providers;
+import it.polimi.modaclouds.space4cloud.generated.costs.Costs.Total;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 
 import java.io.File;
@@ -961,6 +964,38 @@ public class SolutionMulti implements Cloneable, Serializable {
 		//serialize them		
 		try {			
 			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()));
+		} catch (JAXBException e) {
+			logger.error("The generated solution is not valid",e);
+		} catch (FileNotFoundException e) {
+			logger.error("Error exporting the solution",e);
+		}
+		
+	}
+	
+	public Costs getCostsAsExtension() {
+		Costs costs = new Costs();
+		
+		costs.setSolutionID("solutionId");
+		
+		Total total = costs.getTotal();
+		total.setValue((float)cost);
+		
+		for (Solution s : getAll()) {
+			Providers p = new Providers();
+			p.setCost((float)s.getCost());
+			costs.getProviders().add(p);
+			
+			// TODO: add the contracts
+		}
+		
+		return costs;
+	}
+	
+	public void exportCostsAsExtension(Path fileName){
+		Costs costs = getCostsAsExtension();
+		//serialize them
+		try {
+			XMLHelper.serialize(costs, Costs.class, new FileOutputStream(fileName.toFile()));
 		} catch (JAXBException e) {
 			logger.error("The generated solution is not valid",e);
 		} catch (FileNotFoundException e) {

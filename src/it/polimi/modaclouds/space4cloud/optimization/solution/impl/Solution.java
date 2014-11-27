@@ -26,6 +26,9 @@ import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
 import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.generated.performances.Performances;
+import it.polimi.modaclouds.space4cloud.generated.performances.SeffType;
+import it.polimi.modaclouds.space4cloud.generated.performances.TierType;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
@@ -846,6 +849,74 @@ public class Solution implements Cloneable, Serializable {
 			}
 		}
 		return false;
+	}
+	
+	public Performances getPerformancesAsExtension() {
+		Performances performances = new Performances();
+		
+		performances.setSolutionID("solutionId");
+		
+		for (Tier t : hourApplication.get(0).getTiers()) {
+			
+			for (Component c : t.getComponents())
+				for (Functionality f : c.getFunctionalities()) {
+					SeffType seff = new SeffType();
+					
+					seff.setId(f.getId());
+					seff.setName(f.getName());
+					
+					double rt = 0;
+					
+					for (Instance app : hourApplication) {
+						for (@SuppressWarnings("unused") Tier t2 : app.getTiers())
+							for (@SuppressWarnings("unused") Component c2 : t.getComponents()) {
+								for (Functionality f2 : c.getFunctionalities()) {
+									if (f2.getId().equals(f.getId())) {
+										rt += f2.getResponseTime();
+									}
+								}
+							}
+					}
+					
+					seff.setAvgRT((float)rt);
+					
+					// TODO: add the percentiles and the throughput
+					
+					performances.getSeffs().getSeff().add(seff);
+				}
+			
+			TierType tier = new TierType();
+			
+			tier.setId(t.getId());
+			tier.setName(t.getName());
+			
+			double utilization = 0;
+			
+			for (Instance app : hourApplication) {
+				Tier t2 = app.getTierById(t.getId());
+				utilization += t2.getUtilization(); 
+			}
+			
+			tier.setUtilization((int)Math.round(utilization/hourApplication.size()));
+			
+			performances.getTiers().getTier().add(tier);
+			
+		}
+		
+		return performances;
+	}
+	
+	public void exportPerformancesAsExtension(Path fileName){
+		Performances performances = getPerformancesAsExtension();
+		//serialize them
+		try {
+			XMLHelper.serialize(performances, Performances.class, new FileOutputStream(fileName.toFile()));
+		} catch (JAXBException e) {
+			logger.error("The generated solution is not valid",e);
+		} catch (FileNotFoundException e) {
+			logger.error("Error exporting the solution",e);
+		}
+		
 	}
 
 }
