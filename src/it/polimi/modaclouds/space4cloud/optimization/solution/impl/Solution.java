@@ -70,13 +70,15 @@ public class Solution implements Cloneable, Serializable {
 	 */
 	private static final long serialVersionUID = -6116921591578286173L;
 
+	private SolutionMulti father = null;
+
 	/** The hour application. */
 	ArrayList<Instance> hourApplication = new ArrayList<Instance>();
 
 	private static Logger logger = LoggerFactory.getLogger(Solution.class);
-	
+
 	private int generationIteration = 0;
-	
+
 	private long generationTime =0;
 
 	/**
@@ -241,11 +243,12 @@ public class Solution implements Cloneable, Serializable {
 
 		if (getRegion() != null)
 			cloneSolution.setRegion(new String(this.getRegion()));
-		
+
 		cloneSolution.percentageWorkload = new double[24];
 		for (int h = 0; h < 24; ++h)
 			cloneSolution.percentageWorkload[h] = percentageWorkload[h];
 
+		cloneSolution.setFather(getFather());
 		return cloneSolution;
 
 	}
@@ -484,6 +487,23 @@ public class Solution implements Cloneable, Serializable {
 	}
 
 	/**
+	 * Gives the multicloud solution of which this solution is part of
+	 * @return
+	 */
+	public SolutionMulti getFather() {
+		return father;
+	}
+
+	
+	/**
+	 * Sets the multicloud solution of which this solution is part of 
+	 * @param father
+	 */
+	public void setFather(SolutionMulti father) {
+		this.father = father;
+	}
+
+	/**
 	 * Retrieves the total number of VMs used for the entire solution
 	 * @return
 	 */
@@ -504,7 +524,7 @@ public class Solution implements Cloneable, Serializable {
 	public int getVmNumberPerTier(String tierId) {
 		int vms = 0;
 		for (Instance inst : hourApplication)			
-				vms += ((IaaS) inst.getTierById(tierId).getCloudService()).getReplicas();
+			vms += ((IaaS) inst.getTierById(tierId).getCloudService()).getReplicas();
 		return vms;
 	}
 
@@ -657,15 +677,15 @@ public class Solution implements Cloneable, Serializable {
 				}
 			i++;
 		}
-		
-		
+
+
 		for (Instance tmp : hourApplication) {
 			if(tmp.getWorkload()==0){
 				tmp.setFeasible(true);
 				setFeasible(true);
 			}
 		}
-		
+
 	}
 
 
@@ -760,7 +780,7 @@ public class Solution implements Cloneable, Serializable {
 				return;
 			}
 	}
-	
+
 	public ResourceModelExtension getAsExtension() {
 		//Build the objects
 		ObjectFactory factory = new ObjectFactory();
@@ -773,11 +793,11 @@ public class Solution implements Cloneable, Serializable {
 			ResourceContainer container = factory.createResourceContainer(); 
 			container.setId(t.getId());
 			containersByID.put(t.getId(), container);
-			
+
 			//take out the selected service
 			CloudService service = t.getCloudService();
 			container.setProvider(service.getProvider());			
-			
+
 			//in case this is a IaaS service
 			if(service instanceof IaaS){
 				IaaS iaaService  = (IaaS) service;
@@ -801,7 +821,7 @@ public class Solution implements Cloneable, Serializable {
 			}			
 			resourceContainers.add(container);
 		}
-		
+
 		//fill the fields that depend on the time slot (e.g. VMs replicas)
 		for(Instance instance:hourApplication){
 			for(Tier t:instance.getTiers()){
@@ -817,10 +837,10 @@ public class Solution implements Cloneable, Serializable {
 				}
 			}
 		}
-		
+
 		return extension;
 	}
-	
+
 	/**
 	 * Export the solution in the format of the extension used as input for space4cloud
 	 */
@@ -834,7 +854,7 @@ public class Solution implements Cloneable, Serializable {
 		} catch (FileNotFoundException e) {
 			logger.error("Error exporting the solution",e);
 		}
-		
+
 	}
 
 	public boolean hasAtLeastOneReplicaInOneHour() {
@@ -853,23 +873,23 @@ public class Solution implements Cloneable, Serializable {
 	 * @return
 	 */
 	public double getAverageRT() {
-		
+
 		//initializes the list of functionalities
 		Map<String,Double> functionalities = new HashMap<>(); 
 		for(Tier t:getApplication(0).getTiers())
 			for(Functionality f:t.getFunctionalities())
 				functionalities.put(f.getId(), 0.0);
-		
+
 		//sum up all the response times for all the hours
 		for(Instance i:getApplications())
 			for(Tier t:i.getTiers())
 				for(Functionality f:t.getFunctionalities())
 					functionalities.put(f.getId(), functionalities.get(f.getId())+f.getResponseTime());
-		
+
 		//divide all of them by 24
 		for(String f:functionalities.keySet())
 			functionalities.put(f,functionalities.get(f)/24);
-		
+
 		//average all the results
 		double avg=0;
 		for(Double d:functionalities.values())
@@ -877,5 +897,11 @@ public class Solution implements Cloneable, Serializable {
 		avg /= functionalities.size();
 		return avg;
 	}
-
+	/**
+	 * Tells if the solution is part of a multicloud solution
+	 * @return
+	 */
+	public boolean hasFather(){
+		return father != null;
+	}
 }

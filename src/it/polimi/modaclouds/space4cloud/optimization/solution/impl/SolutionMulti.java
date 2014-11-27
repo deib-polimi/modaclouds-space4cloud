@@ -126,6 +126,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		String provider = s.getProvider();
 		if (!provider.equals("Error")) {
 			this.solutions.put(provider, s);
+			s.setFather(this);
 			updateEvaluation();
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
@@ -136,6 +137,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		String provider = s.getProvider();
 		if (this.solutions.remove(provider) != null) {
 			updateEvaluation();
+			s.setFather(null);
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
 	}

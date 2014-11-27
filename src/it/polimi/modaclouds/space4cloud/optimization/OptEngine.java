@@ -238,6 +238,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		evalServer.setLog2png(costLogImage);
 		evalServer.setMachineLog(logVm);
 		evalServer.setConstraintLog(logConstraints);		
+		evalServer.setSolutionLog(solutionLogger);
 		evalServer.setTimer(timer);
 		evalServer.addPropertyChangeListener(this);
 
@@ -1226,7 +1227,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				try {
 					evalServer.EvaluateSolution(sol);
 				} catch (EvaluationException e) {
-					e.printStackTrace();
+					throw new OptimizationException("Evaluation Error in the make feasible",e);
 				}
 
 			logger.info("\tFeasibility iteration: "

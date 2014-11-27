@@ -76,7 +76,8 @@ public class EvaluationServer implements ActionListener {
 	protected GenericChart<XYSeriesCollection> logCost;
 	protected GenericChart<XYSeriesCollection> logVm;
 	protected GenericChart<XYSeriesCollection> logConstraint;
-	
+	protected GenericChart<XYSeriesCollection> solutionLogger;
+
 
 	protected StopWatch timer = new StopWatch();
 	protected long costEvaluationTime = 0;
@@ -88,6 +89,7 @@ public class EvaluationServer implements ActionListener {
 	private boolean instanceEvaluationTerminated = false;
 	private Map<String,Cache<String,Integer>> longTermFrequencyMemory;
 	private boolean error=false;
+
 
 	/**
 	 * @throws DatabaseConnectionFailureExteption 
@@ -177,135 +179,6 @@ public class EvaluationServer implements ActionListener {
 
 	}
 
-	//	public void EvaluateSolution(Solution sol) {
-	//		long startTime = -1;		
-	//		requestedEvaluations++;
-	//		logger.debug("Starting evaluation");
-	//		error = false;
-	//		if (!sol.isEvaluated()) {
-	//
-	//			startTime = System.nanoTime();
-	//
-	//			ArrayList<Instance> instanceList = sol.getHourApplication();
-	//			counters.put(sol, 0);
-	//			
-	//			
-	//			//reset the logger for line server handler
-	//			if(Configuration.SOLVER!=Solver.LQNS){
-	//				lineHandler.clear();
-	//			}
-	//
-	//			// evaluate hourly solutions
-	//			for (Instance i : instanceList) {
-	//				// we need to reevaluate it only if something has changed.
-	//				if (!i.isEvaluated()) {
-	//					SolutionEvaluator eval = new SolutionEvaluator(i,sol);
-	//					eval.addListener(this);
-	//					if (Configuration.SOLVER == Solver.LQNS)
-	//						executor.execute(eval);
-	//					else {
-	//						eval.setLineServerHandler(lineHandler);
-	//						executor.execute(eval);
-	//					}
-	//				} else
-	//					counters.put(sol, counters.get(sol) + 1);// if the
-	//																// application
-	//																// has already
-	//																// been
-	//																// evaluated
-	//																// increment the
-	//																// counter
-	//			}
-	//
-	//			while (counters.get(sol) < 24 && !error)
-	//				try {
-	//					Thread.sleep(100);
-	//				} catch (InterruptedException e) {
-	//					logger.error("Error waiting for the evaluation of a solution",e);
-	//				} // loop until everything has been evaluated
-	//
-	//			if(error){
-	//				logger.error("Error evaluating a solution");
-	//				pcs.firePropertyChange("EvaluationError", false, true);
-	//				return;
-	//			}
-	//			
-	//			// remove the counters for the evaluated solution
-	//			counters.remove(sol);
-	//			incrementTotalNumberOfEvaluations();
-	//		}
-	//
-	//		// evaluate feasibility
-	//		if (constraintHandler != null)
-	//			sol.setEvaluation(constraintHandler.evaluateFeasibility(sol));
-	//		sol.updateEvaluation();
-	//
-	//		// evaluate costs		
-	//		deriveCosts(sol);
-	//
-	//		logger.trace("" + sol.getCost() + ", "
-	//				+ TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()) + ", "
-	//				+ sol.isFeasible());
-	//
-	//		long middleTime = System.nanoTime();
-	//		if (log2png != null && logVm != null && logConstraint != null
-	//				&& timer != null) {
-	//			timer.split();
-	//			log2png.addPoint2Series(seriesHandleExecution,
-	//					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-	//					sol.getCost());
-	//			if(seriesHandleTiers==null){
-	//				seriesHandleTiers = new HashMap<>();
-	//				for(Tier t:sol.getApplication(0).getTiers()){					
-	//					seriesHandleTiers.put(t.getId(),logVm.newSeries(t.getName()));					
-	//				}
-	//			}
-	//				
-	//			for(Tier t:sol.getApplication(0).getTiers()){
-	//			logVm.addPoint2Series(seriesHandleTiers.get(t.getId()),
-	//					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-	//					sol.getVmNumberPerTier(t.getId()));			
-	//			}
-	//			logConstraint.addPoint2Series(seriesHandleConstraint,
-	//					TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-	//					sol.getNumberOfViolatedConstraints());
-	//		}
-	//		long endTime = System.nanoTime();
-	//		if (startTime != -1) {
-	//			evaluationTime += (middleTime - startTime);
-	//			plottingTime += (endTime - middleTime);
-	//			fullEvaluationTime += (endTime - startTime);
-	//			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" Time: "+(middleTime-startTime));
-	//		}else
-	//			logger.debug("Evaluation number: "+actualNumberOfEvaluations+" hitted proxy");
-	//		sol.setEvaluationTime(timer.getSplitTime());
-	//		
-	//		
-	//		
-	//		logger.debug("Update long term memory");
-	//		if(longTermFrequencyMemory==null){
-	//			longTermFrequencyMemory = new HashMap<String, Cache<String,Integer>>();			
-	//		}
-	//		
-	//		for(Tier t:sol.getApplication(0).getTiers()){			
-	//			Cache<String, Integer> tierMemory = longTermFrequencyMemory.get(t.getId());
-	//			if(tierMemory == null){
-	//				tierMemory = new Cache<String, Integer>(DEFAULT_TIER_MEMORY_MAX_SIZE);
-	//				longTermFrequencyMemory.put(t.getId(), tierMemory);
-	//			}
-	//			//get the tierTypeID
-	//			String tierTypeID = SolutionHelper.buildTierTypeID(t);
-	//			int counter = 0;
-	//			//if the tierTypeID already appears in the memory get the counter and update it
-	//			if(tierMemory.get(tierTypeID)!= null)
-	//				counter = tierMemory.get(tierTypeID);
-	//			counter++;
-	//			//if the tier is does not appear a new entry is created otherwise the old one is overritten.
-	//			tierMemory.put(tierTypeID, counter);
-	//		}
-	//		logger.debug("Evaluation ended");
-	//
-	//	}
 
 
 
@@ -666,6 +539,10 @@ public class EvaluationServer implements ActionListener {
 		seriesHandleConstraint = "violatedConstraints";
 	}
 
+	public void setSolutionLog(GenericChart<XYSeriesCollection> solutionLogger) {
+		this.solutionLogger = solutionLogger;		
+	}
+
 
 	public void setLog2png(GenericChart<XYSeriesCollection> log2png) {
 		this.logCost = log2png;
@@ -727,35 +604,40 @@ public class EvaluationServer implements ActionListener {
 
 
 	/**
-	 * Update image loggers for number of VMs per tier, cost of the solution and number of violations by summing up all the values for each hour
+	 * Update image loggers for number of VMs per tier, cost of the solution, number of violations and cost over avg response time by summing up all the values for each hour 
 	 * @param sol
 	 */
 	private void updateLogImage(Solution sol) {
-		long time = timer.getSplitTime();		
+		long time = timer.getSplitTime();	
+		if(sol.hasFather()){
+			updateLogImage(sol.getFather());
+			return;
+		}			
 		logger.trace("" + sol.getCost() + ", "
-				+ sol.isFeasible());
-		if (logCost != null && logVm != null && logConstraint != null
-				&& timer != null) {
+				+ sol.isFeasible());		
 
-			logCost.add(seriesHandleExecution,
-					TimeUnit.MILLISECONDS.toSeconds(time),
-					sol.getCost());
-			if(seriesHandleTiers==null){
-				seriesHandleTiers = new HashMap<>();
-				for(Tier t:sol.getApplication(0).getTiers()){					
-					seriesHandleTiers.put(t.getId(), t.getName());					
-				}
-			}
+		if(logCost != null)
+			logCost.add(seriesHandleExecution,TimeUnit.MILLISECONDS.toSeconds(time),sol.getCost());		
 
-			for(Tier t:sol.getApplication(0).getTiers()){
-				logVm.add(seriesHandleTiers.get(t.getId()),
-						TimeUnit.MILLISECONDS.toSeconds(time),
-						sol.getVmNumberPerTier(t.getId()));			
+
+		if(seriesHandleTiers==null){
+			seriesHandleTiers = new HashMap<>();
+			for(Tier t:sol.getApplication(0).getTiers()){					
+				seriesHandleTiers.put(t.getId(), t.getName());					
 			}
-			logConstraint.add(seriesHandleConstraint,
-					TimeUnit.MILLISECONDS.toSeconds(time),
-					sol.getNumberOfViolatedConstraints());
 		}
+
+		if(logVm != null)
+			for(Tier t:sol.getApplication(0).getTiers())
+				logVm.add(seriesHandleTiers.get(t.getId()),TimeUnit.MILLISECONDS.toSeconds(time),sol.getVmNumberPerTier(t.getId()));			
+
+
+		if(logConstraint != null)
+			logConstraint.add(seriesHandleConstraint,TimeUnit.MILLISECONDS.toSeconds(time),	sol.getNumberOfViolatedConstraints());		
+
+
+		if(solutionLogger != null)
+			solutionLogger.add(seriesHandleExecution,sol.getAverageRT(),sol.getCost());	
 	}
 
 	/**
@@ -766,25 +648,21 @@ public class EvaluationServer implements ActionListener {
 		long time = timer.getSplitTime();		
 		logger.trace("" + sol.getCost() + ", "
 				+ sol.isFeasible());
-		if (logCost != null && logVm != null && logConstraint != null
-				&& timer != null) {
-
-			//update the cost
-			logCost.add(seriesHandleExecution,
-					TimeUnit.MILLISECONDS.toSeconds(time),
-					sol.getCost());
 
 
-			//build a list of tiers with their ids
-			if(seriesHandleTiers==null){
-				seriesHandleTiers = new HashMap<>();
-				//Tier names and ids are the same for each cloud and each hours
-				for(Tier t:sol.get(0).getApplication(0).getTiers()){					
-					seriesHandleTiers.put(t.getId(), t.getName());					
-				}
+		if(logCost != null)
+			logCost.add(seriesHandleExecution,TimeUnit.MILLISECONDS.toSeconds(time),sol.getCost());		
+
+
+		if(seriesHandleTiers==null){
+			seriesHandleTiers = new HashMap<>();
+			for(Tier t:sol.get(0).getApplication(0).getTiers()){					
+				seriesHandleTiers.put(t.getId(), t.getName());					
 			}
+		}
 
-			//sum up the vms for all the tiers over all the solutions (by hour and by cloud)
+		//sum up the vms for all the tiers over all the solutions (by hour and by cloud)
+		if(logVm != null){	
 			for(String tierId:seriesHandleTiers.keySet()){
 				int vmCounter = 0;
 				for(Solution cloudSolution:sol.getAll()){
@@ -793,7 +671,9 @@ public class EvaluationServer implements ActionListener {
 				logVm.add(seriesHandleTiers.get(tierId),TimeUnit.MILLISECONDS.toSeconds(time),vmCounter);
 			}
 
-			//sum up the violations of all solutions (by hour and by cloud)
+		}
+		//sum up the violations of all solutions (by hour and by cloud)
+		if(logConstraint != null){
 			int violationCounters = 0;
 			for(Solution cloudSolution:sol.getAll()){
 				violationCounters += cloudSolution.getNumberOfViolatedConstraints();			
@@ -801,9 +681,13 @@ public class EvaluationServer implements ActionListener {
 			logConstraint.add(seriesHandleConstraint,
 					TimeUnit.MILLISECONDS.toSeconds(time),
 					violationCounters);
+		}	
+		if(solutionLogger != null)
+			solutionLogger.add(seriesHandleExecution,sol.getAverageRT(),sol.getCost());	
 
 
-		}
+
+
 	}
 
 	public void StartTimer() {
@@ -822,6 +706,8 @@ public class EvaluationServer implements ActionListener {
 			logger.warn("Stopping a timer that was not running");
 		}
 	}
+
+
 
 
 
