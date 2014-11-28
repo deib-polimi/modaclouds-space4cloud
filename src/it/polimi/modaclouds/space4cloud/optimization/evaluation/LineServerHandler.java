@@ -166,14 +166,22 @@ public class LineServerHandler {
 		return socketLog.isModelEvaluated(modelFile);
 	}
 
-
+	private final static String LINE_UNIX = "./LINE";
+	private final static String LINE_WINDOWS = "LINE";
+	
 	public boolean launchLine() {
 		try {
 //			String lineInvocation = "LINE" + " " + "\""
 //					+ propFile.getAbsolutePath().replace('\\', '/') + "\"";
 			
-			String lineInvocation = "LINE" + " " + "\""
+			String lineInvocation = /*"LINE" +*/ " " + "\""
 					+ Configuration.LINE_PROP_FILE.replace('\\', '/') + "\"";
+			
+			if (System.getProperty("os.name").indexOf("Windows") > -1)
+				lineInvocation = LINE_WINDOWS + lineInvocation;
+			else
+				lineInvocation = LINE_UNIX + lineInvocation;
+			
 			logger.debug(lineInvocation);
 			ProcessBuilder pb = new ProcessBuilder(lineInvocation.split("\\s"));
 			pb.directory(directory);
