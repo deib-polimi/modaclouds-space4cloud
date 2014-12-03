@@ -47,6 +47,7 @@
 			</xs:sequence>
 			<xs:attribute name="name" />
 			<xs:attribute name="responseTime" type="xs:double" />
+			<xs:attribute name="throughput" type="xs:double" />
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="station">
