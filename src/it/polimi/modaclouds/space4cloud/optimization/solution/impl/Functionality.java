@@ -37,6 +37,7 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	private String lqnProcessorId;
 	private String entryLevelCallID=null;
 	private double responseTime;
+	private double throughput;
 	private Map<Integer,Double> rtPercentiles;
 	private Component container;
 	private HashMap<String,Functionality> externalCalls = new HashMap<String,Functionality>();
@@ -106,10 +107,11 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 			//System.err.println("Functionality "+getName()+" not found in the results");
 		}
 
-		//copy the percentile response time
+		//copy the percentile response time and the throughput
 		//Only LINE generate this information
 		if(parser instanceof LINEResultParser){
 			rtPercentiles = ((LINEResultParser)parser).getPercentiles(id);
+			throughput = ((LINEResultParser)parser).getThroughput(id);
 		}
 		
 	}
@@ -161,5 +163,12 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	}
 	public void setLqnProcessorId(String lqnProcessorId) {
 		this.lqnProcessorId = lqnProcessorId;
+	}
+	
+	public double getThroughput() {
+		return throughput;
+	}
+	public void setThroughput(double throughput) {
+		this.throughput = throughput;
 	}
 }

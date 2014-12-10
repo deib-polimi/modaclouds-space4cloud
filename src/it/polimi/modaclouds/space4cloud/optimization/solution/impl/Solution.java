@@ -28,6 +28,7 @@ import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.generated.performances.Performances;
 import it.polimi.modaclouds.space4cloud.generated.performances.SeffType;
+import it.polimi.modaclouds.space4cloud.generated.performances.SeffType.Percentile;
 import it.polimi.modaclouds.space4cloud.generated.performances.TierType;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
@@ -865,7 +866,11 @@ public class Solution implements Cloneable, Serializable {
 					seff.setId(f.getId());
 					seff.setName(f.getName());
 					
-					double rt = 0;
+					double rt = 0.0;
+					double throughput = 0.0;
+					Map<Integer, Double> rtPercentiles = new HashMap<Integer, Double>();
+					
+					int i = 0;
 					
 					for (Instance app : hourApplication) {
 						for (@SuppressWarnings("unused") Tier t2 : app.getTiers())
@@ -873,14 +878,32 @@ public class Solution implements Cloneable, Serializable {
 								for (Functionality f2 : c.getFunctionalities()) {
 									if (f2.getId().equals(f.getId())) {
 										rt += f2.getResponseTime();
+										throughput += f2.getThroughput();
+										Map<Integer, Double> tmp = f2.getRtPercentiles();
+										
+										for (int key : tmp.keySet()) {
+											Double perc = rtPercentiles.get(key);
+											if (perc == null)
+												perc = 0.0;
+											perc += tmp.get(key);
+											rtPercentiles.put(key, perc);
+										}
+										
+										i++;
 									}
 								}
 							}
 					}
 					
-					seff.setAvgRT((float)rt);
+					seff.setAvgRT((float)rt/i);
+					seff.setThroughput((float)throughput/i);
 					
-					// TODO: add the percentiles and the throughput
+					for (int key : rtPercentiles.keySet()) {
+						Percentile percentile = new Percentile();
+						percentile.setLevel(key);
+						percentile.setValue(rtPercentiles.get(key).floatValue()/i);
+						seff.getPercentile().add(percentile);
+					}
 					
 					performances.getSeffs().getSeff().add(seff);
 				}

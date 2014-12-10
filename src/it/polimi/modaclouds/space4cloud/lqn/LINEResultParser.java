@@ -68,6 +68,7 @@ public class LINEResultParser extends LqnResultParser implements Serializable {
 	private String filePathSerialization;
 	private Map<String, Double> utilizations = new HashMap<>();
 	private Map<String, Double> responseTimes = new HashMap<>();
+	private Map<String, Double> throughputs = new HashMap<>();
 	private CmcqnModel result;
 
 
@@ -216,6 +217,7 @@ public class LINEResultParser extends LqnResultParser implements Serializable {
 			String seffName=sf.getName();
 			if(idSubstitutionMap.containsKey(seffName)){
 				responseTimes.put(idSubstitutionMap.get(seffName), sf.getResponseTime());
+				throughputs.put(idSubstitutionMap.get(seffName), sf.getThroughput());
 				//copy the percentile
 				ResponseTimeDistribution percentiles= sf.getResponseTimeDistribution();
 				if(percentiles!= null){
@@ -267,6 +269,14 @@ public class LINEResultParser extends LqnResultParser implements Serializable {
 		return percentiles.get(name);
 	}
 
+	public double getThroughput(String resourceID) {
+		if (throughputs.get(resourceID) != null)
+			return throughputs.get(resourceID);
+		return -1;
+	}
 
+	public Map<String, Double> getThroughputs() {
+		return throughputs;
+	}
 
 }
