@@ -390,7 +390,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		MultiCloudExtension mce = new MultiCloudExtension();
 		mces.setMultiCloudExtensions(mce);
 
-		mce.setId("id");
+		mce.setId(hashCode() + "");
 
 		for (Solution sol : getAll()) {
 
@@ -975,10 +975,11 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public Costs getCostsAsExtension() {
 		Costs costs = new Costs();
 		
-		costs.setSolutionID("solutionId");
+		costs.setSolutionID(hashCode() + "");
 		
-		Total total = costs.getTotal();
+		Total total = new Total();
 		total.setValue((float)cost);
+		costs.setTotal(total);
 		
 		for (Solution s : getAll()) {
 			Providers p = new Providers();

@@ -27,6 +27,8 @@ import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.generated.performances.Performances;
+import it.polimi.modaclouds.space4cloud.generated.performances.Performances.Seffs;
+import it.polimi.modaclouds.space4cloud.generated.performances.Performances.Tiers;
 import it.polimi.modaclouds.space4cloud.generated.performances.SeffType;
 import it.polimi.modaclouds.space4cloud.generated.performances.SeffType.Percentile;
 import it.polimi.modaclouds.space4cloud.generated.performances.TierType;
@@ -47,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -855,7 +858,10 @@ public class Solution implements Cloneable, Serializable {
 	public Performances getPerformancesAsExtension() {
 		Performances performances = new Performances();
 		
-		performances.setSolutionID("solutionId");
+		performances.setSolutionID(hashCode() + "");
+		
+		Tiers trs = new Tiers();
+		Seffs sfs = new Seffs();
 		
 		for (Tier t : hourApplication.get(0).getTiers()) {
 			
@@ -868,7 +874,7 @@ public class Solution implements Cloneable, Serializable {
 					
 					double rt = 0.0;
 					double throughput = 0.0;
-					Map<Integer, Double> rtPercentiles = new HashMap<Integer, Double>();
+					Map<Integer, Double> rtPercentiles = new TreeMap<Integer, Double>();
 					
 					int i = 0;
 					
@@ -880,6 +886,10 @@ public class Solution implements Cloneable, Serializable {
 										rt += f2.getResponseTime();
 										throughput += f2.getThroughput();
 										Map<Integer, Double> tmp = f2.getRtPercentiles();
+										i++;
+										
+										if (tmp == null)
+											continue;
 										
 										for (int key : tmp.keySet()) {
 											Double perc = rtPercentiles.get(key);
@@ -888,8 +898,6 @@ public class Solution implements Cloneable, Serializable {
 											perc += tmp.get(key);
 											rtPercentiles.put(key, perc);
 										}
-										
-										i++;
 									}
 								}
 							}
@@ -905,7 +913,7 @@ public class Solution implements Cloneable, Serializable {
 						seff.getPercentile().add(percentile);
 					}
 					
-					performances.getSeffs().getSeff().add(seff);
+					sfs.getSeff().add(seff);
 				}
 			
 			TierType tier = new TierType();
@@ -920,11 +928,15 @@ public class Solution implements Cloneable, Serializable {
 				utilization += t2.getUtilization(); 
 			}
 			
-			tier.setUtilization((int)Math.round(utilization/hourApplication.size()));
+			tier.setUtilization((int)Math.round(100 * utilization/hourApplication.size()));
 			
-			performances.getTiers().getTier().add(tier);
+			trs.getTier().add(tier);
 			
 		}
+		
+
+		performances.setTiers(trs);
+		performances.setSeffs(sfs);
 		
 		return performances;
 	}
