@@ -781,7 +781,7 @@ public class EvaluationServer implements ActionListener {
 				}
 			}
 
-			//sum up the vms for all the tiers over all the solutions (by hour and by cloud)
+			//sum up the vms for all the tiers over all the solutions (by hour and by cloud)\
 			for(String tierId:seriesHandleTiers.keySet()){
 				int vmCounter = 0;
 				for(Solution cloudSolution:sol.getAll()){
