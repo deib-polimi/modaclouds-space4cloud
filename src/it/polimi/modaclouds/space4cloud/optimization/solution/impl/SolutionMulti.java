@@ -10,9 +10,10 @@ import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.generated.costs.CostType;
 import it.polimi.modaclouds.space4cloud.generated.costs.Costs;
 import it.polimi.modaclouds.space4cloud.generated.costs.Costs.Providers;
-import it.polimi.modaclouds.space4cloud.generated.costs.Costs.Total;
+import it.polimi.modaclouds.space4cloud.generated.costs.HourPriceType;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 
 import java.io.File;
@@ -977,13 +978,41 @@ public class SolutionMulti implements Cloneable, Serializable {
 		
 		costs.setSolutionID(hashCode() + "");
 		
-		Total total = new Total();
-		total.setValue((float)cost);
-		costs.setTotal(total);
+		CostType ct = new CostType();
+		costs.setCost(ct);
+		
+		for (int h = 0; h < 24; ++h) {
+			double cost = 0;
+			for (Solution s : getAll())
+				cost += s.getCost(h);
+			
+			HourPriceType hour = new HourPriceType();
+			hour.setHour(h);
+			hour.setCost((float)cost);
+			
+			ct.getHourPrice().add(hour);
+		}
+		
+		ct.setTotalCost((float)cost);
 		
 		for (Solution s : getAll()) {
 			Providers p = new Providers();
-			p.setCost((float)s.getCost());
+			p.setName(s.getProvider());
+			p.setServiceName(s.getApplication(0).getTiers().get(0).getCloudService().getServiceName());
+			
+			CostType ctp = new CostType();
+			
+			ctp.setTotalCost((float)s.getCost());
+			
+			for (int h = 0; h < 24; ++h) {
+				double cost = 0;
+				HourPriceType hour = new HourPriceType();
+				hour.setHour(h);
+				hour.setCost((float)cost);
+				
+				ctp.getHourPrice().add(hour);
+			}
+			
 			costs.getProviders().add(p);
 			
 			// TODO: add the contracts

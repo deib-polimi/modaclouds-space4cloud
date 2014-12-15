@@ -26,12 +26,12 @@ import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
 import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.generated.performances.Performances;
-import it.polimi.modaclouds.space4cloud.generated.performances.Performances.Seffs;
-import it.polimi.modaclouds.space4cloud.generated.performances.Performances.Tiers;
-import it.polimi.modaclouds.space4cloud.generated.performances.SeffType;
-import it.polimi.modaclouds.space4cloud.generated.performances.SeffType.Percentile;
-import it.polimi.modaclouds.space4cloud.generated.performances.TierType;
+import it.polimi.modaclouds.space4cloud.generated.performances.HourValueType;
+import it.polimi.modaclouds.space4cloud.generated.performances.Performance;
+import it.polimi.modaclouds.space4cloud.generated.performances.Performance.Seffs;
+import it.polimi.modaclouds.space4cloud.generated.performances.Performance.Seffs.Seff;
+import it.polimi.modaclouds.space4cloud.generated.performances.Performance.Tiers;
+import it.polimi.modaclouds.space4cloud.generated.performances.SeffType.Percentiles;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
@@ -94,10 +94,12 @@ public class Solution implements Cloneable, Serializable {
 	/** if the solution is feasible or not. */
 	private boolean feasible = false;
 
-	/** The Cost. */
-	private double cost = 0;
+//	/** The Cost. */
+//	private double cost = 0;
+	
+	private double hourlyCosts[] = new double[24];
 
-	/** The Cost. */
+	/** The Region. */
 	private String region;
 
 	/** The evaluation. */
@@ -111,8 +113,10 @@ public class Solution implements Cloneable, Serializable {
 	public Solution() {
 		this.hourApplication = new ArrayList<Instance>();
 
-		for (int i = 0; i < 24; ++i)
+		for (int i = 0; i < 24; ++i) {
 			percentageWorkload[i] = 1.0;
+			hourlyCosts[i] = 0.0;
+		}
 	}
 
 	/**
@@ -441,7 +445,19 @@ public class Solution implements Cloneable, Serializable {
 	 * @return the cost
 	 */
 	public double getCost() {
+		double cost = 0;
+		for (int h = 0; h < hourlyCosts.length; ++h)
+			cost += hourlyCosts[h];
 		return cost;
+	}
+	
+	/**
+	 * Gets the cost for a single hour.
+	 * 
+	 * @return the cost
+	 */
+	public double getCost(int h) {
+		return hourlyCosts[h];
 	}
 
 	/**
@@ -552,7 +568,7 @@ public class Solution implements Cloneable, Serializable {
 
 		if (condition) {
 			/* if both are feasible */
-			return this.cost < sol.getCost();
+			return getCost() < sol.getCost();
 
 		} else if (!isFeasible() && !sol.isFeasible()) {
 
@@ -619,8 +635,9 @@ public class Solution implements Cloneable, Serializable {
 	 * @param totalCost
 	 *            the new cost
 	 */
-	public void setCost(double totalCost) {
-		this.cost = totalCost;
+	public void setCost(int h, double totalCost) {
+//		this.cost = totalCost;
+		hourlyCosts[h] = totalCost;
 
 	}
 
@@ -721,7 +738,7 @@ public class Solution implements Cloneable, Serializable {
 	 */
 	public String showStatus() {
 		String result = "Solution Status\n";
-		result += "Cost: " + cost;
+		result += "Cost: " + getCost();
 		result += "\tEvaluated: " + evaluated;
 		result += "\tFeasible: " + isFeasible();
 
@@ -744,7 +761,7 @@ public class Solution implements Cloneable, Serializable {
 	public String toString() {
 		String result = "Solution@" + Integer.toHexString(super.hashCode());
 		result += "[Provider: " + getProvider();
-		result += ", Cost: " + cost;
+		result += ", Cost: " + getCost();
 		result += ", Evaluated: " + evaluated;
 		result += ", Feasible: " + isFeasible();
 		result += "]";
@@ -855,8 +872,8 @@ public class Solution implements Cloneable, Serializable {
 		return false;
 	}
 	
-	public Performances getPerformancesAsExtension() {
-		Performances performances = new Performances();
+	public Performance getPerformancesAsExtension() {
+		Performance performances = new Performance();
 		
 		performances.setSolutionID(hashCode() + "");
 		
@@ -867,68 +884,77 @@ public class Solution implements Cloneable, Serializable {
 			
 			for (Component c : t.getComponents())
 				for (Functionality f : c.getFunctionalities()) {
-					SeffType seff = new SeffType();
+					Seff seff = new Seff();
 					
 					seff.setId(f.getId());
 					seff.setName(f.getName());
 					
-					double rt = 0.0;
-					double throughput = 0.0;
-					Map<Integer, Double> rtPercentiles = new TreeMap<Integer, Double>();
+					Map<Integer, Percentiles> percentiles = new TreeMap<Integer, Percentiles>(); 
 					
-					int i = 0;
-					
-					for (Instance app : hourApplication) {
-						for (@SuppressWarnings("unused") Tier t2 : app.getTiers())
-							for (@SuppressWarnings("unused") Component c2 : t.getComponents()) {
-								for (Functionality f2 : c.getFunctionalities()) {
+					for (int h = 0; h < 24; ++h) {
+						Instance app = hourApplication.get(h);
+						for (Tier t2 : app.getTiers())
+							for (Component c2 : t2.getComponents()) {
+								for (Functionality f2 : c2.getFunctionalities()) {
 									if (f2.getId().equals(f.getId())) {
-										rt += f2.getResponseTime();
-										throughput += f2.getThroughput();
+										{
+											HourValueType hvt = new HourValueType();
+											hvt.setHour(h);
+											hvt.setValue((float)f2.getResponseTime());
+											seff.getAvgRT().add(hvt);
+										}
+										{
+											HourValueType hvt = new HourValueType();
+											hvt.setHour(h);
+											hvt.setValue((float)f2.getThroughput());
+											seff.getThroughput().add(hvt);
+										}
+										
 										Map<Integer, Double> tmp = f2.getRtPercentiles();
-										i++;
 										
 										if (tmp == null)
 											continue;
 										
 										for (int key : tmp.keySet()) {
-											Double perc = rtPercentiles.get(key);
-											if (perc == null)
-												perc = 0.0;
-											perc += tmp.get(key);
-											rtPercentiles.put(key, perc);
+											Percentiles perc = percentiles.get(key);
+											if (perc == null) {
+												 perc = new Percentiles();
+												 perc.setLevel(key);
+												 percentiles.put(key, perc);
+											}
+											
+											HourValueType hvt = new HourValueType();
+											hvt.setHour(h);
+											hvt.setValue(tmp.get(key).floatValue());
+											
+											perc.getPercentile().add(hvt);
 										}
 									}
 								}
 							}
 					}
 					
-					seff.setAvgRT((float)rt/i);
-					seff.setThroughput((float)throughput/i);
-					
-					for (int key : rtPercentiles.keySet()) {
-						Percentile percentile = new Percentile();
-						percentile.setLevel(key);
-						percentile.setValue(rtPercentiles.get(key).floatValue()/i);
-						seff.getPercentile().add(percentile);
-					}
+					for (int key : percentiles.keySet())
+						seff.getPercentiles().add(percentiles.get(key));
 					
 					sfs.getSeff().add(seff);
 				}
 			
-			TierType tier = new TierType();
+			it.polimi.modaclouds.space4cloud.generated.performances.Performance.Tiers.Tier tier = new it.polimi.modaclouds.space4cloud.generated.performances.Performance.Tiers.Tier();
 			
 			tier.setId(t.getId());
 			tier.setName(t.getName());
 			
-			double utilization = 0;
-			
-			for (Instance app : hourApplication) {
+			for (int h = 0; h < 24; ++h) {
+				Instance app = hourApplication.get(h);
 				Tier t2 = app.getTierById(t.getId());
-				utilization += t2.getUtilization(); 
+				
+				HourValueType hvt = new HourValueType();
+				hvt.setHour(h);
+				hvt.setValue((int)Math.round(100 * t2.getUtilization()));
+				
+				tier.getUtilization().add(hvt);
 			}
-			
-			tier.setUtilization((int)Math.round(100 * utilization/hourApplication.size()));
 			
 			trs.getTier().add(tier);
 			
@@ -942,10 +968,10 @@ public class Solution implements Cloneable, Serializable {
 	}
 	
 	public void exportPerformancesAsExtension(Path fileName){
-		Performances performances = getPerformancesAsExtension();
+		Performance performances = getPerformancesAsExtension();
 		//serialize them
 		try {
-			XMLHelper.serialize(performances, Performances.class, new FileOutputStream(fileName.toFile()));
+			XMLHelper.serialize(performances, Performance.class, new FileOutputStream(fileName.toFile()));
 		} catch (JAXBException e) {
 			logger.error("The generated solution is not valid",e);
 		} catch (FileNotFoundException e) {

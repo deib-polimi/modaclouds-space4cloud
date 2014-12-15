@@ -132,14 +132,17 @@ public class EvaluationServer implements ActionListener {
 	public double deriveCosts(Solution sol) {
 		long startTime = System.nanoTime();
 		// costs
-		double totalCost = 0;
-		for (Instance i : sol.getHourApplication()) {
-			double cost = costEvaulator.deriveCosts(i, sol.getHourApplication()
-					.indexOf(i));
-			totalCost += cost;
-		}
-		sol.setCost(totalCost);
-		long stopTime = System.nanoTime();
+        double totalCost = 0;
+//      for (Instance i : sol.getHourApplication()) {
+        for (int h = 0; h < 24; ++h) {
+            Instance i = sol.getApplication(h);
+            double cost = costEvaulator.deriveCosts(i, sol.getHourApplication()
+                    .indexOf(i));
+            totalCost += cost;
+            sol.setCost(h, cost);
+        }
+//      sol.setCost(totalCost);
+        long stopTime = System.nanoTime();
 
 		costEvaluationTime += (stopTime - startTime);
 		costEvaluations++;

@@ -1,75 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	elementFormDefault="qualified" attributeFormDefault="unqualified"
-	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0"
-	targetNamespace="http://www.modaclouds.eu/xsd/2014/11/performances"
-	xmlns="http://www.modaclouds.eu/xsd/2014/11/performances">
+    elementFormDefault="qualified" attributeFormDefault="unqualified"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0"
+    targetNamespace="http://www.modaclouds.eu/xsd/2014/11/performances"
+    xmlns="http://www.modaclouds.eu/xsd/2014/11/performances">
 
-	<xs:annotation>
-		<xs:appinfo>
-			<jaxb:schemaBindings>
-				<jaxb:package
-					name="it.polimi.modaclouds.space4cloud.generated.performances" />
-			</jaxb:schemaBindings>
-		</xs:appinfo>
-	</xs:annotation>
+    <xs:annotation>
+        <xs:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package
+                    name="it.polimi.modaclouds.space4cloud.generated.performances" />
+            </jaxb:schemaBindings>
+        </xs:appinfo>
+    </xs:annotation>
 
-	<xs:element name="Performances">
-		<xs:annotation>
-			<xs:documentation>The performances computed for the problem.
-			</xs:documentation>
-		</xs:annotation>
-		<xs:complexType>
-			<xs:all>
-				<xs:element name="Seffs">
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="Seff" type="SeffType" maxOccurs="unbounded" />
-						</xs:sequence>
-					</xs:complexType>
-				</xs:element>
-				<xs:element name="Tiers">
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="Tier" type="TierType" maxOccurs="unbounded" />
-						</xs:sequence>
-					</xs:complexType>
-				</xs:element>
-			</xs:all>
-			<xs:attribute name="solutionID" type="xs:string" use="required" />
-		</xs:complexType>
-	</xs:element>
-	<xs:complexType name="SeffType">
-		<xs:sequence minOccurs="0">
-			<xs:element name="Percentile" minOccurs="0" maxOccurs="unbounded">
-				<xs:complexType>
-					<xs:attribute name="level" use="required">
-						<xs:simpleType>
-							<xs:restriction base="xs:int">
-								<xs:minInclusive value="0" />
-								<xs:maxInclusive value="100" />
-							</xs:restriction>
-						</xs:simpleType>
-					</xs:attribute>
-					<xs:attribute name="value" type="xs:float" use="required" />
-				</xs:complexType>
-			</xs:element>
-		</xs:sequence>
-		<xs:attribute name="id" type="xs:string" use="required" />
-		<xs:attribute name="name" type="xs:string" use="required" />
-		<xs:attribute name="throughput" type="xs:float" use="optional" />
-		<xs:attribute name="avgRT" type="xs:float" use="required" />
-	</xs:complexType>
-	<xs:complexType name="TierType">
-		<xs:attribute name="id" type="xs:string" use="required" />
-		<xs:attribute name="name" type="xs:string" use="required" />
-		<xs:attribute name="utilization" use="required">
-			<xs:simpleType>
-				<xs:restriction base="xs:int">
-					<xs:minInclusive value="0" />
-					<xs:maxInclusive value="100" />
-				</xs:restriction>
-			</xs:simpleType>
-		</xs:attribute>
-	</xs:complexType>
+    <xs:element name="performance">
+        <xs:annotation>
+            <xs:documentation>The performance computed for the problem.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="Seffs">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Seff" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:complexContent>
+                                        <xs:extension base="SeffType"/>
+                                    </xs:complexContent>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Tiers">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Tier" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:complexContent>
+                                        <xs:extension base="TierType">
+                                            <xs:sequence>
+                                                <xs:element name="utilization" type="HourValueType" maxOccurs="24"/>
+                                            </xs:sequence>
+                                        </xs:extension>
+                                    </xs:complexContent>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:all>
+            <xs:attribute name="solutionID" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="SeffType">
+        <xs:sequence>
+            <xs:element name="percentiles" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="percentile" type="HourValueType" maxOccurs="24"/>
+                    </xs:sequence>
+                    <xs:attribute name="level" use="required">
+                        <xs:simpleType>
+                            <xs:restriction base="xs:int">
+                                <xs:minInclusive value="0"/>
+                                <xs:maxInclusive value="100"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="throughput" type="HourValueType" maxOccurs="24"/>
+            <xs:element name="avgRT" type="HourValueType" maxOccurs="24"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="TierType">
+        <xs:attribute name="id" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="HourValueType">
+        <xs:attribute name="hour" type="xs:int" use="required"/>
+        <xs:attribute name="value" type="xs:float" use="required"/>
+    </xs:complexType>
 </xs:schema>
