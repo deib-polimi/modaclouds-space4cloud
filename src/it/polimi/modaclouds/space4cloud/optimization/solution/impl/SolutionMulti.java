@@ -1,5 +1,9 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.qos_models.schema.CostType;
+import it.polimi.modaclouds.qos_models.schema.Costs;
+import it.polimi.modaclouds.qos_models.schema.Costs.Providers;
+import it.polimi.modaclouds.qos_models.schema.HourPriceType;
 import it.polimi.modaclouds.qos_models.schema.MultiCloudExtension;
 import it.polimi.modaclouds.qos_models.schema.MultiCloudExtensions;
 import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
@@ -8,19 +12,19 @@ import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.contractor4cloud.Contractor;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
-import it.polimi.modaclouds.space4cloud.generated.costs.CostType;
-import it.polimi.modaclouds.space4cloud.generated.costs.Costs;
-import it.polimi.modaclouds.space4cloud.generated.costs.Costs.Providers;
-import it.polimi.modaclouds.space4cloud.generated.costs.HourPriceType;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
@@ -979,7 +983,6 @@ public class SolutionMulti implements Cloneable, Serializable {
 		costs.setSolutionID(hashCode() + "");
 		
 		CostType ct = new CostType();
-		costs.setCost(ct);
 		
 		for (int h = 0; h < 24; ++h) {
 			double cost = 0;
@@ -994,6 +997,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		}
 		
 		ct.setTotalCost((float)cost);
+		costs.setCost(ct);
 		
 		for (Solution s : getAll()) {
 			Providers p = new Providers();
@@ -1002,16 +1006,16 @@ public class SolutionMulti implements Cloneable, Serializable {
 			
 			CostType ctp = new CostType();
 			
-			ctp.setTotalCost((float)s.getCost());
-			
 			for (int h = 0; h < 24; ++h) {
-				double cost = 0;
 				HourPriceType hour = new HourPriceType();
 				hour.setHour(h);
-				hour.setCost((float)cost);
+				hour.setCost((float)s.getCost(h));
 				
 				ctp.getHourPrice().add(hour);
 			}
+			
+			ctp.setTotalCost((float)s.getCost());
+			p.setCost(ctp);
 			
 			costs.getProviders().add(p);
 			
@@ -1032,6 +1036,55 @@ public class SolutionMulti implements Cloneable, Serializable {
 			logger.error("Error exporting the solution",e);
 		}
 		
+		generateOptimizedCosts();
+		
+	}
+	
+	public File generateOptimizedCosts() {
+		boolean doIt = false;
+		for (Solution s : getAll()) {
+			if (s.getProvider().equals("Amazon")) {
+				doIt = true;
+			}
+		}
+		
+		if (!doIt)
+			return null;
+		
+		logger.info("Exporting the optimized costs for Amazon...");
+		
+		int daysConsidered = 400;
+		double percentageOfS = 0.5;
+		double m = 1000.0;
+		
+		String configuration = null;
+		try {
+			configuration = Files.createTempFile("space4cloud", ".properties").toString();
+		} catch (IOException e) {
+			logger.error("Error creating a new temporary file", e);
+			return null;
+		}
+		try {
+			Configuration.saveConfiguration(configuration);
+		} catch (IOException e) {
+			logger.error("Error exporting the configuration", e);
+			return null;
+		}
+		
+		String solution = null;
+		try {
+			solution = Files.createTempFile("solution", ".xml").toString();
+		} catch (IOException e) {
+			logger.error("Error creating a new temporary file", e);
+			return null;
+		}
+		exportAsExtension(Paths.get(solution));
+		
+		File f = Contractor.perform(configuration, solution, daysConsidered, percentageOfS, m);
+		if (f != null && f.exists())
+			logger.debug("Optimized costs: " + f.getAbsolutePath());
+		
+		return f;
 	}
 
 }

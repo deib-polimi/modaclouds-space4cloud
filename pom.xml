@@ -345,7 +345,7 @@
 		<dependency>
 			<groupId>it.polimi.modaclouds.qos-models</groupId>
 			<artifactId>qos-models</artifactId>
-			<version>2.1.2</version>
+			<version>2.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>it.polimi.modaclouds</groupId>
@@ -361,6 +361,11 @@
             <groupId>it.polimi.modaclouds.space4cloud</groupId>
             <artifactId>privatecloud</artifactId>
             <version>0.0.17</version>
+        </dependency>
+        <dependency>
+            <groupId>it.polimi.modaclouds.space4cloud</groupId>
+            <artifactId>contractor4cloud</artifactId>
+            <version>0.0.2</version>
         </dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

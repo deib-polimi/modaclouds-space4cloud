@@ -18,20 +18,20 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.qos_models.schema.HourValueType;
 import it.polimi.modaclouds.qos_models.schema.IaasService;
 import it.polimi.modaclouds.qos_models.schema.Location;
 import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
 import it.polimi.modaclouds.qos_models.schema.PaasService;
+import it.polimi.modaclouds.qos_models.schema.Performance;
+import it.polimi.modaclouds.qos_models.schema.Performance.Seffs;
+import it.polimi.modaclouds.qos_models.schema.Performance.Seffs.Seff;
+import it.polimi.modaclouds.qos_models.schema.Performance.Tiers;
 import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
 import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.schema.SeffType.Percentiles;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.generated.performances.HourValueType;
-import it.polimi.modaclouds.space4cloud.generated.performances.Performance;
-import it.polimi.modaclouds.space4cloud.generated.performances.Performance.Seffs;
-import it.polimi.modaclouds.space4cloud.generated.performances.Performance.Seffs.Seff;
-import it.polimi.modaclouds.space4cloud.generated.performances.Performance.Tiers;
-import it.polimi.modaclouds.space4cloud.generated.performances.SeffType.Percentiles;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
@@ -940,7 +940,7 @@ public class Solution implements Cloneable, Serializable {
 					sfs.getSeff().add(seff);
 				}
 			
-			it.polimi.modaclouds.space4cloud.generated.performances.Performance.Tiers.Tier tier = new it.polimi.modaclouds.space4cloud.generated.performances.Performance.Tiers.Tier();
+			it.polimi.modaclouds.qos_models.schema.Performance.Tiers.Tier tier = new it.polimi.modaclouds.qos_models.schema.Performance.Tiers.Tier();
 			
 			tier.setId(t.getId());
 			tier.setName(t.getName());
