@@ -2,9 +2,9 @@
 .classpath
 .DS_Store
 /src/it/polimi/modaclouds/space4cloud/line/*
+/src/it/polimi/modaclouds/space4cloud/generated/*
 /src/META-INF/*
 /target
-/src/it/polimi/modaclouds/space4cloud/line/*
 /src/META-INF/*
 /commons-beanutils-1.9.1.jar
 /commons-collections-3.2.1.jar
