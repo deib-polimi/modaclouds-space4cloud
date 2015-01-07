@@ -255,7 +255,11 @@ public class Solution implements Cloneable, Serializable {
 		
 		cloneSolution.percentageWorkload = new double[24];
 		for (int h = 0; h < 24; ++h)
-			cloneSolution.percentageWorkload[h] = percentageWorkload[h];
+			cloneSolution.setPercentageWorkload(h,percentageWorkload[h]);
+		
+		cloneSolution.hourlyCosts = new double[24];
+		for (int h = 0; h < 24; ++h)
+			cloneSolution.setCost(h, hourlyCosts[h]);
 
 		return cloneSolution;
 
