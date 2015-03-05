@@ -1,6 +1,34 @@
+Index: .classpath
+===================================================================
+--- .classpath	(revision 25017)
++++ .classpath	(working copy)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <classpath>
+-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+ 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+ 	<classpathentry kind="src" path="src"/>
+ 	<classpathentry kind="src" path="resources"/>
+Index: .settings/org.eclipse.jdt.core.prefs
+===================================================================
+--- .settings/org.eclipse.jdt.core.prefs	(revision 25017)
++++ .settings/org.eclipse.jdt.core.prefs	(working copy)
+@@ -1,7 +1,7 @@
+-#Wed Apr 22 06:02:19 CEST 2009
+ eclipse.preferences.version=1
+-org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.6
+-org.eclipse.jdt.core.compiler.compliance=1.6
++org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
++org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.7
++org.eclipse.jdt.core.compiler.compliance=1.7
+ org.eclipse.jdt.core.compiler.problem.assertIdentifier=error
+ org.eclipse.jdt.core.compiler.problem.enumIdentifier=error
+-org.eclipse.jdt.core.compiler.source=1.6
++org.eclipse.jdt.core.compiler.source=1.7
 Index: META-INF/MANIFEST.MF
 ===================================================================
---- META-INF/MANIFEST.MF	(revision 23719)
+--- META-INF/MANIFEST.MF	(revision 25017)
 +++ META-INF/MANIFEST.MF	(working copy)
 @@ -40,7 +40,10 @@
   de.uka.ipd.sdq.pcmsolver.models,
@@ -15,7 +43,7 @@ Index: META-INF/MANIFEST.MF
   de.uka.ipd.sdq.pcmsolver.visitors,
 Index: build.properties
 ===================================================================
---- build.properties	(revision 23719)
+--- build.properties	(revision 25017)
 +++ build.properties	(working copy)
 @@ -2,5 +2,7 @@
  bin.includes = plugin.xml,\
@@ -28,7 +56,7 @@ Index: build.properties
 +src.includes = resources/
 Index: src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(revision 23719)
+--- src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(revision 25017)
 +++ src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(working copy)
 @@ -67,7 +67,7 @@
  					"Invoked reliability analysis using wrong job class!");
@@ -41,7 +69,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java
  				.equals(MessageStrings.LQSIM_SOLVER)) {
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(revision 23719)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(revision 25017)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(working copy)
 @@ -1,8 +1,12 @@
 +/*
@@ -1159,7 +1187,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(revision 23719)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(revision 25017)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(working copy)
 @@ -1,68 +1,153 @@
 +/*
@@ -1317,7 +1345,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(revision 23719)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(revision 25017)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(working copy)
 @@ -1,3 +1,6 @@
 +/*
@@ -1377,7 +1405,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigB
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(revision 23719)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(revision 25017)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(working copy)
 @@ -1,466 +1,1048 @@
 +/*
@@ -2501,7 +2529,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 ===================================================================
 --- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.java	(revision 0)
 +++ src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.java	(revision 0)
-@@ -0,0 +1,221 @@
+@@ -0,0 +1,233 @@
 +package de.uka.ipd.sdq.pcmsolver.transformations.pcm2lqn;
 +
 +import java.io.BufferedReader;
@@ -2530,6 +2558,8 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +	private Logger socketLog;
 +	private boolean localInstance = false;
 +	private Process proc;
++	String MCR_dir = null;
++	
 +
 +	public void connectToLINEServer() {
 +		connectToLINEServer(null,-1);		
@@ -2547,6 +2577,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +		boolean defaultValues = false;
 +		URL linePropFileURL = null;		
 +		File linePropFile = null;
++		
 +		try {
 +			linePropFileURL = FileLocator.toFileURL(new URL(linePropFilePath));
 +			linePropFile = new File(linePropFileURL.getFile());
@@ -2576,7 +2607,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +			if (port == -1)
 +				port = Integer.parseInt(lineProperties.getProperty("port", "5463"));	
 +			directory = new File(lineProperties.getProperty("directory",null));			
-+
++			MCR_dir = lineProperties.getProperty("MCR_dir","/usr/local/MATLAB/MATLAB_Compiler_Runtime/v81");
 +			//try to connect
 +			initLINEConnection(host,port);
 +		} catch (UnknownHostException e) {
@@ -2625,10 +2656,19 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +			}
 +		System.out.println("Connected to LINE on "+host+":"+port);
 +	}
++	
++	private final static String LINE_UNIX = "run_LINE.sh";
++	private final static String LINE_WINDOWS = "LINE";
 +
 +	private boolean launchLine(File linePropFile, File directory){
 +		try {
-+			String lineInvocation = "LINE"+" "+"\""+linePropFile.getAbsolutePath().replace('\\', '/')+"\""; 
++			String lineInvocation = /*"LINE"+*/ " "+"\""+linePropFile.getAbsolutePath().replace('\\', '/')+"\"";
++			
++			if (System.getProperty("os.name").indexOf("Windows") > -1)
++				lineInvocation = LINE_WINDOWS + lineInvocation;
++			else
++				lineInvocation = LINE_UNIX+" "+MCR_dir+" "+linePropFile.getAbsolutePath().replace('\\', '/');
++			
 +			System.out.println(lineInvocation);
 +			ProcessBuilder pb = new ProcessBuilder(lineInvocation.split("\\s"));
 +			pb.directory(directory);
@@ -2828,7 +2868,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Logger.java
 +}
 Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(revision 23719)
+--- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(revision 25017)
 +++ src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(working copy)
 @@ -1,13 +1,21 @@
 +/*
