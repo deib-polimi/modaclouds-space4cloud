@@ -91,7 +91,7 @@ public class LineServerHandler {
 				port = Integer.parseInt(lineProperties.getProperty("port",
 						"5463"));
 			directory = new File(lineProperties.getProperty("directory", null));
-			MCR_dir = lineProperties.getProperty("MCR_directory","");
+			MCR_dir = lineProperties.getProperty("MCR_dir","/usr/local/MATLAB/MATLAB_Compiler_Runtime/v81");
 		}catch(IOException e){
 			logger.error("Could not load LINE connection properties",e);
 		}
@@ -182,7 +182,7 @@ public class LineServerHandler {
 			if (System.getProperty("os.name").indexOf("Windows") > -1)
 				lineInvocation = LINE_WINDOWS + lineInvocation;
 			else
-				lineInvocation = LINE_UNIX+" "+MCR_dir+" "+lineInvocation;
+				lineInvocation = LINE_UNIX+" "+MCR_dir+" "+Configuration.LINE_PROP_FILE.replace('\\', '/');
 			
 			logger.debug(lineInvocation);
 			ProcessBuilder pb = new ProcessBuilder(lineInvocation.split("\\s"));
