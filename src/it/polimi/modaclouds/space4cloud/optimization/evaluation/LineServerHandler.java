@@ -42,6 +42,7 @@ public class LineServerHandler {
 	private boolean localInstance = false;
 	private Process proc;
 	private File directory = null;
+	private String MCR_dir = null;
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LineServerHandler.class);
 
 	public LineServerHandler() {
@@ -90,6 +91,7 @@ public class LineServerHandler {
 				port = Integer.parseInt(lineProperties.getProperty("port",
 						"5463"));
 			directory = new File(lineProperties.getProperty("directory", null));
+			MCR_dir = lineProperties.getProperty("MCR_directory","");
 		}catch(IOException e){
 			logger.error("Could not load LINE connection properties",e);
 		}
@@ -121,7 +123,7 @@ public class LineServerHandler {
 					+ host
 					+ " on port: "
 					+ port
-					+ "\ntrying to launch line locally and connect to localhost.");
+					+ " trying to launch line locally and connect to localhost.");
 			//launch line locally
 			host = "localhost";
 			launchLine();			
@@ -166,7 +168,7 @@ public class LineServerHandler {
 		return socketLog.isModelEvaluated(modelFile);
 	}
 
-	private final static String LINE_UNIX = "./LINE";
+	private final static String LINE_UNIX = "run_LINE.sh";
 	private final static String LINE_WINDOWS = "LINE";
 	
 	public boolean launchLine() {
@@ -180,7 +182,7 @@ public class LineServerHandler {
 			if (System.getProperty("os.name").indexOf("Windows") > -1)
 				lineInvocation = LINE_WINDOWS + lineInvocation;
 			else
-				lineInvocation = LINE_UNIX + lineInvocation;
+				lineInvocation = LINE_UNIX+" "+MCR_dir+" "+lineInvocation;
 			
 			logger.debug(lineInvocation);
 			ProcessBuilder pb = new ProcessBuilder(lineInvocation.split("\\s"));

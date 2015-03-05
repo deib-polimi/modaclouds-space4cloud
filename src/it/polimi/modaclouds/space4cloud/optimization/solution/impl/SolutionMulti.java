@@ -1036,7 +1036,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			logger.error("Error exporting the solution",e);
 		}
 		
-		generateOptimizedCosts();
+		//generateOptimizedCosts();
 		
 	}
 	
