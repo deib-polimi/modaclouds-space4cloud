@@ -100,6 +100,7 @@ public class DataHandler {
 	 */
 	public Integer getAmountMemory(String provider, String serviceName,
 			String resourceName) {
+		logger.trace("Getting amount of memory provider: "+provider+" serviceName: "+serviceName+" resourceName: "+resourceName);
 		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 
 		for (VirtualHWResource i : cr.getComposedOf()) {
@@ -137,7 +138,7 @@ public class DataHandler {
 	
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
-		
+		logger.trace("Getting cloud resource provider: "+provider+" serviceName: "+serviceName+" resourceName: "+resourceName);
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
 			
 			CloudResource res = getCloudResourceInternal(provider, serviceName, resourceName);
@@ -173,7 +174,7 @@ public class DataHandler {
 	
 	public List<String> getCloudResourceSizes(String provider,
 			String serviceName) {
-		
+		logger.trace("Getting resource sized provider: "+provider+" serviceName: "+serviceName);
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
 			
 			List<String> res = getCloudResourceSizesInternal(provider, serviceName);
@@ -260,6 +261,7 @@ public class DataHandler {
 	 */
 	public Integer getNumberOfReplicas(String provider, String serviceName,
 			String resourceName) {
+		logger.trace("Getting number of replicas with provider: "+provider+" serviceName: "+serviceName+" resourceName: "+resourceName);
 		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 		for (VirtualHWResource i : cr.getComposedOf()) {
 			if (i.getType() == VirtualHWResourceType.CPU) {
@@ -274,7 +276,7 @@ public class DataHandler {
 	
 	public double getProcessingRate(String provider, String serviceName,
 			String resourceName) {
-		
+		logger.trace("Getting Processing rate for resource with provider: "+provider+" serviceName: "+serviceName+" resourceName: "+resourceName);
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
 			
 			double res = getProcessingRateInternal(provider, serviceName, resourceName);
@@ -299,7 +301,7 @@ public class DataHandler {
 	 * @return the speed
 	 */
 	private double getProcessingRateInternal(String provider, String serviceName,
-			String resourceName) {
+			String resourceName) {		
 		List<CloudResource> cloudResourceList = cloudProviders
 				.getProviderDBConnectors().get(provider) // provider
 				.getIaaSServicesHashMap().get(serviceName) // service
@@ -323,7 +325,7 @@ public class DataHandler {
 	}
 	
 	public List<IaaS> getSameServiceResource(CloudService service, String region) {
-		
+		logger.trace("Getting same service resource for provider: "+service.getProvider()+" serviceName: "+service.getServiceName()+" region: "+region);
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
 			
 			List<IaaS> res = getSameServiceResourceInternal(service, region);
@@ -368,7 +370,7 @@ public class DataHandler {
 	}
 	
 	public List<String> getServices(String provider, String serviceType) {
-		
+		logger.trace("Getting Services : "+provider+" serviceType: "+serviceType);
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
 			
 			List<String> res = getServicesInternal(provider, serviceType);
@@ -422,6 +424,7 @@ public class DataHandler {
 	}
 	
 	public double getAvailability(String provider) {
+		logger.trace("Getting availability provider: "+provider);
 		if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
 			return 0.95;
 		

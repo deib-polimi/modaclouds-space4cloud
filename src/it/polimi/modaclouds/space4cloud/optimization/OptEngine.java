@@ -864,7 +864,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 								.listFiles(new FilenameFilter() {
 									@Override
 									public boolean accept(File dir, String name) {
-										return name.endsWith(".xml");
+										return name.endsWith(".xml") && ! name.contains("line");
 									}
 								});
 				// suppose there is just 1 model

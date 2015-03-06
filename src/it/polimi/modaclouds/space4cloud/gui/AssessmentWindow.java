@@ -70,7 +70,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.osgi.framework.FrameworkUtil;
 
-public class AssessmentWindow extends WindowAdapter implements PropertyChangeListener, ActionListener {
+public class AssessmentWindow extends WindowAdapter implements PropertyChangeListener, ActionListener, ComponentListener {
 
     private JFrame frame;
 
@@ -93,7 +93,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         JButton addAllPlot;
         JButton remAllPlot;
         JButton update;
-
+        
         boolean isConstrained(String resourceId) {
             if (constraintHandler == null || solutionMulti == null)
                 return false;
@@ -135,6 +135,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
             return null;
         }
     }
+    
+    
     
     private GenericChart<DefaultCategoryDataset> workload;
     private GenericChart<DefaultCategoryDataset> availability;
@@ -659,6 +661,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         alreadyUpdating = false;
     }
 
+    
+    
     private void updateGraphs() throws NumberFormatException, IOException {
         if (alreadyUpdating)
             return;
@@ -678,5 +682,30 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         
         alreadyUpdating = false;
     }
+
+	@Override
+	public void componentResized(ComponentEvent e) {
+		frame.setSize(e.getComponent().getSize());		
+	}
+
+	@Override
+	public void componentMoved(ComponentEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void componentShown(ComponentEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void componentHidden(ComponentEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+    
+    
 
 }
