@@ -63,6 +63,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.TitledBorder;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
@@ -75,6 +76,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
     private JFrame frame;
 
     private JTabbedPane tab;
+    
+  
 
     private class InternalSolution {
         @SuppressWarnings("unused")
@@ -146,12 +149,13 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
     public final static String FRAME_NAME = "Assessment Results Window";
 
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
+    private Timer updateTimer;
     /**
      * Create the application.
      */
     public AssessmentWindow(ConstraintHandler constraintHandler) {
         this.constraintHandler = constraintHandler;
+        updateTimer = new Timer(100, this);
         initialize();
     }
 
@@ -448,7 +452,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         frame.setVisible(true);
         frame.validate();
 
-        updateImages();
+        updateTimer.restart();
 
         pcs.firePropertyChange("AssessmentEnded", false, true);
     }
@@ -482,7 +486,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
 
             @Override
             public void componentResized(ComponentEvent e) {
-                updateImages();
+                updateTimer.restart();
             }
 
             @Override
@@ -495,12 +499,11 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
     }
 
     private boolean alreadyUpdating = false;
-    private boolean alreadyUpdatingImages = false;
-    private boolean updateAgain = false;
+    private boolean alreadyUpdatingImages = false;    
 
     private void updateImages() {
         if (alreadyUpdatingImages) {
-        	updateAgain = true;
+        	updateTimer.restart();
         	return;
         }
 
@@ -531,10 +534,6 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         }
 
         alreadyUpdatingImages = false;
-        if (updateAgain) {
-        	updateAgain = false;
-        	updateImages();
-        }
     }
 
     @Override
@@ -555,7 +554,6 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
     public void actionPerformed(ActionEvent e) {
         for (String provider : solutions.keySet()) {
             InternalSolution is = solutions.get(provider);
-
             if (e.getSource().equals(is.addPlot)) {
                 int[] val = is.sources.getSelectedIndices();
                 for (int i = 0; i < val.length; ++i) {
@@ -595,6 +593,8 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
                     is.sourcesModel.addElement(el);
                     is.plotsModel.remove(0);
                 }
+            } else if (e.getSource().equals(updateTimer)){
+            	updateImages();
             }
         }
     }
