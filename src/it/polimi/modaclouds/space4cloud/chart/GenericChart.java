@@ -48,6 +48,7 @@ public class GenericChart<E> extends JPanel {
 	
 	private JFreeChart graph;
 	private JLabel label;
+//	private boolean validLabel = false;
 	public E dataset;
 	
 	private String title;
@@ -62,6 +63,8 @@ public class GenericChart<E> extends JPanel {
 	public Double exactMax = null;
 	
 	public boolean defaultRange = false;
+	
+	
 	
 	public static class Marker {
 		double position;
@@ -88,9 +91,9 @@ public class GenericChart<E> extends JPanel {
 		
 		label = new JLabel();
 		label.setIcon(null);
-		add(label);
-		
+		add(label);		
 		markers = new ArrayList<Marker>();
+	//	validLabel = true;
 	}
 	
 	public GenericChart(String x, String y) {
@@ -104,11 +107,13 @@ public class GenericChart<E> extends JPanel {
 	@SuppressWarnings("unchecked")
 	public void initDataset(Class<?> type) throws InstantiationException, IllegalAccessException {
 		dataset = (E) type.newInstance();
+//		validLabel = false;
 	}
 	
 	public void initDataset() {
 		try {
 			initDataset(DefaultCategoryDataset.class);
+//			validLabel=false;
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
@@ -129,7 +134,7 @@ public class GenericChart<E> extends JPanel {
 			}
 			xys.add(x, y);
 		}
-		
+//		validLabel=false;
 		updateGraph();
 		updateImage();
 	}
@@ -138,13 +143,13 @@ public class GenericChart<E> extends JPanel {
 		if (dataset instanceof DefaultCategoryDataset)
 			((DefaultCategoryDataset) dataset).clear();
 		else if (dataset instanceof XYSeriesCollection)
-			((XYSeriesCollection) dataset).removeAllSeries();
-		
+			((XYSeriesCollection) dataset).removeAllSeries();		
 		markers.clear();
+		//validLabel=false;
 	}
 	
-	public void updateImage() {
-		if (alreadyUpdating)
+	public void updateImage() {		
+		if (alreadyUpdating /*|| validLabel*/)
 			return;
 		
 		alreadyUpdating = true;
@@ -169,6 +174,7 @@ public class GenericChart<E> extends JPanel {
 			setPreferredSize(label.getPreferredSize());
 
 			label.validate();
+			//validLabel=true;
 		}
 		
 		alreadyUpdating = false;
@@ -180,7 +186,7 @@ public class GenericChart<E> extends JPanel {
 	public void updateGraph() {
 		if (alreadyUpdating)
 			return;
-		
+		//validLabel = false;
 		alreadyUpdating = true;
 		
 		Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
