@@ -15,6 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
+import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.io.BufferedReader;
@@ -119,11 +120,11 @@ public class LineServerHandler {
 		} catch (IOException e) {
 			closeConnections();
 			// fall back to local host and launch LINE
-			logger.info("Could not connect to LINE on host: "
+			Space4Cloud.consoleLogger.info("Could not connect to LINE on host: "
 					+ host
 					+ " on port: "
 					+ port
-					+ " trying to launch line locally and connect to localhost.");
+					+ " trying to launch line locally and connect to localhost. This might take a while..");
 			//launch line locally
 			host = "localhost";
 			launchLine();			
@@ -161,7 +162,7 @@ public class LineServerHandler {
 			} catch (InterruptedException e) {
 				logger.error("Error while waiting for LINE connection",e);
 			}
-		logger.info("Connected to LINE on " + host + ":" + port);
+		Space4Cloud.consoleLogger.info("Connected to LINE on " + host + ":" + port);
 	}
 
 	public boolean isSolved(String modelFile) {
@@ -199,6 +200,8 @@ public class LineServerHandler {
 			localInstance = true;
 
 			// the startup has ended
+			Space4Cloud.consoleLogger.info("Local instance of LINE launched");
+
 			return true;
 		} catch (IOException | InterruptedException e) {
 			logger.error("Error in launching LINE",e);
