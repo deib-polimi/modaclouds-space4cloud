@@ -22,9 +22,11 @@ import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LQNSResultParser;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
@@ -333,7 +335,7 @@ public class SimpleEvaluator {
 			for (Tier t : initialSolution.getApplication(i).getTiers())
 				if (t.getId().contains("CPU"))
 					vmLogger.add(vmSeriesHandlers.get(t.getId()),
-							i, ((IaaS) t.getCloudService()).getReplicas());
+							i, getReplicas(t));
 
 		// initialize response time logger
 		try {
@@ -402,4 +404,16 @@ public class SimpleEvaluator {
 		initialSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME));
 	}
 
+	
+	private int getReplicas(Tier t) {
+		CloudService serv = t.getCloudService();
+		
+		if (serv instanceof IaaS) {
+			IaaS res = (IaaS) t.getCloudService();
+			return res.getReplicas();
+		} else if (serv instanceof PaaS) {
+			return 1;
+		}
+		return 0;
+	}
 }

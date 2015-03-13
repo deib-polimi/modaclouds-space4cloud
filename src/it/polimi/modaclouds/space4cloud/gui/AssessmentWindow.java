@@ -22,10 +22,13 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.AvgRTConstraint
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -359,7 +362,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
                 for (Tier t : providedSolution.getApplication(0).getTiers()) {
                     double sum = 0.0;
                     for (int i = 0; i < 24; i++) {
-                        sum += ((Compute) providedSolution.getApplication(i).getTierById(t.getId()).getCloudService()).getUtilization();
+                    	sum += getUtilization(t);
                     }
 
                     if (is.isConstrained(t.getId())) {
@@ -597,6 +600,18 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
         }
     }
     
+    private int getReplicas(Tier t) {
+		CloudService serv = t.getCloudService();
+		
+		if (serv instanceof IaaS) {
+			IaaS res = (IaaS) t.getCloudService();
+			return res.getReplicas();
+		} else if (serv instanceof PaaS) {
+			return 1;
+		}
+		return 0;
+	}
+    
     private void redrawGraphs() throws NumberFormatException, IOException {
         if (alreadyUpdating)
             return;
@@ -613,7 +628,7 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
                 for (Tier t : providedSolution.getApplication(i).getTiers()) {
                     if (is.toBeShown(t.getName())) {
                     	is.vmLogger.dataset.addValue(
-                                ((IaaS) t.getCloudService()).getReplicas(),
+                                getReplicas(t),
                                 t.getName(),
                                 "" + i);
                     }
@@ -650,13 +665,23 @@ public class AssessmentWindow extends WindowAdapter implements PropertyChangeLis
                     			is.utilLogger.markers.add(new GenericChart.Marker(constraint, t.getName()));
                     	}
                         is.utilLogger.dataset.addValue(
-                                ((Compute) t.getCloudService()).getUtilization(),
+                                getUtilization(t),
                                 t.getName(),
                                 "" + i);
                     }
         }
         
         alreadyUpdating = false;
+    }
+    
+    private double getUtilization(Tier t) {
+    	CloudService cs = t.getCloudService();
+    	if (cs instanceof Compute)
+    		return ((Compute) cs).getUtilization();
+    	else if (cs instanceof Platform)
+    		return ((Platform) cs).getUtilization();
+    	
+    	return 0.0;
     }
 
     private void updateGraphs() throws NumberFormatException, IOException {

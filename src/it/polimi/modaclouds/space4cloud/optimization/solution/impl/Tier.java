@@ -156,6 +156,8 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 		
 		if(cloudService instanceof Compute)
 			((Compute)cloudService).updateUtilization(results.getUtilization(getName()));
+		else if(cloudService instanceof Platform)
+			((Platform)cloudService).updateUtilization(results.getUtilization(getName()));
 	
 
 		// update components
@@ -167,10 +169,19 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 	public double getUtilization() {
 		if(cloudService instanceof Compute)
 			return ((Compute)cloudService).getUtilization();
-		else 
+		else if (cloudService instanceof Platform)
+			return ((Platform)cloudService).getUtilization();
 			//TODO: we should raise some kind of warning here
 			return -1;
 	}
 	
+	public int getTotalRequests() {
+		int total = 0;
+		for (Component c : components)
+			for (Functionality f : c.getFunctionalities())
+				total += f.getRequests();
+		
+		return total;
+	}
 
 }

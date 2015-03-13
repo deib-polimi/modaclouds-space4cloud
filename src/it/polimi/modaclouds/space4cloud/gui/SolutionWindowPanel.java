@@ -8,7 +8,9 @@ import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -125,7 +127,7 @@ public class SolutionWindowPanel extends JTabbedPane{
 			for (int hour = 0; hour < 24; ++hour) {
 				workload.dataset.addValue(solution.getPercentageWorkload(hour), provider, "" + hour);
 				for (Tier t : solution.getApplication(hour).getTiers()) {
-					allocation.dataset.addValue(((IaaS) t.getCloudService()).getReplicas(), t.getName(), "" + hour);
+					allocation.dataset.addValue(getReplicas(t), t.getName(), "" + hour);
 				}
 			}
 			
@@ -178,6 +180,18 @@ public class SolutionWindowPanel extends JTabbedPane{
 
         initialize();
     }
+    
+    private int getReplicas(Tier t) {
+		CloudService serv = t.getCloudService();
+		
+		if (serv instanceof IaaS) {
+			IaaS res = (IaaS) t.getCloudService();
+			return res.getReplicas();
+		} else if (serv instanceof PaaS) {
+			return 1;
+		}
+		return 0;
+	}
 
     public void setPopulation(File usageModelExtension) {
         populations.clear();

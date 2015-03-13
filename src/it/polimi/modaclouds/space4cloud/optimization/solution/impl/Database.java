@@ -25,9 +25,70 @@ public abstract class Database extends PaaS {
 	private static final long serialVersionUID = 2762220847804198922L;
 
 	public Database(String provider,
-			String serviceType, String serviceName, String resourceName) {
-		super(provider, serviceType, serviceName, resourceName);
-		// TODO Auto-generated constructor stub
+			String serviceType, String serviceName, String resourceName, DatabaseType type,
+			boolean ssdOptimized, int storage, int replicas, boolean multiAzReplicas, Compute compute) {
+		super(provider, serviceType, serviceName, resourceName, replicas);
+		
+		this.type = type;
+		this.ssdOptimized = ssdOptimized;
+		this.multiAzReplicas = multiAzReplicas;
+		this.compute = compute;
+		this.storage = storage;
+	}
+
+	private boolean ssdOptimized;
+	
+	private boolean multiAzReplicas;
+	
+	private int storage;
+	
+	private Compute compute;
+	
+	private DatabaseType type;
+	
+	public static final boolean DEFAULT_SSD_OPTIMIZED = false;
+	public static final int DEFAULT_REPLICAS = 1;
+	public static final boolean DEFAULT_MULTI_AZ_REPLICAS = false;
+	public static final int DEFAULT_STORAGE = Integer.MAX_VALUE;
+
+	public int getStorage() {
+		return storage;
+	}
+
+	public void setStorage(int storage) {
+		this.storage = storage;
+	}
+
+	public DatabaseType getType() {
+		return type;
+	}
+
+	public void setType(DatabaseType type) {
+		this.type = type;
+	}
+	
+	public boolean isSsdOptimized() {
+		return ssdOptimized;
+	}
+
+	public void setSsdOptimized(boolean ssdOptimized) {
+		this.ssdOptimized = ssdOptimized;
+	}
+
+	public boolean isMultiAzReplicas() {
+		return multiAzReplicas;
+	}
+
+	public void setMultiAzReplicas(boolean multiAzReplicas) {
+		this.multiAzReplicas = multiAzReplicas;
+	}
+
+	public Compute getCompute() {
+		return compute;
+	}
+
+	public void setCompute(Compute compute) {
+		this.compute = compute;
 	}
 
 	@Override
@@ -40,6 +101,42 @@ public abstract class Database extends PaaS {
 	public void update(LqnResultParser parser) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	public static enum DatabaseType {
+		NoSQL("nosql"), Relational("relational"), TableDatastore("table"), BlobDatastore("document");
+		
+		private String name;
+		
+		private DatabaseType(String name) {
+			this.name = name;
+		}
+		
+		public static DatabaseType getById(int id) {
+			DatabaseType[] values = DatabaseType.values();
+			if (id < 0)
+				id = 0;
+			else if (id >= values.length)
+				id = values.length - 1;
+			return values[id];
+		}
+		
+		public static DatabaseType getByName(String name) {
+			DatabaseType[] values = DatabaseType.values();
+			for (DatabaseType pt : values) {
+				if (pt.name.equals(name))
+					return pt;
+			}
+			return null;
+		}
+
+		public static int size() {
+			return DatabaseType.values().length;			
+		}
+		
+		public String getName() {
+			return name;
+		}
 	}
 
 }

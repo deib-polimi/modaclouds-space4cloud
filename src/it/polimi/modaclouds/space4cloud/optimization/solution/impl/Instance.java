@@ -192,10 +192,22 @@ public class Instance implements Cloneable, Serializable {
 		if (tiers.size() > 0)
 			str += tiers.get(0).getCloudService().getProvider();
 		for(Tier t:tiers){
-			IaaS res = (IaaS) t.getCloudService();
-			str = str + res.getResourceName() + res.getReplicas();
+			CloudService res = t.getCloudService();
+			str = str + res.getResourceName() + getReplicas(t);
 		}
 		return str;
+	}
+	
+	private int getReplicas(Tier t) {
+		CloudService serv = t.getCloudService();
+		
+		if (serv instanceof IaaS) {
+			IaaS res = (IaaS) t.getCloudService();
+			return res.getReplicas();
+		} else if (serv instanceof PaaS) {
+			return 1;
+		}
+		return 0;
 	}
 
 	/**

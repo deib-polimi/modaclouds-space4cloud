@@ -42,7 +42,6 @@ public class BestSolutionExplorer extends WindowAdapter implements ActionListene
 		addPropertyChangeListener(engine);
 		engine.addPropertyChangeListener(this);
 		initialize();
-		frmBestSolutionsExplorer.setVisible(true);
 	}
 
 	/**
@@ -94,17 +93,37 @@ public class BestSolutionExplorer extends WindowAdapter implements ActionListene
 		btnNext.setEnabled(false);
 		commandPanel.add(btnNext);
 		
+		prepared = true;
+	}
+	
+	public static void show() {
+		if (shown || !prepared)
+			return;
+		
+		frmBestSolutionsExplorer.setVisible(true);
 		shown = true;
 	}
 
 	private static boolean shown = false;
+	private static boolean prepared = false;
 
 	/**
 	 * Shows the window with the set of solutions specified. If the window has already shown it updates  the window according to the specified solutions
 	 * @param solutions
 	 */
 	public static void show(OptEngine engine){
-		if (!shown)
+		prepare(engine);
+		
+		show();
+			
+	}
+	
+	/**
+	 * Create the window with the set of solutions specified without showing it.
+	 * @param solutions
+	 */
+	public static void prepare(OptEngine engine){
+		if (!prepared)
 			new BestSolutionExplorer(engine);
 	}
 
@@ -163,6 +182,7 @@ public class BestSolutionExplorer extends WindowAdapter implements ActionListene
 		super.windowClosing(e);
 		frmBestSolutionsExplorer.dispose();
 		shown = false;
+		prepared = false;
 		pcs.firePropertyChange(PROPERTY_WINDOW_CLOSED, false, true);		
 	}
 

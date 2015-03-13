@@ -194,4 +194,8 @@ public interface GenericDBConnector {
 	 */
 	public Map<String, PaaS_Service> getPaaSServicesHashMap();
 
+	public double getAvailability();
+	
+	public double getAvailability(String region);
+	
 }

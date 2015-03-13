@@ -30,6 +30,7 @@ import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.types.palladio.AllocationProfile;
 
@@ -96,6 +97,72 @@ public class CostEvaluator {
 //		return cost;
 //	}
 	
+	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource, String region, int replicas, int requests, int hour) {
+		if (cloudResource == null) {
+			logger.error("ERROR: The found resource is null!");
+			// TODO: rimettere a 1
+			return 100;
+		}
+		
+		double cost = 0;
+		
+		List<Cost> lc = cloudResource.getHasCost();
+		List<Cost> onDemandLc = new ArrayList<Cost>();
+
+		// filter only on-demand
+		for (Cost c : lc)
+			if (!c.getDescription().contains("Reserved"))
+				onDemandLc.add(c);
+
+		lc.clear();
+		// filter by region
+		for (Cost c : onDemandLc)
+			if (c.getRegion() == null || c.getRegion() == ""
+			|| region == null
+			|| c.getRegion().equals(region))
+				lc.add(c);
+		
+		CostProfile cp = cloudResource.getHasCostProfile();
+		cost = deriveCosts(lc, cp, replicas, requests, hour);
+		
+		return cost;
+	}
+	
+	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform, String region, int replicas, int requests, int hour) {
+		if (cloudPlatform == null) {
+			logger.error("ERROR: The found platform is null!");
+			// TODO: rimettere a 1
+			return 100;
+		}
+		
+		double cost = 0;
+		
+		List<Cost> lc = cloudPlatform.getHasCost();
+		List<Cost> onDemandLc = new ArrayList<Cost>();
+
+		// filter only on-demand
+		for (Cost c : lc)
+			if (!c.getDescription().contains("Reserved"))
+				onDemandLc.add(c);
+
+		lc.clear();
+		// filter by region
+		for (Cost c : onDemandLc)
+			if (c.getRegion() == null || c.getRegion() == ""
+			|| region == null
+			|| c.getRegion().equals(region))
+				lc.add(c);
+		
+		CostProfile cp = cloudPlatform.getHasCostProfile();
+		cost += deriveCosts(lc, cp, replicas, requests, hour);
+		
+		List<it.polimi.modaclouds.resourcemodel.cloud.CloudResource> resources = cloudPlatform.getRunsOnCloudResource();
+		for (it.polimi.modaclouds.resourcemodel.cloud.CloudResource cr : resources)
+			cost += deriveCosts(cr, region, replicas, requests, hour);
+		
+		return cost;
+	}
+	
 	public double deriveCosts(Instance application, int hour) {
 		if (application.getFather().getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
 			return derivePrivateCosts(application, hour);
@@ -112,44 +179,16 @@ public class CostEvaluator {
 								iaasResource.getServiceName(),
 								iaasResource.getResourceName());
 
-				if (cloudResource == null) {
-					logger.error("ERROR: The found resource is null!");
-					// TODO: rimettere a 1
-					cost += 100;
-					continue;
-				}
+				cost += deriveCosts(cloudResource, application.getRegion(), iaasResource.getReplicas(), t.getTotalRequests(), hour);
+			} else if (service instanceof PaaS) {
+				PaaS paasResource = (PaaS) service;
+				it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform = dataHandler
+						.getCloudPlatform(paasResource.getProvider(),
+								paasResource.getServiceName(),
+								paasResource.getResourceName());
 
-				List<Cost> lc = cloudResource.getHasCost();
-				List<Cost> onDemandLc = new ArrayList<Cost>();
-				
-				String tmp = "\nResource: " + iaasResource.getProvider() + ", " +
-											iaasResource.getServiceName() + ", " +
-											iaasResource.getResourceName() + ", " +
-											application.getRegion() + " (" + hour + ")";
-				tmp += "\nCosts types:\n";
-				for (Cost c : lc)
-					tmp += "- " + c.getDescription() + ", " + c.getRegion();
-
-				// filter only on-demand
-				for (Cost c : lc)
-					if (!c.getDescription().contains("Reserved"))
-						onDemandLc.add(c);
-
-				lc.clear();
-				// filter by region
-				for (Cost c : onDemandLc)
-					if (c.getRegion() == null || c.getRegion() == ""
-					|| application.getRegion() == null
-					|| c.getRegion().equals(application.getRegion()))
-						lc.add(c);
-
-				if (lc.size() == 0)
-					logger.debug(tmp);
-				
-				CostProfile cp = cloudResource.getHasCostProfile();
-				cost += deriveCosts(lc, cp, iaasResource.getReplicas(), hour);
+				cost += deriveCosts(cloudPlatform, application.getRegion(), paasResource.getReplicas(), t.getTotalRequests(), hour);
 			}
-			// TODO Add Platform costs
 		}
 		return cost;
 	}
@@ -163,7 +202,7 @@ public class CostEvaluator {
 		
 		List<Host> usedHosts = PrivateCloud.getInstance().getUsedHosts(hour);
 		for (Host h : usedHosts) {
-			cost += deriveCosts(null, h.energyCost, 1, hour);
+			cost += deriveCosts(null, h.energyCost, 1, 0, hour);
 		}
 		
 		// TODO: add VM cost, because we consider now a fixed cost either if the
@@ -173,15 +212,23 @@ public class CostEvaluator {
 	}
 
 	public double getResourceAverageCost(IaaS iaasResource, String region){
-		double cost = 0;
 		it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler
 				.getCloudResource(iaasResource.getProvider(),
 						iaasResource.getServiceName(),
 						iaasResource.getResourceName());
 
 		if (cloudResource == null) {
-			System.err.println("ERROR: The found resource is null!");
+			logger.error("ERROR: The found resource is null!");
 		}
+
+		return getResourceAverageCost(cloudResource, region);
+	}
+	
+	private double getResourceAverageCost(it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource, String region){
+		if (cloudResource == null)
+			return 0;
+		
+		double cost = 0;
 
 		List<Cost> lc = cloudResource.getHasCost();
 		List<Cost> onDemandLc = new ArrayList<Cost>();
@@ -201,7 +248,46 @@ public class CostEvaluator {
 
 		CostProfile cp = cloudResource.getHasCostProfile();
 		for(int i=0;i<24;i++)
-			cost += deriveCosts(lc, cp, 1, i)/24;
+			cost += deriveCosts(lc, cp, 1, 0, i)/24;
+		return cost;
+	}
+	
+	public double getPlatformAverageCost(PaaS paasResource, String region){
+		double cost = 0;
+		it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform = dataHandler
+				.getCloudPlatform(paasResource.getProvider(),
+						paasResource.getServiceName(),
+						paasResource.getResourceName());
+
+		if (cloudPlatform == null) {
+			logger.error("ERROR: The found platform is null!");
+			return 0;
+		}
+
+		List<Cost> lc = cloudPlatform.getHasCost();
+		List<Cost> onDemandLc = new ArrayList<Cost>();
+
+		// filter only on-demand
+		for (Cost c : lc)
+			if (!c.getDescription().contains("Reserved"))
+				onDemandLc.add(c);
+
+		lc.clear();
+		// filter by region
+		for (Cost c : onDemandLc)
+			if (c.getRegion() == null || c.getRegion() == ""
+			|| region == null
+			|| c.getRegion().equals(region))
+				lc.add(c);
+
+		CostProfile cp = cloudPlatform.getHasCostProfile();
+		for(int i=0;i<24;i++)
+			cost += deriveCosts(lc, cp, 1, 0, i)/24;
+		
+		List<it.polimi.modaclouds.resourcemodel.cloud.CloudResource> resources = cloudPlatform.getRunsOnCloudResource();
+		for (it.polimi.modaclouds.resourcemodel.cloud.CloudResource cr : resources)
+			cost += getResourceAverageCost(cr, region);
+		
 		return cost;
 	}
 
@@ -284,7 +370,7 @@ public class CostEvaluator {
 	 * @see CostProfile
 	 * @see AllocationProfile
 	 */
-	private double deriveCosts(List<Cost> lc, CostProfile cp, int replicas,
+	private double deriveCosts(List<Cost> lc, CostProfile cp, int replicas, int requests,
 			int hour) {
 		double cost = 0.0, temp;
 		
@@ -334,9 +420,10 @@ public class CostEvaluator {
 							break;
 						}
 					break;
-
-					// Future works
 				case PER_MILLION_IO:
+					if (requests > 0)
+						temp += getIntervalCost(c, (int)Math.round(requests/1000000.0)) / 730; // TODO wut? 730?
+					break;
 				default:
 					break;
 				}

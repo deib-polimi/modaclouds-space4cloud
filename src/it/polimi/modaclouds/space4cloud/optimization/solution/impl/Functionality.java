@@ -171,4 +171,9 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	public void setThroughput(double throughput) {
 		this.throughput = throughput;
 	}
+	
+	public int getRequests() {
+		// TODO: compute!
+		return 1000000;
+	}
 }

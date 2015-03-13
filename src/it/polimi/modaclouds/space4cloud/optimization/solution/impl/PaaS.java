@@ -26,8 +26,52 @@ public abstract class PaaS extends CloudService implements
 	private static final long serialVersionUID = -8088032094520247525L;
 
 	public PaaS(String provider, String serviceType,
-			String serviceName, String resourceName) {
+			String serviceName, String resourceName, int replicas) {
 		super(provider, serviceType, serviceName, resourceName);
+		
+		this.replicas = replicas;
+	}
+	
+	private int replicas;
+
+	public int getReplicas() {
+		return replicas;
+	}
+
+	public void setReplicas(int replicas) {
+		this.replicas = replicas;
+	}
+
+	public static enum PaaSType {
+		Frontend("frontend"), Middleware("middleware"), Backend("backend"), DataBase("database"), Storage("storage"), Queue("queue"), Cache("cache");
+		
+		private String name;
+		
+		private PaaSType(String name) {
+			this.name = name;
+		}
+		
+		public static PaaSType getById(int id) {
+			PaaSType[] values = PaaSType.values();
+			if (id < 0)
+				id = 0;
+			else if (id >= values.length)
+				id = values.length - 1;
+			return values[id];
+		}
+		
+		public static PaaSType getByName(String name) {
+			PaaSType[] values = PaaSType.values();
+			for (PaaSType pt : values) {
+				if (pt.name.equals(name))
+					return pt;
+			}
+			return null;
+		}
+
+		public static int size() {
+			return PaaSType.values().length;			
+		}
 	}
 
 }

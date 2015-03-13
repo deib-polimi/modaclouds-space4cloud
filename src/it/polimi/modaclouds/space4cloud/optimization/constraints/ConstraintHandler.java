@@ -119,6 +119,15 @@ public class ConstraintHandler {
 			case MACHINETYPE:
 				constraint = new MachineTypeConstraint(cons);
 				break;
+			case PROGRAMMINGLANGUAGE:
+				constraint = new LanguageConstraint(cons);
+				break;
+			case DBTYPE:
+				constraint = new DBTypeConstraint(cons);
+				break;
+			case DBTECHNOLOGY:
+				constraint = new DBTechnologyConstraint(cons);
+				break;
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
 			}

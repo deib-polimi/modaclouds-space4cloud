@@ -441,32 +441,40 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 	}
 
-
 	private void cleanResources() {
-		logger.info("Exiting SPACE4Cloud");		
-		//close the connection with the database
-		try {
-			if(DatabaseConnector.getConnection() != null)
-				DatabaseConnector.getConnection().close();
-		} catch (SQLException e) {
-			logger.error("Error in closing the connection with the database",e);
-		}
-		if(Configuration.SOLVER == Solver.LINE){
-			if(LineServerHandlerFactory.getHandler() != null){
-				LineServerHandlerFactory.getHandler().closeConnections();
-			}
-		}
+		cleanResources(false);
+	}
+
+	private void cleanResources(boolean keepThingsOpened) {
 		if(engine != null){
 			engine.exportSolution();
 			engine.cancel(true);
-			engine = null;
 		}
-		DatabaseConnector.closeConnection();
-		LineServerHandlerFactory.clearHandler();
-		ConstraintHandlerFactory.clearHandler();
-		refreshProject();
-//		FileUtils.deleteQuietly(Paths.get(Configuration.PRIVATE_CLOUD_HOSTS_TMP).toFile());
-		compleated = true;
+		
+		if (!keepThingsOpened) {
+			BestSolutionExplorer.show();
+			engine = null;
+			logger.info("Exiting SPACE4Cloud");		
+			//close the connection with the database
+			try {
+				if(DatabaseConnector.getConnection() != null)
+					DatabaseConnector.getConnection().close();
+			} catch (SQLException e) {
+				logger.error("Error in closing the connection with the database",e);
+			}
+			if(Configuration.SOLVER == Solver.LINE){
+				if(LineServerHandlerFactory.getHandler() != null){
+					LineServerHandlerFactory.getHandler().closeConnections();
+				}
+			}
+			
+			DatabaseConnector.closeConnection();
+			LineServerHandlerFactory.clearHandler();
+			ConstraintHandlerFactory.clearHandler();
+			refreshProject();
+	//		FileUtils.deleteQuietly(Paths.get(Configuration.PRIVATE_CLOUD_HOSTS_TMP).toFile());
+			compleated = true;
+		}
 	}
 
 
@@ -557,6 +565,154 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		// start the optimization
 		logger.info("Starting the optimization");
 		engine.execute();
+	}
+	
+	private void performVariability() throws OptimizationException {
+
+		if (Configuration.ROBUSTNESS_VARIABILITY <= 0 || Configuration.USE_PRIVATE_CLOUD)
+			return;
+
+
+		logger.info("Considering the variability");
+		
+//		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
+//				.newFixedThreadPool(1);
+		
+		String tmpConf = null;
+		try {
+			tmpConf = Files.createTempFile("space4cloud", ".properties").toString();
+		} catch (IOException e) {
+			throw new OptimizationException("Error creating a temporary file",e);
+		}
+		try {
+			Configuration.saveConfiguration(tmpConf);
+		} catch (IOException e) {
+			throw new OptimizationException("Error saving the configuration",e);
+		}
+		
+		Path resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY);
+		
+		File initialSolution = Paths.get(resultsFolder.toString(), Configuration.SOLUTION_LIGHT_FILE_NAME+ Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		
+		Configuration.SCRUMBLE_ITERS = 0;
+		Configuration.REDISTRIBUTE_WORKLOAD = false;
+		Configuration.USE_PRIVATE_CLOUD = false;
+		Configuration.RESOURCE_ENVIRONMENT_EXTENSION = Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME + "Total" + Configuration.SOLUTION_FILE_EXTENSION).toString();
+		Configuration.CONTRACTOR_TEST = false;
+		
+		TreeMap<Integer, File> usageModelExts = new TreeMap<Integer, File>();
+		File usageModelExt = new File(Configuration.USAGE_MODEL_EXTENSION);
+		int highestPeak = getMaxPopulation(usageModelExt);
+		try {
+			Files.copy(Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME+ "Total" + Configuration.SOLUTION_FILE_EXTENSION),
+					Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME+ "-" + highestPeak + Configuration.SOLUTION_FILE_EXTENSION),
+					StandardCopyOption.REPLACE_EXISTING);
+			File dir = Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER).toFile();
+			for (String s : dir.list()) {
+				File f = new File(dir.toString() + File.separator + s);
+				if (f.isDirectory()) {
+					FileUtils.moveDirectoryToDirectory(
+							Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER, s).toFile(),
+							Paths.get(resultsFolder.toString(), "temp", "" + highestPeak).toFile(),
+							true
+							);
+				}
+			}
+		} catch (IOException e) {
+			logger.error("Error when copying and moving the files", e);
+		}
+		
+		try {
+			double key = 1.0 - (Configuration.ROBUSTNESS_VARIABILITY / 100.0);
+			usageModelExts.put((int)(key*highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
+			key = 1.0 + (Configuration.ROBUSTNESS_VARIABILITY / 100.0);
+			usageModelExts.put((int)(key*highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
+		} catch (JAXBException | IOException | SAXException e) {
+			throw new OptimizationException("Error creating a modified usage model extension", e);
+		}
+		
+		int oldVariability = Configuration.ROBUSTNESS_VARIABILITY;
+		Configuration.ROBUSTNESS_VARIABILITY = 0;
+		
+		// Build a new Optimization Engine engine and an empty initial
+		// solution
+		logger.info("Loading the optimization engine and perparing the solver for the variability test");
+		
+		for (Integer key : usageModelExts.keySet()) {
+			File ume = usageModelExts.get(key);
+			Configuration.USAGE_MODEL_EXTENSION = ume.getAbsolutePath();
+			
+			// TODO: here
+			OptEngine engine = null;
+			
+			try {
+				engine = new PartialEvaluationOptimizationEngine(constraintHandler, true);
+			} catch (DatabaseConnectionFailureExteption e) {
+				throw new OptimizationException("Optinization error. ",e);		
+			}
+	
+			// load the initial solution from the PCM specified in the
+			// configuration and the extension
+			logger.info("Parsing The Solution");
+			try {
+				engine.loadInitialSolution(initialSolution, null);
+	
+			} catch (InitializationException e) {
+				throw new OptimizationException("Error in loading the initial solution", e);
+			}
+			engine.setDuration(duration);
+			
+			try {
+				engine.simpleEvaluation();
+	
+			} catch (OptimizationException e) {
+				throw new OptimizationException("Error in evaluating the solution", e);
+			}
+			
+			SolutionMulti bestSolution = engine.getBestSolutions().get(engine.getBestSolutions().size() - 1);
+			bestSolution.exportAsExtension(Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME+ "-" + key + Configuration.SOLUTION_FILE_EXTENSION));
+			
+			try {
+				File dir = Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER).toFile();
+				for (String s : dir.list()) {
+					File f = new File(dir.toString() + File.separator + s);
+					if (f.isDirectory()) {
+						FileUtils.moveDirectoryToDirectory(
+								Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER, s).toFile(),
+								Paths.get(resultsFolder.toString(), "temp", "" + key).toFile(),
+								true
+								);
+					}
+				}
+			} catch (IOException e) {
+				logger.error("Error when copying and moving the files", e);
+			}
+			
+			engine.cancel(true);
+			engine = null;
+		}
+		
+		try {
+			FileUtils.moveDirectoryToDirectory(
+					Paths.get(resultsFolder.toString(), "temp").toFile(),
+					Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER).toFile(),
+					true
+					);
+		} catch (IOException e) {
+			logger.error("Error when copying and moving the files", e);
+		}
+		
+		try {
+			Configuration.loadConfiguration(tmpConf);
+		} catch (IOException e) {
+			throw new OptimizationException("Error loading the configuration",e);
+		}
+		
+		logger.info("Exporting the data in the simplified output format...");
+		
+		Configuration.ROBUSTNESS_VARIABILITY = oldVariability;
+		
+		DataExporter.perform(resultsFolder, highestPeak);
 	}
 
 	private ThreadPoolExecutor executor;
@@ -1012,9 +1168,20 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			consoleLogger.info("Optimization ended");		
 			processEnded = true;
 			pcs.firePropertyChange("optimizationEnded", false, true);
+
+			if (Configuration.ROBUSTNESS_VARIABILITY > 0) {
+				cleanResources(true);
+				
+				try {
+					performVariability();
+				} catch (OptimizationException e) {
+					consoleLogger.error("Error in the variability test", e);
+				}
+			}
+			
 			if(!batch)
 				progressWindow.signalCompletion();
-
+			
 			cleanResources();
 		}
 		//forward progress to window

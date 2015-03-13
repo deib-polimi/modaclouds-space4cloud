@@ -47,9 +47,29 @@ public class NOSQL extends Database {
 	 *            the resource name
 	 */
 	public NOSQL(String provider, String serviceType,
-			String serviceName, String resourceName) {
-		super(provider, serviceType, serviceName, resourceName);
-		// TODO Auto-generated constructor stub
+			String serviceName, String resourceName,
+			boolean ssdOptimized, int storage, int replicas, boolean multiAzReplicas, int maxEntrySize, Compute compute) {
+		super(provider, serviceType, serviceName, resourceName, DatabaseType.NoSQL, ssdOptimized, storage, replicas, multiAzReplicas, compute);
+		
+		this.maxEntrySize = maxEntrySize;
+	}
+
+	private int maxEntrySize;
+	
+	public static final int DEFAULT_MAX_ENTRY_SIZE = 400;
+	
+	public int getMaxEntrySize() {
+		return maxEntrySize;
+	}
+
+	public void setMaxEntrySize(int maxEntrySize) {
+		this.maxEntrySize = maxEntrySize;
+	}
+	
+	public String getStorageType() {
+		if (getType() == DatabaseType.NoSQL || getType() == DatabaseType.Relational)
+			return "undefined";
+		return getType().getName();
 	}
 
 	/*
@@ -64,7 +84,10 @@ public class NOSQL extends Database {
 
 		NOSQL nosql = new NOSQL(new String(this.getProvider()), new String(
 				this.getServiceType()), new String(this.getServiceName()),
-				new String(this.getResourceName()));
+				new String(this.getResourceName()),
+				this.isSsdOptimized(), this.getStorage(), this.getReplicas(), this.isMultiAzReplicas(), this.getMaxEntrySize(),
+				this.getCompute().clone()
+				);
 
 		return nosql;
 	}

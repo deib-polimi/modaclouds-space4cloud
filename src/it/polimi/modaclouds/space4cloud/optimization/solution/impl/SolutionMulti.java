@@ -65,7 +65,12 @@ public class SolutionMulti implements Cloneable, Serializable {
 	private int generationIteration = 0;	
 	private long generationTime =0;
 
-
+	public boolean usesPaaS() {
+		for (Solution s : solutions.values())
+			if (s.usesPaaS())
+				return true;
+		return false;
+	}
 
 	public static double getCost(File solution) {
 		double cost = Double.MAX_VALUE;
@@ -210,7 +215,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			text += "\n";
 			for (Instance i : hourApplication) {
 				for (Tier t : i.getTiers())
-					text += ((IaaS) t.getCloudService()).getReplicas() + ",";
+					 text += s.getReplicas(t) + ",";
 				text += "\n";
 			}
 
@@ -313,7 +318,18 @@ public class SolutionMulti implements Cloneable, Serializable {
 							tier.appendChild(hourAllocation);
 							hourAllocation.setAttribute("hour", "" + i);
 							hourAllocation.setAttribute("allocation", ""
-									+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
+									+ sol.getReplicas(t));
+							if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
+                                hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHostsForTier(i, t.getId()).size());
+						}
+					} else if(cs instanceof Platform){
+						for (int i = 0; i < 24; i++) {
+							// create the allocation element
+							Element hourAllocation = doc.createElement("HourAllocation");
+							tier.appendChild(hourAllocation);
+							hourAllocation.setAttribute("hour", "" + i);
+							hourAllocation.setAttribute("allocation", ""
+									+ sol.getReplicas(t));
 							if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
                                 hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHostsForTier(i, t.getId()).size());
 						}
@@ -769,7 +785,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 						ArrayList<Object> propertyValues = new ArrayList<Object>();
 	
 						propertyNames.add("replicas");
-						propertyValues.add(allocation + ((IaaS) app.getTierById(tierId).getCloudService()).getReplicas());
+						propertyValues.add(allocation + solution.getReplicas(app.getTierById(tierId)));
 	
 						propertyNames.add("resourceName");
 						propertyNames.add("speed");
@@ -1036,8 +1052,6 @@ public class SolutionMulti implements Cloneable, Serializable {
 			logger.error("Error exporting the solution",e);
 		}
 		
-		generateOptimizedCosts();
-		
 	}
 	
 	public File generateOptimizedCosts() {
@@ -1053,9 +1067,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 		
 		logger.info("Exporting the optimized costs for Amazon...");
 		
-		int daysConsidered = 400;
-		double percentageOfS = 0.5;
-		double m = 1000.0;
+		int daysConsidered = Configuration.ROBUSTNESS_H;
+		double percentageOfS = Configuration.ROBUSTNESS_Q;
+		double m = 1000.0; // TODO: maybe Configuration.ROBUSTNESS_G ?
 		
 		String configuration = null;
 		try {
@@ -1079,6 +1093,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 			return null;
 		}
 		exportAsExtension(Paths.get(solution));
+		
+		Contractor.removeTempFiles = true;
 		
 		File f = Contractor.perform(configuration, solution, daysConsidered, percentageOfS, m);
 		if (f != null && f.exists())

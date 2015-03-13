@@ -348,7 +348,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Optimization raised an exception",e);
 		}
 		if (!batch)
-			BestSolutionExplorer.show(this);
+			BestSolutionExplorer.prepare(this);
 		return null;
 	}
 
@@ -986,7 +986,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					if (resourceSize == null){
 						logger.trace("Defaulting on resource Size");
 						resourceSize = dataHandler
-								.getCloudResourceSizes(actualProvider,/*
+								.getCloudElementSizes(actualProvider,/*
 								 * cloudProvider,
 								 */serviceName)
 								 .iterator().next();
@@ -994,20 +994,20 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					logger.trace("default size"+resourceSize);
 					
 
-					double speed = dataHandler.getProcessingRate(actualProvider, // cloudProvider,
-							serviceName, resourceSize);
-					logger.trace("processing rate "+speed);
-
-					int ram = dataHandler.getAmountMemory(actualProvider, // cloudProvider,
-							serviceName, resourceSize);
-					logger.trace("ram "+ram);
-
-
-					int numberOfCores = dataHandler.getNumberOfReplicas(
-							actualProvider, /* cloudProvider, */serviceName,
-							resourceSize);
-
-					logger.trace("cores "+numberOfCores);
+//					double speed = dataHandler.getProcessingRate(actualProvider, // cloudProvider,
+//							serviceName, resourceSize);
+//					logger.trace("processing rate "+speed);
+//
+//					int ram = dataHandler.getAmountMemory(actualProvider, // cloudProvider,
+//							serviceName, resourceSize);
+//					logger.trace("ram "+ram);
+//
+//
+//					int numberOfCores = dataHandler.getNumberOfReplicas(
+//							actualProvider, /* cloudProvider, */serviceName,
+//							resourceSize);
+//
+//					logger.trace("cores "+numberOfCores);
 
 
 					/*
@@ -1015,13 +1015,16 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					 * number of replicas of that resource
 					 */
 					Tier t = new Tier(c.getId(), c.getEntityName()
-							+ "_CPU_Processor");
+							+ "_CPU_Processor"); // TODO: here for PaaS?
 
 					/* creation of a Compute type resource */
-					service = new Compute(provider, /* cloudProvider, */
-							serviceType, serviceName, resourceSize, replicas,
-							numberOfCores, speed, ram);
+//					service = new Compute(provider, /* cloudProvider, */
+//							serviceType, serviceName, resourceSize, replicas,
+//							numberOfCores, speed, ram);
 
+					service = dataHandler.getCloudService(provider, serviceType, serviceName, resourceSize, replicas);
+					
+					
 					t.setService(service);
 
 					application.addTier(t);
@@ -1515,9 +1518,65 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		//		if (!batch)
 		//			SolutionWindow.show(bestSolution);
+		
+		if (Configuration.CONTRACTOR_TEST)
+			bestSolution.generateOptimizedCosts();
 
 		return -1;
 
+	}
+	
+	public void simpleEvaluation() throws OptimizationException {
+		if (this.initialSolution == null)
+			return;
+		
+		optimLogger.trace("Starting the simple evaluation");
+
+		timer.start();
+		try {
+			evalServer.EvaluateSolution(initialSolution);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","initialEvaluation",e);
+		}// evaluate the current
+		
+		bestSolution = initialSolution.clone();
+		localBestSolution = initialSolution.clone();
+		
+		bestSolutionSerieHandler = "Best Solution";
+		localBestSolutionSerieHandler = "Local Best Solution";
+
+		timer.split();
+		costLogImage.add(localBestSolutionSerieHandler,
+				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+				localBestSolution.getCost());
+		costLogImage.add(bestSolutionSerieHandler,
+				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
+				bestSolution.getCost());
+		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
+				+ bestSolution.isFeasible());
+		timer.unsplit();
+		
+		currentSolution = initialSolution.clone(); // the best solution is the
+
+		makeFeasible(currentSolution);
+
+		optimLogger.info("Updating best solutions");
+
+		bestSolution = currentSolution.clone();
+		localBestSolution = currentSolution.clone();
+
+		InternalOptimization(currentSolution);
+		
+		try {
+			evalServer.EvaluateSolution(currentSolution);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","finalEvaluation",e);
+		}
+		
+		for (Solution s : currentSolution.getAll()) {
+			checkBestSolution(s, true);
+			checkLocalBestSolution(s, true);
+		}
 	}
 
 
@@ -2049,11 +2108,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 */
 	protected boolean checkBestSolution(Solution sol, boolean force) {
 		if (force || sol.greaterThan(bestSolution)) {    
-			if(bestSolutions !=  null) {
-				bestSolutions.add(bestSolution.clone());
-				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
-//				bse.propertyChange(new PropertyChangeEvent(this, "BSEAddedValue", false, true));
-			}
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
 			timer.split();
@@ -2062,6 +2116,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			bestSolution.setGenerationIteration(numberOfIterations);
 			bestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
+			
+			if(bestSolutions !=  null) {
+				bestSolutions.add(bestSolution.clone());
+				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
+//				bse.propertyChange(new PropertyChangeEvent(this, "BSEAddedValue", false, true));
+			}
+			
 			optimLogger.info("updated best solution");
 			return true;
 		}
@@ -2181,9 +2242,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		for(Solution sol:bestSolution.getAll())
 			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
 
-		// TODO: here
-		if (bestSolution.size() > 1)
-			bestSolution.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
+		bestSolution.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
 
 		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
 		

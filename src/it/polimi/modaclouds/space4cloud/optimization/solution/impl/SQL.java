@@ -45,9 +45,47 @@ public class SQL extends Database {
 	 *            the resource name
 	 */
 	public SQL(String provider, String serviceType,
-			String serviceName, String resourceName) {
-		super(provider, serviceType, serviceName, resourceName);
-		// TODO Auto-generated constructor stub
+			String serviceName, String resourceName, String technology,
+			boolean ssdOptimized, int storage, int maxConnections, int maxRollbackHours,
+			int replicas, boolean multiAzReplicas, Compute compute) {
+		super(provider, serviceType, serviceName, resourceName, DatabaseType.Relational, ssdOptimized, storage, replicas, multiAzReplicas, compute);
+		
+		this.technology = technology;
+		this.maxConnections = maxConnections;
+		this.maxRollbackHours = maxRollbackHours;
+	}
+	
+	private String technology;
+	
+	private int maxConnections;
+	
+	private int maxRollbackHours;
+	
+	public static final int DEFAULT_MAX_CONNECTIONS = Integer.MAX_VALUE;
+	public static final int DEFAULT_MAX_ROLLBACK_HOURS = 0;
+
+	public int getMaxConnections() {
+		return maxConnections;
+	}
+
+	public void setMaxConnections(int maxConnections) {
+		this.maxConnections = maxConnections;
+	}
+
+	public int getMaxRollbackHours() {
+		return maxRollbackHours;
+	}
+
+	public void setMaxRollbackHours(int maxRollbackHours) {
+		this.maxRollbackHours = maxRollbackHours;
+	}
+	
+	public String getTechnology() {
+		return technology;
+	}
+
+	public void setTechnology(String technology) {
+		this.technology = technology;
 	}
 
 	/*
@@ -59,11 +97,20 @@ public class SQL extends Database {
 	 */
 	@Override
 	public SQL clone() {
-
 		SQL sql = new SQL(new String(this.getProvider()), new String(
 						this.getServiceType()), new String(
 						this.getServiceName()), new String(
-						this.getResourceName()));
+						this.getResourceName()),
+						new String(this.getTechnology()),
+						this.isSsdOptimized(),
+						this.getStorage(),
+						this.getMaxConnections(),
+						this.getMaxRollbackHours(),
+						this.getReplicas(),
+						this.isMultiAzReplicas(),
+						this.getCompute().clone()
+				
+				);
 
 		return sql;
 	}

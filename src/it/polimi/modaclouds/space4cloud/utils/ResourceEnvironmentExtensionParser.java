@@ -89,6 +89,12 @@ public class ResourceEnvironmentExtensionParser {
 				PaasService resource = container.getCloudPlatform();
 				serviceTypes.put(id, resource.getServiceType());
 				serviceNames.put(id, resource.getServiceName());
+				
+				int[] replicas = new int[HOURS];
+				for (int i = 0; i < HOURS; i++) {
+					replicas[i] = 1;
+				}
+				instanceReplicas.put(id, replicas);
 			}
 
 		}

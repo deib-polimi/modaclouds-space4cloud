@@ -271,7 +271,26 @@ public class Solution implements Cloneable, Serializable {
 		hourApplication.get(i).setFather(this);
 		hourApplication.get(i).setEvaluated(false);
 	}
+	
+	public boolean usesPaaS() {
+		for (Tier t : hourApplication.get(0).getTiers())
+			if (t.getCloudService() instanceof PaaS)
+				return true;
+		return false;
+	}
 
+	public int getReplicas(Tier t) {
+		CloudService serv = t.getCloudService();
+		
+		if (serv instanceof IaaS) {
+			IaaS res = (IaaS) t.getCloudService();
+			return res.getReplicas();
+		} else if (serv instanceof PaaS) {
+			return 1;
+		}
+		return 0;
+	}
+	
 	public void exportCSV(String filename) {
 		String text = "";
 		text += "cost: " + getCost() + "\n";
@@ -280,7 +299,7 @@ public class Solution implements Cloneable, Serializable {
 		text += "\n";
 		for (Instance i : hourApplication) {
 			for (Tier t : i.getTiers())
-				text += ((IaaS) t.getCloudService()).getReplicas() + ",";
+				text += getReplicas(t) + ",";
 			text += "\n";
 		}
 
@@ -352,14 +371,14 @@ public class Solution implements Cloneable, Serializable {
 				tier.setAttribute("resourceName", cs.getResourceName());
 				tier.setAttribute("serviceType", cs.getServiceType());
 
-				if(cs instanceof IaaS){
+				if(cs instanceof IaaS || cs instanceof PaaS){
 					for (int i = 0; i < 24; i++) {
 						// create the allocation element
 						Element hourAllocation = doc.createElement("HourAllocation");
 						tier.appendChild(hourAllocation);
 						hourAllocation.setAttribute("hour", "" + i);
 						hourAllocation.setAttribute("allocation", ""
-								+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
+								+ getReplicas(hourApplication.get(i).getTierById(t.getId())));
 					}
 				}
 			}
@@ -518,7 +537,7 @@ public class Solution implements Cloneable, Serializable {
 		int vms = 0;
 		for (Instance inst : hourApplication)
 			for (Tier t : inst.getTiers())
-				vms += ((IaaS) t.getCloudService()).getReplicas();
+				vms += getReplicas(t);
 
 		return vms;
 	}
@@ -531,7 +550,7 @@ public class Solution implements Cloneable, Serializable {
 	public int getVmNumberPerTier(String tierId) {
 		int vms = 0;
 		for (Instance inst : hourApplication)			
-				vms += ((IaaS) inst.getTierById(tierId).getCloudService()).getReplicas();
+				vms += getReplicas(inst.getTierById(tierId));
 		return vms;
 	}
 
@@ -868,8 +887,8 @@ public class Solution implements Cloneable, Serializable {
 	public boolean hasAtLeastOneReplicaInOneHour() {
 		for (Instance i : hourApplication) {
 			for (Tier t : i.getTiers()) {
-				IaaS res = (IaaS) t.getCloudService();
-				if (res.getReplicas() > 0)
+				int replicas = getReplicas(t);
+				if (replicas > 0)
 					return true;
 			}
 		}

@@ -69,6 +69,11 @@ public class PrivateCloud implements CloudProvider {
 	}
 	
 	public static PrivateCloud getInstance(SolutionMulti solutionMulti) throws DatabaseConnectionFailureExteption {
+		if (solutionMulti.usesPaaS()) {
+			logger.error("The solution uses PaaS! Exiting the PrivateCloud computation...");
+			return null;
+		}
+		
 		instance = new PrivateCloud(solutionMulti);
 		
 		return instance;
@@ -76,6 +81,9 @@ public class PrivateCloud implements CloudProvider {
 	
 	public static SolutionMulti getSolution(SolutionMulti solutionMulti) throws Exception {
 		PrivateCloud pc = getInstance(solutionMulti);
+		
+		if (pc == null)
+			return solutionMulti;
 		
 		logger.info("PrivateCloud initialized.");
 		
