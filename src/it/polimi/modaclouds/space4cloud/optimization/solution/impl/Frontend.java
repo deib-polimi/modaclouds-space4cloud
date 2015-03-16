@@ -11,12 +11,12 @@ public class Frontend extends Platform {
 
 	public Frontend(String provider, String serviceType, String serviceName,
 			String resourceName,
-			int replicas, boolean multiAzReplicas,
+			int replicas, int dataReplicas, boolean multiAzReplicas,
 			List<String> supportedPlatforms,
-			Compute iaasResources, int storage, int maxConnections) {
+			Compute iaasResources, int storage, int maxConnections, boolean replicasChangeable, boolean replicasPayedSingularly) {
 		super(provider, serviceType, serviceName, resourceName,
-				replicas, multiAzReplicas, supportedPlatforms, PlatformType.Frontend, iaasResources,
-				storage, maxConnections);
+				replicas, dataReplicas, multiAzReplicas, supportedPlatforms, PlatformType.Frontend, iaasResources,
+				storage, maxConnections, replicasChangeable, replicasPayedSingularly);
 		// TODO Auto-generated constructor stub
 	}
 

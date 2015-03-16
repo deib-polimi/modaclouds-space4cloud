@@ -26,8 +26,9 @@ public abstract class Database extends PaaS {
 
 	public Database(String provider,
 			String serviceType, String serviceName, String resourceName, DatabaseType type,
-			boolean ssdOptimized, int storage, int replicas, boolean multiAzReplicas, Compute compute) {
-		super(provider, serviceType, serviceName, resourceName, replicas);
+			boolean ssdOptimized, int storage, int dataReplicas, boolean multiAzReplicas, Compute compute) {
+		super(provider, serviceType, serviceName, resourceName, Database.DEFAULT_REPLICAS, dataReplicas,
+				Database.DEFAULT_REPLICAS_CHANGEABLE, Database.DEFAULT_REPLICAS_PAYED_SINGULARLY);
 		
 		this.type = type;
 		this.ssdOptimized = ssdOptimized;
@@ -48,8 +49,11 @@ public abstract class Database extends PaaS {
 	
 	public static final boolean DEFAULT_SSD_OPTIMIZED = false;
 	public static final int DEFAULT_REPLICAS = 1;
+	public static final int DEFAULT_DATA_REPLICAS = 1;
 	public static final boolean DEFAULT_MULTI_AZ_REPLICAS = false;
 	public static final int DEFAULT_STORAGE = Integer.MAX_VALUE;
+	public static final boolean DEFAULT_REPLICAS_CHANGEABLE = false;
+	public static final boolean DEFAULT_REPLICAS_PAYED_SINGULARLY = false;
 
 	public int getStorage() {
 		return storage;

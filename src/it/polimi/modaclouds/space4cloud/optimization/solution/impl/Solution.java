@@ -371,7 +371,7 @@ public class Solution implements Cloneable, Serializable {
 				tier.setAttribute("resourceName", cs.getResourceName());
 				tier.setAttribute("serviceType", cs.getServiceType());
 
-				if(cs instanceof IaaS || cs instanceof PaaS){
+				if(cs instanceof IaaS || (cs instanceof PaaS && ((PaaS)cs).areReplicasChangeable())){
 					for (int i = 0; i < 24; i++) {
 						// create the allocation element
 						Element hourAllocation = doc.createElement("HourAllocation");

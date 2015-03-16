@@ -26,13 +26,51 @@ public abstract class PaaS extends CloudService implements
 	private static final long serialVersionUID = -8088032094520247525L;
 
 	public PaaS(String provider, String serviceType,
-			String serviceName, String resourceName, int replicas) {
+			String serviceName, String resourceName,
+			int replicas, int dataReplicas, boolean replicasChangeable, boolean replicasPayedSingularly) {
 		super(provider, serviceType, serviceName, resourceName);
 		
 		this.replicas = replicas;
+		this.replicasChangeable = replicasChangeable;
+		this.replicasPayedSingularly = replicasPayedSingularly;
 	}
 	
 	private int replicas;
+	
+	private int dataReplicas;
+	
+	private boolean replicasChangeable;
+	
+	private boolean replicasPayedSingularly;
+	
+	public static final int DEFAULT_REPLICAS = 1;
+	public static final int DEFAULT_DATA_REPLICAS = 1;
+	public static final boolean DEFAULT_REPLICAS_CHANGEABLE = false;
+	public static final boolean DEFAULT_REPLICAS_PAYED_SINGULARLY = false;
+	
+	public int getDataReplicas() {
+		return dataReplicas;
+	}
+
+	public void setDataReplicas(int dataReplicas) {
+		this.dataReplicas = dataReplicas;
+	}
+
+	public boolean areReplicasChangeable() {
+		return replicasChangeable;
+	}
+
+	public void setReplicasChangeable(boolean replicasChangeable) {
+		this.replicasChangeable = replicasChangeable;
+	}
+
+	public boolean areReplicasPayedSingularly() {
+		return replicasPayedSingularly;
+	}
+
+	public void setReplicasPayedSingularly(boolean replicasPayedSingularly) {
+		this.replicasPayedSingularly = replicasPayedSingularly;
+	}
 
 	public int getReplicas() {
 		return replicas;

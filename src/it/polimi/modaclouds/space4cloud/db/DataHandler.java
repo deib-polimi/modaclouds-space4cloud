@@ -761,6 +761,7 @@ public class DataHandler {
 		CloudResource st = runOn(cp, CloudResourceType.CLOUDSTORAGE);
 		Compute c = null;
 		int replicas = 1;
+		int dataReplicas = 1;
 		int storage = 0;
 		if (st != null)
 			storage = getStorage(st);
@@ -768,32 +769,41 @@ public class DataHandler {
 		switch (pt) {
 		case Frontend:
 			replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Frontend.DEFAULT_REPLICAS);
+			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Frontend.DEFAULT_DATA_REPLICAS);
 			c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
 					resourceName, replicas, cr);
 			p = new Frontend(provider, serviceType, serviceName,
 					resourceName,
 					replicas,
+					dataReplicas,
 					getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, Frontend.DEFAULT_MULTI_AZ_REPLICAS),
 					languages,
 					c,
 					storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Frontend.DEFAULT_STORAGE),
-					getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, Frontend.DEFAULT_MAX_CONNECTIONS));
+					getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, Frontend.DEFAULT_MAX_CONNECTIONS),
+					getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS_CHANGEABLE, Frontend.DEFAULT_REPLICAS_CHANGEABLE),
+					getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS_PAYED_SINGULARLY, Frontend.DEFAULT_REPLICAS_PAYED_SINGULARLY));
 			break;
 		case Backend:
 			replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Backend.DEFAULT_REPLICAS);
+			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Backend.DEFAULT_DATA_REPLICAS);
 			c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
 					resourceName, replicas, cr);
 			p = new Backend(provider, serviceType, serviceName,
 					resourceName,
 					replicas,
+					dataReplicas,
 					getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, Backend.DEFAULT_MULTI_AZ_REPLICAS),
 					languages,
 					c,
-					storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Frontend.DEFAULT_STORAGE),
-					getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, Backend.DEFAULT_MAX_CONNECTIONS));
+					storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Backend.DEFAULT_STORAGE),
+					getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, Backend.DEFAULT_MAX_CONNECTIONS),
+					getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS_CHANGEABLE, Backend.DEFAULT_REPLICAS_CHANGEABLE),
+					getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS_PAYED_SINGULARLY, Backend.DEFAULT_REPLICAS_PAYED_SINGULARLY));
 			break;
 		case Queue:
-			replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Queue.DEFAULT_REPLICAS);
+			replicas = 1;
+			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Queue.DEFAULT_DATA_REPLICAS);
 			c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
 					resourceName, replicas, cr);
 			p = new Queue(provider, serviceType, serviceName,
@@ -801,7 +811,7 @@ public class DataHandler {
 					getPropertyValue(cp, CloudPlatformPropertyName.REQUEST_SIZE, Queue.DEFAULT_REQUEST_SIZE),
 					getPropertyValue(cp, CloudPlatformPropertyName.ORDER_PRESERVING, Queue.DEFAULT_ORDER_PRESERVING),
 					getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, Queue.DEFAULT_MAX_CONNECTIONS),
-					replicas,
+					dataReplicas,
 					getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, Queue.DEFAULT_MULTI_AZ_REPLICAS),
 					getPropertyValue(cp, CloudPlatformPropertyName.MAX_REQUESTS, Queue.DEFAULT_MAX_REQUESTS),
 					getPropertyValue(cp, CloudPlatformPropertyName.MULTIPLYING_FACTOR, Queue.DEFAULT_MULTIPLYING_FACTOR),
@@ -809,16 +819,17 @@ public class DataHandler {
 					c);
 			break;
 		case Cache:
-			replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Cache.DEFAULT_REPLICAS);
+			replicas = 1;
+			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Cache.DEFAULT_DATA_REPLICAS);
 			c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
 					resourceName, replicas, cr);
 			p = new Cache(provider, serviceType, serviceName,
 					resourceName,
 					cp.getTechnology(),
-					replicas,
+					dataReplicas,
 					getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, Cache.DEFAULT_MULTI_AZ_REPLICAS),
 					getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, Cache.DEFAULT_MAX_CONNECTIONS),
-					storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Frontend.DEFAULT_STORAGE),
+					storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Cache.DEFAULT_STORAGE),
 					c);
 			break;
 		case DataBase:
@@ -828,41 +839,44 @@ public class DataHandler {
 			
 			switch (dbt) {
 			case Relational:
-				replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, SQL.DEFAULT_REPLICAS);
+				replicas = 1;
+				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, SQL.DEFAULT_DATA_REPLICAS);
 				c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
 						resourceName, replicas, cr);
 				p = new SQL(provider, serviceType, serviceName,
 						resourceName, cp.getTechnology(),
 						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, SQL.DEFAULT_SSD_OPTIMIZED),
-						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Frontend.DEFAULT_STORAGE),
+						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, SQL.DEFAULT_STORAGE),
 						getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, SQL.DEFAULT_MAX_CONNECTIONS),
 						getPropertyValue(cp, CloudPlatformPropertyName.MAX_ROLLBACK_HOURS, SQL.DEFAULT_MAX_ROLLBACK_HOURS),
-						replicas,
+						dataReplicas,
 						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, SQL.DEFAULT_MULTI_AZ_REPLICAS),
 						c);
 				break;
 			case TableDatastore:
-				replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, TableDatastore.DEFAULT_REPLICAS);
+				replicas = 1;
+				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, TableDatastore.DEFAULT_DATA_REPLICAS);
 				c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
 						resourceName, replicas, cr);
 				p = new TableDatastore(provider, serviceType, serviceName,
 						resourceName,
 						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, TableDatastore.DEFAULT_SSD_OPTIMIZED),
-						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Frontend.DEFAULT_STORAGE),
-						replicas,
+						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, TableDatastore.DEFAULT_STORAGE),
+						dataReplicas,
 						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, TableDatastore.DEFAULT_MULTI_AZ_REPLICAS),
 						getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, TableDatastore.DEFAULT_MAX_ENTRY_SIZE),
 						c);
 				break;
 			case BlobDatastore:
-				replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, BlobDatastore.DEFAULT_REPLICAS);
+				replicas = 1;
+				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, BlobDatastore.DEFAULT_DATA_REPLICAS);
 				c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
 						resourceName, replicas, cr);
 				p = new BlobDatastore(provider, serviceType, serviceName,
 						resourceName,
 						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, BlobDatastore.DEFAULT_SSD_OPTIMIZED),
-						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Frontend.DEFAULT_STORAGE),
-						replicas,
+						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, BlobDatastore.DEFAULT_STORAGE),
+						dataReplicas,
 						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, BlobDatastore.DEFAULT_MULTI_AZ_REPLICAS),
 						getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, BlobDatastore.DEFAULT_MAX_ENTRY_SIZE),
 						c);
@@ -875,17 +889,6 @@ public class DataHandler {
 			logger.debug("Case not considered at the moment.");
 			return null;
 		}
-
-//		EList<VirtualHWResource> hw = cr.getComposedOf();
-//		for (VirtualHWResource vhw : hw) {
-//			if (vhw.getType() == VirtualHWResourceType.CPU) {
-//				speed = vhw.getProcessingRate(); // speed
-//				numberOfCores = vhw.getNumberOfReplicas();// number
-//			} else if (vhw.getType() == VirtualHWResourceType.MEMORY) {
-//				ram = ((V_Memory) vhw).getSize();
-//			}
-//
-//		}
 		
 		return p;
 	}
@@ -915,11 +918,11 @@ public class DataHandler {
 	}
 	
 	private boolean getPropertyValue(CloudPlatform cp, CloudPlatformPropertyName name, boolean defaultValue) {
-		boolean res = defaultValue;
-		try {
-			res = Boolean.parseBoolean(getPropertyValue(cp, name));
-		} catch (Exception e) { }
-		return res;
+		String res = getPropertyValue(cp, name);
+		if (res == null)
+			return defaultValue;
+		else
+			return Boolean.parseBoolean(res);
 	}
 	
 	private String getPropertyValue(CloudPlatform cp, CloudPlatformPropertyName name) {

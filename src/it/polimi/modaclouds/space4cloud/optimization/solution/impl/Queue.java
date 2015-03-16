@@ -12,9 +12,10 @@ public class Queue extends PaaS {
 	public Queue(String provider, String serviceType, String serviceName,
 			String resourceName,
 			int requestSize, boolean orderPreserving,
-			int maxConnections, int replicas, boolean multiAzReplicas, int maxRequests, double multiplyingFactor, double delay,
+			int maxConnections, int dataReplicas, boolean multiAzReplicas, int maxRequests, double multiplyingFactor, double delay,
 			Compute compute) {
-		super(provider, serviceType, serviceName, resourceName, replicas);
+	super(provider, serviceType, serviceName, resourceName, Queue.DEFAULT_REPLICAS, dataReplicas,
+			Queue.DEFAULT_REPLICAS_CHANGEABLE, Queue.DEFAULT_REPLICAS_PAYED_SINGULARLY);
 		
 		this.requestSize = requestSize;
 		this.orderPreserving = orderPreserving;
@@ -56,10 +57,13 @@ public class Queue extends PaaS {
 	public static final boolean DEFAULT_ORDER_PRESERVING = false;
 	public static final int DEFAULT_MAX_CONNECTIONS = Integer.MAX_VALUE;
 	public static final int DEFAULT_REPLICAS = 1;
+	public static final int DEFAULT_DATA_REPLICAS = 1;
 	public static final boolean DEFAULT_MULTI_AZ_REPLICAS = false;
 	public static final int DEFAULT_MAX_REQUESTS = Integer.MAX_VALUE;
 	public static final double DEFAULT_MULTIPLYING_FACTOR = 3.0;
 	public static final double DEFAULT_DELAY = 10.0;
+	public static final boolean DEFAULT_REPLICAS_CHANGEABLE = false;
+	public static final boolean DEFAULT_REPLICAS_PAYED_SINGULARLY = false;
 
 	public double getDelay() {
 		return delay;

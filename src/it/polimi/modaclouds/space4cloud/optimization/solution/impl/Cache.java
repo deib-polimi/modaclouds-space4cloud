@@ -11,9 +11,10 @@ public class Cache extends PaaS {
 
 	public Cache(String provider, String serviceType, String serviceName,
 			String resourceName,
-			String engine, int replicas, boolean multiAzReplicas, int maxConnections, int storage,
+			String engine, int dataReplicas, boolean multiAzReplicas, int maxConnections, int storage,
 			Compute compute) {
-		super(provider, serviceType, serviceName, resourceName, replicas);
+		super(provider, serviceType, serviceName, resourceName, Cache.DEFAULT_REPLICAS, dataReplicas,
+				Cache.DEFAULT_REPLICAS_CHANGEABLE, Cache.DEFAULT_REPLICAS_PAYED_SINGULARLY);
 		this.engine = engine;
 		this.multiAzReplicas = multiAzReplicas;
 		this.maxConnections = maxConnections;
@@ -34,7 +35,10 @@ public class Cache extends PaaS {
 	public static final int DEFAULT_STORAGE = Integer.MAX_VALUE;
 	public static final int DEFAULT_MAX_CONNECTIONS = Integer.MAX_VALUE;
 	public static final int DEFAULT_REPLICAS = 1;
+	public static final int DEFAULT_DATA_REPLICAS = 1;
 	public static final boolean DEFAULT_MULTI_AZ_REPLICAS = false;
+	public static final boolean DEFAULT_REPLICAS_CHANGEABLE = false;
+	public static final boolean DEFAULT_REPLICAS_PAYED_SINGULARLY = false;
 
 	public String getEngine() {
 		return engine;

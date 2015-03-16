@@ -31,6 +31,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.types.palladio.AllocationProfile;
 
@@ -154,7 +155,8 @@ public class CostEvaluator {
 				lc.add(c);
 		
 		CostProfile cp = cloudPlatform.getHasCostProfile();
-		cost += deriveCosts(lc, cp, replicas, requests, hour);
+		if (lc.size() > 0 || cp != null)
+			cost += deriveCosts(lc, cp, replicas, requests, hour);
 		
 		List<it.polimi.modaclouds.resourcemodel.cloud.CloudResource> resources = cloudPlatform.getRunsOnCloudResource();
 		for (it.polimi.modaclouds.resourcemodel.cloud.CloudResource cr : resources)
@@ -168,9 +170,11 @@ public class CostEvaluator {
 			return derivePrivateCosts(application, hour);
 		}
 		
-		double cost = 0;
+		double cost = 0.0;
 		// sum up costs for each tier
 		for (Tier t : application.getTiers()) {
+			double tierCost = 0.0;
+			
 			CloudService service = t.getCloudService();
 			if (service instanceof IaaS) {
 				IaaS iaasResource = (IaaS) service;
@@ -179,16 +183,25 @@ public class CostEvaluator {
 								iaasResource.getServiceName(),
 								iaasResource.getResourceName());
 
-				cost += deriveCosts(cloudResource, application.getRegion(), iaasResource.getReplicas(), t.getTotalRequests(), hour);
+				tierCost += deriveCosts(cloudResource, application.getRegion(), iaasResource.getReplicas(), t.getTotalRequests(), hour);
 			} else if (service instanceof PaaS) {
 				PaaS paasResource = (PaaS) service;
 				it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform = dataHandler
 						.getCloudPlatform(paasResource.getProvider(),
 								paasResource.getServiceName(),
 								paasResource.getResourceName());
+				
+				int replicas = paasResource.areReplicasPayedSingularly() ? paasResource.getReplicas() : 1;
+				int requests = t.getTotalRequests();
+				if (paasResource instanceof Queue)
+					requests *= ((Queue)paasResource).getMultiplyingFactor();
 
-				cost += deriveCosts(cloudPlatform, application.getRegion(), paasResource.getReplicas(), t.getTotalRequests(), hour);
+				tierCost += deriveCosts(cloudPlatform, application.getRegion(), replicas, requests, hour);
 			}
+			
+			t.setCost(tierCost);
+			
+			cost += tierCost;
 		}
 		return cost;
 	}
@@ -413,7 +426,7 @@ public class CostEvaluator {
 							break;
 						case STORAGE:
 							size = ((V_Storage) v).getSize();
-							temp += getIntervalCost(c, size) / 730;
+							temp += getIntervalCost(c, size) / 730; // TODO: wut? 730?
 							break;
 						case CPU:
 						default:
@@ -422,7 +435,7 @@ public class CostEvaluator {
 					break;
 				case PER_MILLION_IO:
 					if (requests > 0)
-						temp += getIntervalCost(c, (int)Math.round(requests/1000000.0)) / 730; // TODO wut? 730?
+						temp += getIntervalCost(c, (int)Math.round(requests/1000000.0));
 					break;
 				default:
 					break;

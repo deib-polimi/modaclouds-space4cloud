@@ -311,18 +311,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 					tier.setAttribute("resourceName", cs.getResourceName());
 					tier.setAttribute("serviceType", cs.getServiceType());
 
-					if(cs instanceof IaaS){
-						for (int i = 0; i < 24; i++) {
-							// create the allocation element
-							Element hourAllocation = doc.createElement("HourAllocation");
-							tier.appendChild(hourAllocation);
-							hourAllocation.setAttribute("hour", "" + i);
-							hourAllocation.setAttribute("allocation", ""
-									+ sol.getReplicas(t));
-							if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
-                                hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHostsForTier(i, t.getId()).size());
-						}
-					} else if(cs instanceof Platform){
+					if(cs instanceof IaaS || (cs instanceof PaaS && ((PaaS)cs).areReplicasChangeable())){
 						for (int i = 0; i < 24; i++) {
 							// create the allocation element
 							Element hourAllocation = doc.createElement("HourAllocation");
@@ -1015,27 +1004,80 @@ public class SolutionMulti implements Cloneable, Serializable {
 		ct.setTotalCost((float)cost);
 		costs.setCost(ct);
 		
+		HashMap<String, Providers> providersMap = new HashMap<String, Providers>();
+		
 		for (Solution s : getAll()) {
-			Providers p = new Providers();
-			p.setName(s.getProvider());
-			p.setServiceName(s.getApplication(0).getTiers().get(0).getCloudService().getServiceName());
-			
-			CostType ctp = new CostType();
-			
-			for (int h = 0; h < 24; ++h) {
-				HourPriceType hour = new HourPriceType();
-				hour.setHour(h);
-				hour.setCost((float)s.getCost(h));
+			for (Tier t : s.getApplication(0).getTiers()) {
+				String provider = s.getProvider();
+				String serviceName = t.getCloudService().getServiceName();
 				
-				ctp.getHourPrice().add(hour);
+				Providers p = providersMap.get(provider + "@" + serviceName);
+				CostType ctp;
+				if (p == null) {
+					p = new Providers();
+					p.setName(provider);
+					p.setServiceName(serviceName);
+					providersMap.put(provider + "@" + serviceName, p);
+					
+					costs.getProviders().add(p);
+					
+					ctp = new CostType();
+					
+					double totalCost = 0.0;
+					
+					for (int h = 0; h < 24; ++h) {
+						HourPriceType hour = new HourPriceType();
+						hour.setHour(h);
+						double cost = t.getCost(); 
+						totalCost += cost;
+						hour.setCost(cost);
+						ctp.getHourPrice().add(hour);
+					}
+					
+					p.setCost(ctp);
+					ctp.setTotalCost((float) totalCost);
+				} else {
+					ctp = p.getCost();
+					
+					double totalCost = ctp.getTotalCost();
+					
+					for (int h = 0; h < 24; ++h) {
+						HourPriceType hour = new HourPriceType();
+						hour.setHour(h);
+						double cost = t.getCost(); 
+						totalCost += cost;
+						hour.setCost(cost);
+						ctp.getHourPrice().add(hour);
+					}
+					
+					ctp.setTotalCost((float) totalCost);
+				}
+				
+				
+				
+				
 			}
 			
-			ctp.setTotalCost((float)s.getCost());
-			p.setCost(ctp);
-			
-			costs.getProviders().add(p);
-			
-			// TODO: add the contracts
+//			Providers p = new Providers();
+//			p.setName(s.getProvider());
+//			p.setServiceName(s.getApplication(0).getTiers().get(0).getCloudService().getServiceName());
+//			
+//			CostType ctp = new CostType();
+//			
+//			for (int h = 0; h < 24; ++h) {
+//				HourPriceType hour = new HourPriceType();
+//				hour.setHour(h);
+//				hour.setCost((float)s.getCost(h));
+//				
+//				ctp.getHourPrice().add(hour);
+//			}
+//			
+//			ctp.setTotalCost((float)s.getCost());
+//			p.setCost(ctp);
+//			
+//			costs.getProviders().add(p);
+//			
+//			// TODO: add the contracts
 		}
 		
 		return costs;

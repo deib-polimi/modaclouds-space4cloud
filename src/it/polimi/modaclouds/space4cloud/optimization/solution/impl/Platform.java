@@ -13,9 +13,10 @@ public abstract class Platform extends PaaS {
 
 	public Platform(String provider, String serviceType, String serviceName,
 			String resourceName,
-			int replicas, boolean multiAzReplicas,
-			List<String> supportedPlatforms, PlatformType platformType, Compute iaasResources, int storage, int maxConnections) {
-		super(provider, serviceType, serviceName, resourceName, replicas);
+			int replicas, int dataReplicas, boolean multiAzReplicas,
+			List<String> supportedPlatforms, PlatformType platformType, Compute iaasResources, int storage, int maxConnections,
+			boolean replicasChangeable, boolean replicasPayedSingularly) {
+		super(provider, serviceType, serviceName, resourceName, replicas, dataReplicas, replicasChangeable, replicasPayedSingularly);
 		this.multiAzReplicas = multiAzReplicas;
 		this.supportedPlatforms = supportedPlatforms;
 		this.platformType = platformType;
@@ -66,8 +67,11 @@ public abstract class Platform extends PaaS {
 	
 	public static final int DEFAULT_MAX_CONNECTIONS = Integer.MAX_VALUE;
 	public static final int DEFAULT_REPLICAS = 1;
+	public static final int DEFAULT_DATA_REPLICAS = 1;
 	public static final boolean DEFAULT_MULTI_AZ_REPLICAS = false;
 	public static final int DEFAULT_STORAGE = Integer.MAX_VALUE;
+	public static final boolean DEFAULT_REPLICAS_CHANGEABLE = true;
+	public static final boolean DEFAULT_REPLICAS_PAYED_SINGULARLY = true;
 
 	public List<String> getSupportedPlatforms() {
 		return supportedPlatforms;
