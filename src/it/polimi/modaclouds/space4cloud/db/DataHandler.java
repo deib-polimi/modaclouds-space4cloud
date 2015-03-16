@@ -474,18 +474,23 @@ public class DataHandler {
 		return -1;
 	}
 	
-	public List<IaaS> getSameServiceResource(CloudService service, String region) {
+	public List<CloudService> getSameService(CloudService service, String region) {
+		List<CloudService> res = new ArrayList<CloudService>();
 		
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
-			
-			List<IaaS> res = getSameServiceResourceInternal(service, region);
-			if (res != null && res.size() > 0)
-				return res;
-		
+			if (service instanceof IaaS) {
+				res = getSameServiceInternal((IaaS)service, region);
+				if (res != null && res.size() > 0)
+					return res;
+			} else if (service instanceof PaaS) {
+				res = getSameService((PaaS)service, region);
+				if (res != null && res.size() > 0)
+					return res;
+			}
 			resetDatabase();
 		}
 		
-		return new ArrayList<>();
+		return res;
 	}
 
 	/**
@@ -498,8 +503,8 @@ public class DataHandler {
 	 *            - the region
 	 * @return a list of IaaS services
 	 */
-	private List<IaaS> getSameServiceResourceInternal(CloudService service, String region) {
-		List<IaaS> resources = new ArrayList<>();
+	private List<CloudService> getSameServiceInternal(IaaS service, String region) {
+		List<CloudService> resources = new ArrayList<>();
 		for (CloudResource cr : cloudProviders.getProviderDBConnectors()
 				.get(service.getProvider()) // provider
 				.getIaaSServicesHashMap().get(service.getServiceName()) // service
@@ -952,9 +957,8 @@ public class DataHandler {
 		return null;
 	}
 	
-	@SuppressWarnings("unused")
-	private List<PaaS> getSameServicePlatform(CloudService service, String region) {
-		List<PaaS> resources = new ArrayList<>();
+	private List<CloudService> getSameService(PaaS service, String region) {
+		List<CloudService> resources = new ArrayList<>();
 		for (CloudPlatform cp : cloudProviders.getProviderDBConnectors()
 				.get(service.getProvider()) // provider
 				.getPaaSServicesHashMap().get(service.getServiceName()) // service

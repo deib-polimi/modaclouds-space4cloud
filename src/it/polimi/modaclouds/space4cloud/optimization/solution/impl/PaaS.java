@@ -37,6 +37,8 @@ public abstract class PaaS extends CloudService implements
 		this.dataReplicas = dataReplicas;
 		this.replicasChangeable = replicasChangeable;
 		this.replicasPayedSingularly = replicasPayedSingularly;
+		
+		setLQNPropertyTAG("speedFactor"); // TODO: is this thing actually used?
 	}
 	
 	private int replicas;

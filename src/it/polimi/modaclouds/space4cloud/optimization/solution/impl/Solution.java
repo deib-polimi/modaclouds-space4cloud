@@ -19,10 +19,8 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.qos_models.schema.HourValueType;
-import it.polimi.modaclouds.qos_models.schema.IaasService;
 import it.polimi.modaclouds.qos_models.schema.Location;
 import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
-import it.polimi.modaclouds.qos_models.schema.PaasService;
 import it.polimi.modaclouds.qos_models.schema.Performance;
 import it.polimi.modaclouds.qos_models.schema.Performance.Seffs;
 import it.polimi.modaclouds.qos_models.schema.Performance.Seffs.Seff;
@@ -828,7 +826,8 @@ public class Solution implements Cloneable, Serializable {
 			//in case this is a IaaS service
 			if(service instanceof IaaS){
 				IaaS iaaService  = (IaaS) service;
-				IaasService resource = factory.createIaasService();
+				it.polimi.modaclouds.qos_models.schema.CloudService resource = factory.createCloudService();
+				resource.setServiceCategory("IaaS");
 				resource.setServiceType(iaaService.getServiceType());
 				resource.setServiceName(iaaService.getServiceName());
 				resource.setResourceSizeID(iaaService.getResourceName());							
@@ -836,15 +835,21 @@ public class Solution implements Cloneable, Serializable {
 				location.setRegion(hourApplication.get(0).getRegion());
 				resource.setLocation(location);				
 				resource.setReplicas(factory.createReplica());
-				container.setCloudResource(resource);
+				container.setCloudElement(resource);
 			}
 			//if it is a Paas service
 			else if (service instanceof PaaS){
 				PaaS paaService  = (PaaS) service;
-				PaasService platform = factory.createPaasService();
-				platform.setServiceType(paaService.getServiceType());
-				platform.setServiceName(paaService.getServiceName());
-				container.setCloudPlatform(platform);
+				it.polimi.modaclouds.qos_models.schema.CloudService resource = factory.createCloudService();
+				resource.setServiceCategory("PaaS");
+				resource.setServiceType(paaService.getServiceType());
+				resource.setServiceName(paaService.getServiceName());
+				resource.setResourceSizeID(paaService.getResourceName());							
+				Location location = factory.createLocation();
+				location.setRegion(hourApplication.get(0).getRegion());
+				resource.setLocation(location);				
+				resource.setReplicas(factory.createReplica());
+				container.setCloudElement(resource);
 			}			
 			resourceContainers.add(container);
 		}
@@ -853,14 +858,22 @@ public class Solution implements Cloneable, Serializable {
 		for(Instance instance:hourApplication){
 			for(Tier t:instance.getTiers()){
 				CloudService service = t.getCloudService();
-				if(service instanceof IaaS){					
-					//build the replica element
+				int replicas = -1;
+				if (service instanceof IaaS) {
 					IaaS iaaService  = (IaaS) service;
+					replicas = iaaService.getReplicas();
+				}
+				else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
+					PaaS paaService  = (PaaS) service;
+					replicas = paaService.getReplicas();
+				}
+				if (replicas > -1) {
+					//build the replica element
 					ReplicaElement replica = factory.createReplicaElement();
 					replica.setHour(hourApplication.indexOf(instance));
-					replica.setValue(iaaService.getReplicas());					
+					replica.setValue(replicas);
 					//add it to the resource container 
-					containersByID.get(t.getId()).getCloudResource().getReplicas().getReplicaElement().add(replica);
+					containersByID.get(t.getId()).getCloudElement().getReplicas().getReplicaElement().add(replica);
 				}
 			}
 		}

@@ -1641,12 +1641,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 			}
 
-			IaaS newRes = null;
-			List<IaaS> resources = dataHandler.getSameServiceResource(
+			CloudService newRes = null;
+			List<CloudService> resources = dataHandler.getSameService(
 					t.getCloudService(), sol.getRegion());
 			String newResType = SolutionHelper
 					.getResourceNameFromTierTypeID(lowestID);
-			for (IaaS res : resources) {
+			for (CloudService res : resources) {
 				if (res.getResourceName().equals(newResType)) {
 					newRes = res;
 					break;
@@ -1900,7 +1900,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// Phase2: Retrieve resources that can be exchanged with the current
 			// one
 			CloudService origRes = selectedTier.getCloudService();
-			List<IaaS> resList = dataHandler.getSameServiceResource(origRes,
+			List<CloudService> resList = dataHandler.getSameService(origRes,
 					sol.getRegion());
 			// filter resources according to architectural constraints
 
@@ -1956,7 +1956,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			}
 
 			// get the resource.
-			IaaS newRes = resList.get(index);
+			CloudService newRes = resList.get(index);
 
 			// debugging
 			//          scrambleLogger.debug("Sorted Resources");
@@ -2002,11 +2002,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @param region
 	 * @return
 	 */
-	private double getEfficiency(IaaS resource, String region) {
+	private double getEfficiency(CloudService resource, String region) {
 		if (resource instanceof Compute) {
 			Compute computeRes = (Compute) resource;
 			double cost = evalServer.getCostEvaulator().getResourceAverageCost(
-					resource, region);
+					(Compute)resource, region);
 			double efficiency = computeRes.getNumberOfCores()
 					* computeRes.getSpeed() / cost;
 			return efficiency;
@@ -2032,14 +2032,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @return the list of resources filtered by those resources that has
 	 *         already been evaluated.
 	 */
-	private List<IaaS> filterByMemory(List<IaaS> resourceList, Solution sol,
+	private List<CloudService> filterByMemory(List<CloudService> resourceList, Solution sol,
 			Tier selectedTier) {
 		// Filter resources that have been already used
 
 		final String token = "jfhbvwiuahj038h9nvlbv93vbie";
 		String solutionTypeID = SolutionHelper.buildSolutionTypeID(sol,
 				selectedTier, token);
-		List<IaaS> newList = new ArrayList<IaaS>();
+		List<CloudService> newList = new ArrayList<CloudService>();
 		for (CloudService resource : resourceList) {
 			// Complete the id generated before
 			String newSolID = solutionTypeID.replace(token,
