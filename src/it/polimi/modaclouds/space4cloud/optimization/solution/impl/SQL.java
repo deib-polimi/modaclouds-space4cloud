@@ -15,6 +15,9 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 // TODO: Auto-generated Javadoc
@@ -97,22 +100,52 @@ public class SQL extends Database {
 	 */
 	@Override
 	public SQL clone() {
-		SQL sql = new SQL(new String(this.getProvider()), new String(
-						this.getServiceType()), new String(
-						this.getServiceName()), new String(
-						this.getResourceName()),
-						new String(this.getTechnology()),
-						this.isSsdOptimized(),
-						this.getStorage(),
-						this.getMaxConnections(),
-						this.getMaxRollbackHours(),
-						this.getReplicas(),
-						this.isMultiAzReplicas(),
-						this.getCompute().clone()
-				
+		SQL sql = new SQL(
+				new String(this.getProvider()),
+				new String(this.getServiceType()),
+				new String(this.getServiceName()),
+				new String(this.getResourceName()),
+				new String(this.getTechnology()),
+				this.isSsdOptimized(),
+				this.getStorage(),
+				this.getMaxConnections(),
+				this.getMaxRollbackHours(),
+				this.getReplicas(),
+				this.isMultiAzReplicas(),
+				this.getCompute().clone()
 				);
 
 		return sql;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof SQL))
+			return false;
+
+		SQL tmp = (SQL) obj;
+
+		return new EqualsBuilder()
+				.append(technology, tmp.technology)
+				.append(maxConnections, tmp.maxConnections)
+				.append(maxRollbackHours, tmp.maxRollbackHours)
+				.appendSuper(super.equals(obj)).isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31)
+				// two randomly chosen prime numbers
+				// if deriving: appendSuper(super.hashCode()).
+				.appendSuper(super.hashCode())
+				.append(technology)
+				.append(maxConnections)
+				.append(maxRollbackHours).toHashCode();
+
 	}
 
 	@Override
@@ -132,12 +165,6 @@ public class SQL extends Database {
 	public void update(LqnResultParser parser) {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public String getId() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

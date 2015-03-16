@@ -1,5 +1,8 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 public class Queue extends PaaS {
@@ -131,6 +134,63 @@ public class Queue extends PaaS {
 		this.multiAzReplicas = multiAzReplicas;
 	}
 	
+	@Override
+	public Queue clone() {
+		Queue queue = new Queue(
+				new String(getProvider()),
+				new String(getServiceType()),
+				new String(getServiceName()),
+				new String(getResourceName()),
+				this.getRequestSize(),
+				this.isOrderPreserving(),
+				this.getMaxConnections(),
+				this.getDataReplicas(),
+				this.isMultiAzReplicas(),
+				this.getMaxRequests(),
+				this.getMultiplyingFactor(),
+				this.getDelay(),
+				this.getCompute().clone()
+				);
+		
+		return queue;
+	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof PaaS))
+			return false;
+
+		Queue tmp = (Queue) obj;
+
+		return new EqualsBuilder()
+				.append(requestSize, tmp.requestSize)
+				.append(orderPreserving, tmp.orderPreserving)
+				.append(maxConnections, tmp.maxConnections)
+				.append(multiAzReplicas, tmp.multiAzReplicas)
+				.append(maxRequests, tmp.maxRequests)
+				.append(multiplyingFactor, tmp.multiplyingFactor)
+				.append(delay, tmp.delay)
+				.appendSuper(super.equals(obj)).isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31)
+				// two randomly chosen prime numbers
+				// if deriving: appendSuper(super.hashCode()).
+				.appendSuper(super.hashCode())
+				.append(requestSize)
+				.append(orderPreserving)
+				.append(maxConnections)
+				.append(multiAzReplicas)
+				.append(maxRequests)
+				.append(multiplyingFactor)
+				.append(delay).toHashCode();
+
+	}
 
 }

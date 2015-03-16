@@ -4,6 +4,9 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 import java.util.List;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 public abstract class Platform extends PaaS {
 
 	/**
@@ -158,6 +161,58 @@ public abstract class Platform extends PaaS {
 		public static int size() {
 			return PlatformType.values().length;			
 		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Platform))
+			return false;
+
+		Platform tmp = (Platform) obj;
+		
+		boolean sameSupportedPlatforms = true;
+		
+		if (supportedPlatforms.size() != tmp.supportedPlatforms.size() || supportedPlatforms == tmp.supportedPlatforms) {
+			sameSupportedPlatforms = false;
+		} else {
+			for (int i = 0; i < supportedPlatforms.size() && sameSupportedPlatforms; ++i) {
+				boolean found = false;
+				for (int j = 0; j < tmp.supportedPlatforms.size() && !found; ++j) {
+					if (supportedPlatforms.get(i).equals(tmp.supportedPlatforms.get(j)))
+						found = true;
+				}
+				if (!found)
+					sameSupportedPlatforms = false;
+			}
+		}
+
+		return new EqualsBuilder()
+				.appendSuper(sameSupportedPlatforms)
+				.append(platformType, tmp.platformType)
+				.append(iaasResources, tmp.iaasResources)
+				.append(multiAzReplicas, tmp.multiAzReplicas)
+				.append(storage, tmp.storage)
+				.append(maxConnections, tmp.maxConnections)
+				.appendSuper(super.equals(obj)).isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31)
+				// two randomly chosen prime numbers
+				// if deriving: appendSuper(super.hashCode()).
+				.appendSuper(super.hashCode())
+				.append(supportedPlatforms)
+				.append(platformType)
+				.append(iaasResources)
+				.append(multiAzReplicas)
+				.append(storage)
+				.append(maxConnections).toHashCode();
+
 	}
 
 }

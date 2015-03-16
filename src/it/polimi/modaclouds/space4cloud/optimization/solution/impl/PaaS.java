@@ -15,6 +15,9 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 
 public abstract class PaaS extends CloudService implements
@@ -31,6 +34,7 @@ public abstract class PaaS extends CloudService implements
 		super(provider, serviceType, serviceName, resourceName);
 		
 		this.replicas = replicas;
+		this.dataReplicas = dataReplicas;
 		this.replicasChangeable = replicasChangeable;
 		this.replicasPayedSingularly = replicasPayedSingularly;
 	}
@@ -47,6 +51,11 @@ public abstract class PaaS extends CloudService implements
 	public static final int DEFAULT_DATA_REPLICAS = 1;
 	public static final boolean DEFAULT_REPLICAS_CHANGEABLE = false;
 	public static final boolean DEFAULT_REPLICAS_PAYED_SINGULARLY = false;
+	
+	@Override
+	public String showStatus(String prefix) {
+		return super.showStatus(prefix) + "\t replicas: " + getReplicas() + "\t data replicas: " + getDataReplicas();
+	}
 	
 	public int getDataReplicas() {
 		return dataReplicas;
@@ -110,6 +119,38 @@ public abstract class PaaS extends CloudService implements
 		public static int size() {
 			return PaaSType.values().length;			
 		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof PaaS))
+			return false;
+
+		PaaS tmp = (PaaS) obj;
+
+		return new EqualsBuilder()
+				.append(replicas, tmp.replicas)
+				.append(dataReplicas, tmp.dataReplicas)
+				.append(replicasChangeable, tmp.replicasChangeable)
+				.append(replicasPayedSingularly, tmp.replicasPayedSingularly)
+				.appendSuper(super.equals(obj)).isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31)
+				// two randomly chosen prime numbers
+				// if deriving: appendSuper(super.hashCode()).
+				.appendSuper(super.hashCode())
+				.append(replicas)
+				.append(dataReplicas)
+				.append(replicasChangeable)
+				.append(replicasPayedSingularly).toHashCode();
+
 	}
 
 }

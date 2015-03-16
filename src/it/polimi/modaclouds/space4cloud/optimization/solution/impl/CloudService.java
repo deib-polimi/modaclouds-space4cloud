@@ -19,6 +19,8 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+
 /**
  * @author MODAClouds The abstract class CloudService define the general Cloud
  *         Resource type.
@@ -107,5 +109,24 @@ public abstract class CloudService implements Cloneable, Serializable, IConstrai
 				+ getServiceType() + "\t provider: " + getProvider()
 				+ "\t service Name: " + getServiceName() + "\t resource Name: "
 				+ getResourceName();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof CloudService))
+			return false;
+
+		CloudService tmp = (CloudService) obj;
+
+		return new EqualsBuilder()
+				.append(provider, tmp.provider)
+				.append(serviceType, tmp.serviceType)
+				.append(serviceName, tmp.serviceName)
+				.append(resourceName, tmp.resourceName)
+				.append(LQNPropertyTAG, tmp.LQNPropertyTAG).isEquals();
 	}
 }

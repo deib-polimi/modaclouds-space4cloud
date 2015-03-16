@@ -15,6 +15,9 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 public abstract class Database extends PaaS {
@@ -96,12 +99,6 @@ public abstract class Database extends PaaS {
 	}
 
 	@Override
-	public CloudService clone() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public void update(LqnResultParser parser) {
 		// TODO Auto-generated method stub
 
@@ -141,6 +138,40 @@ public abstract class Database extends PaaS {
 		public String getName() {
 			return name;
 		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Database))
+			return false;
+
+		Database tmp = (Database) obj;
+
+		return new EqualsBuilder()
+				.append(ssdOptimized, tmp.ssdOptimized)
+				.append(multiAzReplicas, tmp.multiAzReplicas)
+				.append(storage, tmp.storage)
+				.append(compute, tmp.compute)
+				.append(type, tmp.type)
+				.appendSuper(super.equals(obj)).isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31)
+				// two randomly chosen prime numbers
+				// if deriving: appendSuper(super.hashCode()).
+				.appendSuper(super.hashCode())
+				.append(ssdOptimized)
+				.append(multiAzReplicas)
+				.append(storage)
+				.append(type)
+				.append(compute).toHashCode();
+
 	}
 
 }

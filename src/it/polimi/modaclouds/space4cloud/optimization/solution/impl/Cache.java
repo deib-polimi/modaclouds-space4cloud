@@ -1,5 +1,8 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 public class Cache extends PaaS {
@@ -91,5 +94,56 @@ public class Cache extends PaaS {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	public Cache clone() {
+		Cache c = new Cache(
+				new String(getProvider()),
+				new String(getServiceType()),
+				new String(getServiceName()),
+				new String(getResourceName()),
+				new String(getEngine()),
+				getDataReplicas(),
+				isMultiAzReplicas(),
+				getMaxConnections(),
+				getStorage(),
+				getCompute().clone()
+				);
+		
+		return c;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+			return false;
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Cache))
+			return false;
 
+		Cache tmp = (Cache) obj;
+
+		return new EqualsBuilder()
+				.append(engine, tmp.engine)
+				.append(multiAzReplicas, tmp.multiAzReplicas)
+				.append(maxConnections, tmp.maxConnections)
+				.append(storage, tmp.storage)
+				.append(compute, tmp.compute)
+				.appendSuper(super.equals(obj)).isEquals();
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31)
+				// two randomly chosen prime numbers
+				// if deriving: appendSuper(super.hashCode()).
+				.appendSuper(super.hashCode())
+				.append(engine)
+				.append(multiAzReplicas)
+				.append(maxConnections)
+				.append(storage)
+				.append(compute).toHashCode();
+
+	}
 }
