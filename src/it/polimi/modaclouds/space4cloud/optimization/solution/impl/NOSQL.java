@@ -15,10 +15,10 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 
 /**
  * The Class NOSQL.
@@ -50,9 +50,9 @@ public class NOSQL extends Database {
 	 *            the resource name
 	 */
 	public NOSQL(String provider, String serviceType,
-			String serviceName, String resourceName,
+			String serviceName, String resourceName, String technology,
 			boolean ssdOptimized, int storage, int replicas, boolean multiAzReplicas, int maxEntrySize, Compute compute) {
-		super(provider, serviceType, serviceName, resourceName, DatabaseType.NoSQL, ssdOptimized, storage, replicas, multiAzReplicas, compute);
+		super(provider, serviceType, serviceName, resourceName, DatabaseType.NoSQL, technology, ssdOptimized, storage, replicas, multiAzReplicas, compute);
 		
 		this.maxEntrySize = maxEntrySize;
 	}
@@ -68,12 +68,6 @@ public class NOSQL extends Database {
 	public void setMaxEntrySize(int maxEntrySize) {
 		this.maxEntrySize = maxEntrySize;
 	}
-	
-	public String getStorageType() {
-		if (getType() == DatabaseType.NoSQL || getType() == DatabaseType.Relational)
-			return "undefined";
-		return getType().getName();
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -88,6 +82,7 @@ public class NOSQL extends Database {
 		NOSQL nosql = new NOSQL(new String(this.getProvider()), new String(
 				this.getServiceType()), new String(this.getServiceName()),
 				new String(this.getResourceName()),
+				new String(getTechnology()),
 				this.isSsdOptimized(), this.getStorage(), this.getReplicas(), this.isMultiAzReplicas(), this.getMaxEntrySize(),
 				this.getCompute().clone()
 				);
@@ -138,6 +133,42 @@ public class NOSQL extends Database {
 	public void update(LqnResultParser parser) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	public static enum DatabaseTechnology {
+		TableDatastore("table"), BlobDatastore("document");
+		
+		private String name;
+		
+		private DatabaseTechnology(String name) {
+			this.name = name;
+		}
+		
+		public static DatabaseTechnology getById(int id) {
+			DatabaseTechnology[] values = DatabaseTechnology.values();
+			if (id < 0)
+				id = 0;
+			else if (id >= values.length)
+				id = values.length - 1;
+			return values[id];
+		}
+		
+		public static DatabaseTechnology getByName(String name) {
+			DatabaseTechnology[] values = DatabaseTechnology.values();
+			for (DatabaseTechnology pt : values) {
+				if (pt.name.equals(name))
+					return pt;
+			}
+			return null;
+		}
+
+		public static int size() {
+			return DatabaseTechnology.values().length;			
+		}
+		
+		public String getName() {
+			return name;
+		}
 	}
 
 }

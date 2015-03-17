@@ -51,14 +51,11 @@ public class SQL extends Database {
 			String serviceName, String resourceName, String technology,
 			boolean ssdOptimized, int storage, int maxConnections, int maxRollbackHours,
 			int replicas, boolean multiAzReplicas, Compute compute) {
-		super(provider, serviceType, serviceName, resourceName, DatabaseType.Relational, ssdOptimized, storage, replicas, multiAzReplicas, compute);
+		super(provider, serviceType, serviceName, resourceName, DatabaseType.Relational, technology, ssdOptimized, storage, replicas, multiAzReplicas, compute);
 		
-		this.technology = technology;
 		this.maxConnections = maxConnections;
 		this.maxRollbackHours = maxRollbackHours;
 	}
-	
-	private String technology;
 	
 	private int maxConnections;
 	
@@ -81,14 +78,6 @@ public class SQL extends Database {
 
 	public void setMaxRollbackHours(int maxRollbackHours) {
 		this.maxRollbackHours = maxRollbackHours;
-	}
-	
-	public String getTechnology() {
-		return technology;
-	}
-
-	public void setTechnology(String technology) {
-		this.technology = technology;
 	}
 
 	/*
@@ -130,7 +119,6 @@ public class SQL extends Database {
 		SQL tmp = (SQL) obj;
 
 		return new EqualsBuilder()
-				.append(technology, tmp.technology)
 				.append(maxConnections, tmp.maxConnections)
 				.append(maxRollbackHours, tmp.maxRollbackHours)
 				.appendSuper(super.equals(obj)).isEquals();
@@ -142,7 +130,6 @@ public class SQL extends Database {
 				// two randomly chosen prime numbers
 				// if deriving: appendSuper(super.hashCode()).
 				.appendSuper(super.hashCode())
-				.append(technology)
 				.append(maxConnections)
 				.append(maxRollbackHours).toHashCode();
 

@@ -15,7 +15,7 @@ public class AvailabilityConstraint extends QoSConstraint {
 	
 	
 	/**
-	 * @return the minimum number of replicas
+	 * @return the minimum availability
 	 */
 	public double getMin(){
 		return range.getHasMinValue();

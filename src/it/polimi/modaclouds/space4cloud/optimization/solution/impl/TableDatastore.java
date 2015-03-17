@@ -11,9 +11,7 @@ public class TableDatastore extends NOSQL {
 	public TableDatastore(String provider, String serviceType,
 			String serviceName, String resourceName,
 			boolean ssdOptimized, int storage, int replicas, boolean multiAzReplicas, int maxEntrySize, Compute compute) {
-		super(provider, serviceType, serviceName, resourceName, ssdOptimized, storage, replicas, multiAzReplicas, maxEntrySize, compute);
-		
-		setType(DatabaseType.TableDatastore);
+		super(provider, serviceType, serviceName, resourceName, DatabaseTechnology.TableDatastore.getName(), ssdOptimized, storage, replicas, multiAzReplicas, maxEntrySize, compute);
 	}
 
 }

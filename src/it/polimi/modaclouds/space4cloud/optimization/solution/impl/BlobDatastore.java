@@ -11,9 +11,7 @@ public class BlobDatastore extends NOSQL {
 	public BlobDatastore(String provider, String serviceType,
 			String serviceName, String resourceName,
 			boolean ssdOptimized, int storage, int replicas, boolean multiAzReplicas, int maxEntrySize, Compute compute) {
-		super(provider, serviceType, serviceName, resourceName, ssdOptimized, storage, replicas, multiAzReplicas, maxEntrySize, compute);
-		
-		setType(DatabaseType.BlobDatastore);
+		super(provider, serviceType, serviceName, resourceName, DatabaseTechnology.BlobDatastore.getName(), ssdOptimized, storage, replicas, multiAzReplicas, maxEntrySize, compute);
 	}
 
 }

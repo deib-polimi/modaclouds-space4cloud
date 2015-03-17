@@ -43,6 +43,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database.Data
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Frontend;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.NOSQL.DatabaseTechnology;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS.PaaSType;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SQL;
@@ -872,36 +873,41 @@ public class DataHandler {
 						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, SQL.DEFAULT_MULTI_AZ_REPLICAS),
 						c);
 				break;
-			case TableDatastore:
-				replicas = 1;
-				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, TableDatastore.DEFAULT_DATA_REPLICAS);
-				c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-						resourceName, replicas, cr);
-				p = new TableDatastore(provider, serviceType, serviceName,
-						resourceName,
-						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, TableDatastore.DEFAULT_SSD_OPTIMIZED),
-						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, TableDatastore.DEFAULT_STORAGE),
-						dataReplicas,
-						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, TableDatastore.DEFAULT_MULTI_AZ_REPLICAS),
-						getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, TableDatastore.DEFAULT_MAX_ENTRY_SIZE),
-						c);
+			case NoSQL:
+				DatabaseTechnology dbtech = DatabaseTechnology.getByName(((Database)cp).getTechnology());
+				switch (dbtech) {
+				case TableDatastore:
+					replicas = 1;
+					dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, TableDatastore.DEFAULT_DATA_REPLICAS);
+					c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
+							resourceName, replicas, cr);
+					p = new TableDatastore(provider, serviceType, serviceName,
+							resourceName,
+							getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, TableDatastore.DEFAULT_SSD_OPTIMIZED),
+							storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, TableDatastore.DEFAULT_STORAGE),
+							dataReplicas,
+							getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, TableDatastore.DEFAULT_MULTI_AZ_REPLICAS),
+							getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, TableDatastore.DEFAULT_MAX_ENTRY_SIZE),
+							c);
+					break;
+				case BlobDatastore:
+					replicas = 1;
+					dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, BlobDatastore.DEFAULT_DATA_REPLICAS);
+					c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
+							resourceName, replicas, cr);
+					p = new BlobDatastore(provider, serviceType, serviceName,
+							resourceName,
+							getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, BlobDatastore.DEFAULT_SSD_OPTIMIZED),
+							storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, BlobDatastore.DEFAULT_STORAGE),
+							dataReplicas,
+							getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, BlobDatastore.DEFAULT_MULTI_AZ_REPLICAS),
+							getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, BlobDatastore.DEFAULT_MAX_ENTRY_SIZE),
+							c);
+					break;
+				default:
+					return null;
+				}
 				break;
-			case BlobDatastore:
-				replicas = 1;
-				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, BlobDatastore.DEFAULT_DATA_REPLICAS);
-				c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-						resourceName, replicas, cr);
-				p = new BlobDatastore(provider, serviceType, serviceName,
-						resourceName,
-						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, BlobDatastore.DEFAULT_SSD_OPTIMIZED),
-						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, BlobDatastore.DEFAULT_STORAGE),
-						dataReplicas,
-						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, BlobDatastore.DEFAULT_MULTI_AZ_REPLICAS),
-						getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, BlobDatastore.DEFAULT_MAX_ENTRY_SIZE),
-						c);
-				break;
-			default:
-				return null;
 			}
 			break;
 		default:

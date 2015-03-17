@@ -28,7 +28,7 @@ public abstract class Database extends PaaS {
 	private static final long serialVersionUID = 2762220847804198922L;
 
 	public Database(String provider,
-			String serviceType, String serviceName, String resourceName, DatabaseType type,
+			String serviceType, String serviceName, String resourceName, DatabaseType type, String technology,
 			boolean ssdOptimized, int storage, int dataReplicas, boolean multiAzReplicas, Compute compute) {
 		super(provider, serviceType, serviceName, resourceName, Database.DEFAULT_REPLICAS, dataReplicas,
 				Database.DEFAULT_REPLICAS_CHANGEABLE, Database.DEFAULT_REPLICAS_PAYED_SINGULARLY);
@@ -38,6 +38,7 @@ public abstract class Database extends PaaS {
 		this.multiAzReplicas = multiAzReplicas;
 		this.compute = compute;
 		this.storage = storage;
+		this.technology = technology;
 	}
 
 	private boolean ssdOptimized;
@@ -50,6 +51,8 @@ public abstract class Database extends PaaS {
 	
 	private DatabaseType type;
 	
+	private String technology;
+	
 	public static final boolean DEFAULT_SSD_OPTIMIZED = false;
 	public static final int DEFAULT_REPLICAS = 1;
 	public static final int DEFAULT_DATA_REPLICAS = 1;
@@ -57,6 +60,14 @@ public abstract class Database extends PaaS {
 	public static final int DEFAULT_STORAGE = Integer.MAX_VALUE;
 	public static final boolean DEFAULT_REPLICAS_CHANGEABLE = false;
 	public static final boolean DEFAULT_REPLICAS_PAYED_SINGULARLY = false;
+	
+	public String getTechnology() {
+		return technology;
+	}
+
+	public void setTechnology(String technology) {
+		this.technology = technology;
+	}
 
 	public int getStorage() {
 		return storage;
@@ -105,7 +116,7 @@ public abstract class Database extends PaaS {
 	}
 	
 	public static enum DatabaseType {
-		NoSQL("nosql"), Relational("relational"), TableDatastore("table"), BlobDatastore("document");
+		NoSQL("nosql"), Relational("relational");
 		
 		private String name;
 		
@@ -152,6 +163,7 @@ public abstract class Database extends PaaS {
 		Database tmp = (Database) obj;
 
 		return new EqualsBuilder()
+				.append(technology, tmp.technology)
 				.append(ssdOptimized, tmp.ssdOptimized)
 				.append(multiAzReplicas, tmp.multiAzReplicas)
 				.append(storage, tmp.storage)
@@ -166,6 +178,7 @@ public abstract class Database extends PaaS {
 				// two randomly chosen prime numbers
 				// if deriving: appendSuper(super.hashCode()).
 				.appendSuper(super.hashCode())
+				.append(technology)
 				.append(ssdOptimized)
 				.append(multiAzReplicas)
 				.append(storage)
