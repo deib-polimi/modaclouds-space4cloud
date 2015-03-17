@@ -56,7 +56,7 @@ public class Queue extends PaaS {
 	
 	private double delay;
 
-	public static final int DEFAULT_REQUEST_SIZE = 64;
+	public static final int DEFAULT_REQUEST_SIZE = 64; // KB
 	public static final boolean DEFAULT_ORDER_PRESERVING = false;
 	public static final int DEFAULT_MAX_CONNECTIONS = Integer.MAX_VALUE;
 	public static final int DEFAULT_REPLICAS = 1;
@@ -191,6 +191,11 @@ public class Queue extends PaaS {
 				.append(multiplyingFactor)
 				.append(delay).toHashCode();
 
+	}
+	
+	@Override
+	public double getDataConsumed(int storage, int requests, int providers) {
+		return requests * requestSize / 1024.0 / 1024.0; // Data in GB
 	}
 
 }

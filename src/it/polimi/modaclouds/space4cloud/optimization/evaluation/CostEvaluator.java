@@ -99,7 +99,7 @@ public class CostEvaluator {
 //		return cost;
 //	}
 	
-	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource, String region, int replicas, int requests, int hour) {
+	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource, String region, int replicas, int requests, double gbConsumed, double gbOut, int hour) {
 		if (cloudResource == null) {
 			logger.error("ERROR: The found resource is null!");
 			// TODO: rimettere a 1
@@ -125,12 +125,12 @@ public class CostEvaluator {
 				lc.add(c);
 		
 		CostProfile cp = cloudResource.getHasCostProfile();
-		cost = deriveCosts(lc, cp, replicas, requests, hour);
+		cost = deriveCosts(lc, cp, replicas, requests, gbConsumed, gbOut, hour);
 		
 		return cost;
 	}
 	
-	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform, String region, int replicas, int requests, int hour) {
+	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform, String region, int replicas, int requests, double gbConsumed, double gbOut, int hour) {
 		if (cloudPlatform == null) {
 			logger.error("ERROR: The found platform is null!");
 			// TODO: rimettere a 1
@@ -157,11 +157,11 @@ public class CostEvaluator {
 		
 		CostProfile cp = cloudPlatform.getHasCostProfile();
 		if (lc.size() > 0 || cp != null)
-			cost += deriveCosts(lc, cp, replicas, requests, hour);
+			cost += deriveCosts(lc, cp, replicas, requests, gbConsumed, gbOut, hour);
 		
 		List<it.polimi.modaclouds.resourcemodel.cloud.CloudResource> resources = cloudPlatform.getRunsOnCloudResource();
 		for (it.polimi.modaclouds.resourcemodel.cloud.CloudResource cr : resources)
-			cost += deriveCosts(cr, region, replicas, requests, hour);
+			cost += deriveCosts(cr, region, replicas, requests, gbConsumed, gbOut, hour);
 		
 		return cost;
 	}
@@ -172,21 +172,29 @@ public class CostEvaluator {
 		}
 		
 		double cost = 0.0;
+		
+		Solution solution = application.getFather();
+		int providers = solution.getTotalProviders();
+		
 		// sum up costs for each tier
 		for (Tier t : application.getTiers()) {
 			double tierCost = 0.0;
 			
-			Solution solution = application.getFather();
-			
 			CloudService service = t.getCloudService();
+			
+			int storage = dataHandler.getStorage(service.getProvider(),
+					service.getServiceName(),
+					service.getResourceName());
+			int requests = 0;
+			
 			if (service instanceof IaaS) {
 				IaaS iaasResource = (IaaS) service;
 				it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler
 						.getCloudResource(iaasResource.getProvider(),
 								iaasResource.getServiceName(),
 								iaasResource.getResourceName());
-
-				tierCost += deriveCosts(cloudResource, application.getRegion(), iaasResource.getReplicas(), 0/*t.getTotalRequests()*/, hour);
+				
+				tierCost += deriveCosts(cloudResource, application.getRegion(), iaasResource.getReplicas(), 0/*t.getTotalRequests()*/, iaasResource.getDataConsumed(storage, requests, providers), iaasResource.getDataOut(storage, requests, providers), hour);
 			} else if (service instanceof PaaS) {
 				PaaS paasResource = (PaaS) service;
 				it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform = dataHandler
@@ -195,11 +203,11 @@ public class CostEvaluator {
 								paasResource.getResourceName());
 				
 				int replicas = paasResource.areReplicasPayedSingularly() ? paasResource.getReplicas() : 1;
-				int requests = solution.getDailyRequestsByTier(t.getId());
+				requests = solution.getDailyRequestsByTier(t.getId());
 				if (paasResource instanceof Queue)
 					requests *= ((Queue)paasResource).getMultiplyingFactor();
 
-				tierCost += deriveCosts(cloudPlatform, application.getRegion(), replicas, requests, hour);
+				tierCost += deriveCosts(cloudPlatform, application.getRegion(), replicas, requests, paasResource.getDataConsumed(storage, requests, providers), paasResource.getDataOut(storage, requests, providers), hour);
 			}
 			
 //			t.setCost(tierCost);
@@ -219,7 +227,7 @@ public class CostEvaluator {
 		
 		List<Host> usedHosts = PrivateCloud.getInstance().getUsedHosts(hour);
 		for (Host h : usedHosts) {
-			cost += deriveCosts(null, h.energyCost, 1, 0, hour);
+			cost += deriveCosts(null, h.energyCost, 1, 0, 0.0, 0.0, hour);
 		}
 		
 		// TODO: add VM cost, because we consider now a fixed cost either if the
@@ -265,7 +273,7 @@ public class CostEvaluator {
 
 		CostProfile cp = cloudResource.getHasCostProfile();
 		for(int i=0;i<24;i++)
-			cost += deriveCosts(lc, cp, 1, 0, i)/24;
+			cost += deriveCosts(lc, cp, 1, 0, 0.0, 0.0, i)/24;
 		return cost;
 	}
 	
@@ -299,7 +307,7 @@ public class CostEvaluator {
 
 		CostProfile cp = cloudPlatform.getHasCostProfile();
 		for(int i=0;i<24;i++)
-			cost += deriveCosts(lc, cp, 1, 0, i)/24;
+			cost += deriveCosts(lc, cp, 1, 0, 0.0, 0.0, i)/24;
 		
 		List<it.polimi.modaclouds.resourcemodel.cloud.CloudResource> resources = cloudPlatform.getRunsOnCloudResource();
 		for (it.polimi.modaclouds.resourcemodel.cloud.CloudResource cr : resources)
@@ -387,7 +395,7 @@ public class CostEvaluator {
 	 * @see CostProfile
 	 * @see AllocationProfile
 	 */
-	private double deriveCosts(List<Cost> lc, CostProfile cp, int replicas, int requests,
+	private double deriveCosts(List<Cost> lc, CostProfile cp, int replicas, int requests, double gbConsumed, double gbOut,
 			int hour) {
 		double cost = 0.0, temp;
 		
@@ -430,7 +438,7 @@ public class CostEvaluator {
 							break;
 						case STORAGE:
 							size = ((V_Storage) v).getSize();
-							temp += getIntervalCost(c, size) / 730; // TODO: wut? 730?
+							temp += getIntervalCost(c, size) / 730;
 							break;
 						case CPU:
 						default:
@@ -440,6 +448,18 @@ public class CostEvaluator {
 				case PER_MILLION_IO:
 					if (requests > 0)
 						temp += getIntervalCost(c, (int)Math.round(requests/1000000.0)) / 24.0;
+					break;
+				case PER_GBOUT:
+					if (gbOut > 0.0)
+						temp += getIntervalCost(c, (int)Math.round(gbOut));
+					break;
+				case PER_GBMONTH_CONSUMED:
+					if (gbConsumed > 0.0)
+						temp += getIntervalCost(c, (int)Math.round(gbConsumed)) / 730;
+					break;
+				case PER_GB_CONSUMED:
+					if (gbConsumed > 0.0)
+						temp += getIntervalCost(c, (int)Math.round(gbConsumed));
 					break;
 				default:
 					break;

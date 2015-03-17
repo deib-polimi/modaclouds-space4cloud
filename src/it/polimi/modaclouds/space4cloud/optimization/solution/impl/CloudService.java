@@ -129,4 +129,18 @@ public abstract class CloudService implements Cloneable, Serializable, IConstrai
 				.append(resourceName, tmp.resourceName)
 				.append(LQNPropertyTAG, tmp.LQNPropertyTAG).isEquals();
 	}
+	
+	public double getDataOut(int storage, int requests, int providers) {
+		// TODO: implement this for all the kinds of services!
+		
+		if (providers > 1)
+			return storage * (providers - 1);
+		
+		return 0.0;
+	}
+	
+	public double getDataConsumed(int storage, int requests, int providers) {
+		// TODO: implement this for all the kinds of services!
+		return 0.0;
+	}
 }

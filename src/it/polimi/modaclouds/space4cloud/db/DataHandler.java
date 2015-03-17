@@ -86,8 +86,7 @@ public class DataHandler {
 			DatabaseConnector.initConnection(null);
 			handler = DataHandlerFactory.getHandler();
 		} catch (DatabaseConnectionFailureExteption | SQLException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while connecting to the database.", e);
 		}
 
 		String provider="Amazon";
@@ -173,6 +172,22 @@ public class DataHandler {
 
 	}
 	
+	public Integer getStorage(String provider, String serviceName,
+			String resourceName) {
+		
+		CloudElement ce = getCloudElement(provider, serviceName, resourceName);
+		
+		if (ce != null)
+			if (ce instanceof CloudResource)
+				return getStorage((CloudResource)ce);
+			else if (ce instanceof CloudPlatform)
+				return getStorage((CloudPlatform)ce);
+		
+		/* In case of errors */
+		return -1;
+
+	}
+	
 	private Integer getAmountMemory(CloudResource cr) {
 		if (cr != null)
 			for (VirtualHWResource i : cr.getComposedOf()) {
@@ -202,7 +217,7 @@ public class DataHandler {
 				logger.debug("Database resetted!");
 				resets++;
 			} catch (SQLException e) {
-				e.printStackTrace();
+				logger.error("Error while resetting the database.", e);
 			}
 		}
 	}
@@ -669,7 +684,6 @@ public class DataHandler {
 		return getProcessingRate(cr);
 	}
 	
-	@SuppressWarnings("unused")
 	private Integer getStorage(CloudPlatform cp) {
 		CloudResource cr = runOn(cp, CloudResourceType.CLOUDSTORAGE);
 		return getStorage(cr);

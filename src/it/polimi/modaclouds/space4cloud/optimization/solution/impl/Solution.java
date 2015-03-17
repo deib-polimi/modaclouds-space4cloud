@@ -118,6 +118,16 @@ public class Solution implements Cloneable, Serializable {
 //			hourlyCosts[i] = 0.0;
 		}
 	}
+	
+	private int totalProviders;
+
+	public int getTotalProviders() {
+		return totalProviders;
+	}
+
+	public void setTotalProviders(int totalProviders) {
+		this.totalProviders = totalProviders;
+	}
 
 	/**
 	 * Instantiates a new solution.
@@ -149,7 +159,7 @@ public class Solution implements Cloneable, Serializable {
 			application.setFather(this);
 			return true;
 		} else {
-			System.err.println("Solution already contains 24 applications");
+			logger.error("Solution already contains 24 applications");
 			return false;
 		}
 	}
@@ -261,6 +271,8 @@ public class Solution implements Cloneable, Serializable {
 		for (int h = 0; h < 24; ++h)
 			for (String tierId : hourlyCostsByTier.keySet())
 				cloneSolution.setCost(tierId, h, getCost(tierId, h));
+		
+		cloneSolution.totalProviders = totalProviders;
 
 		return cloneSolution;
 
@@ -322,15 +334,13 @@ public class Solution implements Cloneable, Serializable {
 			outFile.println(text);
 			outFile.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while exporting the solution as a CSV.", e);
 		}
 	}
 
 	public void exportLight(Path filePath) {
 		if (!isEvaluated()) {
-			System.err
-			.println("Trying to export a solution that has not been evaluated!");
+			logger.error("Trying to export a solution that has not been evaluated!");
 			return;
 		}
 		try {
@@ -433,8 +443,7 @@ public class Solution implements Cloneable, Serializable {
 			transformer.transform(source, result);
 
 		} catch (ParserConfigurationException | TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while exporting the solution.", e);
 		}
 
 	}
@@ -664,7 +673,7 @@ public class Solution implements Cloneable, Serializable {
 
 		for (Instance tmp : hourApplication)
 			if (!tmp.isFeasible() && feasible)
-				System.err.println("Inconsistent feasibility");
+				logger.error("Inconsistent feasibility");
 
 		return feasible;
 	}

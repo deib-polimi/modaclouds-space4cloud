@@ -93,7 +93,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while reading the cost from a solution file.", e);
 			}
 
 		return cost;
@@ -140,6 +140,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		if (!provider.equals("Error")) {
 			this.solutions.put(provider, s);
 			updateEvaluation();
+			signalProvidersNumber();
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
 	}
@@ -149,8 +150,14 @@ public class SolutionMulti implements Cloneable, Serializable {
 		String provider = s.getProvider();
 		if (this.solutions.remove(provider) != null) {
 			updateEvaluation();
+			signalProvidersNumber();
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
+	}
+	
+	private void signalProvidersNumber() {
+		for (Solution s : solutions.values())
+			s.setTotalProviders(solutions.size());
 	}
 	
 	public void removeUselessSolutions() {
@@ -242,14 +249,13 @@ public class SolutionMulti implements Cloneable, Serializable {
 			outFile.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while exporting the data via CSV.", e);
 		}
 	}
 
 	public void exportLight(Path filePath) {
 		if (!isEvaluated()) {
-			System.err
-					.println("Trying to export a solution that has not been evaluated!");
+			logger.error("Trying to export a solution that has not been evaluated!");
 			return;
 		}
 
@@ -391,8 +397,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 	public void exportLightNew(String filename) {
 		if (!isEvaluated()) {
-			System.err
-					.println("Trying to export a solution that has not been evaluated!");
+			logger.error("Trying to export a solution that has not been evaluated!");
 			return;
 		}
 
@@ -422,7 +427,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			XMLHelper.serialize(mces, MultiCloudExtensions.class,
 					new FileOutputStream(new File(filename)));
 		} catch (FileNotFoundException | JAXBException e) {
-			e.printStackTrace();
+			logger.error("Error while exporting the solution.", e);
 		}
 	}
 
@@ -595,7 +600,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 //				}
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while importing data from a solution file.", e);
 				return false;
 			}
 		}
@@ -691,7 +696,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 //				}
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while importing data from a multicloudextension file.", e);
 				return false;
 			}
 		}
@@ -803,7 +808,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 //				}
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while considering data from a solution file.", e);
 				return false;
 			}
 		}
@@ -942,7 +947,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 						res.add(provider);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while reading data from a solution file.", e);
 			}
 		
 		return res;
