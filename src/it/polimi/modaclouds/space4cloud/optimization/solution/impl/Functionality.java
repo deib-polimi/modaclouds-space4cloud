@@ -173,7 +173,6 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	}
 	
 	public int getRequests() {
-		// TODO: compute!
-		return 1000000;
+		return (int)Math.round(throughput * 60 * 60);
 	}
 }

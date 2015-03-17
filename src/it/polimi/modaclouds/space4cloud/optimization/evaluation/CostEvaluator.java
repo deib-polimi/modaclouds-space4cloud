@@ -32,6 +32,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.types.palladio.AllocationProfile;
 
@@ -175,6 +176,8 @@ public class CostEvaluator {
 		for (Tier t : application.getTiers()) {
 			double tierCost = 0.0;
 			
+			Solution solution = application.getFather();
+			
 			CloudService service = t.getCloudService();
 			if (service instanceof IaaS) {
 				IaaS iaasResource = (IaaS) service;
@@ -183,7 +186,7 @@ public class CostEvaluator {
 								iaasResource.getServiceName(),
 								iaasResource.getResourceName());
 
-				tierCost += deriveCosts(cloudResource, application.getRegion(), iaasResource.getReplicas(), t.getTotalRequests(), hour);
+				tierCost += deriveCosts(cloudResource, application.getRegion(), iaasResource.getReplicas(), 0/*t.getTotalRequests()*/, hour);
 			} else if (service instanceof PaaS) {
 				PaaS paasResource = (PaaS) service;
 				it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform = dataHandler
@@ -192,14 +195,15 @@ public class CostEvaluator {
 								paasResource.getResourceName());
 				
 				int replicas = paasResource.areReplicasPayedSingularly() ? paasResource.getReplicas() : 1;
-				int requests = t.getTotalRequests();
+				int requests = solution.getDailyRequestsByTier(t.getId());
 				if (paasResource instanceof Queue)
 					requests *= ((Queue)paasResource).getMultiplyingFactor();
 
 				tierCost += deriveCosts(cloudPlatform, application.getRegion(), replicas, requests, hour);
 			}
 			
-			t.setCost(tierCost);
+//			t.setCost(tierCost);
+			solution.setCost(t.getId(), hour, tierCost);
 			
 			cost += tierCost;
 		}
@@ -435,7 +439,7 @@ public class CostEvaluator {
 					break;
 				case PER_MILLION_IO:
 					if (requests > 0)
-						temp += getIntervalCost(c, (int)Math.round(requests/1000000.0));
+						temp += getIntervalCost(c, (int)Math.round(requests/1000000.0)) / 24.0;
 					break;
 				default:
 					break;

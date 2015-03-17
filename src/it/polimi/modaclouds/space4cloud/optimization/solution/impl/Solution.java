@@ -95,7 +95,9 @@ public class Solution implements Cloneable, Serializable {
 //	/** The Cost. */
 //	private double cost = 0;
 	
-	private double hourlyCosts[] = new double[24];
+//	private double hourlyCosts[] = new double[24];
+	
+	private Map<String, Double[]> hourlyCostsByTier = new HashMap<String, Double[]>();
 
 	/** The Region. */
 	private String region;
@@ -113,7 +115,7 @@ public class Solution implements Cloneable, Serializable {
 
 		for (int i = 0; i < 24; ++i) {
 			percentageWorkload[i] = 1.0;
-			hourlyCosts[i] = 0.0;
+//			hourlyCosts[i] = 0.0;
 		}
 	}
 
@@ -255,9 +257,10 @@ public class Solution implements Cloneable, Serializable {
 		for (int h = 0; h < 24; ++h)
 			cloneSolution.setPercentageWorkload(h,percentageWorkload[h]);
 		
-		cloneSolution.hourlyCosts = new double[24];
+		cloneSolution.hourlyCostsByTier = new HashMap<String, Double[]>();
 		for (int h = 0; h < 24; ++h)
-			cloneSolution.setCost(h, hourlyCosts[h]);
+			for (String tierId : hourlyCostsByTier.keySet())
+				cloneSolution.setCost(tierId, h, getCost(tierId, h));
 
 		return cloneSolution;
 
@@ -459,6 +462,8 @@ public class Solution implements Cloneable, Serializable {
 	public ArrayList<Instance> getApplications() {
 		return hourApplication;
 	}
+	
+	private double totalCost = 0.0;
 
 	/**
 	 * Gets the cost.
@@ -466,9 +471,17 @@ public class Solution implements Cloneable, Serializable {
 	 * @return the cost
 	 */
 	public double getCost() {
+		if (!costsUpdated)
+			return totalCost;
+		
 		double cost = 0;
-		for (int h = 0; h < hourlyCosts.length; ++h)
-			cost += hourlyCosts[h];
+		for (int h = 0; h < 24; ++h)
+			cost += getCost(h);
+//			cost += hourlyCosts[h];
+		
+		totalCost = cost;
+		costsUpdated = false;
+		
 		return cost;
 	}
 	
@@ -478,6 +491,20 @@ public class Solution implements Cloneable, Serializable {
 	 * @return the cost
 	 */
 	public double getCost(int h) {
+//		return hourlyCosts[h];
+		
+		double tot = 0.0;
+		for (String tierId : hourlyCostsByTier.keySet())
+			tot += getCost(tierId, h);
+		
+		return tot;
+	}
+	
+	public double getCost(String tierId, int h) {
+		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
+		if (hourlyCosts == null)
+			return 0.0;
+		
 		return hourlyCosts[h];
 	}
 
@@ -656,10 +683,38 @@ public class Solution implements Cloneable, Serializable {
 	 * @param totalCost
 	 *            the new cost
 	 */
-	public void setCost(int h, double totalCost) {
-//		this.cost = totalCost;
+//	public void setCost(int h, double totalCost) {
+////		this.cost = totalCost;
+//		hourlyCosts[h] = totalCost;
+//
+//	}
+	
+	@SuppressWarnings("unused")
+	private boolean isTierIdValid(String tierId) {
+		for (Tier t : hourApplication.get(0).getTiers())
+			if (t.getId().equals(tierId))
+				return true;
+		return false;
+	}
+	
+	private boolean costsUpdated = false;
+	
+	public void setCost(String tierId, int h, double totalCost) {
+//		if (!isTierIdValid(tierId))
+//			return;
+		
+		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
+		if (hourlyCosts == null) {
+			hourlyCosts = new Double[24];
+			for (int hour = 0; hour < 24; ++hour)
+				hourlyCosts[hour] = 0.0;
+			hourlyCostsByTier.put(tierId, hourlyCosts);
+		}
+		
+		if (hourlyCosts[h].doubleValue() != totalCost)
+			costsUpdated = true;
+		
 		hourlyCosts[h] = totalCost;
-
 	}
 
 	/**
@@ -1014,6 +1069,23 @@ public class Solution implements Cloneable, Serializable {
 			logger.error("Error exporting the solution",e);
 		}
 		
+	}
+	
+	public int getDailyRequestsByTier(String tierId) {
+		{
+			Tier t = hourApplication.get(0).getTierById(tierId);
+			if (t == null)
+				return 0;
+		}
+		
+		int requests = 0;
+		
+		for (Instance app : hourApplication) {
+			Tier t = app.getTierById(tierId);
+			requests += t.getTotalRequests();
+		}
+		
+		return requests;
 	}
 
 }

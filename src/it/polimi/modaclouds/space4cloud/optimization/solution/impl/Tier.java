@@ -183,15 +183,5 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 		
 		return total;
 	}
-	
-	private double cost = 0.0;
-
-	public double getCost() {
-		return cost;
-	}
-
-	public void setCost(double cost) {
-		this.cost = cost;
-	}
 
 }

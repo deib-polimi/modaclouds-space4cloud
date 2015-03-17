@@ -956,9 +956,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					// .next();
 
 					// pick a service if not specified by the extension
-					if (serviceName == null)
-						logger.info("provider: " + provider + " default: "
-								+ defaultProvider);
+//					if (serviceName == null)
+//						logger.info("provider: " + provider + " default: "
+//								+ defaultProvider);
 					logger.trace("serviceType: " + serviceType);
 					
 					String actualProvider = provider;

@@ -1013,6 +1013,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 				
 				Providers p = providersMap.get(provider + "@" + serviceName);
 				CostType ctp;
+				
 				if (p == null) {
 					p = new Providers();
 					p.setName(provider);
@@ -1026,10 +1027,13 @@ public class SolutionMulti implements Cloneable, Serializable {
 					double totalCost = 0.0;
 					
 					for (int h = 0; h < 24; ++h) {
+						Tier tmp = s.getApplication(h).getTierById(t.getId());
+						
+						double cost = s.getCost(tmp.getId(), h);
+						totalCost += cost;
+						
 						HourPriceType hour = new HourPriceType();
 						hour.setHour(h);
-						double cost = t.getCost(); 
-						totalCost += cost;
 						hour.setCost(cost);
 						ctp.getHourPrice().add(hour);
 					}
@@ -1041,13 +1045,13 @@ public class SolutionMulti implements Cloneable, Serializable {
 					
 					double totalCost = ctp.getTotalCost();
 					
-					for (int h = 0; h < 24; ++h) {
-						HourPriceType hour = new HourPriceType();
-						hour.setHour(h);
-						double cost = t.getCost(); 
+					for (HourPriceType hour : ctp.getHourPrice()) {
+						int h = hour.getHour();
+						Tier tmp = s.getApplication(h).getTierById(t.getId());
+						
+						double cost = s.getCost(tmp.getId(), h);
 						totalCost += cost;
 						hour.setCost(cost);
-						ctp.getHourPrice().add(hour);
 					}
 					
 					ctp.setTotalCost((float) totalCost);
