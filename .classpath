@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="target/dependency/resourcemodel-1.1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/qos-models-2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="target/dependency/resourcemodel-1.1.0-SNAPSHOT.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/contractor4cloud-0.0.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="icons/"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/privatecloud-0.0.17.jar"/>
