@@ -1375,11 +1375,16 @@ public class SolutionMulti implements Cloneable, Serializable {
 		
 		Contractor.removeTempFiles = true;
 		
-		File f = Contractor.perform(configuration, solution, daysConsidered, percentageOfS, m);
-		if (f != null && f.exists())
-			logger.debug("Optimized costs: " + f.getAbsolutePath());
-		
-		return f;
+		try {
+			File f = Contractor.perform(configuration, solution, daysConsidered, percentageOfS, m);
+			if (f != null && f.exists())
+				logger.debug("Optimized costs: " + f.getAbsolutePath());
+			
+			return f;
+		} catch (Exception e) {
+			logger.error("Error while using the contractor tool!", e);
+			return null;
+		}
 	}
 
 }
