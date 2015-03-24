@@ -293,7 +293,7 @@ public class LqnHandler implements Cloneable, Serializable {
 					"speed-factor", c_resource.getSpeedFactor());
 		} else if (service instanceof Platform) {
 			Platform p = (Platform) service;
-			Compute c_resource = p.getIaasResources();
+			Compute c_resource = p.getCompute();
 			int multiplicity = c_resource.getNumberOfCores()
 					* c_resource.getReplicas();
 			changeElementbyName("processor", tier.getName(),

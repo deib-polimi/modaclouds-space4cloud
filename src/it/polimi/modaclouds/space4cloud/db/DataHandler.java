@@ -42,8 +42,8 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database.DatabaseType;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Frontend;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.NOSQL.DatabaseTechnology;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS.PaaSType;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SQL;
@@ -754,7 +754,7 @@ public class DataHandler {
 	private PaaS getPaaSfromCloudPlatform(CloudService service, CloudPlatform cp) {
 		return getPaaSfromCloudPlatform(
 				service.getProvider(), service.getServiceType(), service.getServiceName(),
-				service.getResourceName(), 1, cp);
+				service.getResourceName(), ((PaaS)service).getReplicas(), cp);
 	}
 	
 	private PaaS getPaaSfromCloudPlatform(String provider, String serviceType, String serviceName, String resourceName, int replicasUh, CloudPlatform cp) {
@@ -779,6 +779,10 @@ public class DataHandler {
 		
 		CloudResource cr = runOn(cp, CloudResourceType.COMPUTE);
 		CloudResource st = runOn(cp, CloudResourceType.CLOUDSTORAGE);
+		
+		if (cr == null)
+			return p;
+		
 		Compute c = null;
 		int replicas = 1;
 		int dataReplicas = 1;
@@ -790,8 +794,8 @@ public class DataHandler {
 		case Frontend:
 			replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Frontend.DEFAULT_REPLICAS);
 			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Frontend.DEFAULT_DATA_REPLICAS);
-			c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-					resourceName, replicas, cr);
+			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+					cr.getName() /*resourceName*/, replicas, cr);
 			p = new Frontend(provider, serviceType, serviceName,
 					resourceName,
 					replicas,
@@ -807,8 +811,8 @@ public class DataHandler {
 		case Backend:
 			replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Backend.DEFAULT_REPLICAS);
 			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Backend.DEFAULT_DATA_REPLICAS);
-			c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-					resourceName, replicas, cr);
+			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+					cr.getName() /*resourceName*/, replicas, cr);
 			p = new Backend(provider, serviceType, serviceName,
 					resourceName,
 					replicas,
@@ -824,8 +828,8 @@ public class DataHandler {
 		case Queue:
 			replicas = 1;
 			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Queue.DEFAULT_DATA_REPLICAS);
-			c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-					resourceName, replicas, cr);
+			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+					cr.getName() /*resourceName*/, replicas, cr);
 			p = new Queue(provider, serviceType, serviceName,
 					resourceName,
 					getPropertyValue(cp, CloudPlatformPropertyName.REQUEST_SIZE, Queue.DEFAULT_REQUEST_SIZE),
@@ -841,8 +845,8 @@ public class DataHandler {
 		case Cache:
 			replicas = 1;
 			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Cache.DEFAULT_DATA_REPLICAS);
-			c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-					resourceName, replicas, cr);
+			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+					cr.getName() /*resourceName*/, replicas, cr);
 			p = new Cache(provider, serviceType, serviceName,
 					resourceName,
 					cp.getTechnology(),
@@ -854,15 +858,13 @@ public class DataHandler {
 			break;
 		case DataBase:
 			DatabaseType dbt = DatabaseType.getByName(((Database)cp).getDBType().getLiteral());
-			if (dbt == DatabaseType.NoSQL)
-				dbt = DatabaseType.getByName(cp.getTechnology());
 			
 			switch (dbt) {
 			case Relational:
 				replicas = 1;
 				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, SQL.DEFAULT_DATA_REPLICAS);
-				c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-						resourceName, replicas, cr);
+				c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+						cr.getName() /*resourceName*/, replicas, cr);
 				p = new SQL(provider, serviceType, serviceName,
 						resourceName, cp.getTechnology(),
 						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, SQL.DEFAULT_SSD_OPTIMIZED),
@@ -879,8 +881,8 @@ public class DataHandler {
 				case TableDatastore:
 					replicas = 1;
 					dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, TableDatastore.DEFAULT_DATA_REPLICAS);
-					c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-							resourceName, replicas, cr);
+					c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+							cr.getName() /*resourceName*/, replicas, cr);
 					p = new TableDatastore(provider, serviceType, serviceName,
 							resourceName,
 							getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, TableDatastore.DEFAULT_SSD_OPTIMIZED),
@@ -893,8 +895,8 @@ public class DataHandler {
 				case BlobDatastore:
 					replicas = 1;
 					dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, BlobDatastore.DEFAULT_DATA_REPLICAS);
-					c = (Compute)getIaaSfromCloudResource(provider, serviceType, serviceName,
-							resourceName, replicas, cr);
+					c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+							cr.getName() /*resourceName*/, replicas, cr);
 					p = new BlobDatastore(provider, serviceType, serviceName,
 							resourceName,
 							getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, BlobDatastore.DEFAULT_SSD_OPTIMIZED),
@@ -985,6 +987,9 @@ public class DataHandler {
 				.getComposedOf()) {
 
 			PaaS paas = getPaaSfromCloudPlatform(service, cp);
+			if (paas == null)
+				continue;
+			
 			for (Cost cost : cp.getHasCost()) {
 				// if the paas has not been already inserted AND (the region has
 				// not been specified OR it has the same region)
@@ -992,6 +997,21 @@ public class DataHandler {
 						&& (region == null || cost.getRegion() == null || cost
 						.getRegion().equals(region))) {
 					resources.add(paas);
+				}
+			}
+			
+			if (!resources.contains(paas)) {
+				List<CloudResource> runningOn = cp.getRunsOnCloudResource();
+				for (CloudResource cr : runningOn) {
+				
+					for (Cost cost : cr.getHasCost()) {
+						if (!resources.contains(paas)
+								&& (region == null || cost.getRegion() == null || cost
+								.getRegion().equals(region))) {
+							resources.add(paas);
+						}
+					}
+				
 				}
 			}
 		}

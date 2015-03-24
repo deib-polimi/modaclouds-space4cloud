@@ -40,9 +40,13 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -485,9 +489,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			ArrayList<Tier> resMemory = new ArrayList<>();
 			for (Tier t : i.getTiers())
 				// if the cloud service hosting the application tier is a IaaS
-				if (t.getCloudService() instanceof IaaS &&
+				if ((t.getCloudService() instanceof IaaS &&
 						// and it has more than one replica
-						((IaaS) t.getCloudService()).getReplicas() > 1)
+						((IaaS) t.getCloudService()).getReplicas() > 1) ||
+						(t.getCloudService() instanceof PaaS && ((PaaS)t.getCloudService()).areReplicasChangeable() &&  ((PaaS) t.getCloudService()).getReplicas() > 1))
 					// add it to the list of resources that can be scaled in
 					resMemory.add(t);
 
@@ -638,8 +643,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				for (int i = 0; i < 24; i++) {
 
 					for (int j = 0; j < vettResTot.get(i).size(); j++)
-						if (((IaaS) vettResTot.get(i).get(j).getCloudService())
-								.getReplicas() == 1)
+						if ( (vettResTot.get(i).get(j).getCloudService() instanceof IaaS && ((IaaS) vettResTot.get(i).get(j).getCloudService()).getReplicas() == 1) ||
+								(vettResTot.get(i).get(j).getCloudService() instanceof PaaS && ((PaaS) vettResTot.get(i).get(j).getCloudService()).areReplicasChangeable() &&
+										((PaaS) vettResTot.get(i).get(j).getCloudService()).getReplicas() == 1) )
 							vettResTot.get(i).remove(j);
 
 					if (vettResTot.get(i).size() > 0) {
@@ -1209,14 +1215,24 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					
 					for (int h = 0; h < 24; ++h) {
 						Tier t = sol.getApplication(h).getTierById(constraint.getResourceID());
-						IaaS service = (IaaS) t.getCloudService();
+						CloudService service = t.getCloudService();
 						if (rconstraint.hasMaxReplica(service)) {
-							service.setReplicas(rconstraint.getMax());
-							evaluateAgain = true;
+							if (service instanceof IaaS) {
+								((IaaS)service).setReplicas(rconstraint.getMax());
+								evaluateAgain = true;
+							} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
+								((PaaS)service).setReplicas(rconstraint.getMax());
+								evaluateAgain = true;
+							}
 						}
 						else if (rconstraint.hasMinReplica(service)) {
-							service.setReplicas(rconstraint.getMin());
-							evaluateAgain = true;
+							if (service instanceof IaaS) {
+								((IaaS)service).setReplicas(rconstraint.getMin());
+								evaluateAgain = true;
+							} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
+								((PaaS)service).setReplicas(rconstraint.getMin());
+								evaluateAgain = true;
+							}
 						}
 					}
 				}
@@ -1655,7 +1671,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			if (newRes == null) {
 				throw new OptimizationException("longTermMemoryRestart: No resource found!");
 			}
-			moveVM.changeMachine(t.getId(), (Compute) newRes);
+			moveVM.changeMachine(t.getId(), newRes);
 		}
 
 		try {
@@ -1976,7 +1992,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			// Phase4: performs the change and evaluate the solution
 			// add the new configuration in the memory
-			moveVM.changeMachine(selectedTier.getId(), (Compute) newRes);
+			moveVM.changeMachine(selectedTier.getId(), newRes);
 			try {
 				evalServer.EvaluateSolution(sol);
 			} catch (EvaluationException e) {
@@ -2003,10 +2019,21 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @return
 	 */
 	private double getEfficiency(CloudService resource, String region) {
-		if (resource instanceof Compute) {
-			Compute computeRes = (Compute) resource;
+		Compute computeRes = null;
+		if (resource instanceof Compute)
+			computeRes = (Compute) resource;
+		else if (resource instanceof Database)
+			computeRes = ((Database)resource).getCompute();
+		else if (resource instanceof Platform)
+			computeRes = ((Platform)resource).getCompute();
+		else if (resource instanceof it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache)
+			computeRes = ((it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache)resource).getCompute();
+		else if (resource instanceof Queue)
+			computeRes = ((Queue)resource).getCompute();
+		
+		if (computeRes != null) {
 			double cost = evalServer.getCostEvaulator().getResourceAverageCost(
-					(Compute)resource, region);
+					computeRes, region);
 			double efficiency = computeRes.getNumberOfCores()
 					* computeRes.getSpeed() / cost;
 			return efficiency;
@@ -2045,7 +2072,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			String newSolID = solutionTypeID.replace(token,
 					resource.getResourceName());
 			if (!tabuSolutionList.containsKey(newSolID)) {
-				newList.add((IaaS) resource);
+				newList.add(resource);
 			} else {
 				logger.debug("Memory Hit");
 			}

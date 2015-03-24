@@ -35,7 +35,7 @@ public class Backend extends Platform {
 				getDataReplicas(),
 				isMultiAzReplicas(),
 				supportedPlatformsClone,
-				getIaasResources().clone(),
+				getCompute().clone(),
 				getStorage(),
 				getMaxConnections(),
 				areReplicasChangeable(),

@@ -17,13 +17,13 @@ public abstract class Platform extends PaaS {
 	public Platform(String provider, String serviceType, String serviceName,
 			String resourceName,
 			int replicas, int dataReplicas, boolean multiAzReplicas,
-			List<String> supportedPlatforms, PlatformType platformType, Compute iaasResources, int storage, int maxConnections,
+			List<String> supportedPlatforms, PlatformType platformType, Compute compute, int storage, int maxConnections,
 			boolean replicasChangeable, boolean replicasPayedSingularly) {
 		super(provider, serviceType, serviceName, resourceName, replicas, dataReplicas, replicasChangeable, replicasPayedSingularly);
 		this.multiAzReplicas = multiAzReplicas;
 		this.supportedPlatforms = supportedPlatforms;
 		this.platformType = platformType;
-		this.iaasResources = iaasResources;
+		this.compute = compute;
 		this.storage = storage;
 		this.maxConnections = maxConnections;
 	}
@@ -60,7 +60,7 @@ public abstract class Platform extends PaaS {
 	
 	private PlatformType platformType;
 	
-	private Compute iaasResources;
+	private Compute compute;
 	
 	private boolean multiAzReplicas;
 	
@@ -92,18 +92,18 @@ public abstract class Platform extends PaaS {
 		this.platformType = platformType;
 	}
 
-	public Compute getIaasResources() {
-		return iaasResources;
+	public Compute getCompute() {
+		return compute;
 	}
 
-	public void setIaasResources(Compute iaasResources) {
-		this.iaasResources = iaasResources;
+	public void setCompute(Compute compute) {
+		this.compute = compute;
 	}
 	
 	public void setIaasResources(String provider, String serviceType, String serviceName,
 			String resourceName, int replicas,
 			int numberOfCores, double speed, int ram) {
-		iaasResources = new Compute(provider, serviceType, serviceName, 
+		compute = new Compute(provider, serviceType, serviceName, 
 				resourceName, replicas, numberOfCores, speed, ram);
 	}
 
@@ -193,7 +193,7 @@ public abstract class Platform extends PaaS {
 		return new EqualsBuilder()
 				.appendSuper(sameSupportedPlatforms)
 				.append(platformType, tmp.platformType)
-				.append(iaasResources, tmp.iaasResources)
+				.append(compute, tmp.compute)
 				.append(multiAzReplicas, tmp.multiAzReplicas)
 				.append(storage, tmp.storage)
 				.append(maxConnections, tmp.maxConnections)
@@ -208,7 +208,7 @@ public abstract class Platform extends PaaS {
 				.appendSuper(super.hashCode())
 				.append(supportedPlatforms)
 				.append(platformType)
-				.append(iaasResources)
+				.append(compute)
 				.append(multiAzReplicas)
 				.append(storage)
 				.append(maxConnections).toHashCode();

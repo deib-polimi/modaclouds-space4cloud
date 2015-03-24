@@ -36,7 +36,7 @@ public class Frontend extends Platform {
 				getDataReplicas(),
 				isMultiAzReplicas(),
 				supportedPlatformsClone,
-				getIaasResources().clone(),
+				getCompute().clone(),
 				getStorage(),
 				getMaxConnections(),
 				areReplicasChangeable(),

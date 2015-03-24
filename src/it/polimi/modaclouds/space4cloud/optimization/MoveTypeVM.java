@@ -20,11 +20,19 @@ package it.polimi.modaclouds.space4cloud.optimization;
 
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.NOSQL;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SQL;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
@@ -82,7 +90,7 @@ public class MoveTypeVM extends AbsMove {
 	 *            the CloudService
 	 * @return the move itself
 	 */
-	public IMove changeMachine(String id, Compute vm) {
+	public IMove changeMachine(String id, CloudService vm) {
 		setProperties(vm);
 		setResId(id);
 		apply();
@@ -134,17 +142,110 @@ public class MoveTypeVM extends AbsMove {
 		return resId;
 	}
 
-	public IMove setProperties(Compute vm) {
+	public IMove setProperties(CloudService cs) {
 		propertyNames.clear();
 		propertyValues.clear();
+		
 		propertyNames.add("resourceName");
-		propertyNames.add("speed");
-		propertyNames.add("ram");
-		propertyNames.add("numberOfCores");
-		propertyValues.add(vm.getResourceName());
-		propertyValues.add(vm.getSpeed());
-		propertyValues.add(vm.getRam());
-		propertyValues.add(vm.getNumberOfCores());
+		propertyValues.add(cs.getResourceName());
+		
+		if (cs instanceof Compute) {
+			Compute vm = (Compute) cs;
+			
+			propertyNames.add("speed");
+			propertyNames.add("ram");
+			propertyNames.add("numberOfCores");
+			propertyValues.add(vm.getSpeed());
+			propertyValues.add(vm.getRam());
+			propertyValues.add(vm.getNumberOfCores());
+		} else if (cs instanceof PaaS) {
+			PaaS p = (PaaS) cs;
+			
+			propertyNames.add("replicas");
+			propertyNames.add("dataReplicas");
+			propertyNames.add("replicasChangeable");
+			propertyNames.add("replicasPayedSingularly");
+			propertyValues.add(p.getReplicas());
+			propertyValues.add(p.getDataReplicas());
+			propertyValues.add(p.areReplicasChangeable());
+			propertyValues.add(p.areReplicasPayedSingularly());
+			
+			if (p instanceof Platform) {
+				Platform paas = (Platform) p;
+				
+				propertyNames.add("compute");
+				propertyNames.add("multiAzReplicas");
+				propertyNames.add("supportedPlatforms");
+				propertyNames.add("platformType");
+				propertyNames.add("storage");
+				propertyNames.add("maxConnections");
+				propertyValues.add(paas.getCompute());
+				propertyValues.add(paas.isMultiAzReplicas());
+				propertyValues.add(paas.getSupportedPlatforms());
+				propertyValues.add(paas.getPlatformType());
+				propertyValues.add(paas.getStorage());
+				propertyValues.add(paas.getMaxConnections());
+			} else if (p instanceof Database) {
+				Database paas = (Database) p;
+				
+				propertyNames.add("compute");
+				propertyNames.add("multiAzReplicas");
+				propertyNames.add("ssdOptimized");
+				propertyNames.add("type");
+				propertyNames.add("storage");
+				propertyNames.add("technology");
+				propertyValues.add(paas.getCompute());
+				propertyValues.add(paas.isMultiAzReplicas());
+				propertyValues.add(paas.isSsdOptimized());
+				propertyValues.add(paas.getType());
+				propertyValues.add(paas.getStorage());
+				propertyValues.add(paas.getTechnology());
+				
+				if (paas instanceof NOSQL) {
+					propertyNames.add("maxEntrySize");
+					propertyValues.add(((NOSQL)paas).getMaxEntrySize());
+				} else {
+					SQL sql = (SQL) paas;
+					
+					propertyNames.add("maxConnections");
+					propertyNames.add("maxRollbackHours");
+					propertyValues.add(sql.getMaxConnections());
+					propertyValues.add(sql.getMaxRollbackHours());
+				}
+			} else if (p instanceof Cache) {
+				Cache paas = (Cache) p;
+				
+				propertyNames.add("compute");
+				propertyNames.add("multiAzReplicas");
+				propertyNames.add("engine");
+				propertyNames.add("maxConnections");
+				propertyNames.add("storage");
+				propertyValues.add(paas.getCompute());
+				propertyValues.add(paas.isMultiAzReplicas());
+				propertyValues.add(paas.getEngine());
+				propertyValues.add(paas.getMaxConnections());
+				propertyValues.add(paas.getStorage());
+			} else if (p instanceof Queue) {
+				Queue paas = (Queue) p;
+				
+				propertyNames.add("compute");
+				propertyNames.add("multiAzReplicas");
+				propertyNames.add("requestSize");
+				propertyNames.add("maxConnections");
+				propertyNames.add("orderPreserving");
+				propertyNames.add("maxRequests");
+				propertyNames.add("multiplyingFactor");
+				propertyNames.add("delay");
+				propertyValues.add(paas.getCompute());
+				propertyValues.add(paas.isMultiAzReplicas());
+				propertyValues.add(paas.getRequestSize());
+				propertyValues.add(paas.getMaxConnections());
+				propertyValues.add(paas.isOrderPreserving());
+				propertyValues.add(paas.getMaxRequests());
+				propertyValues.add(paas.getMultiplyingFactor());
+				propertyValues.add(paas.getDelay());
+			}
+		}
 		return this;
 	}
 
