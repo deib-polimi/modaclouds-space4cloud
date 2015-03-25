@@ -248,7 +248,7 @@ public class DataHandler {
 				.getIaaSServicesHashMap().get(serviceName); // service
 		
 		if (service == null)
-			return null;
+			return getCloudResourceFromPaaS(provider, serviceName, resourceName, firstWithValidCost);
 		
 		List<CloudResource> cloudResourceList = service.getComposedOf();
 
@@ -257,6 +257,33 @@ public class DataHandler {
 			if (cr.getName().equals(resourceName))
 				if (!firstWithValidCost || (cr.getHasCost() != null && cr.getHasCost().size() > 0))
 					return cr;
+		}
+		
+		return null;
+	}
+	
+	private CloudResource getCloudResourceFromPaaS(String provider, String serviceName,
+			String resourceName, boolean firstWithValidCost) {
+		
+		ProviderDBConnector pdb = cloudProviders
+				.getProviderDBConnectors().get(provider); // provider
+		
+		PaaS_Service service = pdb
+				.getPaaSServicesHashMap().get(serviceName); // service
+		
+		if (service == null)
+			return null;
+		
+		List<CloudPlatform> cloudPlatformList = service.getComposedOf();
+
+		// TODO: Controllare questa cosa :(
+		for (CloudPlatform cp : cloudPlatformList) {
+			List<CloudResource> crs = cp.getRunsOnCloudResource();
+			for (CloudResource cr : crs) {
+				if (cr.getName().equals(resourceName))
+					if (!firstWithValidCost || (cr.getHasCost() != null && cr.getHasCost().size() > 0))
+						return cr;
+			}
 		}
 		
 		return null;
@@ -339,7 +366,7 @@ public class DataHandler {
 	private IaaS getIaaSfromCloudResource(CloudService service, CloudResource cr) {
 		return getIaaSfromCloudResource(
 				service.getProvider(), service.getServiceType(), service.getServiceName(),
-				service.getResourceName(), ((IaaS) service).getReplicas(), cr);
+				cr.getName(), ((IaaS) service).getReplicas(), cr);
 	}
 	
 	public CloudService getCloudService(String provider, String serviceType, String serviceName, String resourceName, int replicas) {
@@ -754,7 +781,7 @@ public class DataHandler {
 	private PaaS getPaaSfromCloudPlatform(CloudService service, CloudPlatform cp) {
 		return getPaaSfromCloudPlatform(
 				service.getProvider(), service.getServiceType(), service.getServiceName(),
-				service.getResourceName(), ((PaaS)service).getReplicas(), cp);
+				cp.getName(), ((PaaS)service).getReplicas(), cp);
 	}
 	
 	private PaaS getPaaSfromCloudPlatform(String provider, String serviceType, String serviceName, String resourceName, int replicasUh, CloudPlatform cp) {
