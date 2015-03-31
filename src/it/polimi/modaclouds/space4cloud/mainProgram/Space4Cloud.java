@@ -712,7 +712,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 		Configuration.ROBUSTNESS_VARIABILITY = oldVariability;
 		
-		DataExporter.perform(resultsFolder, highestPeak);
+		DataExporter.evaluate(resultsFolder, highestPeak);
 	}
 
 	private ThreadPoolExecutor executor;
@@ -743,7 +743,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		int stepSize = Configuration.ROBUSTNESS_STEP_SIZE;
 		int attempts = Configuration.ROBUSTNESS_ATTEMPTS;
 
-		int variability = Configuration.ROBUSTNESS_VARIABILITY;
+//		TODO
+//		int variability = Configuration.ROBUSTNESS_VARIABILITY;
 
 		double x = testFrom, basex = x;
 
@@ -758,20 +759,22 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		try {
 			for (; x <= testTo; x += stepSize) {
-				if (variability > 0) {
-					usageModelExtFiles.put(
-							(int)(x * (100.0 - variability)/100),
-							generateModifiedUsageModelExt(usageModelExtFile, x / basex * (100.0 - variability)/100 )
-							);
-				}
+//				TODO
+//				if (variability > 0) {
+//					usageModelExtFiles.put(
+//							(int)(x * (100.0 - variability)/100),
+//							generateModifiedUsageModelExt(usageModelExtFile, x / basex * (100.0 - variability)/100 )
+//							);
+//				}
 				usageModelExtFiles.put((int)x, generateModifiedUsageModelExt(usageModelExtFile, x / basex));
-				if (variability > 0) {
-					usageModelExtFiles.put(
-							(int)(x * (100.0 + variability)/100),
-							generateModifiedUsageModelExt(usageModelExtFile, x / basex * (100.0 + variability)/100 )
-							);
-
-				}
+//				TODO
+//				if (variability > 0) {
+//					usageModelExtFiles.put(
+//							(int)(x * (100.0 + variability)/100),
+//							generateModifiedUsageModelExt(usageModelExtFile, x / basex * (100.0 + variability)/100 )
+//							);
+//
+//				}
 			}
 		} catch (JAXBException | IOException | SAXException e) {
 			throw new RobustnessException("Error generating the mofigied usage model extension",e);
@@ -991,8 +994,16 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 									}
 								
 								if (Configuration.ROBUSTNESS_VARIABILITY > 0) {
-									logger.info("Exporting the data in the simplified output format...");
-									DataExporter.perform(resultsFolder);
+									logger.info("Saving the data generated with the variability test...");
+									List<File> generatedFiles = DataExporter.getAllGeneratedFiles(Paths.get(bestSolution.getParent()));
+									for (File file : generatedFiles)
+										try{
+											Files.copy(
+													file.toPath(),
+													Paths.get(resultsFolder.toString(), file.getName()), StandardCopyOption.REPLACE_EXISTING);
+										} catch (IOException e) {
+											throw new RobustnessException("Error copying generated evaluation: "+file.getAbsolutePath()+" to: "+resultsFolder.toString()+ file.getName(),e);
+										}
 								}
 							}
 						}
