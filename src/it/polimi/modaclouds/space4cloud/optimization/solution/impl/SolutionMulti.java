@@ -110,7 +110,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			return isEmptyFileSolution(solution);
 	}
 	
-	private static boolean isResourceModelExtension(File f) {
+	public static boolean isResourceModelExtension(File f) {
 		try {
 			XMLHelper.deserialize(f.toURI().toURL(), ResourceModelExtension.class);
 			return true;

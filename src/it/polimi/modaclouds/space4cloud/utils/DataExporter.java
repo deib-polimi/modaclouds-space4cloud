@@ -1,6 +1,13 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
+import it.polimi.modaclouds.qos_models.schema.CloudService;
+import it.polimi.modaclouds.qos_models.schema.Replica;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -17,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -204,7 +213,7 @@ public class DataExporter {
 				res.add(path.toFile());
 //				System.out.println(sw.toString());
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while producing the file.", e);
 				return null;
 			}
 			
@@ -299,7 +308,7 @@ public class DataExporter {
 			
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting data from the database.", e);
 			costs.clear();
 		}
 		
@@ -308,7 +317,14 @@ public class DataExporter {
 		return costs;
 	}
 	
-	private Map<String, Integer[]> getReplicas(File solution) {
+	private static Map<String, Integer[]> getReplicas(File solution) {
+		if (SolutionMulti.isResourceModelExtension(solution))
+			return getReplicasFromResourceModelExtension(solution);
+		else
+			return getReplicasFromFileSolution(solution);
+	}
+	
+	private static Map<String, Integer[]> getReplicasFromFileSolution(File solution) {
 		Map<String, Integer[]> replicasMap = new HashMap<String, Integer[]>();
 		
 		try {
@@ -358,10 +374,217 @@ public class DataExporter {
 				replicasMap.put(resourceName + "@" + provider, replicas);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while reading the file solution.", e);
 			replicasMap.clear();
 		}
 		
 		return replicasMap;
 	}
+	
+	private static Map<String, Integer[]> getReplicasFromResourceModelExtension(File solution) {
+		Map<String, Integer[]> replicasMap = new HashMap<String, Integer[]>();
+		
+		try {
+			ResourceModelExtension rme = XMLHelper.deserialize(solution
+					.toURI().toURL(), ResourceModelExtension.class);
+
+			for (ResourceContainer rc : rme.getResourceContainer()) {
+				CloudService cs = rc.getCloudElement();
+				
+				String provider = rc.getProvider();
+				String resourceName = cs.getResourceSizeID();
+
+				Replica r = cs.getReplicas();
+				if (r == null)
+					continue;
+				
+				List<ReplicaElement> hourAllocations = r.getReplicaElement();
+				
+				Integer replicas[] = replicasMap.get(resourceName + "@" + provider);
+				if (replicas == null) {
+					replicas = new Integer[24];
+					for (int h = 0; h < replicas.length; ++h)
+						replicas[h] = 0;
+				}
+
+				for (ReplicaElement hourAllocation : hourAllocations) {
+					int hour = hourAllocation.getHour();
+					int allocation = hourAllocation.getValue();
+					
+					replicas[hour] += allocation;
+				}
+				
+				replicasMap.put(resourceName + "@" + provider, replicas);
+			}
+		} catch (Exception e) {
+			logger.error("Error while reading the file solution.", e);
+			replicasMap.clear();
+		}
+		
+		return replicasMap;
+	}
+	
+	private static final String EVALUATE_COMMAND = "/usr/optimization/costiSaraMattia/main";
+	private static final String EVALUATE_FOLDER = "/tmp/sara";
+
+	public static List<EvaluationResult> evaluate(List<File> formattedSolutions) {
+		List<EvaluationResult> res = new ArrayList<DataExporter.EvaluationResult>();
+		for (File f : formattedSolutions) {
+			if (f == null || !f.exists() || f.isDirectory() || f.getName().indexOf(".txt") == -1)
+				continue;
+			try {
+				Ssh.exec("mkdir -p " + EVALUATE_FOLDER);
+				Ssh.sendFile(f.getAbsolutePath(), EVALUATE_FOLDER + "/" + f.getName());
+				List<String> output = Ssh.exec(String.format("%s %s/%s", EVALUATE_COMMAND, EVALUATE_FOLDER, f.getName()));
+				String newName = f.getName().replaceAll(".txt", "_sol.txt");
+				Ssh.receiveFile(f.getParentFile().getAbsolutePath() + File.separator + newName, EVALUATE_FOLDER + "/" + newName);
+				EvaluationResult r = EvaluationResult.fromFile(Paths.get(f.getParentFile().getAbsolutePath(), newName).toFile(), output);
+				if (r != null)
+					res.add(r);
+			} catch (Exception e) {
+				logger.error("Error while considering a solution file (" + f.getName() + ").", e);
+			}
+		}
+		return res;
+	}
+	
+	public static class EvaluationResult {
+		public double alpha;
+		public double cost;
+		public int[] x;
+		public int[] worstRealization;
+		public double bestLB;
+		public double bestUB;
+		public int gap;
+		public int nodesBandB;
+		public int time;
+		
+		public EvaluationResult(double alpha, double cost, int[] x, int[] worstRealization, double bestLB, double bestUB, int gap, int nodesBandB, int time) {
+			this.alpha = alpha;
+			this.cost = cost;
+			this.x = x;
+			this.worstRealization = worstRealization;
+			
+			this.bestLB = bestLB;
+			this.bestUB = bestUB;
+			this.gap = gap;
+			this.nodesBandB = nodesBandB;
+			this.time = time;
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append(super.toString() + "\n");
+			sb.append("- Alpha: " + alpha + "\n");
+			sb.append("- Cost: " + cost + "\n");
+			for (int i = 0; i < x.length; ++i)
+				sb.append("- X[" + i + "]: " + x[i] + "\n");
+			for (int i = 0; i < worstRealization.length; ++i)
+				sb.append("- worstRealization[" + i + "]: " + worstRealization[i] + "\n");
+			sb.append("- BestLB: " + bestLB + "\n");
+			sb.append("- BestUB: " + bestUB + "\n");
+			sb.append("- Gap: " + gap + "\n");
+			sb.append("- NodesB&B: " + nodesBandB + "\n");
+			sb.append("- Time: " + time + " s\n");
+			return sb.toString();
+		}
+		
+		public static EvaluationResult fromFile(File f, List<String> output) {
+			if (!f.exists() || f.isDirectory() || output.size() == 0)
+				return null;
+			
+			double alpha = 0.0;
+			double cost = 0.0;
+			int[] x;
+			int[] worstRealization;
+			double bestLB = 0.0;
+			double bestUB = 0.0;
+			int gap = 0;
+			int nodesBandB = 0;
+			int time = 0;
+			
+			try (Scanner sc = new Scanner(f)) {
+				String line = "";
+				
+				Map<Integer, Integer> xMap = new HashMap<Integer, Integer>();
+				Map<Integer, Integer> worstRealizationMap = new HashMap<Integer, Integer>();
+				
+				final String strAlfa = "alfa: ";
+				final String strCosto = "COSTO X: ";
+				final String strX = "x[0-9]+ = .*";
+				final String strN = "N[0-9]+: .*";
+				
+				while (sc.hasNextLine()) {
+					line = sc.nextLine();
+					if (line.indexOf(strAlfa) > -1) {
+						alpha = Double.parseDouble(line.substring(line.indexOf(strAlfa) + strAlfa.length()));
+					} else if (line.indexOf(strCosto) > -1) {
+						cost = Double.parseDouble(line.substring(line.indexOf(strCosto) + strCosto.length()));
+					} else if (Pattern.matches(strX, line)) {
+						int n = Integer.parseInt(line.substring(1, line.indexOf(' ')));
+						int value = Integer.parseInt(line.substring(line.indexOf('=') + 2));
+						xMap.put(n, value);
+					} else if (Pattern.matches(strN, line)) {
+						int n = Integer.parseInt(line.substring(1, line.indexOf(':')));
+						int value = Integer.parseInt(line.substring(line.indexOf(':') + 2));
+						worstRealizationMap.put(n, value);
+					}
+				}
+				
+				if (xMap.size() == 0 || worstRealizationMap.size() == 0)
+					return null;
+				
+				x = new int[xMap.size()];
+				worstRealization = new int[worstRealizationMap.size()];
+				for (int key : xMap.keySet())
+					x[key] = xMap.get(key);
+				for (int key : worstRealizationMap.keySet())
+					worstRealization[key] = worstRealizationMap.get(key);
+			} catch (Exception e) {
+				logger.error("Error while reading the solution file.", e);
+				return null;
+			}
+			
+			{
+				final String strBestLB = "best LB: ";
+				final String strBestUB = "best UB: ";
+				final String strGap = "gap: ";
+				final String strNodes = "nodi B&B :";
+				final String strTime = "tempo totale: ";
+				
+				for (String outputLine : output) {
+					for (String line : outputLine.split("\n"))
+						if (line.indexOf(strBestLB) > -1) {
+							bestLB = Double.parseDouble(line.substring(line.indexOf(strBestLB) + strBestLB.length()));
+						} else if (line.indexOf(strBestUB) > -1) {
+							bestUB = Double.parseDouble(line.substring(line.indexOf(strBestUB) + strBestUB.length()));
+						} else if (line.indexOf(strGap) > -1) {
+							gap = Integer.parseInt(line.substring(line.indexOf(strGap) + strGap.length(), line.indexOf('%')));
+						} else if (line.indexOf(strNodes) > -1) {
+							nodesBandB = Integer.parseInt(line.substring(line.indexOf(strNodes) + strNodes.length()));
+						} else if (line.indexOf(strTime) > -1) {
+							time = Integer.parseInt(line.substring(line.indexOf(strTime) + strTime.length(), line.indexOf(" sec.")) );
+						}
+				}
+			}
+			
+			return new EvaluationResult(alpha, cost, x, worstRealization, bestLB, bestUB, gap, nodesBandB, time);
+		}
+	}
+	
+	public static void main(String[] args) {
+		try {
+			Configuration.loadConfiguration("/Users/ft/Desktop/tmp/Sara Mattia/aaa/conf.properties");
+		
+			List<File> files = new ArrayList<File>();
+			files.add(new File("/Users/ft/Desktop/tmp/Sara Mattia/aaa/costs-1900-m2xlarge.txt"));
+			List<EvaluationResult> res = evaluate(files);
+			for (EvaluationResult r : res)
+				System.out.printf("%s\n\n", r.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }
