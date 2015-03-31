@@ -449,6 +449,9 @@ public class DataExporter {
 	}
 	
 	public static class EvaluationResult {
+		public String machineType;
+		public int userPeak;
+		
 		public double alpha;
 		public double cost;
 		public int[] x;
@@ -459,7 +462,10 @@ public class DataExporter {
 		public int nodesBandB;
 		public int time;
 		
-		public EvaluationResult(double alpha, double cost, int[] x, int[] worstRealization, double bestLB, double bestUB, int gap, int nodesBandB, int time) {
+		private EvaluationResult(String machineType, int userPeak, double alpha, double cost, int[] x, int[] worstRealization, double bestLB, double bestUB, int gap, int nodesBandB, int time) {
+			this.machineType = machineType;
+			this.userPeak = userPeak;
+			
 			this.alpha = alpha;
 			this.cost = cost;
 			this.x = x;
@@ -476,6 +482,8 @@ public class DataExporter {
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			sb.append(super.toString() + "\n");
+			sb.append("- MachineType: " + machineType + "\n");
+			sb.append("- UserPeak: " + userPeak + "\n");
 			sb.append("- Alpha: " + alpha + "\n");
 			sb.append("- Cost: " + cost + "\n");
 			for (int i = 0; i < x.length; ++i)
@@ -490,9 +498,19 @@ public class DataExporter {
 			return sb.toString();
 		}
 		
-		public static EvaluationResult fromFile(File f, List<String> output) {
+		private static EvaluationResult fromFile(File f, List<String> output) {
 			if (!f.exists() || f.isDirectory() || output.size() == 0)
 				return null;
+			
+			String machineType;
+			int userPeak;
+			{
+				String fileName = f.getName();
+				fileName = fileName.substring("costs-".length(), fileName.indexOf("_sol.txt"));
+				String[] s = fileName.split("-");
+				machineType = s[1];
+				userPeak = Integer.parseInt(s[0]);
+			}
 			
 			double alpha = 0.0;
 			double cost = 0.0;
@@ -569,7 +587,7 @@ public class DataExporter {
 				}
 			}
 			
-			return new EvaluationResult(alpha, cost, x, worstRealization, bestLB, bestUB, gap, nodesBandB, time);
+			return new EvaluationResult(machineType, userPeak, alpha, cost, x, worstRealization, bestLB, bestUB, gap, nodesBandB, time);
 		}
 	}
 	
