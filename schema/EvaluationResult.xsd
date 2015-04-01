@@ -26,6 +26,7 @@
                     <xs:complexType>
                         <xs:attribute name="machineType" type="xs:string" use="required"/>
                         <xs:attribute name="userPeak" type="xs:int" use="required"/>
+                        <xs:attribute name="vmPeak" type="xs:int" use="required"/>
                         <xs:attribute name="variability" type="xs:int" use="required"/>
                         <xs:attribute name="Q" type="xs:double" use="required"/>
                         <xs:attribute name="G" type="xs:int" use="required"/>

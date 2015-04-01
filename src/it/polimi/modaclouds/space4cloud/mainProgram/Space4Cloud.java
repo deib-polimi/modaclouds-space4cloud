@@ -364,7 +364,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				return;
 			}
 			break;
-
+			
 		default:
 			logger.info("User exit at functionality choiche");
 			break;
@@ -575,9 +575,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		logger.info("Considering the variability");
 		
-//		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
-//				.newFixedThreadPool(1);
-		
 		String tmpConf = null;
 		try {
 			tmpConf = Files.createTempFile("space4cloud", ".properties").toString();
@@ -593,6 +590,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		Path resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY);
 		
 		File initialSolution = Paths.get(resultsFolder.toString(), Configuration.SOLUTION_LIGHT_FILE_NAME+ Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		
+		List<String> providers = SolutionMulti.getAllProviders(initialSolution);
+		if (providers.size() != 1 || !providers.get(0).equals("Amazon")) {
+			logger.error("It only works when considering solutions single-provider on Amazon.");
+			return;
+		}
 		
 		Configuration.SCRUMBLE_ITERS = 0;
 		Configuration.REDISTRIBUTE_WORKLOAD = false;
@@ -642,8 +645,16 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			File ume = usageModelExts.get(key);
 			Configuration.USAGE_MODEL_EXTENSION = ume.getAbsolutePath();
 			
-			// TODO: here
 			OptEngine engine = null;
+			
+			ConstraintHandlerFactory.clearHandler();
+			constraintHandler = ConstraintHandlerFactory.getConstraintHandler();
+			
+			try {
+				constraintHandler.loadConstraints(true);
+			} catch (Exception e) {
+				throw new OptimizationException("Error while loading the constraints. ",e);
+			}
 			
 			try {
 				engine = new PartialEvaluationOptimizationEngine(constraintHandler, true);
@@ -713,6 +724,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		Configuration.ROBUSTNESS_VARIABILITY = oldVariability;
 		
 		DataExporter.evaluate(resultsFolder, highestPeak);
+		
 	}
 
 	private ThreadPoolExecutor executor;
@@ -787,7 +799,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		robustnessWindow.addPropertyChangeListener(this);
 
-		String duration = durationToString(1000 * (attempts * (int) Math.ceil(((testTo - testFrom) / stepSize))) * 5 * 60);
+		int tests = (int) Math.ceil(((testTo - testFrom) / stepSize));
+		if (tests == 0)
+			tests = 1;
+		String duration = durationToString(1000 * (attempts * tests) * 5 * 60);
 
 
 		logger
@@ -1236,7 +1251,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			processEnded = true;
 			pcs.firePropertyChange("assessmentEnded", false, true);
 			cleanResources();
-		} else if(evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED) || evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_ADDED_VALUE)){
+		} else if (progressWindow != null && (evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED) || evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_ADDED_VALUE))) {
 			progressWindow.propertyChange(evt);
 		}
 

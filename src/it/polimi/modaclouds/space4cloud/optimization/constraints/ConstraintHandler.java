@@ -64,7 +64,7 @@ public class ConstraintHandler {
 	public ConstraintHandler() {
 
 	}
-
+	
 	/**
 	 * Parses the constraints from the xml file and initializes the handler
 	 * @throws ParserConfigurationException
@@ -73,6 +73,18 @@ public class ConstraintHandler {
 	 * @throws JAXBException
 	 */
 	public void loadConstraints()
+			throws ConstraintLoadingException {
+		loadConstraints(false);
+	}
+
+	/**
+	 * Parses the constraints from the xml file and initializes the handler
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws JAXBException
+	 */
+	public void loadConstraints(boolean avoidProblematicConstraints)
 			throws ConstraintLoadingException {		
 		//load from the XML
 		Constraints loadedConstraints;
@@ -131,7 +143,8 @@ public class ConstraintHandler {
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
 			}
-			addConstraint(constraint);
+			if (!(avoidProblematicConstraints && metric == Metric.REPLICATION))
+				addConstraint(constraint);
 		}
 
 		//debug

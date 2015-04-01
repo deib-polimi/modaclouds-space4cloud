@@ -749,7 +749,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 	public void initialize() {
 		gui = new JFrame();
 		gui.setTitle("Robustness Progress");
-		gui.setMinimumSize(new Dimension(900, 600));
+		gui.setMinimumSize(new Dimension(920, 600));
 		gui.setLocationRelativeTo(null);
 //		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
 		gui.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);

@@ -1140,8 +1140,47 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public void setGenerationTime(long generationTime) {
 		this.generationTime = generationTime;
 	}
-
+	
 	public static List<String> getAllProviders(File solution) {
+		List<String> res = new ArrayList<String>();
+		
+		if (isResourceModelExtension(solution))
+			res = getAllProvidersFromResourceModelExtension(solution);
+		else
+			res = getAllProvidersFromFileSolution(solution);
+		
+		return res;
+	}
+	
+	private static List<String> getAllProvidersFromResourceModelExtension(File solution) {
+		List<String> res = new ArrayList<String>();
+		
+		if (solution != null && solution.exists())
+			try {
+				ResourceModelExtension rme = XMLHelper.deserialize(solution
+						.toURI().toURL(), ResourceModelExtension.class);
+				
+				for (ResourceContainer rc : rme.getResourceContainer()) {
+					String provider = rc.getProvider();
+					
+					boolean alreadyIn = false;
+					for (int j = 0; j < res.size() && !alreadyIn; ++j) {
+						if (res.get(j).equals(provider))
+							alreadyIn = true;
+					}
+					if (!alreadyIn)
+						res.add(provider);
+				}
+			} catch (Exception e) {
+				logger.error("Error while reading data from a solution file.", e);
+			}
+		
+		return res;
+
+	}
+
+	@Deprecated
+	private static List<String> getAllProvidersFromFileSolution(File solution) {
 		List<String> res = new ArrayList<String>();
 		
 		if (solution != null && solution.exists())

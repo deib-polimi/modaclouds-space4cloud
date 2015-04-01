@@ -114,6 +114,16 @@ public class DataExporter {
 		return new ArrayList<File>();
 	}
 	
+	private static int vmPeak(Integer[] replicas) {
+		int vm = 0;
+		for (int i : replicas) {
+			if (i > vm)
+				vm = i;
+		}
+		return vm;
+	}
+	private static Map<String, Integer> vmPeaks = new HashMap<String, Integer>();
+	
 	private List<File> export(File nominal, File lower, File upper, int nominalSize) {
 		List<File> res = new ArrayList<File>();
 		
@@ -177,6 +187,8 @@ public class DataExporter {
 					provider = ss[1];
 					region = resourceEnvParser.getRegion(provider);
 				}
+				
+				vmPeaks.put(nominalSize + "-" + (resource.replace('.', '_')).replaceAll("_", ""), vmPeak(nominalReplicas));
 				
 				// For now we can only handle Amazon :(
 				if (!provider.equals("Amazon"))
@@ -589,6 +601,10 @@ public class DataExporter {
 		Problem p = new Problem();
 		p.setMachineType(machineType);
 		p.setUserPeak(userPeak);
+		if (vmPeaks.containsKey(userPeak + "-" + machineType))
+			p.setVmPeak(vmPeaks.get(userPeak + "-" + machineType));
+		else
+			p.setVmPeak(-1);
 		p.setVariability(Configuration.ROBUSTNESS_VARIABILITY);
 		p.setG(Configuration.ROBUSTNESS_G);
 		p.setH(Configuration.ROBUSTNESS_H);
