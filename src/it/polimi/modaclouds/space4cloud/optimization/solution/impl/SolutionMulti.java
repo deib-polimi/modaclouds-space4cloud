@@ -373,7 +373,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 							tier.appendChild(hourAllocation);
 							hourAllocation.setAttribute("hour", "" + i);
 							hourAllocation.setAttribute("allocation", ""
-									+ sol.getReplicas(t));
+									+ sol.getReplicas(hourApplication.get(i).getTierById(t.getId())));
 							if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
                                 hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHostsForTier(i, t.getId()).size());
 						}

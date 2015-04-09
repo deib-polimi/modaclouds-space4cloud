@@ -354,17 +354,17 @@
 		<dependency>
 			<groupId>it.polimi.modaclouds.space4cloud</groupId>
 			<artifactId>milp</artifactId>
-			<version>0.1.0</version>
+			<version>0.1.1</version>
 		</dependency>
 		<dependency>
             <groupId>it.polimi.modaclouds.space4cloud</groupId>
             <artifactId>privatecloud</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.1</version>
         </dependency>
         <dependency>
             <groupId>it.polimi.modaclouds.space4cloud</groupId>
             <artifactId>contractor4cloud</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.1</version>
         </dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

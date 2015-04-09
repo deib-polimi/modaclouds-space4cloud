@@ -193,6 +193,8 @@ public class Configuration {
 		prop.put("ROBUSTNESS_H", Integer.toString(ROBUSTNESS_H));
 		
 		prop.put("CONTRACTOR_TEST", Boolean.toString(CONTRACTOR_TEST));
+		
+		it.polimi.modaclouds.space4cloud.milp.Configuration.addToConfiguration(prop);
 
 		prop.store(fos, "SPACE4Clouds configuration properties");
 		fos.flush();
@@ -249,6 +251,8 @@ public class Configuration {
 		}catch(NumberFormatException e){
 			logger.warn("Part of the configuration was invalid, reverted the invalid value to the default one.",e);
 		}
+		
+		it.polimi.modaclouds.space4cloud.milp.Configuration.loadConfiguration(filePath);
 
 	}
 

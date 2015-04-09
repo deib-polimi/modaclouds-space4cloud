@@ -105,8 +105,8 @@ public class DataExporter {
 			return new ArrayList<File>();
 		
 		File nominal = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File lower = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + (size / 100 * (100 - Configuration.ROBUSTNESS_VARIABILITY)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File upper = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + (size / 100 * (100 + Configuration.ROBUSTNESS_VARIABILITY)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File lower = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 - Configuration.ROBUSTNESS_VARIABILITY)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File upper = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 + Configuration.ROBUSTNESS_VARIABILITY)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 			
 		if (nominal.exists() && lower.exists() && upper.exists())
 			return export(nominal, lower, upper, size);

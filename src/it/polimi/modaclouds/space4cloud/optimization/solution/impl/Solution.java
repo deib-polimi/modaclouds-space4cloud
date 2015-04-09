@@ -293,14 +293,16 @@ public class Solution implements Cloneable, Serializable {
 	}
 
 	public int getReplicas(Tier t) {
-		CloudService serv = t.getCloudService();
+		CloudService service = t.getCloudService();
 		
-		if (serv instanceof IaaS) {
-			IaaS res = (IaaS) t.getCloudService();
-			return res.getReplicas();
-		} else if (serv instanceof PaaS) {
-			return 1;
+		if (service instanceof IaaS) {
+			IaaS iaaService  = (IaaS) service;
+			return iaaService.getReplicas();
+		} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
+			PaaS paaService  = (PaaS) service;
+			return paaService.getReplicas();
 		}
+		
 		return 0;
 	}
 	
@@ -921,17 +923,8 @@ public class Solution implements Cloneable, Serializable {
 		//fill the fields that depend on the time slot (e.g. VMs replicas)
 		for(Instance instance:hourApplication){
 			for(Tier t:instance.getTiers()){
-				CloudService service = t.getCloudService();
-				int replicas = -1;
-				if (service instanceof IaaS) {
-					IaaS iaaService  = (IaaS) service;
-					replicas = iaaService.getReplicas();
-				}
-				else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
-					PaaS paaService  = (PaaS) service;
-					replicas = paaService.getReplicas();
-				}
-				if (replicas > -1) {
+				int replicas = getReplicas(t);
+				if (replicas > 0) {
 					//build the replica element
 					ReplicaElement replica = factory.createReplicaElement();
 					replica.setHour(hourApplication.indexOf(instance));

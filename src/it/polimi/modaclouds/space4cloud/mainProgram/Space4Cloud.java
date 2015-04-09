@@ -681,7 +681,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			}
 			
 			SolutionMulti bestSolution = engine.getBestSolutions().get(engine.getBestSolutions().size() - 1);
-			bestSolution.exportAsExtension(Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME+ "-" + key + Configuration.SOLUTION_FILE_EXTENSION));
+			bestSolution.exportAsExtension(Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME+ "-" + highestPeak + "-" + key + Configuration.SOLUTION_FILE_EXTENSION));
 			
 			try {
 				File dir = Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER).toFile();
@@ -699,8 +699,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				logger.error("Error when copying and moving the files", e);
 			}
 			
-			engine.cancel(true);
-			engine = null;
+//			engine.cancel(true);
+//			engine = null;
 		}
 		
 		try {
@@ -877,7 +877,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 			boolean alreadyThere = false;
 			{
-				Path p = Paths.get(resultsFolder.toString(), "solution-" + key + ".xml");
+				Path p = Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME + "-" + key + Configuration.SOLUTION_FILE_EXTENSION);
 				if (Files.exists(p)) {
 					alreadyThere = true;
 					bestSolution = p.toFile();
@@ -989,11 +989,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 								try {
 									Files.copy(
 											Paths.get(bestSolution.getAbsolutePath()),
-											Paths.get(resultsFolder.toString(), "solution-" + key
-													+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+											Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME + "-" + key
+													+ Configuration.SOLUTION_FILE_EXTENSION), StandardCopyOption.REPLACE_EXISTING);
 								} catch (IOException e) {
-									throw new RobustnessException("Error copying: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ "solution-" + key
-											+ ".xml",e);
+									throw new RobustnessException("Error copying: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ Configuration.SOLUTION_FILE_NAME + "-" + key
+											+ Configuration.SOLUTION_FILE_EXTENSION,e);
 								}
 
 
@@ -1004,8 +1004,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 												Paths.get(resultsFolder.toString(), "generated-solution-" + key
 														+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 									} catch (IOException e) {
-										throw new RobustnessException("Error copying generated solution: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ "solution-" + key
-												+ ".xml",e);
+										throw new RobustnessException("Error copying generated solution: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ Configuration.SOLUTION_FILE_NAME + "-" + key
+												+ Configuration.SOLUTION_FILE_EXTENSION,e);
 									}
 								
 								if (Configuration.ROBUSTNESS_VARIABILITY > 0) {
@@ -1019,6 +1019,30 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 										} catch (IOException e) {
 											throw new RobustnessException("Error copying generated evaluation: "+file.getAbsolutePath()+" to: "+resultsFolder.toString()+ file.getName(),e);
 										}
+									
+									
+									File fLower = Paths.get(bestSolution.getParent(), Configuration.SOLUTION_FILE_NAME + "-" + key + "-" + ((int) key * (1.0 - (Configuration.ROBUSTNESS_VARIABILITY / 100.0)))
+											+ Configuration.SOLUTION_FILE_EXTENSION).toFile();
+									
+									File fHigher = Paths.get(bestSolution.getParent(), Configuration.SOLUTION_FILE_NAME + "-" + key + "-" + ((int) key * (1.0 + (Configuration.ROBUSTNESS_VARIABILITY / 100.0)))
+											+ Configuration.SOLUTION_FILE_EXTENSION).toFile();
+									
+									try {
+										Files.copy(
+												Paths.get(fLower.getAbsolutePath()),
+												Paths.get(resultsFolder.toString(), fLower.getName()), StandardCopyOption.REPLACE_EXISTING);
+									} catch (IOException e) {
+										throw new RobustnessException("Error copying: "+fLower.getAbsolutePath()+" to: "+resultsFolder.toString(),e);
+									}
+									
+									try {
+										Files.copy(
+												Paths.get(fHigher.getAbsolutePath()),
+												Paths.get(resultsFolder.toString(), fHigher.getName()), StandardCopyOption.REPLACE_EXISTING);
+									} catch (IOException e) {
+										throw new RobustnessException("Error copying: "+fHigher.getAbsolutePath()+" to: "+resultsFolder.toString(),e);
+									}
+									
 								}
 							}
 						}
