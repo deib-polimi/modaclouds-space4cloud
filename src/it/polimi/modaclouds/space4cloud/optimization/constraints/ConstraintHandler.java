@@ -146,6 +146,8 @@ public class ConstraintHandler {
 			if (!(avoidProblematicConstraints && metric == Metric.REPLICATION))
 				addConstraint(constraint);
 		}
+		
+		cpuConstraintsInitialized = false;
 
 		//debug
 		for(Constraint c:constraints){
@@ -201,6 +203,28 @@ public class ConstraintHandler {
 			result.add(evaluateApplication(i));
 		return result;
 	}
+	
+	private boolean cpuConstraintsInitialized;
+	
+	private void initializeCPUConstraints(Instance app) {
+		if (cpuConstraintsInitialized)
+			return;
+		
+		List<Tier> tiers = app.getTiers();
+		for (Tier t : tiers) {
+			List<Constraint> constraints = getConstraintByResourceId(t.getId());
+			boolean hasUsageConstraint = false;
+			for (int i = 0; i < constraints.size() && !hasUsageConstraint; ++i) {
+				Constraint c = constraints.get(i);
+				if (c instanceof UsageConstraint)
+					hasUsageConstraint = true;
+			}
+			if (!hasUsageConstraint)
+				addConstraint(UsageConstraint.getStandardUsageConstraint(t.getId()));
+		}
+		
+		cpuConstraintsInitialized = true;
+	}
 
 	/**
 	 * evaluates the feasibility of an application against the constrained loaded in the initialization of the handler.  
@@ -210,6 +234,9 @@ public class ConstraintHandler {
 	 */
 	public HashMap<Constraint,Boolean> evaluateApplication(Instance app) throws ConstraintEvaluationException{
 		HashMap<Constraint, Boolean> result = new HashMap<>();
+		
+		initializeCPUConstraints(app);
+		
 		for(Constraint c:constraints){
 			if(app.getConstrainableResources().containsKey(c.getResourceID())){
 				//evaluate the constraint

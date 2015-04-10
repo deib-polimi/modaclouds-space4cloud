@@ -31,6 +31,7 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.MachineTypeConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
@@ -1235,6 +1236,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 							}
 						}
 					}
+				} else if (constraint instanceof MachineTypeConstraint) {
+					for (int h = 0; h < 24; ++h) {
+						Tier t = sol.getApplication(h).getTierById(constraint.getResourceID());
+						if (scramble(sol, t, 0))
+							evaluateAgain = true;
+					}
 				}
 			}
 			
@@ -1867,6 +1874,99 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		this.numIterNoImprov = 0;
 	}
+	
+	protected boolean scramble(Solution sol, Tier selectedTier, int iterations) throws OptimizationException {
+		MoveTypeVM moveVM = new MoveTypeVM(sol);
+		
+		scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
+		// Phase2: Retrieve resources that can be exchanged with the current
+		// one
+		CloudService origRes = selectedTier.getCloudService();
+		List<CloudService> resList = dataHandler.getSameService(origRes,
+				sol.getRegion());
+		// filter resources according to architectural constraints
+
+		try {
+			constraintHandler.filterResources(resList, selectedTier);
+		} catch (ConstraintEvaluationException e) {
+			throw new OptimizationException("Error filtering resources for scramble",e);
+		}
+
+		// if no resource can substitute the current one increase the number
+		// of iterations without a change and try again
+		if (resList.size() == 0) {
+			scrambleLogger
+			.warn("No resource found for scramble after constraint check, iteration: "
+					+ iterations);
+			return false;
+		}
+
+		resList = filterByMemory(resList, sol, selectedTier);
+		// if no resource can substitute the current one increase the number
+		// of iterations without a change and try again
+		if (resList.size() == 0) {
+			scrambleLogger.debug("MemoryDump");
+			for (String s : tabuSolutionList.keySet()) {
+				scrambleLogger.debug(s);
+			}
+			scrambleLogger
+			.warn("No resource found for scramble after memory check, iteration: "
+					+ iterations);
+			return false;
+		}
+
+		// Phase3: choose the new resource. Policy: roulette selection
+		// 3.1Calculate the cumulative fitness
+		double[] cumulativeFitnesses = new double[resList.size()];
+		cumulativeFitnesses[0] = getEfficiency(resList.get(0),
+				sol.getRegion());
+		for (int i = 1; i < resList.size(); i++) {
+			double fitness = getEfficiency(resList.get(i), sol.getRegion());
+			cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
+		}
+		// get a random number weighted by the highest cumulative fitness
+		// value
+		double randomFitness = random.nextDouble()
+				* cumulativeFitnesses[cumulativeFitnesses.length - 1];
+		// search for the value
+		int index = Arrays.binarySearch(cumulativeFitnesses, randomFitness);
+		if (index < 0) {
+			// Convert negative insertion point to array index.
+			index = Math.abs(index + 1);
+		}
+
+		// get the resource.
+		CloudService newRes = resList.get(index);
+
+		// debugging
+		//          scrambleLogger.debug("Sorted Resources");
+		//          for (IaaS res : resList) {
+		//              if (newRes.equals(res))
+		//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
+		//                          + " res: " + res.getResourceName() + " value: "
+		//                          + getEfficiency(res, sol.getRegion())
+		//                          + " <--- SELECTED");
+		//              else
+		//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
+		//                          + " res:" + res.getResourceName() + " value: "
+		//                          + getEfficiency(res, sol.getRegion()));
+		//          }
+		//          scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
+
+
+		// Phase4: performs the change and evaluate the solution
+		// add the new configuration in the memory
+		moveVM.changeMachine(selectedTier.getId(), newRes);
+		try {
+			evalServer.EvaluateSolution(sol);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","scramble",e);
+		}
+
+		tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
+		scrambleLogger.debug("Memory size " + tabuSolutionList.size());
+		return true;
+	}
 
 	/**
 	 * Changes the type of virtual machines used. This change is more
@@ -1898,7 +1998,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		 */
 
 		// Phase0: initialization
-		MoveTypeVM moveVM = new MoveTypeVM(sol);
+//		MoveTypeVM moveVM = new MoveTypeVM(sol);
 		boolean done = false; // tells if something has changed
 		int iterations = 0; // number of iterations without a change in the
 		// solution
@@ -1912,96 +2012,99 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			List<Tier> tierList = sol.getApplication(0).getTiers();
 			Tier selectedTier = tierList.get(random.nextInt(tierList.size()));
-			scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
-			// Phase2: Retrieve resources that can be exchanged with the current
-			// one
-			CloudService origRes = selectedTier.getCloudService();
-			List<CloudService> resList = dataHandler.getSameService(origRes,
-					sol.getRegion());
-			// filter resources according to architectural constraints
-
-			try {
-				constraintHandler.filterResources(resList, selectedTier);
-			} catch (ConstraintEvaluationException e) {
-				throw new OptimizationException("Error filtering resources for scramble",e);
-			}
-
-			// if no resource can substitute the current one increase the number
-			// of iterations without a change and try again
-			if (resList.size() == 0) {
-				scrambleLogger
-				.warn("No resource found for scramble after constraint check, iteration: "
-						+ iterations);
-				iterations++;
-				continue;
-			}
-
-			resList = filterByMemory(resList, sol, selectedTier);
-			// if no resource can substitute the current one increase the number
-			// of iterations without a change and try again
-			if (resList.size() == 0) {
-				scrambleLogger.debug("MemoryDump");
-				for (String s : tabuSolutionList.keySet()) {
-					scrambleLogger.debug(s);
-				}
-				scrambleLogger
-				.warn("No resource found for scramble after memory check, iteration: "
-						+ iterations);
-				iterations++;
-				continue;
-			}
-
-			// Phase3: choose the new resource. Policy: roulette selection
-			// 3.1Calculate the cumulative fitness
-			double[] cumulativeFitnesses = new double[resList.size()];
-			cumulativeFitnesses[0] = getEfficiency(resList.get(0),
-					sol.getRegion());
-			for (int i = 1; i < resList.size(); i++) {
-				double fitness = getEfficiency(resList.get(i), sol.getRegion());
-				cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
-			}
-			// get a random number weighted by the highest cumulative fitness
-			// value
-			double randomFitness = random.nextDouble()
-					* cumulativeFitnesses[cumulativeFitnesses.length - 1];
-			// search for the value
-			int index = Arrays.binarySearch(cumulativeFitnesses, randomFitness);
-			if (index < 0) {
-				// Convert negative insertion point to array index.
-				index = Math.abs(index + 1);
-			}
-
-			// get the resource.
-			CloudService newRes = resList.get(index);
-
-			// debugging
-			//          scrambleLogger.debug("Sorted Resources");
-			//          for (IaaS res : resList) {
-			//              if (newRes.equals(res))
-			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
-			//                          + " res: " + res.getResourceName() + " value: "
-			//                          + getEfficiency(res, sol.getRegion())
-			//                          + " <--- SELECTED");
-			//              else
-			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
-			//                          + " res:" + res.getResourceName() + " value: "
-			//                          + getEfficiency(res, sol.getRegion()));
-			//          }
-			//          scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
-
-
-			// Phase4: performs the change and evaluate the solution
-			// add the new configuration in the memory
-			moveVM.changeMachine(selectedTier.getId(), newRes);
-			try {
-				evalServer.EvaluateSolution(sol);
-			} catch (EvaluationException e) {
-				throw new OptimizationException("","scramble",e);
-			}
-
-			tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
-			scrambleLogger.debug("Memory size " + tabuSolutionList.size());
-			done = true;
+//			scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
+//			// Phase2: Retrieve resources that can be exchanged with the current
+//			// one
+//			CloudService origRes = selectedTier.getCloudService();
+//			List<CloudService> resList = dataHandler.getSameService(origRes,
+//					sol.getRegion());
+//			// filter resources according to architectural constraints
+//
+//			try {
+//				constraintHandler.filterResources(resList, selectedTier);
+//			} catch (ConstraintEvaluationException e) {
+//				throw new OptimizationException("Error filtering resources for scramble",e);
+//			}
+//
+//			// if no resource can substitute the current one increase the number
+//			// of iterations without a change and try again
+//			if (resList.size() == 0) {
+//				scrambleLogger
+//				.warn("No resource found for scramble after constraint check, iteration: "
+//						+ iterations);
+//				iterations++;
+//				continue;
+//			}
+//
+//			resList = filterByMemory(resList, sol, selectedTier);
+//			// if no resource can substitute the current one increase the number
+//			// of iterations without a change and try again
+//			if (resList.size() == 0) {
+//				scrambleLogger.debug("MemoryDump");
+//				for (String s : tabuSolutionList.keySet()) {
+//					scrambleLogger.debug(s);
+//				}
+//				scrambleLogger
+//				.warn("No resource found for scramble after memory check, iteration: "
+//						+ iterations);
+//				iterations++;
+//				continue;
+//			}
+//
+//			// Phase3: choose the new resource. Policy: roulette selection
+//			// 3.1Calculate the cumulative fitness
+//			double[] cumulativeFitnesses = new double[resList.size()];
+//			cumulativeFitnesses[0] = getEfficiency(resList.get(0),
+//					sol.getRegion());
+//			for (int i = 1; i < resList.size(); i++) {
+//				double fitness = getEfficiency(resList.get(i), sol.getRegion());
+//				cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
+//			}
+//			// get a random number weighted by the highest cumulative fitness
+//			// value
+//			double randomFitness = random.nextDouble()
+//					* cumulativeFitnesses[cumulativeFitnesses.length - 1];
+//			// search for the value
+//			int index = Arrays.binarySearch(cumulativeFitnesses, randomFitness);
+//			if (index < 0) {
+//				// Convert negative insertion point to array index.
+//				index = Math.abs(index + 1);
+//			}
+//
+//			// get the resource.
+//			CloudService newRes = resList.get(index);
+//
+//			// debugging
+//			//          scrambleLogger.debug("Sorted Resources");
+//			//          for (IaaS res : resList) {
+//			//              if (newRes.equals(res))
+//			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
+//			//                          + " res: " + res.getResourceName() + " value: "
+//			//                          + getEfficiency(res, sol.getRegion())
+//			//                          + " <--- SELECTED");
+//			//              else
+//			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
+//			//                          + " res:" + res.getResourceName() + " value: "
+//			//                          + getEfficiency(res, sol.getRegion()));
+//			//          }
+//			//          scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
+//
+//
+//			// Phase4: performs the change and evaluate the solution
+//			// add the new configuration in the memory
+//			moveVM.changeMachine(selectedTier.getId(), newRes);
+//			try {
+//				evalServer.EvaluateSolution(sol);
+//			} catch (EvaluationException e) {
+//				throw new OptimizationException("","scramble",e);
+//			}
+//
+//			tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
+//			scrambleLogger.debug("Memory size " + tabuSolutionList.size());
+//			done = true;
+			
+			done = scramble(sol, selectedTier, iterations);
+			iterations++;
 		}
 
 		if (iterations >= MAX_SCRAMBLE_NO_CHANGE)

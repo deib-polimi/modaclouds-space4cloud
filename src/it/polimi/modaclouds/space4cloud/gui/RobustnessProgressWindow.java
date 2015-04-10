@@ -446,6 +446,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 		initialize();
 	}
 
+	@SuppressWarnings("unused")
 	public void add(File usageModelExtension, File solution)
 			throws MalformedURLException, JAXBException, SAXException {
 		int maxPopulation = Space4Cloud.getMaxPopulation(usageModelExtension);
@@ -539,22 +540,35 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 	
 				Element tierEl = (Element) tier;
 				NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+				
+				int maxValue = 0;
 	
 				for (int j = 0; j < hours.getLength(); j++) {
 					Node hour = hours.item(j);
-					int valHour = Integer.valueOf(hour.getAttributes()
-							.getNamedItem("hour").getNodeValue()) + 1;
+//					int valHour = Integer.valueOf(hour.getAttributes()
+//							.getNamedItem("hour").getNodeValue()) + 1;
+					
+					int value = Integer.valueOf(hour.getAttributes()
+							.getNamedItem("allocation")
+							.getNodeValue());
+					
+					if (value > maxValue)
+						maxValue = value;
 	
-					if (valHour == maxHour) {
-						solutions.dataset
-								.addValue(
-										Integer.valueOf(hour.getAttributes()
-												.getNamedItem("allocation")
-												.getNodeValue()), /*"Tier " + i*/ tierName, ""
-												+ maxPopulation);
-					}
-	
+//					if (valHour == maxHour) {
+//						solutions.dataset
+//								.addValue(
+//										Integer.valueOf(hour.getAttributes()
+//												.getNamedItem("allocation")
+//												.getNodeValue()), /*"Tier " + i*/ tierName, ""
+//												+ maxPopulation);
+//					}
 				}
+				
+				solutions.dataset
+						.addValue(
+								maxValue, /*"Tier " + i*/ tierName, ""
+										+ maxPopulation);
 			} else {
 				String key = tier.getAttributes().getNamedItem("name").getNodeValue() + "@" + size;
 				
@@ -659,6 +673,8 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 					
 					Element tierEl = (Element) tier;
 					NodeList hours = tierEl.getElementsByTagName("HourAllocation");
+					
+					int maxValue = 0;
 		
 					for (int j = 0; j < hours.getLength(); j++) {
 						Node hour = hours.item(j);
@@ -671,17 +687,28 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 										.getNodeValue()), tierName, ""
 										+ valHour);
 						
-						if (valHour == maxHour) {
-							int allocation = Integer.valueOf(hour.getAttributes()
-									.getNamedItem("allocation")
-									.getNodeValue()) +
-									machinesOnPrivate.get(tierName + "@" + size)[valHour];
-							
-							solutions.dataset.setValue(
-										allocation, /*"Tier " + i*/ tierName + "@" + provider, ""
-												+ maxPopulation);
-						}
+						int value = Integer.valueOf(hour.getAttributes()
+								.getNamedItem("allocation")
+								.getNodeValue()) + machinesOnPrivate.get(tierName + "@" + size)[valHour];
+						
+						if (value > maxValue)
+							maxValue = value;
+						
+//						if (valHour == maxHour) {
+//							int allocation = Integer.valueOf(hour.getAttributes()
+//									.getNamedItem("allocation")
+//									.getNodeValue()) +
+//									machinesOnPrivate.get(tierName + "@" + size)[valHour];
+//							
+//							solutions.dataset.setValue(
+//										allocation, /*"Tier " + i*/ tierName + "@" + provider, ""
+//												+ maxPopulation);
+//						}
 					}
+					
+					solutions.dataset.setValue(
+							maxValue, /*"Tier " + i*/ tierName + "@" + provider, ""
+									+ maxPopulation);
 				}
 			}
 		}

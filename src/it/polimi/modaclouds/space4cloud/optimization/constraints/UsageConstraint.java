@@ -15,9 +15,14 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
+import it.polimi.modaclouds.qos_models.schema.Constraint;
+import it.polimi.modaclouds.qos_models.schema.QosMetricAggregation;
+import it.polimi.modaclouds.qos_models.schema.Range;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
+
+import java.util.UUID;
 
 public class UsageConstraint extends QoSConstraint {
 
@@ -33,6 +38,27 @@ public class UsageConstraint extends QoSConstraint {
 		if (max > 1)
 			this.range.setHasMaxValue(max/100);
 
+	}
+	
+	public static UsageConstraint getStandardUsageConstraint(String tierId) {
+		
+		it.polimi.modaclouds.qos_models.schema.Constraint cons = new Constraint();
+		
+		String id = UUID.randomUUID().toString();
+		
+		cons.setId(id);
+		cons.setName("Utilization " + id);
+		cons.setMetric(Metric.CPU.getXmlTag());
+		QosMetricAggregation a = new QosMetricAggregation();
+		a.setAggregateFunction("Average");
+		cons.setMetricAggregation(a);
+		Range r = new Range();
+		r.setHasMaxValue(1.0f);
+		cons.setRange(r);
+		cons.setTargetClass("VM");
+		cons.setTargetResourceIDRef(tierId);
+		
+		return new UsageConstraint(cons);
 	}
 
 	@Override
