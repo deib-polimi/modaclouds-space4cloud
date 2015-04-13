@@ -580,13 +580,15 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			executor = (ThreadPoolExecutor) Executors
 	                .newFixedThreadPool(1);
 		
-		int[] consideredG = new int[24];
-		for (int g = 1; g <= 24; ++g)
-			consideredG[g-1] = g;
+//		int[] consideredG = new int[24];
+//		for (int g = 1; g <= 24; ++g)
+//			consideredG[g-1] = g;
+//		
+//		performVariability(30, consideredG);
+//		performVariability(50, consideredG);
+//		performVariability(100, consideredG);
 		
-		performVariability(30, consideredG);
-		performVariability(50, consideredG);
-		performVariability(100, consideredG);
+		performVariability(30, new int[] {10, 20});
 		
 		try {
 			Files.createFile(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "variability-ended.xml"));
@@ -1025,6 +1027,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 					}
 				}
 			}
+			
+			Configuration.WORKING_DIRECTORY = bestSolution.getParent().substring(Configuration.PROJECT_BASE_FOLDER.length() + 1);
 			
 			try {
 				performVariability();
