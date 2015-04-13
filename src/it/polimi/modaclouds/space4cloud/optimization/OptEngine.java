@@ -1249,7 +1249,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				try {
 					evalServer.EvaluateSolution(sol);
 				} catch (EvaluationException e) {
-					e.printStackTrace();
+					logger.error("Error while evaluating the solution.", e);
 				}
 			
 			logger.info("\tFeasibility iteration: "
@@ -1548,59 +1548,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return -1;
 
 	}
-	
-	public void simpleEvaluation() throws OptimizationException {
-		if (this.initialSolution == null)
-			return;
-		
-		optimLogger.trace("Starting the simple evaluation");
-
-		timer.start();
-		try {
-			evalServer.EvaluateSolution(initialSolution);
-		} catch (EvaluationException e) {
-			throw new OptimizationException("","initialEvaluation",e);
-		}// evaluate the current
-		
-		bestSolution = initialSolution.clone();
-		localBestSolution = initialSolution.clone();
-		
-		bestSolutionSerieHandler = "Best Solution";
-		localBestSolutionSerieHandler = "Local Best Solution";
-
-		timer.split();
-		costLogImage.add(localBestSolutionSerieHandler,
-				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-				localBestSolution.getCost());
-		costLogImage.add(bestSolutionSerieHandler,
-				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
-				bestSolution.getCost());
-		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
-				+ bestSolution.isFeasible());
-		timer.unsplit();
-		
-		currentSolution = initialSolution.clone(); // the best solution is the
-
-		makeFeasible(currentSolution);
-
-		optimLogger.info("Updating best solutions");
-
-		bestSolution = currentSolution.clone();
-		localBestSolution = currentSolution.clone();
-
-		InternalOptimization(currentSolution);
-		
-		try {
-			evalServer.EvaluateSolution(currentSolution);
-		} catch (EvaluationException e) {
-			throw new OptimizationException("","finalEvaluation",e);
-		}
-		
-		for (Solution s : currentSolution.getAll()) {
-			checkBestSolution(s, true);
-			checkLocalBestSolution(s, true);
-		}
-	}
 
 
 	private void waitForResume() throws OptimizationException {
@@ -1702,7 +1649,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		try {
 			p = Files.createTempFile("sol", ".xml");
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Error while creating a temporary file.", e);
 			p = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "soltmp.xml");
 		}
 		currentSolution.exportLight(p);
@@ -1713,7 +1660,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			currentSolution.setFrom(null, reval.getMultiCloudExt());
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while using the MILP tool.", e);
 
 			currentSolution = tempSolution.clone();
 		}

@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -1424,6 +1425,86 @@ public class SolutionMulti implements Cloneable, Serializable {
 			logger.error("Error while using the contractor tool!", e);
 			return null;
 		}
+	}
+	
+	public static Map<String, List<String>> getResourceSizesByTier(File solution) {
+		Map<String, List<String>> res = new HashMap<String, List<String>>();
+		
+		if (isResourceModelExtension(solution))
+			res = getResourceSizesByTierFromResourceModelExtension(solution);
+		else
+			res = getResourceSizesByTierFromFileSolution(solution);
+		
+		return res;
+	}
+	
+	private static Map<String, List<String>> getResourceSizesByTierFromResourceModelExtension(File solution) {
+		Map<String, List<String>> res = new HashMap<String, List<String>>();
+		
+		if (solution != null && solution.exists())
+			try {
+				ResourceModelExtension rme = XMLHelper.deserialize(solution
+						.toURI().toURL(), ResourceModelExtension.class);
+				
+				for (ResourceContainer rc : rme.getResourceContainer()) {
+					String resourceSize = rc.getCloudElement().getResourceSizeID();
+					String tierId = rc.getId();
+					
+					List<String> values = res.get(tierId);
+					if (values == null) {
+						values = new ArrayList<String>();
+						res.put(tierId, values);
+					}
+					
+					res.get(tierId).add(resourceSize);
+				}
+			} catch (Exception e) {
+				logger.error("Error while reading data from a solution file.", e);
+			}
+		
+		return res;
+
+	}
+
+	@Deprecated
+	private static Map<String, List<String>> getResourceSizesByTierFromFileSolution(File solution) {
+		Map<String, List<String>> res = new HashMap<String, List<String>>();
+		
+		if (solution != null && solution.exists())
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(solution);
+				doc.getDocumentElement().normalize();
+				
+				NodeList tiers = doc.getElementsByTagName("Tier");
+				
+				for (int i = 0; i < tiers.getLength(); ++i) {
+					Node n = tiers.item(i);
+	
+					if (n.getNodeType() != Node.ELEMENT_NODE)
+						continue;
+	
+					Element tier = (Element) n;
+
+					String resourceSize = tier.getAttribute("resourceName");
+					String tierId = tier.getAttribute("id");
+					
+					List<String> values = res.get(tierId);
+					if (values == null) {
+						values = new ArrayList<String>();
+						res.put(tierId, values);
+					}
+					
+					res.get(tierId).add(resourceSize);
+				}
+			} catch (Exception e) {
+				logger.error("Error while reading data from a solution file.", e);
+			}
+		
+		return res;
+
 	}
 
 }

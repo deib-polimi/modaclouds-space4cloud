@@ -69,8 +69,18 @@ public class DataExporter {
 		return data.export(size);
 	}
 	
+	public static List<File> perform(Path sourcesBasePath, int size, int variability, int g) {
+		DataExporter data = new DataExporter(sourcesBasePath);
+		return data.export(size, variability, g);
+	}
+	
 	public static List<File> evaluate(Path sourcesBasePath, int size) {
 		List<File> res = evaluate(perform(sourcesBasePath, size));
+		return res;
+	}
+	
+	public static List<File> evaluate(Path sourcesBasePath, int size, int variability, int g) {
+		List<File> res = evaluate(perform(sourcesBasePath, size, variability, g), variability, g);
 		return res;
 	}
 	
@@ -81,7 +91,7 @@ public class DataExporter {
 			return res;
 		
 		for (File f : sourcesBasePath.toFile().listFiles())
-			if (f.getName().indexOf("generated-evaluation-") > -1)
+			if (f.getName().indexOf(BASE_FILE_NAME) > -1)
 				res.add(f);
 		
 		return res;
@@ -101,15 +111,19 @@ public class DataExporter {
 	}
 	
 	public List<File> export(int size) {
-		if (Configuration.ROBUSTNESS_VARIABILITY <= 0)
+		return export(size, Configuration.ROBUSTNESS_VARIABILITY, Configuration.ROBUSTNESS_G);
+	}
+	
+	public List<File> export(int size, int variability, int g) {
+		if (variability <= 0)
 			return new ArrayList<File>();
 		
 		File nominal = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File lower = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 - Configuration.ROBUSTNESS_VARIABILITY)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File upper = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 + Configuration.ROBUSTNESS_VARIABILITY)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File lower = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File upper = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 			
 		if (nominal.exists() && lower.exists() && upper.exists())
-			return export(nominal, lower, upper, size);
+			return export(nominal, lower, upper, size, variability, g);
 		
 		return new ArrayList<File>();
 	}
@@ -124,7 +138,7 @@ public class DataExporter {
 	}
 	private static Map<String, Integer> vmPeaks = new HashMap<String, Integer>();
 	
-	private List<File> export(File nominal, File lower, File upper, int nominalSize) {
+	private List<File> export(File nominal, File lower, File upper, int nominalSize, int variability, int g) {
 		List<File> res = new ArrayList<File>();
 		
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
@@ -195,11 +209,7 @@ public class DataExporter {
 					continue;
 				
 
-				Path path = null;
-				if (totalKeyset.size() > 1)
-					path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize +  "-" + (resource.replace('.', '_')).replaceAll("_", "") + ".txt");
-				else
-					path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize + ".txt");
+				Path path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize + "-" + (resource.replace('.', '_')).replaceAll("_", "") + "-" + variability + "-" + g + ".txt");
 				
 				PrintWriter out = new PrintWriter(new FileWriter(path.toFile()));
 				
@@ -210,7 +220,7 @@ public class DataExporter {
 				out.printf("T %d\r\n", DEFAULT_T);
 				out.printf("C %d\r\n", costs.size() - 2);
 				out.printf("Q %s\r\n", form.format(Configuration.ROBUSTNESS_Q));
-				out.printf("G %d\r\n", Configuration.ROBUSTNESS_G);
+				out.printf("G %d\r\n", g);
 				
 				double onDemand = costs.get("On-Demand").get("hourly"); // 0.154;
 				
@@ -256,6 +266,7 @@ public class DataExporter {
 				
 				res.add(path.toFile());
 //				System.out.println(sw.toString());
+				
 			} catch (Exception e) {
 				logger.error("Error while producing the file.", e);
 				return null;
@@ -471,8 +482,17 @@ public class DataExporter {
 	
 	private static final String EVALUATE_COMMAND = "/usr/optimization/costiSaraMattia/main";
 	private static final String EVALUATE_FOLDER = "/tmp/sara";
-
+	
+	public static final String BASE_FILE_NAME = "generated-evaluation-";
+	
 	public static List<File> evaluate(List<File> formattedSolutions) {
+		return evaluate(formattedSolutions, -1, -1);
+	}
+
+	public static List<File> evaluate(List<File> formattedSolutions, int variability, int g) {
+		String suffix = "";
+		if (variability > -1 && g > -1)
+			suffix = String.format("-%d-%d", variability, g);
 		List<File> res = new ArrayList<File>();
 		for (File f : formattedSolutions) {
 			if (f == null || !f.exists() || f.isDirectory() || f.getName().indexOf(".txt") == -1)
@@ -484,8 +504,8 @@ public class DataExporter {
 				String newName = f.getName().replaceAll(".txt", "_sol.txt");
 				String parentPath = f.getParentFile().getAbsolutePath();
 				Ssh.receiveFile(parentPath + File.separator + newName, EVALUATE_FOLDER + "/" + newName);
-				EvaluationResult r = getEvaluationResult(Paths.get(parentPath, newName).toFile(), output);
-				Path gen = Paths.get(parentPath, "generated-evaluation-" + r.getProblem().getUserPeak() + "-" + r.getProblem().getMachineType() + ".xml");
+				EvaluationResult r = getEvaluationResult(Paths.get(parentPath, newName).toFile(), output, variability, g);
+				Path gen = Paths.get(parentPath, BASE_FILE_NAME + r.getProblem().getUserPeak() + "-" + r.getProblem().getMachineType() + suffix + ".xml");
 				exportEvaluationResult(gen, r);
 				if (gen.toFile() != null && gen.toFile().exists())
 					res.add(gen.toFile());
@@ -507,7 +527,7 @@ public class DataExporter {
 		}
 	}
 	
-	private static EvaluationResult getEvaluationResult(File f, List<String> output) {
+	private static EvaluationResult getEvaluationResult(File f, List<String> output, int variability, int g) {
 		if (!f.exists() || f.isDirectory() || output.size() == 0)
 			return null;
 		
@@ -550,8 +570,8 @@ public class DataExporter {
 					cost = Double.parseDouble(line.substring(line.indexOf(strCosto) + strCosto.length()));
 				} else if (Pattern.matches(strX, line)) {
 					int n = Integer.parseInt(line.substring(1, line.indexOf(' ')));
-					int value = Integer.parseInt(line.substring(line.indexOf('=') + 2));
-					xMap.put(n, value);
+					double value = Double.parseDouble(line.substring(line.indexOf('=') + 2));
+					xMap.put(n, (int)Math.round(value));
 				} else if (Pattern.matches(strN, line)) {
 					int n = Integer.parseInt(line.substring(1, line.indexOf(':')));
 					int value = Integer.parseInt(line.substring(line.indexOf(':') + 2));
@@ -587,7 +607,7 @@ public class DataExporter {
 					} else if (line.indexOf(strBestUB) > -1) {
 						bestUB = Double.parseDouble(line.substring(line.indexOf(strBestUB) + strBestUB.length()));
 					} else if (line.indexOf(strGap) > -1) {
-						gap = Integer.parseInt(line.substring(line.indexOf(strGap) + strGap.length(), line.indexOf('%')));
+						gap = (int)Math.round(Double.parseDouble(line.substring(line.indexOf(strGap) + strGap.length(), line.indexOf('%'))));
 					} else if (line.indexOf(strNodes) > -1) {
 						nodesBandB = Integer.parseInt(line.substring(line.indexOf(strNodes) + strNodes.length()));
 					} else if (line.indexOf(strTime) > -1) {
@@ -605,8 +625,8 @@ public class DataExporter {
 			p.setVmPeak(vmPeaks.get(userPeak + "-" + machineType));
 		else
 			p.setVmPeak(-1);
-		p.setVariability(Configuration.ROBUSTNESS_VARIABILITY);
-		p.setG(Configuration.ROBUSTNESS_G);
+		p.setVariability(variability);
+		p.setG(g);
 		p.setH(Configuration.ROBUSTNESS_H);
 		p.setQ(Configuration.ROBUSTNESS_Q);
 		res.setProblem(p);
@@ -651,15 +671,20 @@ public class DataExporter {
 	
 	public static void main(String[] args) {
 		try {
-			Configuration.loadConfiguration("/Users/ft/Desktop/tmp/Sara Mattia/aaa/conf.properties");
-		
-			List<File> files = new ArrayList<File>();
-			files.add(new File("/Users/ft/Desktop/tmp/Sara Mattia/aaa/costs-1900-m2xlarge.txt"));
-			List<File> res = evaluate(files);
-			for (File f : res)
-				System.out.println("> " + f.getAbsolutePath());
+			Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
+			List<File> res = evaluate(Paths.get("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/"), 400, 100, 20);
 			
-			res = getAllGeneratedFiles(Paths.get("/Users/ft/Desktop/tmp/Sara Mattia/aaa"));
+			
+			
+//			Configuration.loadConfiguration("/Users/ft/Desktop/tmp/Sara Mattia/aaa/conf.properties");
+//		
+//			List<File> files = new ArrayList<File>();
+//			files.add(new File("/Users/ft/Desktop/tmp/Sara Mattia/aaa/costs-1900-m2xlarge.txt"));
+//			List<File> res = evaluate(files);
+//			for (File f : res)
+//				System.out.println("> " + f.getAbsolutePath());
+//			
+//			res = getAllGeneratedFiles(Paths.get("/Users/ft/Desktop/tmp/Sara Mattia/aaa"));
 			for (File f : res)
 				System.out.println("> " + f.getAbsolutePath());
 			

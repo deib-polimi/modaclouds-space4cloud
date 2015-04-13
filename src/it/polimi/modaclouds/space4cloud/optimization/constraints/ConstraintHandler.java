@@ -17,6 +17,8 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 
 import it.polimi.modaclouds.qos_models.schema.Constraints;
+import it.polimi.modaclouds.qos_models.schema.QosMetricAggregation;
+import it.polimi.modaclouds.qos_models.schema.Range;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
@@ -25,11 +27,16 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -64,18 +72,6 @@ public class ConstraintHandler {
 	public ConstraintHandler() {
 
 	}
-	
-	/**
-	 * Parses the constraints from the xml file and initializes the handler
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws JAXBException
-	 */
-	public void loadConstraints()
-			throws ConstraintLoadingException {
-		loadConstraints(false);
-	}
 
 	/**
 	 * Parses the constraints from the xml file and initializes the handler
@@ -84,7 +80,7 @@ public class ConstraintHandler {
 	 * @throws IOException
 	 * @throws JAXBException
 	 */
-	public void loadConstraints(boolean avoidProblematicConstraints)
+	public void loadConstraints()
 			throws ConstraintLoadingException {		
 		//load from the XML
 		Constraints loadedConstraints;
@@ -143,8 +139,7 @@ public class ConstraintHandler {
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
 			}
-			if (!(avoidProblematicConstraints && metric == Metric.REPLICATION))
-				addConstraint(constraint);
+			addConstraint(constraint);
 		}
 		
 		cpuConstraintsInitialized = false;
@@ -224,6 +219,75 @@ public class ConstraintHandler {
 		}
 		
 		cpuConstraintsInitialized = true;
+	}
+	
+	public static File generateConstraintsForVariabilityTest(File initialConstraints, File solution) throws Exception {
+		Path path = null;
+		
+		try {
+			path = Files.createTempFile("constraints", ".xml");
+		} catch (Exception e) {
+			throw new Exception("Could not create a temporary file.", e);
+		}
+		
+		Constraints constraints = new Constraints();
+		
+		Constraints loadedConstraints;
+		try {
+			loadedConstraints = XMLHelper.deserialize(Paths.get(Configuration.CONSTRAINTS).toUri().toURL(),Constraints.class);
+		} catch (MalformedURLException | JAXBException | SAXException e) {
+			throw new ConstraintLoadingException("Could not load the constraint file: "+Configuration.CONSTRAINTS,e);			
+		}
+		for (it.polimi.modaclouds.qos_models.schema.Constraint constraint : loadedConstraints.getConstraints()) {
+			Metric metric = Metric.getMetricFromTag(constraint.getMetric());			
+			
+			if (metric == null){
+				logger.warn("Metric: "+constraint.getMetric()+" on constraint "+constraint.getName()+" id: "+constraint.getId()+" not available."
+						+ " Supported metrics are: "+Metric.getSupportedMetricNames());
+				continue;
+			}
+			
+			if (metric == Metric.REPLICATION || metric == Metric.MACHINETYPE)
+				continue;
+			
+			constraints.getConstraints().add(constraint);
+		}
+		
+		Map<String, List<String>> map = SolutionMulti.getResourceSizesByTier(solution);
+		
+		for (String s : map.keySet()) {
+			String tierId = s.substring(s.indexOf('@') + 1);
+			List<String> resourceSizes = map.get(s);
+			
+			it.polimi.modaclouds.qos_models.schema.Constraint constraint = new it.polimi.modaclouds.qos_models.schema.Constraint();
+			
+			String id = UUID.randomUUID().toString();
+			
+			constraint.setId(id);
+			constraint.setName("MachineType " + id);
+			constraint.setMetric(Metric.MACHINETYPE.getXmlTag());
+			Range r = new Range();
+			it.polimi.modaclouds.qos_models.schema.Set set = new it.polimi.modaclouds.qos_models.schema.Set();
+			for (String resourceSize : resourceSizes)
+				set.getValues().add(resourceSize);
+			r.setInSet(set);
+			constraint.setRange(r);
+			constraint.setTargetResourceIDRef(tierId);
+			constraint.setTargetClass("VM");
+			QosMetricAggregation aggr = new QosMetricAggregation();
+			aggr.setAggregateFunction("Average");
+			constraint.setMetricAggregation(aggr);
+			
+			constraints.getConstraints().add(constraint);
+		}
+		
+		try {
+			XMLHelper.serialize(constraints, Constraints.class, new FileOutputStream(path.toFile()));
+		} catch (Exception e) {
+			throw new Exception("Could not save the constraint file: "+path.toString(),e);			
+		}
+		
+		return path.toFile();
 	}
 
 	/**
