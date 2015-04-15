@@ -669,8 +669,7 @@ public class DataExporter {
 		return res;
 	}
 	
-	// TODO
-	public static String saraMattiaTestRow(File nominalSolution, File result, String size) {
+	private static String saraMattiaTestRow(File nominalSolution, File result, String size) {
 		Map<String, Integer[]> nominalReplicas = getReplicas(nominalSolution);
 		int[] totNominal = new int[24];
 		int[] totResult = new int[24];
@@ -755,9 +754,9 @@ public class DataExporter {
 	}
 	
 	public static File saraMattiaTest() throws Exception {
-		Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
+		final String basePath = "/Users/ft/Downloads/ConstellationSara/";
 		
-		String[] strings = {
+		final String[] strings = {
 				"small10:400:m1small:m1.small",
 				"small50:1300:m1small:m1.small",
 				"small100:3000:m1small:m1.small",
@@ -768,9 +767,9 @@ public class DataExporter {
 				"large50:8200:c3large:c3.large",
 				"large100:19000:c3large:c3.large"
 				};
-		int[] variabilities = {30, 50, 100};
+		final int[] variabilities = {30, 50, 100};
 		
-		File f = new File("results.csv");
+		File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "saramattia.csv").toFile();
 		
 		try (PrintWriter out = new PrintWriter(f)) {
 		
@@ -792,8 +791,8 @@ public class DataExporter {
 				for (int variability : variabilities)
 					for (int gamma = 1; gamma <= 24; ++gamma)
 						out.println(saraMattiaTestRow(
-								new File("/Users/ft/Downloads/ConstellationSara/" + names[0] + "/results/solution-" + names[1] + ".xml"),
-								new File("/Users/ft/Downloads/ConstellationSara/" + names[0] + "/results/generated-evaluation-" + names[1] + "-" + names[2] + "-" + variability + "-" + gamma + ".xml"),
+								new File(basePath + names[0] + "/results/solution-" + names[1] + ".xml"),
+								new File(basePath + names[0] + "/results/generated-evaluation-" + names[1] + "-" + names[2] + "-" + variability + "-" + gamma + ".xml"),
 								names[3]));
 			}
 		}
@@ -803,7 +802,7 @@ public class DataExporter {
 	
 	public static void main(String[] args) {
 		try {
-//			Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
+			Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
 //			List<File> res = evaluate(Paths.get("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/"), 400, 100, 20);
 			
 			saraMattiaTest();
