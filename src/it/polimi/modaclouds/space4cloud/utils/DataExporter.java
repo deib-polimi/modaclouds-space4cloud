@@ -679,7 +679,7 @@ public class DataExporter {
 		}
 		for (String key : nominalReplicas.keySet()) {
 			String actualSize = key.substring(0, key.indexOf('@'));
-			if (!actualSize.equals(size) && !(key.replace('.', '_')).replaceAll("_", "").equals(size))
+			if (!actualSize.equals(size) && !(actualSize.replace('.', '_')).replaceAll("_", "").equals(size))
 				continue;
 			Integer[] tier = nominalReplicas.get(key);
 			for (int i = 0; i < 24; ++i)
@@ -755,14 +755,24 @@ public class DataExporter {
 	
 	public static final String RESULT_CSV = "robustnessTest.csv";
 	
+	public static void aaa() {
+		try {
+			List<File> generatedFiles = new ArrayList<File>();
+			generatedFiles.add(new File("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/generated-evaluation-400-m1small-30-24.xml"));
+			robustnessTest(new File("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/solution-400.xml"), generatedFiles, new File("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/robustnessTest.csv"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public static File robustnessTest(File solution, List<File> generatedFiles, File append) throws Exception {
 		boolean headline = false;
 		
-		if (append == null) {
+		if (append == null)
 			append = Paths.get(solution.getParent(), RESULT_CSV).toFile();
-			if (!append.exists())
-				headline = true;
-		}
+		
+		if (!append.exists())
+			headline = true;
 		
 		try (
 				FileOutputStream fout = new FileOutputStream(append, true);
@@ -784,7 +794,7 @@ public class DataExporter {
 			
 			for (File generatedFile : generatedFiles) {
 				String fileName = generatedFile.getName();
-				fileName = fileName.substring(BASE_FILE_NAME.length() + 1);
+				fileName = fileName.substring(BASE_FILE_NAME.length());
 				
 				String[] ss = fileName.split("-");
 //				int peak = Integer.parseInt(ss[0]);
@@ -854,7 +864,9 @@ public class DataExporter {
 			Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
 //			List<File> res = evaluate(Paths.get("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/"), 400, 100, 20);
 			
-			saraMattiaTest();
+//			saraMattiaTest();
+			
+			aaa();
 				
 			
 //			Configuration.loadConfiguration("/Users/ft/Desktop/tmp/Sara Mattia/aaa/conf.properties");

@@ -594,6 +594,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 		performVariability(Configuration.ROBUSTNESS_VARIABILITY, new int[] { Configuration.ROBUSTNESS_G }, results);
 		
+//		performVariability(30, new int[] { Configuration.ROBUSTNESS_G }, results);
+//		performVariability(50, new int[] { Configuration.ROBUSTNESS_G }, results);
+		
 		try {
 			Files.createFile(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "variability-ended.xml"));
 		} catch (IOException e) {
