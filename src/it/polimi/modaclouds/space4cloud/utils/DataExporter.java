@@ -669,12 +669,145 @@ public class DataExporter {
 		return res;
 	}
 	
+	// TODO
+	public static String saraMattiaTestRow(File nominalSolution, File result, String size) {
+		Map<String, Integer[]> nominalReplicas = getReplicas(nominalSolution);
+		int[] totNominal = new int[24];
+		int[] totResult = new int[24];
+		for (int i = 0; i < 24; ++i) {
+			totNominal[i] = 0;
+			totResult[i] = 0;
+		}
+		for (String key : nominalReplicas.keySet()) {
+			String actualSize = key.substring(0, key.indexOf('@'));
+			if (!actualSize.equals(size))
+				continue;
+			Integer[] tier = nominalReplicas.get(key);
+			for (int i = 0; i < 24; ++i)
+				totNominal[i] += tier[i];
+		}
+		
+		double costS4C = SolutionMulti.getCost(nominalSolution);
+		int durationS4C = SolutionMulti.getDuration(nominalSolution);
+		
+		int variability = 0;
+		int gamma = 0;
+		
+		double costTool = 0.0;
+		int durationTool = 0;
+		
+		try {
+			EvaluationResult eval = XMLHelper.deserialize(result
+					.toURI().toURL(), EvaluationResult.class);
+			
+			Problem prob = eval.getProblem();
+			variability = prob.getVariability();
+			gamma = prob.getG();
+			
+			Result res = eval.getResult();
+			costTool = res.getCost();
+			durationTool = res.getTime();
+			
+			WorstRealization real = res.getWorstRealization();
+			List<Instance> insts = real.getInstance();
+			for (Instance i : insts) {
+				totResult[i.getI()] = i.getValue();
+			}
+		} catch (Exception e) {
+			logger.error("Error while reading the evaluation result file.", e);
+			return null;
+		}
+		
+		
+		int maxDiffs = 0;
+		int maxReplicas = 0;
+		int count = 0;
+		
+		for (int i = 0; i < 24; ++i) {
+			if (maxReplicas < totNominal[i])
+				maxReplicas = totNominal[i];
+			
+			if (totNominal[i] != totResult[i]) {
+				count++;
+//				logger.debug("{}) {}, {}", i, totNominal[i], totResult[i]);
+			} else {
+				if (maxDiffs < count)
+					maxDiffs = count;
+				count = 0;
+			}
+		}
+		if (maxDiffs < count)
+			maxDiffs = count;
+//		logger.debug("Max diffs: {}", maxDiffs);
+		
+		return String.format(
+				"%s,%d,%d,%d,%s,%s,%d,%d,%d",
+				size,
+				maxReplicas,
+				variability,
+				gamma,
+				SolutionMulti.costFormatter.format(costS4C),
+				SolutionMulti.costFormatter.format(costTool),
+				durationS4C,
+				durationTool,
+				maxDiffs
+				);
+	}
+	
+	public static File saraMattiaTest() throws Exception {
+		Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
+		
+		String[] strings = {
+				"small10:400:m1small:m1.small",
+				"small50:1300:m1small:m1.small",
+				"small100:3000:m1small:m1.small",
+				"medium10:700:m1medium:m1.medium",
+				"medium50:2500:m1medium:m1.medium",
+				"medium100:5500:m1medium:m1.medium",
+				"large10:1600:c3large:c3.large",
+				"large50:8200:c3large:c3.large",
+				"large100:19000:c3large:c3.large"
+				};
+		int[] variabilities = {30, 50, 100};
+		
+		File f = new File("results.csv");
+		
+		try (PrintWriter out = new PrintWriter(f)) {
+		
+			out.printf(
+					"%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+					"vmType",
+					"maxReplicas",
+					"variability",
+					"gamma",
+					"costS4C",
+					"costTool",
+					"durationS4C",
+					"durationTool",
+					"maxDiffs"
+					);
+			
+			for (String s : strings) {
+				String[] names = s.split(":");
+				for (int variability : variabilities)
+					for (int gamma = 1; gamma <= 24; ++gamma)
+						out.println(saraMattiaTestRow(
+								new File("/Users/ft/Downloads/ConstellationSara/" + names[0] + "/results/solution-" + names[1] + ".xml"),
+								new File("/Users/ft/Downloads/ConstellationSara/" + names[0] + "/results/generated-evaluation-" + names[1] + "-" + names[2] + "-" + variability + "-" + gamma + ".xml"),
+								names[3]));
+			}
+		}
+		
+		return f;
+	}
+	
 	public static void main(String[] args) {
 		try {
-			Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
-			List<File> res = evaluate(Paths.get("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/"), 400, 100, 20);
+//			Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
+//			List<File> res = evaluate(Paths.get("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/"), 400, 100, 20);
 			
-			
+			saraMattiaTest();
+				
 			
 //			Configuration.loadConfiguration("/Users/ft/Desktop/tmp/Sara Mattia/aaa/conf.properties");
 //		
@@ -685,8 +818,8 @@ public class DataExporter {
 //				System.out.println("> " + f.getAbsolutePath());
 //			
 //			res = getAllGeneratedFiles(Paths.get("/Users/ft/Desktop/tmp/Sara Mattia/aaa"));
-			for (File f : res)
-				System.out.println("> " + f.getAbsolutePath());
+//			for (File f : res)
+//				System.out.println("> " + f.getAbsolutePath());
 			
 		} catch (Exception e) {
 			e.printStackTrace();

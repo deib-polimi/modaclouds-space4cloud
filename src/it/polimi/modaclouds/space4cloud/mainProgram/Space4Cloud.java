@@ -580,15 +580,17 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			executor = (ThreadPoolExecutor) Executors
 	                .newFixedThreadPool(1);
 		
-		int[] consideredG = new int[24];
-		for (int g = 1; g <= 24; ++g)
-			consideredG[g-1] = g;
-		
-		performVariability(30, consideredG);
-		performVariability(50, consideredG);
-		performVariability(100, consideredG);
+//		int[] consideredG = new int[24];
+//		for (int g = 1; g <= 24; ++g)
+//			consideredG[g-1] = g;
+//		
+//		performVariability(30, consideredG);
+//		performVariability(50, consideredG);
+//		performVariability(100, consideredG);
 		
 //		performVariability(30, new int[] {10, 20});
+		
+		performVariability(Configuration.ROBUSTNESS_VARIABILITY, new int[] { Configuration.ROBUSTNESS_G });
 		
 		try {
 			Files.createFile(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "variability-ended.xml"));
@@ -668,9 +670,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 		try {
 			double key = 1.0 - (Configuration.ROBUSTNESS_VARIABILITY / 100.0);
-			usageModelExts.put((int)(key*highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
+			usageModelExts.put((int)Math.round(key*highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
 			key = 1.0 + (Configuration.ROBUSTNESS_VARIABILITY / 100.0);
-			usageModelExts.put((int)(key*highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
+			usageModelExts.put((int)Math.round(key*highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
 		} catch (JAXBException | IOException | SAXException e) {
 			throw new OptimizationException("Error creating a modified usage model extension", e);
 		}

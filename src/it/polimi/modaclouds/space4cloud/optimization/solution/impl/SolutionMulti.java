@@ -104,6 +104,33 @@ public class SolutionMulti implements Cloneable, Serializable {
 		return cost;
 	}
 	
+	public static int getDuration(File solution) {
+		int duration = Integer.MAX_VALUE;
+
+		if (solution != null && solution.exists())
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(solution);
+				doc.getDocumentElement().normalize();
+
+				{
+					Element root = (Element) doc.getElementsByTagName(
+							"SolutionMultiResult").item(0);
+
+
+					duration = Integer.parseInt(root
+							.getAttribute("generationTime"));
+
+				}
+			} catch (Exception e) {
+				logger.error("Error while reading the duration from a solution file.", e);
+			}
+
+		return duration;
+	}
+	
 	public static boolean isEmpty(File solution) {
 		if (isResourceModelExtension(solution))
 			return isEmptyResourceModelExtension(solution);
