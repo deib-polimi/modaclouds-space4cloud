@@ -669,7 +669,7 @@ public class DataExporter {
 		return res;
 	}
 	
-	private static String saraMattiaTestRow(File nominalSolution, File result, String size) {
+	private static String robustnessTestRow(File nominalSolution, File result, String size) {
 		Map<String, Integer[]> nominalReplicas = getReplicas(nominalSolution);
 		int[] totNominal = new int[24];
 		int[] totResult = new int[24];
@@ -679,7 +679,7 @@ public class DataExporter {
 		}
 		for (String key : nominalReplicas.keySet()) {
 			String actualSize = key.substring(0, key.indexOf('@'));
-			if (!actualSize.equals(size))
+			if (!actualSize.equals(size) && !(key.replace('.', '_')).replaceAll("_", "").equals(size))
 				continue;
 			Integer[] tier = nominalReplicas.get(key);
 			for (int i = 0; i < 24; ++i)
@@ -753,6 +753,55 @@ public class DataExporter {
 				);
 	}
 	
+	public static final String RESULT_CSV = "robustnessTest.csv";
+	
+	public static File robustnessTest(File solution, List<File> generatedFiles, File append) throws Exception {
+		boolean headline = false;
+		
+		if (append == null) {
+			append = Paths.get(solution.getParent(), RESULT_CSV).toFile();
+			if (!append.exists())
+				headline = true;
+		}
+		
+		try (
+				FileOutputStream fout = new FileOutputStream(append, true);
+				PrintWriter out = new PrintWriter(fout)) {
+		
+			if (headline)
+				out.printf(
+						"%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+						"vmType",
+						"maxReplicas",
+						"variability",
+						"gamma",
+						"costS4C",
+						"costTool",
+						"durationS4C",
+						"durationTool",
+						"maxDiffs"
+						);
+			
+			for (File generatedFile : generatedFiles) {
+				String fileName = generatedFile.getName();
+				fileName = fileName.substring(BASE_FILE_NAME.length() + 1);
+				
+				String[] ss = fileName.split("-");
+//				int peak = Integer.parseInt(ss[0]);
+				String size = ss[1];
+//				int variability = Integer.parseInt(ss[2]);
+//				int gamma = Integer.parseInt(ss[3]);
+				
+				out.println(robustnessTestRow(
+						solution,
+						generatedFile,
+						size));
+			}
+		}
+		
+		return append;
+	}
+	
 	public static File saraMattiaTest() throws Exception {
 		final String basePath = "/Users/ft/Downloads/ConstellationSara/";
 		
@@ -790,7 +839,7 @@ public class DataExporter {
 				String[] names = s.split(":");
 				for (int variability : variabilities)
 					for (int gamma = 1; gamma <= 24; ++gamma)
-						out.println(saraMattiaTestRow(
+						out.println(robustnessTestRow(
 								new File(basePath + names[0] + "/results/solution-" + names[1] + ".xml"),
 								new File(basePath + names[0] + "/results/generated-evaluation-" + names[1] + "-" + names[2] + "-" + variability + "-" + gamma + ".xml"),
 								names[3]));

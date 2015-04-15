@@ -583,14 +583,16 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 //		int[] consideredG = new int[24];
 //		for (int g = 1; g <= 24; ++g)
 //			consideredG[g-1] = g;
-//		
-//		performVariability(30, consideredG);
-//		performVariability(50, consideredG);
-//		performVariability(100, consideredG);
 		
-//		performVariability(30, new int[] {10, 20});
+		File results = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, DataExporter.RESULT_CSV).toFile();
 		
-		performVariability(Configuration.ROBUSTNESS_VARIABILITY, new int[] { Configuration.ROBUSTNESS_G });
+//		performVariability(30, consideredG, results);
+//		performVariability(50, consideredG, results);
+//		performVariability(100, consideredG, results);
+		
+//		performVariability(30, new int[] {10, 20}, results);
+		
+		performVariability(Configuration.ROBUSTNESS_VARIABILITY, new int[] { Configuration.ROBUSTNESS_G }, results);
 		
 		try {
 			Files.createFile(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "variability-ended.xml"));
@@ -600,7 +602,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	}
 	
-	private void performVariability(int consideredVariability, int[] consideredG) throws OptimizationException {
+	private void performVariability(int consideredVariability, int[] consideredG, File append) throws OptimizationException {
 
 //		if (Configuration.ROBUSTNESS_VARIABILITY <= 0 || Configuration.USE_PRIVATE_CLOUD)
 //			return;
@@ -769,9 +771,17 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 		Configuration.ROBUSTNESS_VARIABILITY = oldVariability;
 		
+		List<File> generatedFiles = new ArrayList<File>();
+		
 		for (int g : consideredG) {
 			logger.info("Evaluating with a variability of {} and a g of {}...", Configuration.ROBUSTNESS_VARIABILITY, g);
-			DataExporter.evaluate(resultsFolder, highestPeak, Configuration.ROBUSTNESS_VARIABILITY, g);
+			generatedFiles.addAll(DataExporter.evaluate(resultsFolder, highestPeak, Configuration.ROBUSTNESS_VARIABILITY, g));
+		}
+		
+		try {
+			DataExporter.robustnessTest(Paths.get(resultsFolder.toString(), Configuration.SOLUTION_LIGHT_FILE_NAME + Configuration.SOLUTION_FILE_EXTENSION).toFile(), generatedFiles, append);
+		} catch (Exception e) {
+			logger.error("Error while exporting the results of the robustness test.", e);
 		}
 		
 		Configuration.ROBUSTNESS_VARIABILITY = originalVariability;
@@ -1094,6 +1104,16 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 					} catch (IOException e) {
 						throw new RobustnessException("Error copying: "+file.getAbsolutePath()+" to: "+resultsFolder.toString(),e);
 					}
+				
+				File robustnessTest = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
+						DataExporter.RESULT_CSV).toFile();
+				try {
+					Files.copy(
+							robustnessTest.toPath(),
+							Paths.get(resultsFolder.toString(), robustnessTest.getName()), StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e) {
+					throw new RobustnessException("Error copying: "+robustnessTest.getAbsolutePath()+" to: "+resultsFolder.toString(),e);
+				}
 					
 			}
 
