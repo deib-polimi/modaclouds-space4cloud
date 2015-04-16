@@ -658,17 +658,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			Files.copy(Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME+ "Total" + Configuration.SOLUTION_FILE_EXTENSION),
 					Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME+ "-" + highestPeak + Configuration.SOLUTION_FILE_EXTENSION),
 					StandardCopyOption.REPLACE_EXISTING);
-//			File dir = Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER).toFile();
-//			for (String s : dir.list()) {
-//				File f = new File(dir.toString() + File.separator + s);
-//				if (f.isDirectory()) {
-//					FileUtils.moveDirectoryToDirectory(
-//							Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER, s).toFile(),
-//							Paths.get(resultsFolder.toString(), "temp", "" + highestPeak).toFile(),
-//							true
-//							);
-//				}
-//			}
 		} catch (IOException e) {
 			logger.error("Error when copying and moving the files", e);
 		}
@@ -699,7 +688,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		for (Integer key : usageModelExts.keySet()) {
 			File ume = usageModelExts.get(key);
 			Configuration.USAGE_MODEL_EXTENSION = ume.getAbsolutePath();
-			///////////////////////////////////
+
 			Configuration.WORKING_DIRECTORY = Paths.get(baseWorkingDirectory, ""+key).toString();
 			String tmpConfRun = null;
             try {
@@ -751,18 +740,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
                 }
             }
 		}
-//		
-//		try {
-//			FileUtils.moveDirectoryToDirectory(
-//					Paths.get(resultsFolder.toString(), "temp").toFile(),
-//					Paths.get(resultsFolder.toString(), Configuration.PERFORMANCE_RESULTS_FOLDER).toFile(),
-//					true
-//					);
-//		} catch (IOException e) {
-//			logger.error("Error when copying and moving the files", e);
-//		}
-            
-        ///////////////////////////////////////////
 		
 		try {
 			Configuration.loadConfiguration(tmpConf);
@@ -778,7 +755,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 		for (int g : consideredG) {
 			logger.info("Evaluating with a variability of {} and a g of {}...", Configuration.ROBUSTNESS_VARIABILITY, g);
-			generatedFiles.addAll(DataExporter.evaluate(resultsFolder, highestPeak, Configuration.ROBUSTNESS_VARIABILITY, g));
+			generatedFiles.addAll(DataExporter.evaluate(resultsFolder, highestPeak, Configuration.ROBUSTNESS_VARIABILITY, g)); // TODO: here add the sigma value
 		}
 		
 		try {
@@ -819,9 +796,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		int stepSize = Configuration.ROBUSTNESS_STEP_SIZE;
 		int attempts = Configuration.ROBUSTNESS_ATTEMPTS;
 
-//		TODO
-//		int variability = Configuration.ROBUSTNESS_VARIABILITY;
-
 		double x = testFrom, basex = x;
 
 		try {
@@ -835,22 +809,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		try {
 			for (; x <= testTo; x += stepSize) {
-//				TODO
-//				if (variability > 0) {
-//					usageModelExtFiles.put(
-//							(int)(x * (100.0 - variability)/100),
-//							generateModifiedUsageModelExt(usageModelExtFile, x / basex * (100.0 - variability)/100 )
-//							);
-//				}
 				usageModelExtFiles.put((int)x, generateModifiedUsageModelExt(usageModelExtFile, x / basex));
-//				TODO
-//				if (variability > 0) {
-//					usageModelExtFiles.put(
-//							(int)(x * (100.0 + variability)/100),
-//							generateModifiedUsageModelExt(usageModelExtFile, x / basex * (100.0 + variability)/100 )
-//							);
-//
-//				}
 			}
 		} catch (JAXBException | IOException | SAXException e) {
 			throw new RobustnessException("Error generating the mofigied usage model extension",e);
@@ -932,11 +891,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 						Paths.get(resultsFolder.toString(), "ume-" + key + ".xml"),
 						StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) { }
-
-
-			//			TODO: check this
-			//			if (initialSolution != null)
-			//				Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
 			
 			int robustnessVariability = Configuration.ROBUSTNESS_VARIABILITY;
 			boolean relaxedInitialSolution = Configuration.RELAXED_INITIAL_SOLUTION;
@@ -1222,6 +1176,44 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		return g;
 
 	}
+	
+//	private static File generateModifiedUsageModelExtVariability(File f, double minValueRatio, double maxValueRatio)
+//			throws JAXBException, IOException, SAXException {
+//		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
+//				UsageModelExtensions.class);
+//		
+//		Random rnd = new Random();
+//
+//		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+//		if (cw != null)
+//			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+//				int low = (int)Math.round(we.getPopulation() * minValueRatio);
+//				int high = (int)Math.round(we.getPopulation() * maxValueRatio);
+//				
+//				we.setPopulation(rnd.nextInt(high-low) + low);
+//			}
+//
+//		OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+//		if (ow != null)
+//			for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+//				int low = (int)Math.round(we.getPopulation() * minValueRatio);
+//				int high = (int)Math.round(we.getPopulation() * maxValueRatio);
+//				
+//				we.setPopulation(rnd.nextInt(high-low) + low);
+//			}
+//
+//		String s = Double.toString(minValueRatio) + Double.toString(maxValueRatio);
+//		s = s.replace('.', '-');
+//
+//		File g;
+//
+//		g = File.createTempFile("ume" + s + "-", ".xml");
+//		XMLHelper.serialize(umes, UsageModelExtensions.class,
+//				new FileOutputStream(g));
+//		logger.info(g.getAbsolutePath());
+//		return g;
+//
+//	}
 
 	public static int getMaxPopulation(File usageModelExtension) {
 		UsageModelExtensions umes = null;

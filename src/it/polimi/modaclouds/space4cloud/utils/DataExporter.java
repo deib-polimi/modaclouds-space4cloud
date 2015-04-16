@@ -69,9 +69,9 @@ public class DataExporter {
 		return data.export(size);
 	}
 	
-	public static List<File> perform(Path sourcesBasePath, int size, int variability, int g) {
+	public static List<File> perform(Path sourcesBasePath, int size, int variability, int g, double sigma) {
 		DataExporter data = new DataExporter(sourcesBasePath);
-		return data.export(size, variability, g);
+		return data.export(size, variability, g, sigma);
 	}
 	
 	public static List<File> evaluate(Path sourcesBasePath, int size) {
@@ -79,8 +79,13 @@ public class DataExporter {
 		return res;
 	}
 	
+	public static List<File> evaluate(Path sourcesBasePath, int size, int variability, int g, double sigma) {
+		List<File> res = evaluate(perform(sourcesBasePath, size, variability, g, sigma), variability, g);
+		return res;
+	}
+	
 	public static List<File> evaluate(Path sourcesBasePath, int size, int variability, int g) {
-		List<File> res = evaluate(perform(sourcesBasePath, size, variability, g), variability, g);
+		List<File> res = evaluate(perform(sourcesBasePath, size, variability, g, -1.0), variability, g);
 		return res;
 	}
 	
@@ -111,10 +116,10 @@ public class DataExporter {
 	}
 	
 	public List<File> export(int size) {
-		return export(size, Configuration.ROBUSTNESS_VARIABILITY, Configuration.ROBUSTNESS_G);
+		return export(size, Configuration.ROBUSTNESS_VARIABILITY, Configuration.ROBUSTNESS_G, -1.0);
 	}
 	
-	public List<File> export(int size, int variability, int g) {
+	public List<File> export(int size, int variability, int g, double sigma) {
 		if (variability <= 0)
 			return new ArrayList<File>();
 		
@@ -123,7 +128,7 @@ public class DataExporter {
 		File upper = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 			
 		if (nominal.exists() && lower.exists() && upper.exists())
-			return export(nominal, lower, upper, size, variability, g);
+			return export(nominal, lower, upper, size, variability, g, sigma);
 		
 		return new ArrayList<File>();
 	}
@@ -138,7 +143,7 @@ public class DataExporter {
 	}
 	private static Map<String, Integer> vmPeaks = new HashMap<String, Integer>();
 	
-	private List<File> export(File nominal, File lower, File upper, int nominalSize, int variability, int g) {
+	private List<File> export(File nominal, File lower, File upper, int nominalSize, int variability, int g, double sigma) {
 		List<File> res = new ArrayList<File>();
 		
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
@@ -239,6 +244,9 @@ public class DataExporter {
 				out.println("\r\nS");
 				
 				double spot = costs.get("Spot").get("hourly");
+				
+				if (sigma >= 0)
+					spot = sigma;
 				
 				for (int i = 0; i < DEFAULT_T; ++i)
 					out.printf("%s\r\n", form.format(spot));
