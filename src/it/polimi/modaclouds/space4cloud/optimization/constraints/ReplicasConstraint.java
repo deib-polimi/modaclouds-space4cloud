@@ -3,7 +3,9 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 import it.polimi.modaclouds.qos_models.schema.Constraint;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 public class ReplicasConstraint extends ArchitecturalConstraint {
@@ -50,16 +52,24 @@ public class ReplicasConstraint extends ArchitecturalConstraint {
 		return Math.round(range.getHasMaxValue());
 	}
 	
-	public boolean hasMaxReplica(IaaS resource){
+	public boolean hasMaxReplica(CloudService resource){
 		if(range.getHasMaxValue() == null)
 			return false;
-		return resource.getReplicas() >= range.getHasMaxValue();
+		if (resource instanceof IaaS)
+			return ((IaaS)resource).getReplicas() >= range.getHasMaxValue();
+		else if (resource instanceof PaaS && ((PaaS)resource).areReplicasChangeable())
+			return ((PaaS)resource).getReplicas() >= range.getHasMaxValue();
+		return false;
 	}
 	
-	public boolean hasMinReplica(IaaS resource){
+	public boolean hasMinReplica(CloudService resource){
 		if(range.getHasMinValue() == null)
 			return false;
-		return resource.getReplicas() <= range.getHasMinValue();
+		if (resource instanceof IaaS)
+			return ((IaaS)resource).getReplicas() <= range.getHasMinValue();
+		else if (resource instanceof PaaS && ((PaaS)resource).areReplicasChangeable())
+			return ((PaaS)resource).getReplicas() <= range.getHasMinValue();
+		return false;
 	}
 
 	@Override

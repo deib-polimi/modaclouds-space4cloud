@@ -8,6 +8,8 @@ import it.polimi.modaclouds.qos_models.schema.MultiCloudExtension;
 import it.polimi.modaclouds.qos_models.schema.MultiCloudExtensions;
 import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
 import it.polimi.modaclouds.qos_models.schema.Provider;
+import it.polimi.modaclouds.qos_models.schema.Replica;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
 import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
@@ -24,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +37,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -51,6 +55,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * This class should handle a multi-provider solution, or also, in the
@@ -65,7 +70,12 @@ public class SolutionMulti implements Cloneable, Serializable {
 	private int generationIteration = 0;	
 	private long generationTime =0;
 
-
+	public boolean usesPaaS() {
+		for (Solution s : solutions.values())
+			if (s.usesPaaS())
+				return true;
+		return false;
+	}
 
 	public static double getCost(File solution) {
 		double cost = Double.MAX_VALUE;
@@ -88,13 +98,80 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while reading the cost from a solution file.", e);
 			}
 
 		return cost;
 	}
+	
+	public static int getDuration(File solution) {
+		int duration = Integer.MAX_VALUE;
 
+		if (solution != null && solution.exists())
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(solution);
+				doc.getDocumentElement().normalize();
+
+				{
+					Element root = (Element) doc.getElementsByTagName(
+							"SolutionMultiResult").item(0);
+
+
+					duration = Integer.parseInt(root
+							.getAttribute("generationTime"));
+
+				}
+			} catch (Exception e) {
+				logger.error("Error while reading the duration from a solution file.", e);
+			}
+
+		return duration;
+	}
+	
 	public static boolean isEmpty(File solution) {
+		if (isResourceModelExtension(solution))
+			return isEmptyResourceModelExtension(solution);
+		else
+			return isEmptyFileSolution(solution);
+	}
+	
+	public static boolean isResourceModelExtension(File f) {
+		try {
+			XMLHelper.deserialize(f.toURI().toURL(), ResourceModelExtension.class);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	private static boolean isEmptyResourceModelExtension(File solution) {
+		try {
+			ResourceModelExtension rme = XMLHelper.deserialize(solution
+					.toURI().toURL(), ResourceModelExtension.class);
+			
+			for (ResourceContainer rc : rme.getResourceContainer()) {
+				it.polimi.modaclouds.qos_models.schema.CloudService cs = rc.getCloudElement();
+				if (cs != null) {
+					Replica r = cs.getReplicas();
+					if (r != null) {
+						List<ReplicaElement> re = r.getReplicaElement();
+						if (re.size() > 0)
+							return false;
+					}
+				}
+			}
+			
+		} catch (MalformedURLException | JAXBException | SAXException e) {
+			logger.error("Error in checking if the solution is empty",e);
+		}
+		return true;
+	}
+
+	@Deprecated
+	private static boolean isEmptyFileSolution(File solution) {
 		if (solution != null && solution.exists())
 			try {
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
@@ -135,6 +212,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		if (!provider.equals("Error")) {
 			this.solutions.put(provider, s);
 			updateEvaluation();
+			signalProvidersNumber();
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
 	}
@@ -144,8 +222,14 @@ public class SolutionMulti implements Cloneable, Serializable {
 		String provider = s.getProvider();
 		if (this.solutions.remove(provider) != null) {
 			updateEvaluation();
+			signalProvidersNumber();
 		} else
 			logger.error("Error! The provider isn't defined in the solution!");
+	}
+	
+	private void signalProvidersNumber() {
+		for (Solution s : solutions.values())
+			s.setTotalProviders(solutions.size());
 	}
 	
 	public void removeUselessSolutions() {
@@ -210,7 +294,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			text += "\n";
 			for (Instance i : hourApplication) {
 				for (Tier t : i.getTiers())
-					text += ((IaaS) t.getCloudService()).getReplicas() + ",";
+					 text += s.getReplicas(t) + ",";
 				text += "\n";
 			}
 
@@ -237,19 +321,23 @@ public class SolutionMulti implements Cloneable, Serializable {
 			outFile.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while exporting the data via CSV.", e);
 		}
 	}
 
 	public void exportLight(Path filePath) {
 		if (!isEvaluated()) {
-			System.err
-					.println("Trying to export a solution that has not been evaluated!");
+			logger.error("Trying to export a solution that has not been evaluated!");
 			return;
 		}
 
+		boolean res = exportAsFileSolution(filePath);
+		if (res)
+			exportMultiCloudInfoAsExtension(Paths.get(filePath.getParent().toString(), "mce.xml"));
+	}
 	
-
+	@Deprecated
+	public boolean exportAsFileSolution(Path filePath) {
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory
 					.newInstance();
@@ -306,14 +394,14 @@ public class SolutionMulti implements Cloneable, Serializable {
 					tier.setAttribute("resourceName", cs.getResourceName());
 					tier.setAttribute("serviceType", cs.getServiceType());
 
-					if(cs instanceof IaaS){
+					if(cs instanceof IaaS || (cs instanceof PaaS && ((PaaS)cs).areReplicasChangeable())){
 						for (int i = 0; i < 24; i++) {
 							// create the allocation element
 							Element hourAllocation = doc.createElement("HourAllocation");
 							tier.appendChild(hourAllocation);
 							hourAllocation.setAttribute("hour", "" + i);
 							hourAllocation.setAttribute("allocation", ""
-									+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
+									+ sol.getReplicas(hourApplication.get(i).getTierById(t.getId())));
 							if (sol.getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
                                 hourAllocation.setAttribute("hosts", "" + PrivateCloud.getInstance().getUsedHostsForTier(i, t.getId()).size());
 						}
@@ -375,22 +463,32 @@ public class SolutionMulti implements Cloneable, Serializable {
 
 			transformer.transform(source, result);
 
-			exportLightNew(Paths.get(filePath.getParent().toString(), "mce.xml").toString());
-
+			return true;
 		} catch (ParserConfigurationException | TransformerException e) {
 			logger.error("Error exporting the solution statistics",e);
-
+			return false;
 		}
-
 	}
 
-	public void exportLightNew(String filename) {
+	public boolean exportMultiCloudInfoAsExtension(Path path) {
 		if (!isEvaluated()) {
-			System.err
-					.println("Trying to export a solution that has not been evaluated!");
-			return;
+			logger.error("Trying to export a solution that has not been evaluated!");
+			return false;
 		}
 
+		MultiCloudExtensions mces = getMultiCloudInfoAsExtension();
+
+		try {
+			XMLHelper.serialize(mces, MultiCloudExtensions.class,
+					new FileOutputStream(path.toFile()));
+			return true;
+		} catch (FileNotFoundException | JAXBException e) {
+			logger.error("Error while exporting the solution.", e);
+			return false;
+		}
+	}
+	
+	public MultiCloudExtensions getMultiCloudInfoAsExtension() {
 		MultiCloudExtensions mces = new MultiCloudExtensions();
 		MultiCloudExtension mce = new MultiCloudExtension();
 		mces.setMultiCloudExtensions(mce);
@@ -412,13 +510,8 @@ public class SolutionMulti implements Cloneable, Serializable {
 				wp.setValue((int) (sol.getPercentageWorkload(i) * 100));
 			}
 		}
-
-		try {
-			XMLHelper.serialize(mces, MultiCloudExtensions.class,
-					new FileOutputStream(new File(filename)));
-		} catch (FileNotFoundException | JAXBException e) {
-			e.printStackTrace();
-		}
+		
+		return mces;
 	}
 
 	public Solution get(int i) {
@@ -486,11 +579,84 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public boolean isFeasible() {
 		return feasible;
 	}
-
-
-	public boolean setFrom(File initialSolution, File initialMce) {
-
+	
+	private boolean setFromResourceModelExtension(File initialSolution) {
+		boolean res = false;
 		
+		if (initialSolution != null) {
+			try {
+				ResourceModelExtension rme = XMLHelper.deserialize(initialSolution
+						.toURI().toURL(), ResourceModelExtension.class);
+				
+				cost = Double.MAX_VALUE;
+				
+				for (ResourceContainer rc : rme.getResourceContainer()) {
+					it.polimi.modaclouds.qos_models.schema.CloudService cs = rc.getCloudElement();
+					
+					String provider = rc.getProvider();
+					String tierId = rc.getId();
+					String resourceName = cs.getResourceSizeID();
+					String serviceName = cs.getServiceName();
+					
+					Solution solution = get(provider);
+					if (solution == null)
+						continue;
+					
+					DataHandler dataHandler = DataHandlerFactory.getHandler();
+					
+					double speed = dataHandler.getProcessingRate(provider,
+							serviceName, resourceName);
+					int ram = dataHandler.getAmountMemory(provider, serviceName,
+							resourceName);
+					int numberOfCores = dataHandler.getNumberOfReplicas(provider,
+							serviceName, resourceName);
+					
+					Replica r = cs.getReplicas();
+					if (r == null)
+						continue;
+					List<ReplicaElement> hourAllocations = r.getReplicaElement();
+					
+					for (ReplicaElement m : hourAllocations) {
+						int hour = m.getHour();
+						int allocation = m.getValue();
+	
+						Instance app = solution.getApplication(hour);
+	
+						ArrayList<String> propertyNames = new ArrayList<String>();
+						ArrayList<Object> propertyValues = new ArrayList<Object>();
+	
+						propertyNames.add("replicas");
+						propertyValues.add(allocation);
+	
+						propertyNames.add("resourceName");
+						propertyNames.add("speed");
+						propertyNames.add("ram");
+						propertyNames.add("numberOfCores");
+						propertyValues.add(resourceName);
+						propertyValues.add(speed);
+						propertyValues.add(ram);
+						propertyValues.add(numberOfCores);
+	
+						app.changeValues(tierId, propertyNames, propertyValues);
+						
+						app.setEvaluated(false);
+					}
+					
+				}
+				
+				res = true;
+				
+			} catch (Exception e) {
+				logger.error("Error while importing data from a solution file.", e);
+				return false;
+			}
+		}
+		
+		return res;
+	}
+	
+	@Deprecated
+	private boolean setFromFileSolution(File initialSolution) {
 		boolean res = false;
 		
 		if (initialSolution != null) {
@@ -590,10 +756,22 @@ public class SolutionMulti implements Cloneable, Serializable {
 //				}
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while importing data from a solution file.", e);
 				return false;
 			}
 		}
+		
+		return res;
+	}
+
+
+	public boolean setFrom(File initialSolution, File initialMce) {
+		boolean res = false;
+		
+		if (isResourceModelExtension(initialSolution))
+			res = setFromResourceModelExtension(initialSolution);
+		else
+			res = setFromFileSolution(initialSolution);
 		
 		if (initialMce != null) {
 			try {
@@ -686,7 +864,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 //				}
 
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while importing data from a multicloudextension file.", e);
 				return false;
 			}
 		}
@@ -697,8 +875,95 @@ public class SolutionMulti implements Cloneable, Serializable {
 	}
 	
 	public boolean addFrom(File initialSolution) {
-
+		boolean res = false;
 		
+		if (isResourceModelExtension(initialSolution))
+			res = addFromResourceModelExtension(initialSolution);
+		else
+			res = addFromFileSolution(initialSolution);
+		
+		updateEvaluation();
+		
+		return res;
+	}
+	
+	private boolean addFromResourceModelExtension(File initialSolution) {
+		boolean res = false;
+		
+		if (initialSolution != null) {
+			try {
+				ResourceModelExtension rme = XMLHelper.deserialize(initialSolution
+						.toURI().toURL(), ResourceModelExtension.class);
+				
+				cost = Double.MAX_VALUE;
+				
+				for (ResourceContainer rc : rme.getResourceContainer()) {
+					it.polimi.modaclouds.qos_models.schema.CloudService cs = rc.getCloudElement();
+					
+					String provider = rc.getProvider();
+					String tierId = rc.getId();
+					String resourceName = cs.getResourceSizeID();
+					String serviceName = cs.getServiceName();
+					
+					Solution solution = get(provider);
+					if (solution == null)
+						continue;
+					
+					DataHandler dataHandler = DataHandlerFactory.getHandler();
+					
+					double speed = dataHandler.getProcessingRate(provider,
+							serviceName, resourceName);
+					int ram = dataHandler.getAmountMemory(provider, serviceName,
+							resourceName);
+					int numberOfCores = dataHandler.getNumberOfReplicas(provider,
+							serviceName, resourceName);
+					
+					Replica r = cs.getReplicas();
+					if (r == null)
+						continue;
+					List<ReplicaElement> hourAllocations = r.getReplicaElement();
+					
+					for (ReplicaElement m : hourAllocations) {
+						int hour = m.getHour();
+						int allocation = m.getValue();
+	
+						Instance app = solution.getApplication(hour);
+	
+						ArrayList<String> propertyNames = new ArrayList<String>();
+						ArrayList<Object> propertyValues = new ArrayList<Object>();
+	
+						propertyNames.add("replicas");
+						propertyValues.add(allocation + solution.getReplicas(app.getTierById(tierId)));
+	
+						propertyNames.add("resourceName");
+						propertyNames.add("speed");
+						propertyNames.add("ram");
+						propertyNames.add("numberOfCores");
+						propertyValues.add(resourceName);
+						propertyValues.add(speed);
+						propertyValues.add(ram);
+						propertyValues.add(numberOfCores);
+	
+						app.changeValues(tierId, propertyNames, propertyValues);
+						
+						app.setEvaluated(false);
+					}
+					
+				}
+				
+				res = true;
+				
+			} catch (Exception e) {
+				logger.error("Error while importing data from a solution file.", e);
+				return false;
+			}
+		}
+		
+		return res;
+	}
+	
+	@Deprecated
+	private boolean addFromFileSolution(File initialSolution) {
 		boolean res = false;
 		
 		if (initialSolution != null) {
@@ -769,7 +1034,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 						ArrayList<Object> propertyValues = new ArrayList<Object>();
 	
 						propertyNames.add("replicas");
-						propertyValues.add(allocation + ((IaaS) app.getTierById(tierId).getCloudService()).getReplicas());
+						propertyValues.add(allocation + solution.getReplicas(app.getTierById(tierId)));
 	
 						propertyNames.add("resourceName");
 						propertyNames.add("speed");
@@ -798,12 +1063,10 @@ public class SolutionMulti implements Cloneable, Serializable {
 //				}
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while considering data from a solution file.", e);
 				return false;
 			}
 		}
-		
-		updateEvaluation();
 		
 		return res;
 	}
@@ -905,8 +1168,47 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public void setGenerationTime(long generationTime) {
 		this.generationTime = generationTime;
 	}
-
+	
 	public static List<String> getAllProviders(File solution) {
+		List<String> res = new ArrayList<String>();
+		
+		if (isResourceModelExtension(solution))
+			res = getAllProvidersFromResourceModelExtension(solution);
+		else
+			res = getAllProvidersFromFileSolution(solution);
+		
+		return res;
+	}
+	
+	private static List<String> getAllProvidersFromResourceModelExtension(File solution) {
+		List<String> res = new ArrayList<String>();
+		
+		if (solution != null && solution.exists())
+			try {
+				ResourceModelExtension rme = XMLHelper.deserialize(solution
+						.toURI().toURL(), ResourceModelExtension.class);
+				
+				for (ResourceContainer rc : rme.getResourceContainer()) {
+					String provider = rc.getProvider();
+					
+					boolean alreadyIn = false;
+					for (int j = 0; j < res.size() && !alreadyIn; ++j) {
+						if (res.get(j).equals(provider))
+							alreadyIn = true;
+					}
+					if (!alreadyIn)
+						res.add(provider);
+				}
+			} catch (Exception e) {
+				logger.error("Error while reading data from a solution file.", e);
+			}
+		
+		return res;
+
+	}
+
+	@Deprecated
+	private static List<String> getAllProvidersFromFileSolution(File solution) {
 		List<String> res = new ArrayList<String>();
 		
 		if (solution != null && solution.exists())
@@ -937,7 +1239,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 						res.add(provider);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while reading data from a solution file.", e);
 			}
 		
 		return res;
@@ -964,16 +1266,18 @@ public class SolutionMulti implements Cloneable, Serializable {
 	/**
 	 * Export the solution in the format of the extension used as input for space4cloud
 	 */
-	public void exportAsExtension(Path fileName){
+	public boolean exportAsExtension(Path fileName){
 		ResourceModelExtension extension = getAsExtension();
 		//serialize them		
 		try {			
 			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()));
+			return true;
 		} catch (JAXBException e) {
 			logger.error("The generated solution is not valid",e);
 		} catch (FileNotFoundException e) {
 			logger.error("Error exporting the solution",e);
 		}
+		return false;
 		
 	}
 	
@@ -999,45 +1303,101 @@ public class SolutionMulti implements Cloneable, Serializable {
 		ct.setTotalCost((float)cost);
 		costs.setCost(ct);
 		
+		HashMap<String, Providers> providersMap = new HashMap<String, Providers>();
+		
 		for (Solution s : getAll()) {
-			Providers p = new Providers();
-			p.setName(s.getProvider());
-			p.setServiceName(s.getApplication(0).getTiers().get(0).getCloudService().getServiceName());
-			
-			CostType ctp = new CostType();
-			
-			for (int h = 0; h < 24; ++h) {
-				HourPriceType hour = new HourPriceType();
-				hour.setHour(h);
-				hour.setCost((float)s.getCost(h));
+			for (Tier t : s.getApplication(0).getTiers()) {
+				String provider = s.getProvider();
+				String serviceName = t.getCloudService().getServiceName();
 				
-				ctp.getHourPrice().add(hour);
+				Providers p = providersMap.get(provider + "@" + serviceName);
+				CostType ctp;
+				
+				if (p == null) {
+					p = new Providers();
+					p.setName(provider);
+					p.setServiceName(serviceName);
+					providersMap.put(provider + "@" + serviceName, p);
+					
+					costs.getProviders().add(p);
+					
+					ctp = new CostType();
+					
+					double totalCost = 0.0;
+					
+					for (int h = 0; h < 24; ++h) {
+						Tier tmp = s.getApplication(h).getTierById(t.getId());
+						
+						double cost = s.getCost(tmp.getId(), h);
+						totalCost += cost;
+						
+						HourPriceType hour = new HourPriceType();
+						hour.setHour(h);
+						hour.setCost(cost);
+						ctp.getHourPrice().add(hour);
+					}
+					
+					p.setCost(ctp);
+					ctp.setTotalCost((float) totalCost);
+				} else {
+					ctp = p.getCost();
+					
+					double totalCost = ctp.getTotalCost();
+					
+					for (HourPriceType hour : ctp.getHourPrice()) {
+						int h = hour.getHour();
+						Tier tmp = s.getApplication(h).getTierById(t.getId());
+						
+						double cost = s.getCost(tmp.getId(), h);
+						totalCost += cost;
+						hour.setCost(cost);
+					}
+					
+					ctp.setTotalCost((float) totalCost);
+				}
+				
+				
+				
+				
 			}
 			
-			ctp.setTotalCost((float)s.getCost());
-			p.setCost(ctp);
-			
-			costs.getProviders().add(p);
-			
-			// TODO: add the contracts
+//			Providers p = new Providers();
+//			p.setName(s.getProvider());
+//			p.setServiceName(s.getApplication(0).getTiers().get(0).getCloudService().getServiceName());
+//			
+//			CostType ctp = new CostType();
+//			
+//			for (int h = 0; h < 24; ++h) {
+//				HourPriceType hour = new HourPriceType();
+//				hour.setHour(h);
+//				hour.setCost((float)s.getCost(h));
+//				
+//				ctp.getHourPrice().add(hour);
+//			}
+//			
+//			ctp.setTotalCost((float)s.getCost());
+//			p.setCost(ctp);
+//			
+//			costs.getProviders().add(p);
+//			
+//			// TODO: add the contracts
 		}
 		
 		return costs;
 	}
 	
-	public void exportCostsAsExtension(Path fileName){
+	public boolean exportCostsAsExtension(Path fileName){
 		Costs costs = getCostsAsExtension();
 		//serialize them
 		try {
 			XMLHelper.serialize(costs, Costs.class, new FileOutputStream(fileName.toFile()));
+			return true;
 		} catch (JAXBException e) {
 			logger.error("The generated solution is not valid",e);
 		} catch (FileNotFoundException e) {
 			logger.error("Error exporting the solution",e);
 		}
-		
-		//generateOptimizedCosts();
-		
+		return false;
 	}
 	
 	public File generateOptimizedCosts() {
@@ -1053,9 +1413,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 		
 		logger.info("Exporting the optimized costs for Amazon...");
 		
-		int daysConsidered = 400;
-		double percentageOfS = 0.5;
-		double m = 1000.0;
+		int daysConsidered = Configuration.ROBUSTNESS_H;
+		double percentageOfS = Configuration.ROBUSTNESS_Q;
+		double m = 1000.0; // TODO: maybe Configuration.ROBUSTNESS_G ?
 		
 		String configuration = null;
 		try {
@@ -1080,11 +1440,98 @@ public class SolutionMulti implements Cloneable, Serializable {
 		}
 		exportAsExtension(Paths.get(solution));
 		
-		File f = Contractor.perform(configuration, solution, daysConsidered, percentageOfS, m);
-		if (f != null && f.exists())
-			logger.debug("Optimized costs: " + f.getAbsolutePath());
+		Contractor.removeTempFiles = true;
 		
-		return f;
+		try {
+			File f = Contractor.perform(configuration, solution, daysConsidered, percentageOfS, m);
+			if (f != null && f.exists())
+				logger.debug("Optimized costs: " + f.getAbsolutePath());
+			
+			return f;
+		} catch (Exception e) {
+			logger.error("Error while using the contractor tool!", e);
+			return null;
+		}
+	}
+	
+	public static Map<String, List<String>> getResourceSizesByTier(File solution) {
+		Map<String, List<String>> res = new HashMap<String, List<String>>();
+		
+		if (isResourceModelExtension(solution))
+			res = getResourceSizesByTierFromResourceModelExtension(solution);
+		else
+			res = getResourceSizesByTierFromFileSolution(solution);
+		
+		return res;
+	}
+	
+	private static Map<String, List<String>> getResourceSizesByTierFromResourceModelExtension(File solution) {
+		Map<String, List<String>> res = new HashMap<String, List<String>>();
+		
+		if (solution != null && solution.exists())
+			try {
+				ResourceModelExtension rme = XMLHelper.deserialize(solution
+						.toURI().toURL(), ResourceModelExtension.class);
+				
+				for (ResourceContainer rc : rme.getResourceContainer()) {
+					String resourceSize = rc.getCloudElement().getResourceSizeID();
+					String tierId = rc.getId();
+					
+					List<String> values = res.get(tierId);
+					if (values == null) {
+						values = new ArrayList<String>();
+						res.put(tierId, values);
+					}
+					
+					res.get(tierId).add(resourceSize);
+				}
+			} catch (Exception e) {
+				logger.error("Error while reading data from a solution file.", e);
+			}
+		
+		return res;
+
+	}
+
+	@Deprecated
+	private static Map<String, List<String>> getResourceSizesByTierFromFileSolution(File solution) {
+		Map<String, List<String>> res = new HashMap<String, List<String>>();
+		
+		if (solution != null && solution.exists())
+			try {
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+						.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = dBuilder.parse(solution);
+				doc.getDocumentElement().normalize();
+				
+				NodeList tiers = doc.getElementsByTagName("Tier");
+				
+				for (int i = 0; i < tiers.getLength(); ++i) {
+					Node n = tiers.item(i);
+	
+					if (n.getNodeType() != Node.ELEMENT_NODE)
+						continue;
+	
+					Element tier = (Element) n;
+
+					String resourceSize = tier.getAttribute("resourceName");
+					String tierId = tier.getAttribute("id");
+					
+					List<String> values = res.get(tierId);
+					if (values == null) {
+						values = new ArrayList<String>();
+						res.put(tierId, values);
+					}
+					
+					res.get(tierId).add(resourceSize);
+				}
+			} catch (Exception e) {
+				logger.error("Error while reading data from a solution file.", e);
+			}
+		
+		return res;
+
 	}
 
 }

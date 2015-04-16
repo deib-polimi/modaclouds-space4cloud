@@ -3,7 +3,6 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.polimi.modaclouds.space4cloud</groupId>
 	<artifactId>space4cloud</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 
 	<licenses>
 		<license>
@@ -196,7 +195,7 @@
 				<plugin>
 					<groupId>com.github.github</groupId>
 					<artifactId>site-maven-plugin</artifactId>
-					<version>0.9</version>
+					<version>0.11</version>
 					<configuration>
 						<merge>true</merge> <!-- deploy without removing existing artifacts on the repo -->
 						<message>Maven artifacts for ${project.artifactId}
@@ -246,7 +245,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-scm-publish-plugin</artifactId>
-					<version>1.0-beta-2</version>
+					<version>1.1</version>
 					<configuration>
 						<checkoutDirectory>${project.build.directory}/scmpublish</checkoutDirectory>
 						<checkinComment>Publishing javadoc for
@@ -340,32 +339,32 @@
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.1.51</version>
+			<version>0.1.52</version>
 		</dependency>
 		<dependency>
 			<groupId>it.polimi.modaclouds.qos-models</groupId>
 			<artifactId>qos-models</artifactId>
-			<version>2.3-SNAPSHOT</version>
+			<version>2.4</version>
 		</dependency>
 		<dependency>
 			<groupId>it.polimi.modaclouds</groupId>
 			<artifactId>resourcemodel</artifactId>
-			<version>1.0.0</version>
+			<version>1.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>it.polimi.modaclouds.space4cloud</groupId>
 			<artifactId>milp</artifactId>
-			<version>0.0.21</version>
+			<version>0.1.1</version>
 		</dependency>
 		<dependency>
             <groupId>it.polimi.modaclouds.space4cloud</groupId>
             <artifactId>privatecloud</artifactId>
-            <version>0.0.17</version>
+            <version>0.1.1</version>
         </dependency>
         <dependency>
             <groupId>it.polimi.modaclouds.space4cloud</groupId>
             <artifactId>contractor4cloud</artifactId>
-            <version>0.0.2</version>
+            <version>0.1.1</version>
         </dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -373,4 +372,5 @@
 			<version>17.0</version>
 		</dependency>
 	</dependencies>
+	<version>1.0.0</version>
 </project>

@@ -15,8 +15,7 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.qos_models.schema.IaasService;
-import it.polimi.modaclouds.qos_models.schema.PaasService;
+import it.polimi.modaclouds.qos_models.schema.CloudService;
 import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
 import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
@@ -61,16 +60,14 @@ public class ResourceEnvironmentExtensionParser {
 			String provider = container.getProvider();
 			String id = container.getId() + (provider!=null?provider:"");
 			providers.put(id, provider);
-			if (container.getCloudResource() != null) {
-				IaasService resource = container.getCloudResource();
+			if (container.getCloudElement() != null) {
+				CloudService resource = container.getCloudElement();
 				serviceTypes.put(id, resource.getServiceType());
 				serviceNames.put(id, resource.getServiceName());
 				instanceSizes.put(id, resource.getResourceSizeID());
 
 				if (resource.getLocation() != null) {
 					String location = resource.getLocation().getRegion();
-					if (resource.getLocation().getZone() != null)
-						location += resource.getLocation().getZone();
 					setRegion(container.getProvider(), location);
 				}
 
@@ -85,10 +82,6 @@ public class ResourceEnvironmentExtensionParser {
 					}
 				}
 				instanceReplicas.put(id, replicas);
-			} else {
-				PaasService resource = container.getCloudPlatform();
-				serviceTypes.put(id, resource.getServiceType());
-				serviceNames.put(id, resource.getServiceName());
 			}
 
 		}

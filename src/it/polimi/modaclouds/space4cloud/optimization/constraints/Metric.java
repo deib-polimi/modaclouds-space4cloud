@@ -19,7 +19,8 @@ public enum Metric {
 	REPLICATION("Replication"), RAM("RAM"), HDD("HardDisk"), CORES("Cores"), CPU(
 			"CPUUtilization"), MACHINETYPE("MachineType"), SERVICETYPE(
 			"ServiceType"), RESPONSETIME("ResponseTime"), AVAILABILITY(
-			"Availability"), RELIABILITY("Reliability"), WORKLOADPERCENTAGE("WorkloadPercentage");
+			"Availability"), RELIABILITY("Reliability"), WORKLOADPERCENTAGE("WorkloadPercentage"),
+			PROGRAMMINGLANGUAGE("ProgrammingLanguage"), DBTYPE("DBType"), DBTECHNOLOGY("DBTechnology");
 
 	public static Metric getMetricFromTag(String tag) {
 		switch (tag) {
@@ -51,6 +52,12 @@ public enum Metric {
 			return RELIABILITY;
 		case "WorkloadPercentage":
 			return WORKLOADPERCENTAGE;
+		case "ProgrammingLanguage":
+			return PROGRAMMINGLANGUAGE;
+		case "DBType":
+			return DBTYPE;
+		case "DBTechnology":
+			return DBTECHNOLOGY;
 		default:
 			return null;
 		}

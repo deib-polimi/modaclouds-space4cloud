@@ -71,7 +71,7 @@ public class Configuration {
 
 	public static boolean REDISTRIBUTE_WORKLOAD = false;
 	
-	
+	public static boolean CONTRACTOR_TEST = false;
 
 
 	// For the Private Cloud part:
@@ -191,6 +191,10 @@ public class Configuration {
 		prop.put("ROBUSTNESS_Q", Double.toString(ROBUSTNESS_Q));
 		prop.put("ROBUSTNESS_G", Integer.toString(ROBUSTNESS_G));
 		prop.put("ROBUSTNESS_H", Integer.toString(ROBUSTNESS_H));
+		
+		prop.put("CONTRACTOR_TEST", Boolean.toString(CONTRACTOR_TEST));
+		
+		it.polimi.modaclouds.space4cloud.milp.Configuration.addToConfiguration(prop);
 
 		prop.store(fos, "SPACE4Clouds configuration properties");
 		fos.flush();
@@ -220,6 +224,7 @@ public class Configuration {
 		RANDOM_ENV_FILE= prop.getProperty("RANDOM_ENV_FILE",RANDOM_ENV_FILE);	
 		SSH_PASSWORD = prop.getProperty("SSH_PASSWORD",SSH_PASSWORD);
 		SSH_USER_NAME = prop.getProperty("SSH_USER_NAME",SSH_USER_NAME);
+		SSH_HOST = prop.getProperty("SSH_HOST", SSH_HOST);
 		PRIVATE_CLOUD_HOSTS = prop.getProperty("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
 		try{
 			TABU_MEMORY_SIZE= Integer.parseInt(prop.getProperty("TABU_MEMORY_SIZE"));
@@ -229,7 +234,6 @@ public class Configuration {
 			SCALE_IN_FACTOR= Double.parseDouble(prop.getProperty("SCALE_IN_FACTOR"));
 			SCALE_IN_ITERS= Integer.parseInt(prop.getProperty("SCALE_IN_ITERS"));
 			SELECTION_POLICY= Policy.valueOf(prop.getProperty("SELECTION_POLICY"));
-			SSH_HOST = prop.getProperty("SSH_HOST", SSH_HOST);
 			RELAXED_INITIAL_SOLUTION= Boolean.parseBoolean(prop.getProperty("RELAXED_INITIAL_SOLUTION"));
 			RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
 			ROBUSTNESS_PEAK_FROM = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_FROM", String.valueOf(ROBUSTNESS_PEAK_FROM)));
@@ -241,10 +245,14 @@ public class Configuration {
 			ROBUSTNESS_G= Integer.parseInt(prop.getProperty("ROBUSTNESS_G", String.valueOf(ROBUSTNESS_G)));
 			ROBUSTNESS_H= Integer.parseInt(prop.getProperty("ROBUSTNESS_H", String.valueOf(ROBUSTNESS_H)));
 			REDISTRIBUTE_WORKLOAD = Boolean.parseBoolean(prop.getProperty("REDISTRIBUTE_WORKLOAD", String.valueOf(REDISTRIBUTE_WORKLOAD)));
-			USE_PRIVATE_CLOUD = Boolean.parseBoolean(prop.getProperty("USE_PRIVATE_CLOUD", String.valueOf(USE_PRIVATE_CLOUD)));			
+			USE_PRIVATE_CLOUD = Boolean.parseBoolean(prop.getProperty("USE_PRIVATE_CLOUD", String.valueOf(USE_PRIVATE_CLOUD)));
+			
+			CONTRACTOR_TEST= Boolean.parseBoolean(prop.getProperty("CONTRACTOR_TEST", String.valueOf(CONTRACTOR_TEST)));
 		}catch(NumberFormatException e){
 			logger.warn("Part of the configuration was invalid, reverted the invalid value to the default one.",e);
 		}
+		
+		it.polimi.modaclouds.space4cloud.milp.Configuration.loadConfiguration(filePath);
 
 	}
 
@@ -383,6 +391,8 @@ public class Configuration {
 		logger.debug("USE_PRIVATE_CLOUD: " + Boolean.toString(USE_PRIVATE_CLOUD));
 		logger.debug("PRIVATE_CLOUD_HOSTS: " + PRIVATE_CLOUD_HOSTS);
 //		logger.debug("PRIVATE_CLOUD_HOSTS_TMP: " + PRIVATE_CLOUD_HOSTS_TMP);
+		
+		logger.debug("CONTRACTOR_TEST: " + Boolean.toString(CONTRACTOR_TEST));
 	}
 	
 	

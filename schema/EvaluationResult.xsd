@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2013 sp1 (http://www.altova.com) by ﻿Riccardo Desantis (Deadware) -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:lrs="http://www.modaclouds.eu/xsd/2015/3/EvaluationResult.xsd"
+    targetNamespace="http://www.modaclouds.eu/xsd/2015/3/EvaluationResult.xsd"
+    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="2.0"
+    elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xs:annotation>
+        <xs:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="it.polimi.modaclouds.space4cloud.evaluationresult" />
+            </jaxb:schemaBindings>
+        </xs:appinfo>
+    </xs:annotation>
+
+<!-- <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">  -->
+    <xs:element name="EvaluationResult">
+        <xs:annotation>
+            <xs:documentation>The result of one evaluation with the Sara Mattia's tool</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Problem">
+                    <xs:complexType>
+                        <xs:attribute name="machineType" type="xs:string" use="required"/>
+                        <xs:attribute name="userPeak" type="xs:int" use="required"/>
+                        <xs:attribute name="vmPeak" type="xs:int" use="required"/>
+                        <xs:attribute name="variability" type="xs:int" use="required"/>
+                        <xs:attribute name="Q" type="xs:double" use="required"/>
+                        <xs:attribute name="G" type="xs:int" use="required"/>
+                        <xs:attribute name="H" type="xs:int" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="Result">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="x">
+                                <xs:complexType>
+                                    <xs:sequence maxOccurs="unbounded">
+                                        <xs:element ref="lrs:instance"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="worstRealization">
+                                <xs:complexType>
+                                    <xs:sequence maxOccurs="unbounded">
+                                        <xs:element ref="lrs:instance"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="time" type="xs:int" use="required"/>
+                        <xs:attribute name="cost" type="xs:double" use="required"/>
+                        <xs:attribute name="alpha" type="xs:double" use="required"/>
+                        <xs:attribute name="bestLB" type="xs:double" use="required"/>
+                        <xs:attribute name="bestUB" type="xs:double" use="required"/>
+                        <xs:attribute name="gap" type="xs:int" use="required"/>
+                        <xs:attribute name="nodesBandB" type="xs:int" use="required"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="instance">
+        <xs:complexType>
+            <xs:attribute name="i" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:int">
+                        <xs:minInclusive value="0"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="value" type="xs:int" use="required"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

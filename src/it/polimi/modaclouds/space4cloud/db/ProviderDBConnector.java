@@ -24,6 +24,8 @@ import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudElementType;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatformProperty;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatformPropertyName;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatformType;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
@@ -87,6 +89,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 
 	/** The paas dictionary**/
 	private Map<String, PaaS_Service> paasMap;
+	
+	private Map<String, Double> availabilitiesMap;
 	
 //	private static final Logger logger = LoggerHelper.getLogger(ProviderDBConnector.class);
 	private static final Logger logger = LoggerFactory.getLogger(ProviderDBConnector.class);
@@ -287,13 +291,24 @@ public class ProviderDBConnector implements GenericDBConnector {
 						i = r;
 						break;
 					default:
+						String tmp = rs.getString(6);
 						rs.close();
-						throw new Exception("Undefined Database Type.");
+						throw new Exception("Undefined Database Type (" + tmp + ").");
 					}
 					break;
+				case CACHE:
+					i = cf.createCache();
+					break;
+				case QUEUE:
+					i = cf.createQueue();
+					break;
+				case STORAGE:
+					i = cf.createStorage();
+					break;
 				default:
+					String tmp = rs.getString(5);
 					rs.close();
-					throw new Exception("Undefined Cloud Platform Type.");
+					throw new Exception("Undefined Cloud Platform Type (" + tmp + ").");
 				}
 				i.setType(CloudElementType.PLATFORM);
 				i.setPlatformType(type);
@@ -358,6 +373,19 @@ public class ProviderDBConnector implements GenericDBConnector {
 				}
 				list.add(i);
 				rs1.close();
+				
+				ResultSet rs2 = DatabaseConnector.getConnection().createStatement().executeQuery(
+						"select property, value from cloudplatform_properties where CloudPlatform_id="
+								+ rs.getInt(3));
+				while (rs2.next()) {
+					CloudPlatformProperty cpp = cf.createCloudPlatformProperty();
+					cpp.setPlatform(i);
+					CloudPlatformPropertyName name = CloudPlatformPropertyName.getByName(rs2.getString(1));
+					cpp.setName(name);
+					cpp.setValue(rs2.getString(2));
+					i.getProperties().add(cpp);
+				}
+				
 			}
 			rs.close();
 
@@ -794,16 +822,50 @@ public class ProviderDBConnector implements GenericDBConnector {
 		return lbs;
 	}
 	
+	@Override
 	public double getAvailability() {
+		return getAvailability(null);
+	}
+	
+	@Override
+	public double getAvailability(String region) {
+		final double defaultAvail = 0.95;
 		try {
-			// TODO: fix this query!
-			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
-					"SELECT id, name, 0.95 as value FROM cloudprovider WHERE id = " + provider.getId());
-			while (rs.next())
-				return rs.getDouble(3); 
-		} catch (SQLException e) { }
+			if (availabilitiesMap == null)
+				defineAvailabilities();
+			
+			if (region == null || availabilitiesMap.size() == 0)
+				return defaultAvail;
+			
+			Double val = availabilitiesMap.get(region);
+			if (val != null) {
+				return val;
+			} else {
+				double sum = 0.0;
+				for (Double d : availabilitiesMap.values())
+					sum += d;
+				return sum / availabilitiesMap.size();
+			}
+			
+		} catch (SQLException e) {
+			return defaultAvail;
+		}
+	}
+	
+	private void defineAvailabilities() throws SQLException {
+		availabilitiesMap = new HashMap<String, Double>();
 		
-		return 0.95;
+		ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
+					"SELECT name, availability FROM regions WHERE CloudProvider_id = " + provider.getId());
+			
+		while (rs.next()) {
+			String region = rs.getString(1);
+			double value = rs.getDouble(2);
+			
+			availabilitiesMap.put(region, value);
+		}
+		rs.close();
+	
 	}
 
 }

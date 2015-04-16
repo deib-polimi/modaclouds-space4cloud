@@ -16,8 +16,12 @@
 package it.polimi.modaclouds.space4cloud.lqn;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 import java.io.File;
@@ -282,6 +286,43 @@ public class LqnHandler implements Cloneable, Serializable {
 		// Iaas-Compute
 		if (service instanceof Compute) {
 			Compute c_resource = (Compute) service;
+			int multiplicity = c_resource.getNumberOfCores()
+					* c_resource.getReplicas();
+			changeElementbyName("processor", tier.getName(),
+					"multiplicity", multiplicity);
+			changeElementbyName("processor", tier.getName(),
+					"speed-factor", c_resource.getSpeedFactor());
+		} else if (service instanceof Platform) {
+			Platform p = (Platform) service;
+			Compute c_resource = p.getCompute();
+			int multiplicity = c_resource.getNumberOfCores()
+					* c_resource.getReplicas();
+			changeElementbyName("processor", tier.getName(),
+					"multiplicity", multiplicity);
+			changeElementbyName("processor", tier.getName(),
+					"speed-factor", c_resource.getSpeedFactor());
+		} else if (service instanceof Cache) {
+			Cache c = (Cache) service;
+			Compute c_resource = c.getCompute();
+			int multiplicity = c_resource.getNumberOfCores()
+					* c_resource.getReplicas();
+			changeElementbyName("processor", tier.getName(),
+					"multiplicity", multiplicity);
+			changeElementbyName("processor", tier.getName(),
+					"speed-factor", c_resource.getSpeedFactor());
+		} else if (service instanceof Database) {
+			Database db = (Database) service;
+			Compute c_resource = db.getCompute();
+			int multiplicity = c_resource.getNumberOfCores()
+					* c_resource.getReplicas();
+			changeElementbyName("processor", tier.getName(),
+					"multiplicity", multiplicity);
+			changeElementbyName("processor", tier.getName(),
+					"speed-factor", c_resource.getSpeedFactor());
+		} else if (service instanceof Queue) {
+			// TODO: we have to consider the queues as delay centers!!!! this is wrong!!
+			Queue queue = (Queue) service;
+			Compute c_resource = queue.getCompute();
 			int multiplicity = c_resource.getNumberOfCores()
 					* c_resource.getReplicas();
 			changeElementbyName("processor", tier.getName(),

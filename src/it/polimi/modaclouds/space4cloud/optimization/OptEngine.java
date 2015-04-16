@@ -31,6 +31,7 @@ import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.MachineTypeConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
@@ -40,9 +41,13 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -348,7 +353,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Optimization raised an exception",e);
 		}
 		if (!batch)
-			BestSolutionExplorer.show(this);
+			BestSolutionExplorer.prepare(this);
 		return null;
 	}
 
@@ -485,9 +490,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			ArrayList<Tier> resMemory = new ArrayList<>();
 			for (Tier t : i.getTiers())
 				// if the cloud service hosting the application tier is a IaaS
-				if (t.getCloudService() instanceof IaaS &&
+				if ((t.getCloudService() instanceof IaaS &&
 						// and it has more than one replica
-						((IaaS) t.getCloudService()).getReplicas() > 1)
+						((IaaS) t.getCloudService()).getReplicas() > 1) ||
+						(t.getCloudService() instanceof PaaS && ((PaaS)t.getCloudService()).areReplicasChangeable() &&  ((PaaS) t.getCloudService()).getReplicas() > 1))
 					// add it to the list of resources that can be scaled in
 					resMemory.add(t);
 
@@ -638,8 +644,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				for (int i = 0; i < 24; i++) {
 
 					for (int j = 0; j < vettResTot.get(i).size(); j++)
-						if (((IaaS) vettResTot.get(i).get(j).getCloudService())
-								.getReplicas() == 1)
+						if ( (vettResTot.get(i).get(j).getCloudService() instanceof IaaS && ((IaaS) vettResTot.get(i).get(j).getCloudService()).getReplicas() == 1) ||
+								(vettResTot.get(i).get(j).getCloudService() instanceof PaaS && ((PaaS) vettResTot.get(i).get(j).getCloudService()).areReplicasChangeable() &&
+										((PaaS) vettResTot.get(i).get(j).getCloudService()).getReplicas() == 1) )
 							vettResTot.get(i).remove(j);
 
 					if (vettResTot.get(i).size() > 0) {
@@ -956,9 +963,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					// .next();
 
 					// pick a service if not specified by the extension
-					if (serviceName == null)
-						logger.info("provider: " + provider + " default: "
-								+ defaultProvider);
+//					if (serviceName == null)
+//						logger.info("provider: " + provider + " default: "
+//								+ defaultProvider);
 					logger.trace("serviceType: " + serviceType);
 					
 					String actualProvider = provider;
@@ -986,7 +993,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					if (resourceSize == null){
 						logger.trace("Defaulting on resource Size");
 						resourceSize = dataHandler
-								.getCloudResourceSizes(actualProvider,/*
+								.getCloudElementSizes(actualProvider,/*
 								 * cloudProvider,
 								 */serviceName)
 								 .iterator().next();
@@ -994,20 +1001,20 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					logger.trace("default size"+resourceSize);
 					
 
-					double speed = dataHandler.getProcessingRate(actualProvider, // cloudProvider,
-							serviceName, resourceSize);
-					logger.trace("processing rate "+speed);
-
-					int ram = dataHandler.getAmountMemory(actualProvider, // cloudProvider,
-							serviceName, resourceSize);
-					logger.trace("ram "+ram);
-
-
-					int numberOfCores = dataHandler.getNumberOfReplicas(
-							actualProvider, /* cloudProvider, */serviceName,
-							resourceSize);
-
-					logger.trace("cores "+numberOfCores);
+//					double speed = dataHandler.getProcessingRate(actualProvider, // cloudProvider,
+//							serviceName, resourceSize);
+//					logger.trace("processing rate "+speed);
+//
+//					int ram = dataHandler.getAmountMemory(actualProvider, // cloudProvider,
+//							serviceName, resourceSize);
+//					logger.trace("ram "+ram);
+//
+//
+//					int numberOfCores = dataHandler.getNumberOfReplicas(
+//							actualProvider, /* cloudProvider, */serviceName,
+//							resourceSize);
+//
+//					logger.trace("cores "+numberOfCores);
 
 
 					/*
@@ -1015,13 +1022,16 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					 * number of replicas of that resource
 					 */
 					Tier t = new Tier(c.getId(), c.getEntityName()
-							+ "_CPU_Processor");
+							+ "_CPU_Processor"); // TODO: here for PaaS?
 
 					/* creation of a Compute type resource */
-					service = new Compute(provider, /* cloudProvider, */
-							serviceType, serviceName, resourceSize, replicas,
-							numberOfCores, speed, ram);
+//					service = new Compute(provider, /* cloudProvider, */
+//							serviceType, serviceName, resourceSize, replicas,
+//							numberOfCores, speed, ram);
 
+					service = dataHandler.getCloudService(provider, serviceType, serviceName, resourceSize, replicas);
+					
+					
 					t.setService(service);
 
 					application.addTier(t);
@@ -1206,15 +1216,31 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					
 					for (int h = 0; h < 24; ++h) {
 						Tier t = sol.getApplication(h).getTierById(constraint.getResourceID());
-						IaaS service = (IaaS) t.getCloudService();
+						CloudService service = t.getCloudService();
 						if (rconstraint.hasMaxReplica(service)) {
-							service.setReplicas(rconstraint.getMax());
-							evaluateAgain = true;
+							if (service instanceof IaaS) {
+								((IaaS)service).setReplicas(rconstraint.getMax());
+								evaluateAgain = true;
+							} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
+								((PaaS)service).setReplicas(rconstraint.getMax());
+								evaluateAgain = true;
+							}
 						}
 						else if (rconstraint.hasMinReplica(service)) {
-							service.setReplicas(rconstraint.getMin());
-							evaluateAgain = true;
+							if (service instanceof IaaS) {
+								((IaaS)service).setReplicas(rconstraint.getMin());
+								evaluateAgain = true;
+							} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
+								((PaaS)service).setReplicas(rconstraint.getMin());
+								evaluateAgain = true;
+							}
 						}
+					}
+				} else if (constraint instanceof MachineTypeConstraint) {
+					for (int h = 0; h < 24; ++h) {
+						Tier t = sol.getApplication(h).getTierById(constraint.getResourceID());
+						if (scramble(sol, t, 0))
+							evaluateAgain = true;
 					}
 				}
 			}
@@ -1223,7 +1249,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				try {
 					evalServer.EvaluateSolution(sol);
 				} catch (EvaluationException e) {
-					e.printStackTrace();
+					logger.error("Error while evaluating the solution.", e);
 				}
 			
 			logger.info("\tFeasibility iteration: "
@@ -1515,6 +1541,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		//		if (!batch)
 		//			SolutionWindow.show(bestSolution);
+		
+		if (Configuration.CONTRACTOR_TEST)
+			bestSolution.generateOptimizedCosts();
 
 		return -1;
 
@@ -1582,12 +1611,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 			}
 
-			IaaS newRes = null;
-			List<IaaS> resources = dataHandler.getSameServiceResource(
+			CloudService newRes = null;
+			List<CloudService> resources = dataHandler.getSameService(
 					t.getCloudService(), sol.getRegion());
 			String newResType = SolutionHelper
 					.getResourceNameFromTierTypeID(lowestID);
-			for (IaaS res : resources) {
+			for (CloudService res : resources) {
 				if (res.getResourceName().equals(newResType)) {
 					newRes = res;
 					break;
@@ -1596,7 +1625,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			if (newRes == null) {
 				throw new OptimizationException("longTermMemoryRestart: No resource found!");
 			}
-			moveVM.changeMachine(t.getId(), (Compute) newRes);
+			moveVM.changeMachine(t.getId(), newRes);
 		}
 
 		try {
@@ -1620,7 +1649,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		try {
 			p = Files.createTempFile("sol", ".xml");
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Error while creating a temporary file.", e);
 			p = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "soltmp.xml");
 		}
 		currentSolution.exportLight(p);
@@ -1631,7 +1660,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			currentSolution.setFrom(null, reval.getMultiCloudExt());
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while using the MILP tool.", e);
 
 			currentSolution = tempSolution.clone();
 		}
@@ -1792,6 +1821,99 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		this.numIterNoImprov = 0;
 	}
+	
+	protected boolean scramble(Solution sol, Tier selectedTier, int iterations) throws OptimizationException {
+		MoveTypeVM moveVM = new MoveTypeVM(sol);
+		
+		scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
+		// Phase2: Retrieve resources that can be exchanged with the current
+		// one
+		CloudService origRes = selectedTier.getCloudService();
+		List<CloudService> resList = dataHandler.getSameService(origRes,
+				sol.getRegion());
+		// filter resources according to architectural constraints
+
+		try {
+			constraintHandler.filterResources(resList, selectedTier);
+		} catch (ConstraintEvaluationException e) {
+			throw new OptimizationException("Error filtering resources for scramble",e);
+		}
+
+		// if no resource can substitute the current one increase the number
+		// of iterations without a change and try again
+		if (resList.size() == 0) {
+			scrambleLogger
+			.warn("No resource found for scramble after constraint check, iteration: "
+					+ iterations);
+			return false;
+		}
+
+		resList = filterByMemory(resList, sol, selectedTier);
+		// if no resource can substitute the current one increase the number
+		// of iterations without a change and try again
+		if (resList.size() == 0) {
+			scrambleLogger.debug("MemoryDump");
+			for (String s : tabuSolutionList.keySet()) {
+				scrambleLogger.debug(s);
+			}
+			scrambleLogger
+			.warn("No resource found for scramble after memory check, iteration: "
+					+ iterations);
+			return false;
+		}
+
+		// Phase3: choose the new resource. Policy: roulette selection
+		// 3.1Calculate the cumulative fitness
+		double[] cumulativeFitnesses = new double[resList.size()];
+		cumulativeFitnesses[0] = getEfficiency(resList.get(0),
+				sol.getRegion());
+		for (int i = 1; i < resList.size(); i++) {
+			double fitness = getEfficiency(resList.get(i), sol.getRegion());
+			cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
+		}
+		// get a random number weighted by the highest cumulative fitness
+		// value
+		double randomFitness = random.nextDouble()
+				* cumulativeFitnesses[cumulativeFitnesses.length - 1];
+		// search for the value
+		int index = Arrays.binarySearch(cumulativeFitnesses, randomFitness);
+		if (index < 0) {
+			// Convert negative insertion point to array index.
+			index = Math.abs(index + 1);
+		}
+
+		// get the resource.
+		CloudService newRes = resList.get(index);
+
+		// debugging
+		//          scrambleLogger.debug("Sorted Resources");
+		//          for (IaaS res : resList) {
+		//              if (newRes.equals(res))
+		//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
+		//                          + " res: " + res.getResourceName() + " value: "
+		//                          + getEfficiency(res, sol.getRegion())
+		//                          + " <--- SELECTED");
+		//              else
+		//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
+		//                          + " res:" + res.getResourceName() + " value: "
+		//                          + getEfficiency(res, sol.getRegion()));
+		//          }
+		//          scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
+
+
+		// Phase4: performs the change and evaluate the solution
+		// add the new configuration in the memory
+		moveVM.changeMachine(selectedTier.getId(), newRes);
+		try {
+			evalServer.EvaluateSolution(sol);
+		} catch (EvaluationException e) {
+			throw new OptimizationException("","scramble",e);
+		}
+
+		tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
+		scrambleLogger.debug("Memory size " + tabuSolutionList.size());
+		return true;
+	}
 
 	/**
 	 * Changes the type of virtual machines used. This change is more
@@ -1823,7 +1945,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		 */
 
 		// Phase0: initialization
-		MoveTypeVM moveVM = new MoveTypeVM(sol);
+//		MoveTypeVM moveVM = new MoveTypeVM(sol);
 		boolean done = false; // tells if something has changed
 		int iterations = 0; // number of iterations without a change in the
 		// solution
@@ -1837,96 +1959,99 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			List<Tier> tierList = sol.getApplication(0).getTiers();
 			Tier selectedTier = tierList.get(random.nextInt(tierList.size()));
-			scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
-			// Phase2: Retrieve resources that can be exchanged with the current
-			// one
-			CloudService origRes = selectedTier.getCloudService();
-			List<IaaS> resList = dataHandler.getSameServiceResource(origRes,
-					sol.getRegion());
-			// filter resources according to architectural constraints
-
-			try {
-				constraintHandler.filterResources(resList, selectedTier);
-			} catch (ConstraintEvaluationException e) {
-				throw new OptimizationException("Error filtering resources for scramble",e);
-			}
-
-			// if no resource can substitute the current one increase the number
-			// of iterations without a change and try again
-			if (resList.size() == 0) {
-				scrambleLogger
-				.warn("No resource found for scramble after constraint check, iteration: "
-						+ iterations);
-				iterations++;
-				continue;
-			}
-
-			resList = filterByMemory(resList, sol, selectedTier);
-			// if no resource can substitute the current one increase the number
-			// of iterations without a change and try again
-			if (resList.size() == 0) {
-				scrambleLogger.debug("MemoryDump");
-				for (String s : tabuSolutionList.keySet()) {
-					scrambleLogger.debug(s);
-				}
-				scrambleLogger
-				.warn("No resource found for scramble after memory check, iteration: "
-						+ iterations);
-				iterations++;
-				continue;
-			}
-
-			// Phase3: choose the new resource. Policy: roulette selection
-			// 3.1Calculate the cumulative fitness
-			double[] cumulativeFitnesses = new double[resList.size()];
-			cumulativeFitnesses[0] = getEfficiency(resList.get(0),
-					sol.getRegion());
-			for (int i = 1; i < resList.size(); i++) {
-				double fitness = getEfficiency(resList.get(i), sol.getRegion());
-				cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
-			}
-			// get a random number weighted by the highest cumulative fitness
-			// value
-			double randomFitness = random.nextDouble()
-					* cumulativeFitnesses[cumulativeFitnesses.length - 1];
-			// search for the value
-			int index = Arrays.binarySearch(cumulativeFitnesses, randomFitness);
-			if (index < 0) {
-				// Convert negative insertion point to array index.
-				index = Math.abs(index + 1);
-			}
-
-			// get the resource.
-			IaaS newRes = resList.get(index);
-
-			// debugging
-			//          scrambleLogger.debug("Sorted Resources");
-			//          for (IaaS res : resList) {
-			//              if (newRes.equals(res))
-			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
-			//                          + " res: " + res.getResourceName() + " value: "
-			//                          + getEfficiency(res, sol.getRegion())
-			//                          + " <--- SELECTED");
-			//              else
-			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
-			//                          + " res:" + res.getResourceName() + " value: "
-			//                          + getEfficiency(res, sol.getRegion()));
-			//          }
-			//          scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
-
-
-			// Phase4: performs the change and evaluate the solution
-			// add the new configuration in the memory
-			moveVM.changeMachine(selectedTier.getId(), (Compute) newRes);
-			try {
-				evalServer.EvaluateSolution(sol);
-			} catch (EvaluationException e) {
-				throw new OptimizationException("","scramble",e);
-			}
-
-			tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
-			scrambleLogger.debug("Memory size " + tabuSolutionList.size());
-			done = true;
+//			scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
+//			// Phase2: Retrieve resources that can be exchanged with the current
+//			// one
+//			CloudService origRes = selectedTier.getCloudService();
+//			List<CloudService> resList = dataHandler.getSameService(origRes,
+//					sol.getRegion());
+//			// filter resources according to architectural constraints
+//
+//			try {
+//				constraintHandler.filterResources(resList, selectedTier);
+//			} catch (ConstraintEvaluationException e) {
+//				throw new OptimizationException("Error filtering resources for scramble",e);
+//			}
+//
+//			// if no resource can substitute the current one increase the number
+//			// of iterations without a change and try again
+//			if (resList.size() == 0) {
+//				scrambleLogger
+//				.warn("No resource found for scramble after constraint check, iteration: "
+//						+ iterations);
+//				iterations++;
+//				continue;
+//			}
+//
+//			resList = filterByMemory(resList, sol, selectedTier);
+//			// if no resource can substitute the current one increase the number
+//			// of iterations without a change and try again
+//			if (resList.size() == 0) {
+//				scrambleLogger.debug("MemoryDump");
+//				for (String s : tabuSolutionList.keySet()) {
+//					scrambleLogger.debug(s);
+//				}
+//				scrambleLogger
+//				.warn("No resource found for scramble after memory check, iteration: "
+//						+ iterations);
+//				iterations++;
+//				continue;
+//			}
+//
+//			// Phase3: choose the new resource. Policy: roulette selection
+//			// 3.1Calculate the cumulative fitness
+//			double[] cumulativeFitnesses = new double[resList.size()];
+//			cumulativeFitnesses[0] = getEfficiency(resList.get(0),
+//					sol.getRegion());
+//			for (int i = 1; i < resList.size(); i++) {
+//				double fitness = getEfficiency(resList.get(i), sol.getRegion());
+//				cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
+//			}
+//			// get a random number weighted by the highest cumulative fitness
+//			// value
+//			double randomFitness = random.nextDouble()
+//					* cumulativeFitnesses[cumulativeFitnesses.length - 1];
+//			// search for the value
+//			int index = Arrays.binarySearch(cumulativeFitnesses, randomFitness);
+//			if (index < 0) {
+//				// Convert negative insertion point to array index.
+//				index = Math.abs(index + 1);
+//			}
+//
+//			// get the resource.
+//			CloudService newRes = resList.get(index);
+//
+//			// debugging
+//			//          scrambleLogger.debug("Sorted Resources");
+//			//          for (IaaS res : resList) {
+//			//              if (newRes.equals(res))
+//			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
+//			//                          + " res: " + res.getResourceName() + " value: "
+//			//                          + getEfficiency(res, sol.getRegion())
+//			//                          + " <--- SELECTED");
+//			//              else
+//			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
+//			//                          + " res:" + res.getResourceName() + " value: "
+//			//                          + getEfficiency(res, sol.getRegion()));
+//			//          }
+//			//          scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
+//
+//
+//			// Phase4: performs the change and evaluate the solution
+//			// add the new configuration in the memory
+//			moveVM.changeMachine(selectedTier.getId(), newRes);
+//			try {
+//				evalServer.EvaluateSolution(sol);
+//			} catch (EvaluationException e) {
+//				throw new OptimizationException("","scramble",e);
+//			}
+//
+//			tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
+//			scrambleLogger.debug("Memory size " + tabuSolutionList.size());
+//			done = true;
+			
+			done = scramble(sol, selectedTier, iterations);
+			iterations++;
 		}
 
 		if (iterations >= MAX_SCRAMBLE_NO_CHANGE)
@@ -1943,11 +2068,22 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @param region
 	 * @return
 	 */
-	private double getEfficiency(IaaS resource, String region) {
-		if (resource instanceof Compute) {
-			Compute computeRes = (Compute) resource;
+	private double getEfficiency(CloudService resource, String region) {
+		Compute computeRes = null;
+		if (resource instanceof Compute)
+			computeRes = (Compute) resource;
+		else if (resource instanceof Database)
+			computeRes = ((Database)resource).getCompute();
+		else if (resource instanceof Platform)
+			computeRes = ((Platform)resource).getCompute();
+		else if (resource instanceof it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache)
+			computeRes = ((it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache)resource).getCompute();
+		else if (resource instanceof Queue)
+			computeRes = ((Queue)resource).getCompute();
+		
+		if (computeRes != null) {
 			double cost = evalServer.getCostEvaulator().getResourceAverageCost(
-					resource, region);
+					computeRes, region);
 			double efficiency = computeRes.getNumberOfCores()
 					* computeRes.getSpeed() / cost;
 			return efficiency;
@@ -1973,20 +2109,20 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @return the list of resources filtered by those resources that has
 	 *         already been evaluated.
 	 */
-	private List<IaaS> filterByMemory(List<IaaS> resourceList, Solution sol,
+	private List<CloudService> filterByMemory(List<CloudService> resourceList, Solution sol,
 			Tier selectedTier) {
 		// Filter resources that have been already used
 
 		final String token = "jfhbvwiuahj038h9nvlbv93vbie";
 		String solutionTypeID = SolutionHelper.buildSolutionTypeID(sol,
 				selectedTier, token);
-		List<IaaS> newList = new ArrayList<IaaS>();
+		List<CloudService> newList = new ArrayList<CloudService>();
 		for (CloudService resource : resourceList) {
 			// Complete the id generated before
 			String newSolID = solutionTypeID.replace(token,
 					resource.getResourceName());
 			if (!tabuSolutionList.containsKey(newSolID)) {
-				newList.add((IaaS) resource);
+				newList.add(resource);
 			} else {
 				logger.debug("Memory Hit");
 			}
@@ -2049,11 +2185,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 */
 	protected boolean checkBestSolution(Solution sol, boolean force) {
 		if (force || sol.greaterThan(bestSolution)) {    
-			if(bestSolutions !=  null) {
-				bestSolutions.add(bestSolution.clone());
-				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
-//				bse.propertyChange(new PropertyChangeEvent(this, "BSEAddedValue", false, true));
-			}
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
 			timer.split();
@@ -2062,6 +2193,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			bestSolution.setGenerationIteration(numberOfIterations);
 			bestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
+			
+			if(bestSolutions !=  null) {
+				bestSolutions.add(bestSolution.clone());
+				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
+//				bse.propertyChange(new PropertyChangeEvent(this, "BSEAddedValue", false, true));
+			}
+			
 			optimLogger.info("updated best solution");
 			return true;
 		}
@@ -2181,9 +2319,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		for(Solution sol:bestSolution.getAll())
 			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
 
-		// TODO: here
-		if (bestSolution.size() > 1)
-			bestSolution.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
+		bestSolution.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
 
 		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
 		

@@ -19,10 +19,8 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.qos_models.schema.HourValueType;
-import it.polimi.modaclouds.qos_models.schema.IaasService;
 import it.polimi.modaclouds.qos_models.schema.Location;
 import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
-import it.polimi.modaclouds.qos_models.schema.PaasService;
 import it.polimi.modaclouds.qos_models.schema.Performance;
 import it.polimi.modaclouds.qos_models.schema.Performance.Seffs;
 import it.polimi.modaclouds.qos_models.schema.Performance.Seffs.Seff;
@@ -97,7 +95,9 @@ public class Solution implements Cloneable, Serializable {
 //	/** The Cost. */
 //	private double cost = 0;
 	
-	private double hourlyCosts[] = new double[24];
+//	private double hourlyCosts[] = new double[24];
+	
+	private Map<String, Double[]> hourlyCostsByTier = new HashMap<String, Double[]>();
 
 	/** The Region. */
 	private String region;
@@ -115,8 +115,18 @@ public class Solution implements Cloneable, Serializable {
 
 		for (int i = 0; i < 24; ++i) {
 			percentageWorkload[i] = 1.0;
-			hourlyCosts[i] = 0.0;
+//			hourlyCosts[i] = 0.0;
 		}
+	}
+	
+	private int totalProviders;
+
+	public int getTotalProviders() {
+		return totalProviders;
+	}
+
+	public void setTotalProviders(int totalProviders) {
+		this.totalProviders = totalProviders;
 	}
 
 	/**
@@ -149,7 +159,7 @@ public class Solution implements Cloneable, Serializable {
 			application.setFather(this);
 			return true;
 		} else {
-			System.err.println("Solution already contains 24 applications");
+			logger.error("Solution already contains 24 applications");
 			return false;
 		}
 	}
@@ -257,9 +267,12 @@ public class Solution implements Cloneable, Serializable {
 		for (int h = 0; h < 24; ++h)
 			cloneSolution.setPercentageWorkload(h,percentageWorkload[h]);
 		
-		cloneSolution.hourlyCosts = new double[24];
+		cloneSolution.hourlyCostsByTier = new HashMap<String, Double[]>();
 		for (int h = 0; h < 24; ++h)
-			cloneSolution.setCost(h, hourlyCosts[h]);
+			for (String tierId : hourlyCostsByTier.keySet())
+				cloneSolution.setCost(tierId, h, getCost(tierId, h));
+		
+		cloneSolution.totalProviders = totalProviders;
 
 		return cloneSolution;
 
@@ -271,7 +284,28 @@ public class Solution implements Cloneable, Serializable {
 		hourApplication.get(i).setFather(this);
 		hourApplication.get(i).setEvaluated(false);
 	}
+	
+	public boolean usesPaaS() {
+		for (Tier t : hourApplication.get(0).getTiers())
+			if (t.getCloudService() instanceof PaaS)
+				return true;
+		return false;
+	}
 
+	public int getReplicas(Tier t) {
+		CloudService service = t.getCloudService();
+		
+		if (service instanceof IaaS) {
+			IaaS iaaService  = (IaaS) service;
+			return iaaService.getReplicas();
+		} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
+			PaaS paaService  = (PaaS) service;
+			return paaService.getReplicas();
+		}
+		
+		return 0;
+	}
+	
 	public void exportCSV(String filename) {
 		String text = "";
 		text += "cost: " + getCost() + "\n";
@@ -280,7 +314,7 @@ public class Solution implements Cloneable, Serializable {
 		text += "\n";
 		for (Instance i : hourApplication) {
 			for (Tier t : i.getTiers())
-				text += ((IaaS) t.getCloudService()).getReplicas() + ",";
+				text += getReplicas(t) + ",";
 			text += "\n";
 		}
 
@@ -302,15 +336,13 @@ public class Solution implements Cloneable, Serializable {
 			outFile.println(text);
 			outFile.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while exporting the solution as a CSV.", e);
 		}
 	}
 
 	public void exportLight(Path filePath) {
 		if (!isEvaluated()) {
-			System.err
-			.println("Trying to export a solution that has not been evaluated!");
+			logger.error("Trying to export a solution that has not been evaluated!");
 			return;
 		}
 		try {
@@ -352,14 +384,14 @@ public class Solution implements Cloneable, Serializable {
 				tier.setAttribute("resourceName", cs.getResourceName());
 				tier.setAttribute("serviceType", cs.getServiceType());
 
-				if(cs instanceof IaaS){
+				if(cs instanceof IaaS || (cs instanceof PaaS && ((PaaS)cs).areReplicasChangeable())){
 					for (int i = 0; i < 24; i++) {
 						// create the allocation element
 						Element hourAllocation = doc.createElement("HourAllocation");
 						tier.appendChild(hourAllocation);
 						hourAllocation.setAttribute("hour", "" + i);
 						hourAllocation.setAttribute("allocation", ""
-								+ ((IaaS) hourApplication.get(i).getTierById(t.getId()).getCloudService()).getReplicas());
+								+ getReplicas(hourApplication.get(i).getTierById(t.getId())));
 					}
 				}
 			}
@@ -413,8 +445,7 @@ public class Solution implements Cloneable, Serializable {
 			transformer.transform(source, result);
 
 		} catch (ParserConfigurationException | TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error while exporting the solution.", e);
 		}
 
 	}
@@ -442,6 +473,8 @@ public class Solution implements Cloneable, Serializable {
 	public ArrayList<Instance> getApplications() {
 		return hourApplication;
 	}
+	
+	private double totalCost = 0.0;
 
 	/**
 	 * Gets the cost.
@@ -449,9 +482,17 @@ public class Solution implements Cloneable, Serializable {
 	 * @return the cost
 	 */
 	public double getCost() {
+		if (!costsUpdated)
+			return totalCost;
+		
 		double cost = 0;
-		for (int h = 0; h < hourlyCosts.length; ++h)
-			cost += hourlyCosts[h];
+		for (int h = 0; h < 24; ++h)
+			cost += getCost(h);
+//			cost += hourlyCosts[h];
+		
+		totalCost = cost;
+		costsUpdated = false;
+		
 		return cost;
 	}
 	
@@ -461,6 +502,20 @@ public class Solution implements Cloneable, Serializable {
 	 * @return the cost
 	 */
 	public double getCost(int h) {
+//		return hourlyCosts[h];
+		
+		double tot = 0.0;
+		for (String tierId : hourlyCostsByTier.keySet())
+			tot += getCost(tierId, h);
+		
+		return tot;
+	}
+	
+	public double getCost(String tierId, int h) {
+		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
+		if (hourlyCosts == null)
+			return 0.0;
+		
 		return hourlyCosts[h];
 	}
 
@@ -518,7 +573,7 @@ public class Solution implements Cloneable, Serializable {
 		int vms = 0;
 		for (Instance inst : hourApplication)
 			for (Tier t : inst.getTiers())
-				vms += ((IaaS) t.getCloudService()).getReplicas();
+				vms += getReplicas(t);
 
 		return vms;
 	}
@@ -531,7 +586,7 @@ public class Solution implements Cloneable, Serializable {
 	public int getVmNumberPerTier(String tierId) {
 		int vms = 0;
 		for (Instance inst : hourApplication)			
-				vms += ((IaaS) inst.getTierById(tierId).getCloudService()).getReplicas();
+				vms += getReplicas(inst.getTierById(tierId));
 		return vms;
 	}
 
@@ -620,7 +675,7 @@ public class Solution implements Cloneable, Serializable {
 
 		for (Instance tmp : hourApplication)
 			if (!tmp.isFeasible() && feasible)
-				System.err.println("Inconsistent feasibility");
+				logger.error("Inconsistent feasibility");
 
 		return feasible;
 	}
@@ -639,10 +694,38 @@ public class Solution implements Cloneable, Serializable {
 	 * @param totalCost
 	 *            the new cost
 	 */
-	public void setCost(int h, double totalCost) {
-//		this.cost = totalCost;
+//	public void setCost(int h, double totalCost) {
+////		this.cost = totalCost;
+//		hourlyCosts[h] = totalCost;
+//
+//	}
+	
+	@SuppressWarnings("unused")
+	private boolean isTierIdValid(String tierId) {
+		for (Tier t : hourApplication.get(0).getTiers())
+			if (t.getId().equals(tierId))
+				return true;
+		return false;
+	}
+	
+	private boolean costsUpdated = false;
+	
+	public void setCost(String tierId, int h, double totalCost) {
+//		if (!isTierIdValid(tierId))
+//			return;
+		
+		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
+		if (hourlyCosts == null) {
+			hourlyCosts = new Double[24];
+			for (int hour = 0; hour < 24; ++hour)
+				hourlyCosts[hour] = 0.0;
+			hourlyCostsByTier.put(tierId, hourlyCosts);
+		}
+		
+		if (hourlyCosts[h].doubleValue() != totalCost)
+			costsUpdated = true;
+		
 		hourlyCosts[h] = totalCost;
-
 	}
 
 	/**
@@ -809,7 +892,8 @@ public class Solution implements Cloneable, Serializable {
 			//in case this is a IaaS service
 			if(service instanceof IaaS){
 				IaaS iaaService  = (IaaS) service;
-				IaasService resource = factory.createIaasService();
+				it.polimi.modaclouds.qos_models.schema.CloudService resource = factory.createCloudService();
+				resource.setServiceCategory("IaaS");
 				resource.setServiceType(iaaService.getServiceType());
 				resource.setServiceName(iaaService.getServiceName());
 				resource.setResourceSizeID(iaaService.getResourceName());							
@@ -817,15 +901,21 @@ public class Solution implements Cloneable, Serializable {
 				location.setRegion(hourApplication.get(0).getRegion());
 				resource.setLocation(location);				
 				resource.setReplicas(factory.createReplica());
-				container.setCloudResource(resource);
+				container.setCloudElement(resource);
 			}
 			//if it is a Paas service
 			else if (service instanceof PaaS){
 				PaaS paaService  = (PaaS) service;
-				PaasService platform = factory.createPaasService();
-				platform.setServiceType(paaService.getServiceType());
-				platform.setServiceName(paaService.getServiceName());
-				container.setCloudPlatform(platform);
+				it.polimi.modaclouds.qos_models.schema.CloudService resource = factory.createCloudService();
+				resource.setServiceCategory("PaaS");
+				resource.setServiceType(paaService.getServiceType());
+				resource.setServiceName(paaService.getServiceName());
+				resource.setResourceSizeID(paaService.getResourceName());							
+				Location location = factory.createLocation();
+				location.setRegion(hourApplication.get(0).getRegion());
+				resource.setLocation(location);				
+				resource.setReplicas(factory.createReplica());
+				container.setCloudElement(resource);
 			}			
 			resourceContainers.add(container);
 		}
@@ -833,15 +923,14 @@ public class Solution implements Cloneable, Serializable {
 		//fill the fields that depend on the time slot (e.g. VMs replicas)
 		for(Instance instance:hourApplication){
 			for(Tier t:instance.getTiers()){
-				CloudService service = t.getCloudService();
-				if(service instanceof IaaS){					
+				int replicas = getReplicas(t);
+				if (replicas > 0) {
 					//build the replica element
-					IaaS iaaService  = (IaaS) service;
 					ReplicaElement replica = factory.createReplicaElement();
 					replica.setHour(hourApplication.indexOf(instance));
-					replica.setValue(iaaService.getReplicas());					
+					replica.setValue(replicas);
 					//add it to the resource container 
-					containersByID.get(t.getId()).getCloudResource().getReplicas().getReplicaElement().add(replica);
+					containersByID.get(t.getId()).getCloudElement().getReplicas().getReplicaElement().add(replica);
 				}
 			}
 		}
@@ -868,8 +957,8 @@ public class Solution implements Cloneable, Serializable {
 	public boolean hasAtLeastOneReplicaInOneHour() {
 		for (Instance i : hourApplication) {
 			for (Tier t : i.getTiers()) {
-				IaaS res = (IaaS) t.getCloudService();
-				if (res.getReplicas() > 0)
+				int replicas = getReplicas(t);
+				if (replicas > 0)
 					return true;
 			}
 		}
@@ -982,6 +1071,23 @@ public class Solution implements Cloneable, Serializable {
 			logger.error("Error exporting the solution",e);
 		}
 		
+	}
+	
+	public int getDailyRequestsByTier(String tierId) {
+		{
+			Tier t = hourApplication.get(0).getTierById(tierId);
+			if (t == null)
+				return 0;
+		}
+		
+		int requests = 0;
+		
+		for (Instance app : hourApplication) {
+			Tier t = app.getTierById(tierId);
+			requests += t.getTotalRequests();
+		}
+		
+		return requests;
 	}
 
 }

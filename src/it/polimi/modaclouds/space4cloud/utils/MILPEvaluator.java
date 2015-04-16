@@ -3,7 +3,6 @@ package it.polimi.modaclouds.space4cloud.utils;
 import it.polimi.modaclouds.space4cloud.milp.Solver;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -37,7 +36,7 @@ public class MILPEvaluator {
 			tempConf = Files.createTempFile("conf", ".properties");
 			Configuration.saveConfiguration(tempConf.toString());
 			solver = new Solver(tempConf.toString());
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.error("Error in initializing the MILP tool!", e);
 		}
 	}

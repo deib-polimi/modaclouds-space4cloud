@@ -1,8 +1,23 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
+import it.polimi.modaclouds.qos_models.schema.CloudService;
+import it.polimi.modaclouds.qos_models.schema.Replica;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
+import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult;
+import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult.Problem;
+import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult.Result;
+import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult.Result.WorstRealization;
+import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult.Result.X;
+import it.polimi.modaclouds.space4cloud.evaluationresult.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -17,7 +32,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -41,9 +59,47 @@ public class DataExporter {
 		return data.exportAll();
 	}
 	
+	public static List<File> evaluate(Path sourcesBasePath) {
+		List<File> res = evaluate(perform(sourcesBasePath));
+		return res;
+	}
+	
 	public static List<File> perform(Path sourcesBasePath, int size) {
 		DataExporter data = new DataExporter(sourcesBasePath);
 		return data.export(size);
+	}
+	
+	public static List<File> perform(Path sourcesBasePath, int size, int variability, int g, double sigma) {
+		DataExporter data = new DataExporter(sourcesBasePath);
+		return data.export(size, variability, g, sigma);
+	}
+	
+	public static List<File> evaluate(Path sourcesBasePath, int size) {
+		List<File> res = evaluate(perform(sourcesBasePath, size));
+		return res;
+	}
+	
+	public static List<File> evaluate(Path sourcesBasePath, int size, int variability, int g, double sigma) {
+		List<File> res = evaluate(perform(sourcesBasePath, size, variability, g, sigma), variability, g);
+		return res;
+	}
+	
+	public static List<File> evaluate(Path sourcesBasePath, int size, int variability, int g) {
+		List<File> res = evaluate(perform(sourcesBasePath, size, variability, g, -1.0), variability, g);
+		return res;
+	}
+	
+	public static List<File> getAllGeneratedFiles(Path sourcesBasePath) {
+		List<File> res = new ArrayList<File>();
+		
+		if (!sourcesBasePath.toFile().isDirectory())
+			return res;
+		
+		for (File f : sourcesBasePath.toFile().listFiles())
+			if (f.getName().indexOf(BASE_FILE_NAME) > -1)
+				res.add(f);
+		
+		return res;
 	}
 	
 	public DataExporter(Path sourcesBasePath) {
@@ -60,20 +116,34 @@ public class DataExporter {
 	}
 	
 	public List<File> export(int size) {
-		if (Configuration.ROBUSTNESS_VARIABILITY <= 0)
+		return export(size, Configuration.ROBUSTNESS_VARIABILITY, Configuration.ROBUSTNESS_G, -1.0);
+	}
+	
+	public List<File> export(int size, int variability, int g, double sigma) {
+		if (variability <= 0)
 			return new ArrayList<File>();
 		
 		File nominal = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File lower = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + (size / 100 * (100 - Configuration.ROBUSTNESS_VARIABILITY)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File upper = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + (size / 100 * (100 + Configuration.ROBUSTNESS_VARIABILITY)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File lower = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File upper = Paths.get(sourcesBasePath.toString(), Configuration.SOLUTION_FILE_NAME + "-" + size + "-" + (size / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 			
 		if (nominal.exists() && lower.exists() && upper.exists())
-			return export(nominal, lower, upper, size);
+			return export(nominal, lower, upper, size, variability, g, sigma);
 		
 		return new ArrayList<File>();
 	}
 	
-	private List<File> export(File nominal, File lower, File upper, int nominalSize) {
+	private static int vmPeak(Integer[] replicas) {
+		int vm = 0;
+		for (int i : replicas) {
+			if (i > vm)
+				vm = i;
+		}
+		return vm;
+	}
+	private static Map<String, Integer> vmPeaks = new HashMap<String, Integer>();
+	
+	private List<File> export(File nominal, File lower, File upper, int nominalSize, int variability, int g, double sigma) {
 		List<File> res = new ArrayList<File>();
 		
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
@@ -137,16 +207,14 @@ public class DataExporter {
 					region = resourceEnvParser.getRegion(provider);
 				}
 				
+				vmPeaks.put(nominalSize + "-" + (resource.replace('.', '_')).replaceAll("_", ""), vmPeak(nominalReplicas));
+				
 				// For now we can only handle Amazon :(
 				if (!provider.equals("Amazon"))
 					continue;
 				
 
-				Path path = null;
-				if (totalKeyset.size() > 1)
-					path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize +  "-" + (resource.replace('.', '_')).replaceAll("_", "") + ".txt");
-				else
-					path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize + ".txt");
+				Path path = Paths.get(sourcesBasePath.toString(), "costs-" + nominalSize + "-" + (resource.replace('.', '_')).replaceAll("_", "") + "-" + variability + "-" + g + ".txt");
 				
 				PrintWriter out = new PrintWriter(new FileWriter(path.toFile()));
 				
@@ -157,7 +225,7 @@ public class DataExporter {
 				out.printf("T %d\r\n", DEFAULT_T);
 				out.printf("C %d\r\n", costs.size() - 2);
 				out.printf("Q %s\r\n", form.format(Configuration.ROBUSTNESS_Q));
-				out.printf("G %d\r\n", Configuration.ROBUSTNESS_G);
+				out.printf("G %d\r\n", g);
 				
 				double onDemand = costs.get("On-Demand").get("hourly"); // 0.154;
 				
@@ -176,6 +244,9 @@ public class DataExporter {
 				out.println("\r\nS");
 				
 				double spot = costs.get("Spot").get("hourly");
+				
+				if (sigma >= 0)
+					spot = sigma;
 				
 				for (int i = 0; i < DEFAULT_T; ++i)
 					out.printf("%s\r\n", form.format(spot));
@@ -203,8 +274,9 @@ public class DataExporter {
 				
 				res.add(path.toFile());
 //				System.out.println(sw.toString());
+				
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while producing the file.", e);
 				return null;
 			}
 			
@@ -299,7 +371,7 @@ public class DataExporter {
 			
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting data from the database.", e);
 			costs.clear();
 		}
 		
@@ -308,7 +380,15 @@ public class DataExporter {
 		return costs;
 	}
 	
-	private Map<String, Integer[]> getReplicas(File solution) {
+	private static Map<String, Integer[]> getReplicas(File solution) {
+		if (SolutionMulti.isResourceModelExtension(solution))
+			return getReplicasFromResourceModelExtension(solution);
+		else
+			return getReplicasFromFileSolution(solution);
+	}
+	
+	@Deprecated
+	private static Map<String, Integer[]> getReplicasFromFileSolution(File solution) {
 		Map<String, Integer[]> replicasMap = new HashMap<String, Integer[]>();
 		
 		try {
@@ -358,10 +438,448 @@ public class DataExporter {
 				replicasMap.put(resourceName + "@" + provider, replicas);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while reading the file solution.", e);
 			replicasMap.clear();
 		}
 		
 		return replicasMap;
 	}
+	
+	private static Map<String, Integer[]> getReplicasFromResourceModelExtension(File solution) {
+		Map<String, Integer[]> replicasMap = new HashMap<String, Integer[]>();
+		
+		try {
+			ResourceModelExtension rme = XMLHelper.deserialize(solution
+					.toURI().toURL(), ResourceModelExtension.class);
+
+			for (ResourceContainer rc : rme.getResourceContainer()) {
+				CloudService cs = rc.getCloudElement();
+				
+				String provider = rc.getProvider();
+				String resourceName = cs.getResourceSizeID();
+
+				Replica r = cs.getReplicas();
+				if (r == null)
+					continue;
+				
+				List<ReplicaElement> hourAllocations = r.getReplicaElement();
+				
+				Integer replicas[] = replicasMap.get(resourceName + "@" + provider);
+				if (replicas == null) {
+					replicas = new Integer[24];
+					for (int h = 0; h < replicas.length; ++h)
+						replicas[h] = 0;
+				}
+
+				for (ReplicaElement hourAllocation : hourAllocations) {
+					int hour = hourAllocation.getHour();
+					int allocation = hourAllocation.getValue();
+					
+					replicas[hour] += allocation;
+				}
+				
+				replicasMap.put(resourceName + "@" + provider, replicas);
+			}
+		} catch (Exception e) {
+			logger.error("Error while reading the file solution.", e);
+			replicasMap.clear();
+		}
+		
+		return replicasMap;
+	}
+	
+	private static final String EVALUATE_COMMAND = "/usr/optimization/costiSaraMattia/main";
+	private static final String EVALUATE_FOLDER = "/tmp/sara";
+	
+	public static final String BASE_FILE_NAME = "generated-evaluation-";
+	
+	public static List<File> evaluate(List<File> formattedSolutions) {
+		return evaluate(formattedSolutions, -1, -1);
+	}
+
+	public static List<File> evaluate(List<File> formattedSolutions, int variability, int g) {
+		String suffix = "";
+		if (variability > -1 && g > -1)
+			suffix = String.format("-%d-%d", variability, g);
+		List<File> res = new ArrayList<File>();
+		for (File f : formattedSolutions) {
+			if (f == null || !f.exists() || f.isDirectory() || f.getName().indexOf(".txt") == -1)
+				continue;
+			try {
+				Ssh.exec("mkdir -p " + EVALUATE_FOLDER);
+				Ssh.sendFile(f.getAbsolutePath(), EVALUATE_FOLDER + "/" + f.getName());
+				List<String> output = Ssh.exec(String.format("%s %s/%s", EVALUATE_COMMAND, EVALUATE_FOLDER, f.getName()));
+				String newName = f.getName().replaceAll(".txt", "_sol.txt");
+				String parentPath = f.getParentFile().getAbsolutePath();
+				Ssh.receiveFile(parentPath + File.separator + newName, EVALUATE_FOLDER + "/" + newName);
+				EvaluationResult r = getEvaluationResult(Paths.get(parentPath, newName).toFile(), output, variability, g);
+				Path gen = Paths.get(parentPath, BASE_FILE_NAME + r.getProblem().getUserPeak() + "-" + r.getProblem().getMachineType() + suffix + ".xml");
+				exportEvaluationResult(gen, r);
+				if (gen.toFile() != null && gen.toFile().exists())
+					res.add(gen.toFile());
+			} catch (Exception e) {
+				logger.error("Error while considering a solution file (" + f.getName() + ").", e);
+			}
+		}
+		return res;
+	}
+	
+	private static boolean exportEvaluationResult(Path path, EvaluationResult res) {
+		try {
+			XMLHelper.serialize(res, EvaluationResult.class,
+					new FileOutputStream(path.toFile()));
+			return true;
+		} catch (FileNotFoundException | JAXBException e) {
+			logger.error("Error while exporting the solution.", e);
+			return false;
+		}
+	}
+	
+	private static EvaluationResult getEvaluationResult(File f, List<String> output, int variability, int g) {
+		if (!f.exists() || f.isDirectory() || output.size() == 0)
+			return null;
+		
+		String machineType;
+		int userPeak;
+		{
+			String fileName = f.getName();
+			fileName = fileName.substring("costs-".length(), fileName.indexOf("_sol.txt"));
+			String[] s = fileName.split("-");
+			machineType = s[1];
+			userPeak = Integer.parseInt(s[0]);
+		}
+		
+		double alpha = 0.0;
+		double cost = 0.0;
+		int[] x;
+		int[] worstRealization;
+		double bestLB = 0.0;
+		double bestUB = 0.0;
+		int gap = 0;
+		int nodesBandB = 0;
+		int time = 0;
+		
+		try (Scanner sc = new Scanner(f)) {
+			String line = "";
+			
+			Map<Integer, Integer> xMap = new HashMap<Integer, Integer>();
+			Map<Integer, Integer> worstRealizationMap = new HashMap<Integer, Integer>();
+			
+			final String strAlfa = "alfa: ";
+			final String strCosto = "COSTO X: ";
+			final String strX = "x[0-9]+ = .*";
+			final String strN = "N[0-9]+: .*";
+			
+			while (sc.hasNextLine()) {
+				line = sc.nextLine();
+				if (line.indexOf(strAlfa) > -1) {
+					alpha = Double.parseDouble(line.substring(line.indexOf(strAlfa) + strAlfa.length()));
+				} else if (line.indexOf(strCosto) > -1) {
+					cost = Double.parseDouble(line.substring(line.indexOf(strCosto) + strCosto.length()));
+				} else if (Pattern.matches(strX, line)) {
+					int n = Integer.parseInt(line.substring(1, line.indexOf(' ')));
+					double value = Double.parseDouble(line.substring(line.indexOf('=') + 2));
+					xMap.put(n, (int)Math.round(value));
+				} else if (Pattern.matches(strN, line)) {
+					int n = Integer.parseInt(line.substring(1, line.indexOf(':')));
+					int value = Integer.parseInt(line.substring(line.indexOf(':') + 2));
+					worstRealizationMap.put(n, value);
+				}
+			}
+			
+			if (xMap.size() == 0 || worstRealizationMap.size() == 0)
+				return null;
+			
+			x = new int[xMap.size()];
+			worstRealization = new int[worstRealizationMap.size()];
+			for (int key : xMap.keySet())
+				x[key] = xMap.get(key);
+			for (int key : worstRealizationMap.keySet())
+				worstRealization[key] = worstRealizationMap.get(key);
+		} catch (Exception e) {
+			logger.error("Error while reading the solution file.", e);
+			return null;
+		}
+		
+		{
+			final String strBestLB = "best LB: ";
+			final String strBestUB = "best UB: ";
+			final String strGap = "gap: ";
+			final String strNodes = "nodi B&B :";
+			final String strTime = "tempo totale: ";
+			
+			for (String outputLine : output) {
+				for (String line : outputLine.split("\n"))
+					if (line.indexOf(strBestLB) > -1) {
+						bestLB = Double.parseDouble(line.substring(line.indexOf(strBestLB) + strBestLB.length()));
+					} else if (line.indexOf(strBestUB) > -1) {
+						bestUB = Double.parseDouble(line.substring(line.indexOf(strBestUB) + strBestUB.length()));
+					} else if (line.indexOf(strGap) > -1) {
+						gap = (int)Math.round(Double.parseDouble(line.substring(line.indexOf(strGap) + strGap.length(), line.indexOf('%'))));
+					} else if (line.indexOf(strNodes) > -1) {
+						nodesBandB = Integer.parseInt(line.substring(line.indexOf(strNodes) + strNodes.length()));
+					} else if (line.indexOf(strTime) > -1) {
+						time = Integer.parseInt(line.substring(line.indexOf(strTime) + strTime.length(), line.indexOf(" sec.")) );
+					}
+			}
+		}
+		
+		EvaluationResult res =  new EvaluationResult();
+		
+		Problem p = new Problem();
+		p.setMachineType(machineType);
+		p.setUserPeak(userPeak);
+		if (vmPeaks.containsKey(userPeak + "-" + machineType))
+			p.setVmPeak(vmPeaks.get(userPeak + "-" + machineType));
+		else
+			p.setVmPeak(-1);
+		p.setVariability(variability);
+		p.setG(g);
+		p.setH(Configuration.ROBUSTNESS_H);
+		p.setQ(Configuration.ROBUSTNESS_Q);
+		res.setProblem(p);
+		
+		Result r = new Result();
+		r.setCost(cost);
+		r.setTime(time);
+		r.setAlpha(alpha);
+		r.setBestLB(bestLB);
+		r.setBestUB(bestUB);
+		r.setGap(gap);
+		r.setNodesBandB(nodesBandB);
+		
+		{
+			X xs = new X();
+			List<Instance> instances = xs.getInstance();
+			for (int i = 0; i < x.length; ++i) {
+				Instance instance = new Instance();
+				instance.setI(i);
+				instance.setValue(x[i]);
+				instances.add(instance);
+			}
+			r.setX(xs);
+		}
+		
+		{
+			WorstRealization worstRealizationsEl = new WorstRealization();
+			List<Instance> instances = worstRealizationsEl.getInstance();
+			for (int i = 0; i < worstRealization.length; ++i) {
+				Instance instance = new Instance();
+				instance.setI(i);
+				instance.setValue(worstRealization[i]);
+				instances.add(instance);
+			}
+			r.setWorstRealization(worstRealizationsEl);
+		}
+		
+		res.setResult(r);
+		
+		return res;
+	}
+	
+	private static String robustnessTestRow(File nominalSolution, File result, String size) {
+		Map<String, Integer[]> nominalReplicas = getReplicas(nominalSolution);
+		int[] totNominal = new int[24];
+		int[] totResult = new int[24];
+		for (int i = 0; i < 24; ++i) {
+			totNominal[i] = 0;
+			totResult[i] = 0;
+		}
+		for (String key : nominalReplicas.keySet()) {
+			String actualSize = key.substring(0, key.indexOf('@'));
+			if (!actualSize.equals(size) && !(actualSize.replace('.', '_')).replaceAll("_", "").equals(size))
+				continue;
+			Integer[] tier = nominalReplicas.get(key);
+			for (int i = 0; i < 24; ++i)
+				totNominal[i] += tier[i];
+		}
+		
+		double costS4C = SolutionMulti.getCost(nominalSolution);
+		int durationS4C = SolutionMulti.getDuration(nominalSolution);
+		
+		int variability = 0;
+		int gamma = 0;
+		
+		double costTool = 0.0;
+		int durationTool = 0;
+		
+		try {
+			EvaluationResult eval = XMLHelper.deserialize(result
+					.toURI().toURL(), EvaluationResult.class);
+			
+			Problem prob = eval.getProblem();
+			variability = prob.getVariability();
+			gamma = prob.getG();
+			
+			Result res = eval.getResult();
+			costTool = res.getCost();
+			durationTool = res.getTime();
+			
+			WorstRealization real = res.getWorstRealization();
+			List<Instance> insts = real.getInstance();
+			for (Instance i : insts) {
+				totResult[i.getI()] = i.getValue();
+			}
+		} catch (Exception e) {
+			logger.error("Error while reading the evaluation result file.", e);
+			return null;
+		}
+		
+		
+		int maxDiffs = 0;
+		int maxReplicas = 0;
+		int count = 0;
+		
+		for (int i = 0; i < 24; ++i) {
+			if (maxReplicas < totNominal[i])
+				maxReplicas = totNominal[i];
+			
+			if (totNominal[i] != totResult[i]) {
+				count++;
+//				logger.debug("{}) {}, {}", i, totNominal[i], totResult[i]);
+			} else {
+				if (maxDiffs < count)
+					maxDiffs = count;
+				count = 0;
+			}
+		}
+		if (maxDiffs < count)
+			maxDiffs = count;
+//		logger.debug("Max diffs: {}", maxDiffs);
+		
+		return String.format(
+				"%s,%d,%d,%d,%s,%s,%d,%d,%d",
+				size,
+				maxReplicas,
+				variability,
+				gamma,
+				SolutionMulti.costFormatter.format(costS4C),
+				SolutionMulti.costFormatter.format(costTool),
+				durationS4C,
+				durationTool,
+				maxDiffs
+				);
+	}
+	
+	public static final String RESULT_CSV = "robustnessTest.csv";
+	
+	public static File robustnessTest(File solution, List<File> generatedFiles, File append) throws Exception {
+		boolean headline = false;
+		
+		if (append == null)
+			append = Paths.get(solution.getParent(), RESULT_CSV).toFile();
+		
+		if (!append.exists())
+			headline = true;
+		
+		try (
+				FileOutputStream fout = new FileOutputStream(append, true);
+				PrintWriter out = new PrintWriter(fout)) {
+		
+			if (headline)
+				out.printf(
+						"%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+						"vmType",
+						"maxReplicas",
+						"variability",
+						"gamma",
+						"costS4C",
+						"costTool",
+						"durationS4C",
+						"durationTool",
+						"maxDiffs"
+						);
+			
+			for (File generatedFile : generatedFiles) {
+				String fileName = generatedFile.getName();
+				fileName = fileName.substring(BASE_FILE_NAME.length());
+				
+				String[] ss = fileName.split("-");
+//				int peak = Integer.parseInt(ss[0]);
+				String size = ss[1];
+//				int variability = Integer.parseInt(ss[2]);
+//				int gamma = Integer.parseInt(ss[3]);
+				
+				out.println(robustnessTestRow(
+						solution,
+						generatedFile,
+						size));
+			}
+		}
+		
+		return append;
+	}
+	
+	public static File saraMattiaTest() throws Exception {
+		final String basePath = "/Users/ft/Downloads/ConstellationSara/";
+		
+		final String[] strings = {
+				"small10:400:m1small:m1.small",
+				"small50:1300:m1small:m1.small",
+				"small100:3000:m1small:m1.small",
+				"medium10:700:m1medium:m1.medium",
+				"medium50:2500:m1medium:m1.medium",
+				"medium100:5500:m1medium:m1.medium",
+				"large10:1600:c3large:c3.large",
+				"large50:8200:c3large:c3.large",
+				"large100:19000:c3large:c3.large"
+				};
+		final int[] variabilities = {30, 50, 100};
+		
+		File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "saramattia.csv").toFile();
+		
+		try (PrintWriter out = new PrintWriter(f)) {
+		
+			out.printf(
+					"%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+					"vmType",
+					"maxReplicas",
+					"variability",
+					"gamma",
+					"costS4C",
+					"costTool",
+					"durationS4C",
+					"durationTool",
+					"maxDiffs"
+					);
+			
+			for (String s : strings) {
+				String[] names = s.split(":");
+				for (int variability : variabilities)
+					for (int gamma = 1; gamma <= 24; ++gamma)
+						out.println(robustnessTestRow(
+								new File(basePath + names[0] + "/results/solution-" + names[1] + ".xml"),
+								new File(basePath + names[0] + "/results/generated-evaluation-" + names[1] + "-" + names[2] + "-" + variability + "-" + gamma + ".xml"),
+								names[3]));
+			}
+		}
+		
+		return f;
+	}
+	
+	public static void main(String[] args) {
+		try {
+			Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
+//			List<File> res = evaluate(Paths.get("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/"), 400, 100, 20);
+			
+			saraMattiaTest();
+				
+			
+//			Configuration.loadConfiguration("/Users/ft/Desktop/tmp/Sara Mattia/aaa/conf.properties");
+//		
+//			List<File> files = new ArrayList<File>();
+//			files.add(new File("/Users/ft/Desktop/tmp/Sara Mattia/aaa/costs-1900-m2xlarge.txt"));
+//			List<File> res = evaluate(files);
+//			for (File f : res)
+//				System.out.println("> " + f.getAbsolutePath());
+//			
+//			res = getAllGeneratedFiles(Paths.get("/Users/ft/Desktop/tmp/Sara Mattia/aaa"));
+//			for (File f : res)
+//				System.out.println("> " + f.getAbsolutePath());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

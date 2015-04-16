@@ -81,11 +81,20 @@ public class RobustnessConfigurationPanel extends JPanel {
 		c.insets = new Insets(0, 0, 5, 0);
 		attempts = new JTextField(10);
 		add(attempts, c);
+		
+		c.gridx = 0;
+		c.gridy++;
+		c.insets = new Insets(0, 0, 5, 5);
+		add(new JLabel("Days considered"), c);
+		c.gridx = 1;
+		c.insets = new Insets(0, 0, 5, 0);
+		h = new JTextField(10);
+		add(h, c);
 
 		c.gridx = 0;
 		c.gridy++;
 		c.insets = new Insets(0, 0, 5, 5);
-		add(new JLabel("Q"), c);
+		add(new JLabel("Percentage of spot instances"), c);
 		c.gridx = 1;
 		c.insets = new Insets(0, 0, 5, 0);
 		q = new JTextField(10);
@@ -99,15 +108,6 @@ public class RobustnessConfigurationPanel extends JPanel {
 		c.insets = new Insets(0, 0, 5, 0);
 		g = new JTextField(10);
 		add(g, c);
-		
-		c.gridx = 0;
-		c.gridy++;
-		c.insets = new Insets(0, 0, 5, 5);
-		add(new JLabel("H"), c);
-		c.gridx = 1;
-		c.insets = new Insets(0, 0, 5, 0);
-		h = new JTextField(10);
-		add(h, c);
 
 	}
 	

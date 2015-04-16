@@ -16,6 +16,7 @@
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
 import it.polimi.modaclouds.qos_models.schema.AggregateFunction;
+import it.polimi.modaclouds.qos_models.schema.QosMetricAggregation;
 import it.polimi.modaclouds.qos_models.schema.Range;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
@@ -29,7 +30,7 @@ public abstract class Constraint {
 	protected String name;
 	protected String resourceId;
 	protected Metric metric;
-	protected AggregateFunction metricAcggregationFunction;
+	protected AggregateFunction metricAggregationFunction;
 	protected int priority;
 	protected Range range;
 	protected static final Logger logger = LoggerFactory
@@ -49,6 +50,11 @@ public abstract class Constraint {
 		if(range.getHasMaxValue() != null && range.getHasMinValue() != null && range.getHasMaxValue() < range.getHasMaxValue()){
 			logger.warn("Constraint "+constraint.getId()+" has an invalidate range and will be ignored.");
 			range = null;
+		}
+		QosMetricAggregation aggr = constraint.getMetricAggregation();
+		if (aggr != null) {
+			metricAggregationFunction = new AggregateFunction();
+			metricAggregationFunction.setName(aggr.getAggregateFunction());
 		}
 	}
 
