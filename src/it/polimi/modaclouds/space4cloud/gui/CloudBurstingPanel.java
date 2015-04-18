@@ -36,7 +36,7 @@ public class CloudBurstingPanel extends JPanel implements ActionListener, MouseL
 	 * 
 	 */
 	private static final long serialVersionUID = -8829215569879059215L;
-	private static final String PANEL_NAME = "Cloud Bursting";
+	private static final String PANEL_NAME = "Bursting"; //"Cloud Bursting";
 	
 	private JList<Host> list;
 	private static DefaultListModel<Host> lm;

@@ -20,6 +20,7 @@ import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 import javax.swing.JLabel;
@@ -91,6 +92,11 @@ public class SolutionWindowPanel extends JTabbedPane{
 		infoAll.append("<table style='width: 500px; border: 1px solid black; margin: 30px; padding: 2px' border=1>\n");
 		infoAll.append("<tr><th style='border: 0; background: black; color: white;'>Information</th><th style='border:0; background: black; color: white;'>Value</th></tr>\n");
 		infoAll.append("<tr><td>Total Cost</td><td>" + solutionMulti.getCost() + "</td></tr>\n");
+		if (Configuration.CONTRACTOR_TEST) {
+			File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "generated-costs.xml").toFile();
+			if (f.exists())
+				infoAll.append("<tr><td>Total Cost considering Contracts</td><td>" + SolutionMulti.getCost(f) + "</td></tr>\n");
+		}
 		infoAll.append("<tr><td>Evaluation Time</td><td>" + Space4Cloud.durationToString(solutionMulti.getGenerationTime()) + "</td></tr>\n");
 		infoAll.append("<tr><td>Providers</td><td><ul>\n");
 		for (int i = 0; i < solutionMulti.size(); ++i) {

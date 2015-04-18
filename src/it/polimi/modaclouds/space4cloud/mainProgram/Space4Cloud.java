@@ -147,7 +147,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			if(Configuration.PROJECT_BASE_FOLDER == null)
 				Configuration.PROJECT_BASE_FOLDER = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();						
 			ConfigurationWindow configGui = new ConfigurationWindow();
-			configGui.show();			
+			configGui.setVisible(true);
 			logger.trace("Witing for GUI disposal");
 
 			while(!configGui.hasBeenDisposed()){
@@ -649,7 +649,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		Configuration.REDISTRIBUTE_WORKLOAD = false;
 		Configuration.USE_PRIVATE_CLOUD = false;
 		Configuration.RESOURCE_ENVIRONMENT_EXTENSION = Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME + "Total" + Configuration.SOLUTION_FILE_EXTENSION).toString();
-		Configuration.CONTRACTOR_TEST = false;
+//		Configuration.CONTRACTOR_TEST = false;
+		boolean contractorTest = Configuration.CONTRACTOR_TEST;
 		
 		TreeMap<Integer, File> usageModelExts = new TreeMap<Integer, File>();
 		File usageModelExt = new File(Configuration.USAGE_MODEL_EXTENSION);
@@ -722,6 +723,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
                     Path performanceResults = Paths.get(solution.getParent(), Configuration.PERFORMANCE_RESULTS_FOLDER);
                     FileUtils.deleteQuietly(performanceResults.toFile());
                     
+                    // TODO: here
+                    
                     try {
                         Files.copy(
                                 Paths.get(solution.getAbsolutePath()),
@@ -729,6 +732,23 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
                     } catch (IOException e) {
                         throw new OptimizationException("Error copying: "+solution.getAbsolutePath()+" to: "+resultsFolder.toString()+ Configuration.SOLUTION_FILE_NAME+ "-" + highestPeak + "-" + key + Configuration.SOLUTION_FILE_EXTENSION,e);
                     }
+                    
+                    try {
+                        Files.copy(
+                                Paths.get(solution.getParent(), "costs.xml"),
+                                Paths.get(resultsFolder.toString(), "costs-" + highestPeak + "-" + key + ".xml"), StandardCopyOption.REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        throw new OptimizationException("Error copying: "+solution.getAbsolutePath()+" to: "+resultsFolder.toString()+ Configuration.SOLUTION_FILE_NAME+ "-" + highestPeak + "-" + key + Configuration.SOLUTION_FILE_EXTENSION,e);
+                    }
+                    
+                    if (contractorTest)
+	                    try {
+	                        Files.copy(
+	                                Paths.get(solution.getParent(), "generated-costs.xml"),
+	                                Paths.get(resultsFolder.toString(), "generated-costs-" + highestPeak + "-" + key + ".xml"), StandardCopyOption.REPLACE_EXISTING);
+	                    } catch (IOException e) {
+	                        throw new OptimizationException("Error copying: "+solution.getAbsolutePath()+" to: "+resultsFolder.toString()+ Configuration.SOLUTION_FILE_NAME+ "-" + highestPeak + "-" + key + Configuration.SOLUTION_FILE_EXTENSION,e);
+	                    }
                 }
                 
                 if (!found) {
@@ -894,6 +914,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			
 			int robustnessVariability = Configuration.ROBUSTNESS_VARIABILITY;
 			boolean relaxedInitialSolution = Configuration.RELAXED_INITIAL_SOLUTION;
+			boolean contractorTest = Configuration.CONTRACTOR_TEST;
 
 			for (int attempt = 1; attempt <= attempts; ++attempt) {
 
@@ -1013,6 +1034,27 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 									+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
 					throw new RobustnessException("Error copying generated solution: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
+							+ Configuration.SOLUTION_FILE_EXTENSION,e);
+				}
+			
+			try{
+				Files.copy(
+						Paths.get(bestSolution.getParent(), "costs.xml"),
+						Paths.get(resultsFolder.toString(), "costs-" + key
+								+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				throw new RobustnessException("Error copying costs: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
+						+ Configuration.SOLUTION_FILE_EXTENSION,e);
+			}
+			
+			if (contractorTest)
+				try{
+					Files.copy(
+							Paths.get(bestSolution.getParent(), "generated-costs.xml"),
+							Paths.get(resultsFolder.toString(), "generated-costs-" + key
+									+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e) {
+					throw new RobustnessException("Error copying generated costs: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
 							+ Configuration.SOLUTION_FILE_EXTENSION,e);
 				}
 			

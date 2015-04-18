@@ -18,7 +18,7 @@
  */
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
-import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
+import java.io.File;
 
 import javax.swing.UIManager;
 
@@ -59,43 +59,29 @@ import javax.swing.UIManager;
  */
 
 public class Main {
-
-	/**
-	 * Main method.
-	 **/	
-	public static void mainStandard(String[] args) {
-		Space4Cloud instance = new Space4Cloud();
-		instance.start();
-	}
 	
-	public static void mainBatch(String[] args) {
-		String folder = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\OfBiz\\";
-		String configuration = folder + "conf-private-1p.properties";
+	public static void perform(String... args) {
+		String configuration = null;
+		if (args != null && args.length > 0)
+			configuration = args[0];
 		
-		Space4Cloud instance = new Space4Cloud(configuration);
+		Space4Cloud instance;
+		if (configuration != null && new File(configuration).exists())
+			instance = new Space4Cloud(configuration);
+		else 
+			instance = new Space4Cloud();
 		instance.start();
-	}
-	
-	public static void mainBatchAssessment(String[] args) {
-		String folder = "C:\\Users\\Riccardo\\Desktop\\SPACE4CLOUD\\runtime-New_configuration\\OfBiz\\";
-		String configuration = folder + "conf-assessment.properties";
-		
-		Space4Cloud instance = new Space4Cloud(configuration);
-		instance.start();
-	}
-	
-	public static void mainRedrawRobustness(String[] args) {
-		RobustnessProgressWindow.redraw("C:\\Users\\Riccardo\\Desktop\\tmp\\results-ProfitBricks-Flexi\\");
 	}
 	
 	public static void main(String[] args) {
 		try {
-            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()); // .getSystemLookAndFeelClassName());
+//            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
 		
-		mainStandard(args);
+		perform(args);
 	}
 
 }

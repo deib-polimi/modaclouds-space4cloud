@@ -76,8 +76,16 @@ public class SolutionMulti implements Cloneable, Serializable {
 				return true;
 		return false;
 	}
-
+	
 	public static double getCost(File solution) {
+		if (isCosts(solution))
+			return getCostFromCosts(solution);
+		else
+			return getCostFromFileSolution(solution);
+	}
+
+	@Deprecated
+	private static double getCostFromFileSolution(File solution) {
 		double cost = Double.MAX_VALUE;
 
 		if (solution != null && solution.exists())
@@ -102,6 +110,21 @@ public class SolutionMulti implements Cloneable, Serializable {
 			}
 
 		return cost;
+	}
+	
+	private static double getCostFromCosts(File solution) {
+		try {
+			Costs costs = XMLHelper.deserialize(solution
+					.toURI().toURL(), Costs.class);
+			
+			CostType ct = costs.getCost();
+			if (ct != null)
+				return ct.getTotalCost();
+			
+		} catch (MalformedURLException | JAXBException | SAXException e) {
+			logger.error("Error in getting the cost from the file",e);
+		}
+		return Double.MAX_VALUE;
 	}
 	
 	public static int getDuration(File solution) {
@@ -141,6 +164,15 @@ public class SolutionMulti implements Cloneable, Serializable {
 	public static boolean isResourceModelExtension(File f) {
 		try {
 			XMLHelper.deserialize(f.toURI().toURL(), ResourceModelExtension.class);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	public static boolean isCosts(File f) {
+		try {
+			XMLHelper.deserialize(f.toURI().toURL(), Costs.class);
 			return true;
 		} catch (Exception e) {
 			return false;
@@ -1444,8 +1476,9 @@ public class SolutionMulti implements Cloneable, Serializable {
 		
 		try {
 			File f = Contractor.perform(configuration, solution, daysConsidered, percentageOfS, m);
-			if (f != null && f.exists())
+			if (f != null && f.exists()) {
 				logger.debug("Optimized costs: " + f.getAbsolutePath());
+			}
 			
 			return f;
 		} catch (Exception e) {

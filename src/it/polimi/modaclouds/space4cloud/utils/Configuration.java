@@ -110,7 +110,7 @@ public class Configuration {
 
 	//solvers
 	public static enum Solver {
-		LQNS, LINE;
+		LINE, LQNS;
 
 		public static Solver getById(int id) {
 			Solver[] values = Solver.values();

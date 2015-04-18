@@ -677,7 +677,7 @@ public class DataExporter {
 		return res;
 	}
 	
-	private static String robustnessTestRow(File nominalSolution, File result, String size) {
+	private static String robustnessTestRow(File nominalSolution, File lowerSolution, File upperSolution, File result, String size) {
 		Map<String, Integer[]> nominalReplicas = getReplicas(nominalSolution);
 		int[] totNominal = new int[24];
 		int[] totResult = new int[24];
@@ -694,7 +694,26 @@ public class DataExporter {
 				totNominal[i] += tier[i];
 		}
 		
-		double costS4C = SolutionMulti.getCost(nominalSolution);
+		String prefix = "costs-";
+		if (Configuration.CONTRACTOR_TEST)
+			prefix = "generated-costs-";
+		
+		double costS4C, costLower, costUpper;
+		
+		File nominalSolutionCosts = Paths.get(nominalSolution.getParent(), prefix + nominalSolution.getName().substring("solution-".length())).toFile();
+		File lowerSolutionCosts = Paths.get(lowerSolution.getParent(), prefix + lowerSolution.getName().substring("solution-".length())).toFile();
+		File upperSolutionCosts = Paths.get(upperSolution.getParent(), prefix + upperSolution.getName().substring("solution-".length())).toFile();
+		
+		if (nominalSolutionCosts.exists() && lowerSolutionCosts.exists() && upperSolutionCosts.exists()) {
+			costS4C = SolutionMulti.getCost(nominalSolutionCosts);
+			costLower = SolutionMulti.getCost(lowerSolutionCosts);
+			costUpper = SolutionMulti.getCost(upperSolutionCosts);
+		} else {
+			costS4C = SolutionMulti.getCost(nominalSolution);
+			costLower = SolutionMulti.getCost(lowerSolution);
+			costUpper = SolutionMulti.getCost(upperSolution);
+		}
+		
 		int durationS4C = SolutionMulti.getDuration(nominalSolution);
 		
 		int variability = 0;
@@ -748,12 +767,14 @@ public class DataExporter {
 //		logger.debug("Max diffs: {}", maxDiffs);
 		
 		return String.format(
-				"%s,%d,%d,%d,%s,%s,%d,%d,%d",
+				"%s,%d,%d,%d,%s,%s,%s,%s,%d,%d,%d",
 				size,
 				maxReplicas,
 				variability,
 				gamma,
 				SolutionMulti.costFormatter.format(costS4C),
+				SolutionMulti.costFormatter.format(costLower),
+				SolutionMulti.costFormatter.format(costUpper),
 				SolutionMulti.costFormatter.format(costTool),
 				durationS4C,
 				durationTool,
@@ -778,30 +799,39 @@ public class DataExporter {
 		
 			if (headline)
 				out.printf(
-						"%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+						"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 						"vmType",
 						"maxReplicas",
 						"variability",
 						"gamma",
 						"costS4C",
+						"costLower",
+						"costUpper",
 						"costTool",
 						"durationS4C",
 						"durationTool",
 						"maxDiffs"
 						);
 			
+			String baseName = solution.getName().substring(0, solution.getName().indexOf(Configuration.SOLUTION_FILE_EXTENSION)) + "-";
+			
 			for (File generatedFile : generatedFiles) {
 				String fileName = generatedFile.getName();
 				fileName = fileName.substring(BASE_FILE_NAME.length());
 				
 				String[] ss = fileName.split("-");
-//				int peak = Integer.parseInt(ss[0]);
+				int peak = Integer.parseInt(ss[0]);
 				String size = ss[1];
-//				int variability = Integer.parseInt(ss[2]);
+				int variability = Integer.parseInt(ss[2]);
 //				int gamma = Integer.parseInt(ss[3]);
+				
+				File lower = Paths.get(solution.getParent(), baseName + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+				File upper = Paths.get(solution.getParent(), baseName + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 				
 				out.println(robustnessTestRow(
 						solution,
+						lower,
+						upper,
 						generatedFile,
 						size));
 			}
@@ -811,18 +841,18 @@ public class DataExporter {
 	}
 	
 	public static File saraMattiaTest() throws Exception {
-		final String basePath = "/Users/ft/Downloads/ConstellationSara/";
+		final String basePath = "/Users/ft/Downloads/ConstellationSara4/";
 		
 		final String[] strings = {
-				"small10:400:m1small:m1.small",
-				"small50:1300:m1small:m1.small",
-				"small100:3000:m1small:m1.small",
-				"medium10:700:m1medium:m1.medium",
-				"medium50:2500:m1medium:m1.medium",
-				"medium100:5500:m1medium:m1.medium",
-				"large10:1600:c3large:c3.large",
-				"large50:8200:c3large:c3.large",
-				"large100:19000:c3large:c3.large"
+				"6:400:m1small:m1.small",
+				"8:1300:m1small:m1.small",
+				"7:3000:m1small:m1.small",
+				"3:700:m1medium:m1.medium",
+				"5:2500:m1medium:m1.medium",
+				"4:5500:m1medium:m1.medium",
+				"0:1600:c3large:c3.large",
+				"2:8200:c3large:c3.large",
+				"1:19000:c3large:c3.large"
 				};
 		final int[] variabilities = {30, 50, 100};
 		
@@ -831,12 +861,14 @@ public class DataExporter {
 		try (PrintWriter out = new PrintWriter(f)) {
 		
 			out.printf(
-					"%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+					"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 					"vmType",
 					"maxReplicas",
 					"variability",
 					"gamma",
 					"costS4C",
+					"costLower",
+					"costUpper",
 					"costTool",
 					"durationS4C",
 					"durationTool",
@@ -849,6 +881,8 @@ public class DataExporter {
 					for (int gamma = 1; gamma <= 24; ++gamma)
 						out.println(robustnessTestRow(
 								new File(basePath + names[0] + "/results/solution-" + names[1] + ".xml"),
+								new File(basePath + names[0] + "/results/solution-" + names[1] + "-" + (Integer.parseInt(names[1]) / 100 * (100 - variability)) + ".xml"),
+								new File(basePath + names[0] + "/results/solution-" + names[1] + "-" + (Integer.parseInt(names[1]) / 100 * (100 + variability)) + ".xml"),
 								new File(basePath + names[0] + "/results/generated-evaluation-" + names[1] + "-" + names[2] + "-" + variability + "-" + gamma + ".xml"),
 								names[3]));
 			}

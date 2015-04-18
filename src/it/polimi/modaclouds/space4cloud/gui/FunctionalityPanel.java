@@ -4,7 +4,6 @@ import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -16,7 +15,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -26,9 +24,10 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	//the property that can be listened when a change in the functionality is detected
 	public static final String functionalityProperty = "functionality";
 	public static final String privateCloudProperty = "privateCloud";
+	public static final String contractorProperty = "contractor";
 	
 	private static final long serialVersionUID = -5356951769849277734L;
-	private static final String PANEL_NAME = "Functionality Selection";
+	private static final String PANEL_NAME = "Functionality"; //"Functionality Selection";
 	private JComboBox<Operation> operationBox;
 	private JComboBox<Solver> solverBox;
 	private JTextField dbConfText;
@@ -43,6 +42,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	private JButton randomEnvironmentButton;
 
 	private JCheckBox usePrivateCloud;
+	private JCheckBox useContractor;
 
 	/**
 	 * Create the panel.
@@ -238,6 +238,15 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		usePrivateCloud = new JCheckBox("Use a Private Cloud");
 		add(usePrivateCloud, gbc_privateCloudBox);
 		usePrivateCloud.addActionListener(this);
+		
+		GridBagConstraints gbc_contractor = new GridBagConstraints();
+		gbc_contractor.fill = GridBagConstraints.HORIZONTAL;		
+		gbc_contractor.gridx = 0;
+		gbc_contractor.gridy = 9;
+		gbc_contractor.insets = new Insets(0, 0, 5, 5);
+		useContractor = new JCheckBox("Consider the contracts (when possible)");
+		add(useContractor, gbc_contractor);
+		useContractor.addActionListener(this);
 	}
 
 	@Override
@@ -266,6 +275,9 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		} else if(e.getSource().equals(usePrivateCloud)){
 			Configuration.USE_PRIVATE_CLOUD = usePrivateCloud.isSelected();
 			setPrivateCloudVisibility(usePrivateCloud.isSelected());
+		} else if(e.getSource().equals(useContractor)){
+			Configuration.CONTRACTOR_TEST = useContractor.isSelected();
+			setContractorVisibility(useContractor.isSelected());
 		}
 		else if(e.getSource().equals(randomEnvironmentButton)){
 			File randomEnvFile = FileLoader.loadFile("Random Enviroment specification"); // TODO: what extension should this have?
@@ -290,6 +302,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		randomEnvironmentText.setText(Configuration.RANDOM_ENV_FILE);
 		
 		setPrivateCloudVisibility(Configuration.USE_PRIVATE_CLOUD);
+		setContractorVisibility(Configuration.CONTRACTOR_TEST);
 	}
 
 
@@ -345,6 +358,12 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		usePrivateCloud.setSelected(shown);
 		firePropertyChange(privateCloudProperty, !shown, shown);
 	}
+	
+	private void setContractorVisibility(boolean shown) {
+//		boolean old = usePrivateCloud.isSelected();
+		useContractor.setSelected(shown);
+		firePropertyChange(contractorProperty, !shown, shown);
+	}
 
 	/**
 	 * Updates values in the Configuration class according to those selected in the panel
@@ -356,18 +375,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		Configuration.LINE_PROP_FILE = lineConfText.getText();
 		Configuration.RANDOM_ENV_FILE = randomEnvironmentText.getText();
 		Configuration.USE_PRIVATE_CLOUD = usePrivateCloud.isSelected();
-	}
-
-	public static void main(String[] args) {
-		JFrame gui = new JFrame();
-		gui.setMinimumSize(new Dimension(900,500));
-		gui.setLocationRelativeTo(null);
-		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // .DISPOSE_ON_CLOSE);
-
-		FunctionalityPanel panel = new FunctionalityPanel();
-		gui.getContentPane().add(panel);
-
-		gui.setVisible(true);
+		Configuration.CONTRACTOR_TEST = useContractor.isSelected();
 	}
 
 }

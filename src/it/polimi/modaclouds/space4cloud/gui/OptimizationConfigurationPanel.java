@@ -23,7 +23,7 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	 * 
 	 */
 	private static final long serialVersionUID = -5356951769849277734L;
-	private static final String PANEL_NAME = "Optimization Configuration";
+	private static final String PANEL_NAME = "Optimization"; // Configuration";
 	private JLabel scaleInFactorLabel;
 	private JTextField tabuMemoryText;
 	private JTextField scrumbleText;
@@ -38,12 +38,6 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	private JCheckBox initialSolutionBox;
 	private JLabel emptyLabel;
 	private JLabel emptyLabel2;
-	private JLabel sshHostLabel;
-	private JTextField sshHostText;
-	private JLabel sshNameLabel;
-	private JTextField sshNameText;
-	private JLabel sshPasswordLabel;
-	private JTextField sshPasswordText;
 	private JPanel panel;
 	private JCheckBox redistributeWorkloadBox;
 	/**
@@ -53,9 +47,9 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{201, 201, 0};
-		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
+		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
 		JLabel tabuMemoryLabel = new JLabel("Tabu Memory Size");
@@ -213,63 +207,6 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_emptyLabel2.gridy = 8;
 		add(emptyLabel2, gbc_emptyLabel2);
 		
-		sshHostLabel = new JLabel("SSH Host");
-		GridBagConstraints gbc_lblHost = new GridBagConstraints();
-		gbc_lblHost.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblHost.insets = new Insets(0, 0, 5, 5);
-		gbc_lblHost.gridx = 0;
-		gbc_lblHost.gridy = 9;
-		sshHostLabel.setEnabled(false); //setVisible(false);
-		add(sshHostLabel, gbc_lblHost);
-		
-		sshHostText = new JTextField();
-		GridBagConstraints gbc_textFieldHost = new GridBagConstraints();
-		gbc_textFieldHost.insets = new Insets(0, 0, 5, 0);
-		gbc_textFieldHost.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textFieldHost.gridx = 1;
-		gbc_textFieldHost.gridy = 9;
-		add(sshHostText, gbc_textFieldHost);
-		sshHostText.setEnabled(false); //setVisible(false);
-		sshHostText.setColumns(10);
-		
-		sshNameLabel = new JLabel("SSH User Name");
-		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-		gbc_lblNewLabel.fill = GridBagConstraints.HORIZONTAL;
-		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel.gridx = 0;
-		gbc_lblNewLabel.gridy = 10;
-		sshNameLabel.setEnabled(false); //setVisible(false);
-		add(sshNameLabel, gbc_lblNewLabel);
-		
-		sshNameText = new JTextField();
-		GridBagConstraints gbc_textField = new GridBagConstraints();
-		gbc_textField.insets = new Insets(0, 0, 5, 0);
-		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField.gridx = 1;
-		gbc_textField.gridy = 10;
-		add(sshNameText, gbc_textField);
-		sshNameText.setEnabled(false); //setVisible(false);
-		sshNameText.setColumns(10);
-		
-		sshPasswordLabel = new JLabel("SSH Password");
-		GridBagConstraints gbc_SSHpassword = new GridBagConstraints();
-		gbc_SSHpassword.fill = GridBagConstraints.HORIZONTAL;
-		gbc_SSHpassword.insets = new Insets(0, 0, 5, 5);
-		gbc_SSHpassword.gridx = 0;
-		gbc_SSHpassword.gridy = 11;
-		sshPasswordLabel.setEnabled(false); //setVisible(false);
-		add(sshPasswordLabel, gbc_SSHpassword);
-		
-		sshPasswordText = new JTextField();
-		GridBagConstraints gbc_textField_1 = new GridBagConstraints();
-		gbc_textField_1.insets = new Insets(0, 0, 5, 0);
-		gbc_textField_1.fill = GridBagConstraints.HORIZONTAL;
-		gbc_textField_1.gridx = 1;
-		gbc_textField_1.gridy = 11;
-		add(sshPasswordText, gbc_textField_1);
-		sshPasswordText.setEnabled(false); //setVisible(false);
-		sshPasswordText.setColumns(10);
-		
 		panel = new JPanel();
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.insets = new Insets(0, 0, 0, 5);
@@ -288,18 +225,19 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		}
 	}
 	
+	public static final String updateSSH = "UpdateSSH";
+	
 	/**
 	 * Updates the visibility of the ssh connection parameters according to the initial solution generation box selection
 	 */
 	public void updateSSHVisibility(){
-		boolean shown = initialSolutionBox.isSelected() || redistributeWorkloadBox.isSelected() || Configuration.USE_PRIVATE_CLOUD;
+		boolean shown = sshNeeded();
 		
-		sshNameLabel.setEnabled(shown); //setVisible(shown);
-		sshNameText.setEnabled(shown); //setVisible(shown);
-		sshPasswordLabel.setEnabled(shown); //setVisible(shown);
-		sshPasswordText.setEnabled(shown); //setVisible(shown);
-		sshHostLabel.setEnabled(shown); //setVisible(shown);
-		sshHostText.setEnabled(shown); //setVisible(shown);
+		firePropertyChange(updateSSH, !shown, shown);
+	}
+	
+	public boolean sshNeeded() {
+		return initialSolutionBox.isSelected() || redistributeWorkloadBox.isSelected() || Configuration.USE_PRIVATE_CLOUD || Configuration.CONTRACTOR_TEST;
 	}
 
 	/**
@@ -316,9 +254,6 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		scaleInConfText.setText(Integer.toString(Configuration.SCALE_IN_CONV_ITERS));
 		initialSolutionBox.setSelected(Configuration.RELAXED_INITIAL_SOLUTION);
 		redistributeWorkloadBox.setSelected(Configuration.REDISTRIBUTE_WORKLOAD);
-		sshPasswordText.setText(Configuration.SSH_PASSWORD);
-		sshNameText.setText(Configuration.SSH_USER_NAME);
-		sshHostText.setText(Configuration.SSH_HOST);
 		updateSSHVisibility();
 		
 	}
@@ -360,9 +295,6 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 			Configuration.SCALE_IN_CONV_ITERS = -1;
 		}
 		Configuration.RELAXED_INITIAL_SOLUTION = initialSolutionBox.isSelected();
-		Configuration.SSH_PASSWORD = sshPasswordText.getText();
-		Configuration.SSH_USER_NAME = sshNameText.getText();
-		Configuration.SSH_HOST = sshHostText.getText();
 		
 		Configuration.REDISTRIBUTE_WORKLOAD = redistributeWorkloadBox.isSelected();
 	}
@@ -376,7 +308,5 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 			comp.setEnabled(enabled);
 		}
 	}
-
-
-
+	
 }
