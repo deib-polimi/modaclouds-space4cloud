@@ -1327,7 +1327,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 			
 			HourPriceType hour = new HourPriceType();
 			hour.setHour(h);
-			hour.setCost((float)cost);
+			hour.setCost(cost);
 			
 			ct.getHourPrice().add(hour);
 		}
@@ -1358,9 +1358,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 					double totalCost = 0.0;
 					
 					for (int h = 0; h < 24; ++h) {
-						Tier tmp = s.getApplication(h).getTierById(t.getId());
-						
-						double cost = s.getCost(tmp.getId(), h);
+						double cost = s.getCost(t.getId(), h);
 						totalCost += cost;
 						
 						HourPriceType hour = new HourPriceType();
@@ -1378,41 +1376,16 @@ public class SolutionMulti implements Cloneable, Serializable {
 					
 					for (HourPriceType hour : ctp.getHourPrice()) {
 						int h = hour.getHour();
-						Tier tmp = s.getApplication(h).getTierById(t.getId());
-						
-						double cost = s.getCost(tmp.getId(), h);
+						double cost = s.getCost(t.getId(), h);
 						totalCost += cost;
-						hour.setCost(cost);
+						hour.setCost(cost + hour.getCost());
 					}
 					
 					ctp.setTotalCost((float) totalCost);
 				}
 				
-				
-				
-				
 			}
 			
-//			Providers p = new Providers();
-//			p.setName(s.getProvider());
-//			p.setServiceName(s.getApplication(0).getTiers().get(0).getCloudService().getServiceName());
-//			
-//			CostType ctp = new CostType();
-//			
-//			for (int h = 0; h < 24; ++h) {
-//				HourPriceType hour = new HourPriceType();
-//				hour.setHour(h);
-//				hour.setCost((float)s.getCost(h));
-//				
-//				ctp.getHourPrice().add(hour);
-//			}
-//			
-//			ctp.setTotalCost((float)s.getCost());
-//			p.setCost(ctp);
-//			
-//			costs.getProviders().add(p);
-//			
-//			// TODO: add the contracts
 		}
 		
 		return costs;

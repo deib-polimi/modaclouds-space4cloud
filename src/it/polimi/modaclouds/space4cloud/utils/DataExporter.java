@@ -287,7 +287,7 @@ public class DataExporter {
 	
 	private static Map<String, Map<String, Map<String, Double>>> costs = new HashMap<String, Map<String, Map<String, Double>>>();
 	
-	private Map<String, Map<String, Double>> getCosts(String provider, String resource, String region) {
+	private static Map<String, Map<String, Double>> getCosts(String provider, String resource, String region) {
 		if (DataExporter.costs.containsKey(resource + "@" + provider)) {
 			return DataExporter.costs.get(resource + "@" + provider);
 		}
@@ -694,15 +694,15 @@ public class DataExporter {
 				totNominal[i] += tier[i];
 		}
 		
-		String prefix = "costs-";
+		String prefix = "costs";
 		if (Configuration.CONTRACTOR_TEST)
-			prefix = "generated-costs-";
+			prefix = "generated-costs";
 		
 		double costS4C, costLower, costUpper;
 		
-		File nominalSolutionCosts = Paths.get(nominalSolution.getParent(), prefix + nominalSolution.getName().substring("solution-".length())).toFile();
-		File lowerSolutionCosts = Paths.get(lowerSolution.getParent(), prefix + lowerSolution.getName().substring("solution-".length())).toFile();
-		File upperSolutionCosts = Paths.get(upperSolution.getParent(), prefix + upperSolution.getName().substring("solution-".length())).toFile();
+		File nominalSolutionCosts = Paths.get(nominalSolution.getParent(), prefix + ".xml").toFile();
+		File lowerSolutionCosts = Paths.get(lowerSolution.getParent(), prefix + "-" + lowerSolution.getName().substring("solution-".length())).toFile();
+		File upperSolutionCosts = Paths.get(upperSolution.getParent(), prefix + "-" + upperSolution.getName().substring("solution-".length())).toFile();
 		
 		if (nominalSolutionCosts.exists() && lowerSolutionCosts.exists() && upperSolutionCosts.exists()) {
 			costS4C = SolutionMulti.getCost(nominalSolutionCosts);

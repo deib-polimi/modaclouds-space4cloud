@@ -779,7 +779,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		
 		try {
-			DataExporter.robustnessTest(Paths.get(resultsFolder.toString(), Configuration.SOLUTION_LIGHT_FILE_NAME + Configuration.SOLUTION_FILE_EXTENSION).toFile(), generatedFiles, append);
+			DataExporter.robustnessTest(Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME + "-" + highestPeak + Configuration.SOLUTION_FILE_EXTENSION).toFile(), generatedFiles, append);
 		} catch (Exception e) {
 			logger.error("Error while exporting the results of the robustness test.", e);
 		}
@@ -1091,7 +1091,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 					
 					@Override
 					public boolean accept(File pathname) {
-						return (pathname.getName().startsWith(Configuration.SOLUTION_FILE_NAME + "-" + keyValue + "-"));
+						return
+								(pathname.getName().startsWith(Configuration.SOLUTION_FILE_NAME + "-" + keyValue + "-")) ||
+								(pathname.getName().startsWith("costs-" + keyValue + "-")) ||
+								(pathname.getName().startsWith("generated-costs-" + keyValue + "-"));
 					}
 				});
 				
