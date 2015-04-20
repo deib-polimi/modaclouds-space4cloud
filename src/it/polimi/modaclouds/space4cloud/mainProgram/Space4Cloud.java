@@ -1053,7 +1053,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 								+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(
 						Paths.get(bestSolution.getParent(), "costs.xml"),
-						Paths.get(bestSolution.toString(), "costs-" + key
+						Paths.get(bestSolution.getParent(), "costs-" + key
 								+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
 				throw new RobustnessException("Error copying costs: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
@@ -1068,7 +1068,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 									+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 					Files.copy(
 							Paths.get(bestSolution.getParent(), "generated-costs.xml"),
-							Paths.get(bestSolution.toString(), "generated-costs-" + key
+							Paths.get(bestSolution.getParent(), "generated-costs-" + key
 									+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
 					throw new RobustnessException("Error copying generated costs: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
