@@ -767,7 +767,7 @@ public class DataExporter {
 //		logger.debug("Max diffs: {}", maxDiffs);
 		
 		return String.format(
-				"%s,%d,%d,%d,%s,%s,%s,%s,%d,%d,%d",
+				"%s,%d,%d,%d,%s,%s,%s,%s,%s,%s,%d,%d,%d",
 				size,
 				maxReplicas,
 				variability,
@@ -776,10 +776,19 @@ public class DataExporter {
 				SolutionMulti.costFormatter.format(costLower),
 				SolutionMulti.costFormatter.format(costUpper),
 				SolutionMulti.costFormatter.format(costTool),
+				deltaFormatter.format((costUpper-costS4C)/costS4C),
+				deltaFormatter.format(costTool/costS4C),
 				durationS4C,
 				durationTool,
 				maxDiffs
 				);
+	}
+	
+	public static DecimalFormat deltaFormatter = null;
+	static {
+		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.getDefault());
+		otherSymbols.setDecimalSeparator('.');
+		deltaFormatter = new DecimalFormat("0.00000", otherSymbols);
 	}
 	
 	public static final String RESULT_CSV = "robustnessTest.csv";
@@ -799,7 +808,7 @@ public class DataExporter {
 		
 			if (headline)
 				out.printf(
-						"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+						"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 						"vmType",
 						"maxReplicas",
 						"variability",
@@ -808,6 +817,8 @@ public class DataExporter {
 						"costLower",
 						"costUpper",
 						"costTool",
+						"deltaDet",
+						"deltaRob",
 						"durationS4C",
 						"durationTool",
 						"maxDiffs"
@@ -861,7 +872,7 @@ public class DataExporter {
 		try (PrintWriter out = new PrintWriter(f)) {
 		
 			out.printf(
-					"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+					"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 					"vmType",
 					"maxReplicas",
 					"variability",
@@ -870,6 +881,8 @@ public class DataExporter {
 					"costLower",
 					"costUpper",
 					"costTool",
+					"deltaDet",
+					"deltaRob",
 					"durationS4C",
 					"durationTool",
 					"maxDiffs"
