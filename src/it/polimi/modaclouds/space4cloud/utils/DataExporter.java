@@ -731,7 +731,7 @@ public class DataExporter {
 			gamma = prob.getG();
 			
 			Result res = eval.getResult();
-			costTool = res.getCost();
+			costTool = res.getCost() + res.getAlpha();
 			durationTool = res.getTime();
 			
 			WorstRealization real = res.getWorstRealization();
