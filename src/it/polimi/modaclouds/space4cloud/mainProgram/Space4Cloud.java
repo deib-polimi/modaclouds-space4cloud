@@ -1020,12 +1020,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			
 			Configuration.WORKING_DIRECTORY = bestSolution.getParent().substring(Configuration.PROJECT_BASE_FOLDER.length() + 1);
 			
-			try {
-				performVariability();
-			} catch (OptimizationException e) {
-				throw new RobustnessException("Error while performing the variability test.", e);
-			}
-			
 			if (relaxedInitialSolution)
 				try{
 					Files.copy(
@@ -1042,6 +1036,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 						Paths.get(bestSolution.getParent(), "costs.xml"),
 						Paths.get(resultsFolder.toString(), "costs-" + key
 								+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(
+						Paths.get(bestSolution.getParent(), "costs.xml"),
+						Paths.get(bestSolution.toString(), "costs-" + key
+								+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
 				throw new RobustnessException("Error copying costs: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
 						+ Configuration.SOLUTION_FILE_EXTENSION,e);
@@ -1053,12 +1051,22 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 							Paths.get(bestSolution.getParent(), "generated-costs.xml"),
 							Paths.get(resultsFolder.toString(), "generated-costs-" + key
 									+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(
+							Paths.get(bestSolution.getParent(), "generated-costs.xml"),
+							Paths.get(bestSolution.toString(), "generated-costs-" + key
+									+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
 					throw new RobustnessException("Error copying generated costs: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
 							+ Configuration.SOLUTION_FILE_EXTENSION,e);
 				}
 			
 			if (robustnessVariability > 0) {
+				try {
+					performVariability();
+				} catch (OptimizationException e) {
+					throw new RobustnessException("Error while performing the variability test.", e);
+				}
+				
 				File useless = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
 						"variability-ended.xml").toFile();
 				
