@@ -613,6 +613,21 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 //
 //		logger.info("Considering the variability");
 		
+		if (consideredVariability <= 0) {
+			logger.warn("The variability of {}% is too low, exiting.", consideredVariability);
+			return;
+		}
+		if (consideredVariability >= 100) {
+			logger.warn("It's impossible to consider a variability of {}%. Considering a variability of 99% instead.", consideredVariability);
+			consideredVariability = 99;
+		}
+		for (int i = 0; i < consideredG.length; ++i) {
+			if (consideredG[i] < 1)
+				consideredG[i] = 1;
+			else if (consideredG[i] > DataExporter.DEFAULT_T)
+				consideredG[i] = DataExporter.DEFAULT_T;
+		}
+		
 		int originalVariability = Configuration.ROBUSTNESS_VARIABILITY;
 		
 		Configuration.ROBUSTNESS_VARIABILITY = consideredVariability;
