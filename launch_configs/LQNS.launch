@@ -23,11 +23,12 @@
 <stringAttribute key="output" value="HTML Output"/>
 <stringAttribute key="printInt" value="10"/>
 <stringAttribute key="psQuantum" value="0.001"/>
+<stringAttribute key="rmiRepositoryFile" value="pathmap://PCM_MODELS/Glassfish.repository"/>
 <stringAttribute key="runTime" value=""/>
 <stringAttribute key="samplingDist" value="1.0"/>
+<booleanAttribute key="showHtmlResult" value="true"/>
 <booleanAttribute key="simulateAccuracy" value="false"/>
 <stringAttribute key="solver" value="LQNS (Layered Queueing Network Solver)"/>
 <stringAttribute key="underCoeff" value="0.5"/>
 <stringAttribute key="usageFile" value="platform:/resource/SpecWebPalladio/default.usagemodel"/>
-<booleanAttribute key="showHtmlResult" value="true"/>
 </launchConfiguration>
