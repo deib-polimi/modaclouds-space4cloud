@@ -1,10 +1,15 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkload;
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.CloudService;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.Replica;
 import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
 import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult;
@@ -19,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +51,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class DataExporter {
 	
@@ -677,21 +684,41 @@ public class DataExporter {
 		return res;
 	}
 	
-	private static String robustnessTestRow(File nominalSolution, File lowerSolution, File upperSolution, File result, String size) {
+	private static String robustnessTestRow(File nominalSolution, File result, String size, int peak, int variability) {
+		File lowerSolution = Paths.get(nominalSolution.getParent(), Configuration.SOLUTION_FILE_NAME + "-" + peak + "-" + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File upperSolution = Paths.get(nominalSolution.getParent(), Configuration.SOLUTION_FILE_NAME + "-" + peak + "-" + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		
 		Map<String, Integer[]> nominalReplicas = getReplicas(nominalSolution);
+		Map<String, Integer[]> lowerReplicas = getReplicas(lowerSolution);
+		Map<String, Integer[]> upperReplicas = getReplicas(upperSolution);
 		int[] totNominal = new int[24];
+		int[] totLower = new int[24];
+		int[] totUpper = new int[24];
+		int[] maxDiff = new int[24];
 		int[] totResult = new int[24];
 		for (int i = 0; i < 24; ++i) {
 			totNominal[i] = 0;
+			totLower[i] = 0;
+			totUpper[i] = 0;
 			totResult[i] = 0;
 		}
 		for (String key : nominalReplicas.keySet()) {
 			String actualSize = key.substring(0, key.indexOf('@'));
 			if (!actualSize.equals(size) && !(actualSize.replace('.', '_')).replaceAll("_", "").equals(size))
 				continue;
-			Integer[] tier = nominalReplicas.get(key);
-			for (int i = 0; i < 24; ++i)
-				totNominal[i] += tier[i];
+			Integer[] tierNominal = nominalReplicas.get(key);
+			Integer[] tierLower = lowerReplicas.get(key);
+			Integer[] tierUpper = upperReplicas.get(key);
+			for (int i = 0; i < 24; ++i) {
+				totNominal[i] += tierNominal[i];
+				totLower[i] += tierLower[i];
+				totUpper[i] += tierUpper[i];
+			}
+		}
+		for (int i = 0; i < 24; ++i) {
+			int diffA = Math.abs(totNominal[i] - totLower[i]);
+			int diffB = Math.abs(totNominal[i] - totUpper[i]);
+			maxDiff[i] = diffA > diffB ? diffA : diffB;
 		}
 		
 		String prefix = "costs-";
@@ -700,9 +727,9 @@ public class DataExporter {
 		
 		double costS4C, costLower, costUpper;
 		
-		File nominalSolutionCosts = Paths.get(nominalSolution.getParent(), prefix + nominalSolution.getName().substring("solution-".length())).toFile();
-		File lowerSolutionCosts = Paths.get(lowerSolution.getParent(), prefix + lowerSolution.getName().substring("solution-".length())).toFile();
-		File upperSolutionCosts = Paths.get(upperSolution.getParent(), prefix + upperSolution.getName().substring("solution-".length())).toFile();
+		File nominalSolutionCosts = Paths.get(nominalSolution.getParent(), prefix + "-" + peak + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File lowerSolutionCosts = Paths.get(lowerSolution.getParent(), prefix + "-" + peak + "-" + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File upperSolutionCosts = Paths.get(upperSolution.getParent(), prefix + "-" + peak + "-" + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 		
 		if (nominalSolutionCosts.exists() && lowerSolutionCosts.exists() && upperSolutionCosts.exists()) {
 			costS4C = SolutionMulti.getCost(nominalSolutionCosts);
@@ -716,7 +743,7 @@ public class DataExporter {
 		
 		int durationS4C = SolutionMulti.getDuration(nominalSolution);
 		
-		int variability = 0;
+//		int variability = 0;
 		int gamma = 0;
 		
 		double costTool = 0.0;
@@ -727,7 +754,7 @@ public class DataExporter {
 					.toURI().toURL(), EvaluationResult.class);
 			
 			Problem prob = eval.getProblem();
-			variability = prob.getVariability();
+//			variability = prob.getVariability();
 			gamma = prob.getG();
 			
 			Result res = eval.getResult();
@@ -749,6 +776,16 @@ public class DataExporter {
 		int maxReplicas = 0;
 		int count = 0;
 		
+		int diffsUnder = 0;
+		int diffsAbove = 0;
+//		int[] ume;
+//		try {
+//			ume = getUsageModelExtAsArray(Paths.get(nominalSolution.getParent(), "ume-" + nominalSolution.getName().substring("solution-".length())).toFile());
+//		} catch (Exception e) {
+//			logger.error("Error while reading the Usage Model Extension file.", e);
+//			ume = new int[24];
+//		}
+		
 		for (int i = 0; i < 24; ++i) {
 			if (maxReplicas < totNominal[i])
 				maxReplicas = totNominal[i];
@@ -761,13 +798,21 @@ public class DataExporter {
 					maxDiffs = count;
 				count = 0;
 			}
+			
+			if (totNominal[i] + maxDiff[i] == totResult[i]) {
+				//if (ume[i] > peak/2)
+				if (i > 9 && i < 18)
+					diffsAbove++;
+				else
+					diffsUnder++;
+			}
 		}
 		if (maxDiffs < count)
 			maxDiffs = count;
 //		logger.debug("Max diffs: {}", maxDiffs);
 		
 		return String.format(
-				"%s,%d,%d,%d,%s,%s,%s,%s,%s,%s,%d,%d,%d",
+				"%s,%d,%d,%d,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d",
 				size,
 				maxReplicas,
 				variability,
@@ -780,7 +825,9 @@ public class DataExporter {
 				deltaFormatter.format(costTool/costS4C),
 				durationS4C,
 				durationTool,
-				maxDiffs
+				maxDiffs,
+				diffsUnder,
+				diffsAbove
 				);
 	}
 	
@@ -808,7 +855,7 @@ public class DataExporter {
 		
 			if (headline)
 				out.printf(
-						"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+						"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 						"vmType",
 						"maxReplicas",
 						"variability",
@@ -821,10 +868,10 @@ public class DataExporter {
 						"deltaRob",
 						"durationS4C",
 						"durationTool",
-						"maxDiffs"
+						"maxDiffs",
+						"diffsUnder",
+						"diffsAbove"
 						);
-			
-			String baseName = solution.getName().substring(0, solution.getName().indexOf(Configuration.SOLUTION_FILE_EXTENSION)) + "-";
 			
 			for (File generatedFile : generatedFiles) {
 				String fileName = generatedFile.getName();
@@ -836,23 +883,46 @@ public class DataExporter {
 				int variability = Integer.parseInt(ss[2]);
 //				int gamma = Integer.parseInt(ss[3]);
 				
-				File lower = Paths.get(solution.getParent(), baseName + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-				File upper = Paths.get(solution.getParent(), baseName + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-				
 				out.println(robustnessTestRow(
 						solution,
-						lower,
-						upper,
 						generatedFile,
-						size));
+						size,
+						peak,
+						variability));
 			}
 		}
 		
 		return append;
 	}
 	
+	@SuppressWarnings("unused")
+	private static int[] getUsageModelExtAsArray(File f)
+			throws JAXBException, IOException, SAXException {
+		int[] res = new int[24];
+		
+		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
+				UsageModelExtensions.class);
+
+		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+		if (cw != null) {
+			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+				res[we.getHour()] = we.getPopulation();
+			}
+		} else {
+			OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+			if (ow != null) {
+				for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+					res[we.getHour()] = we.getPopulation();
+				}
+			}
+		}
+
+		return res;
+
+	}
+	
 	public static File saraMattiaTest() throws Exception {
-		final String basePath = "/Users/ft/Downloads/ConstellationSara4/";
+		final String basePath = "/Users/ft/Downloads/ConstellationSara6/";
 		
 		final String[] strings = {
 				"6:400:m1small:m1.small",
@@ -865,14 +935,14 @@ public class DataExporter {
 				"2:8200:c3large:c3.large",
 				"1:19000:c3large:c3.large"
 				};
-		final int[] variabilities = {30, 50, 100};
+		final int[] variabilities = {30, 50, 70, 80};
 		
 		File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "saramattia.csv").toFile();
 		
 		try (PrintWriter out = new PrintWriter(f)) {
 		
 			out.printf(
-					"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+					"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 					"vmType",
 					"maxReplicas",
 					"variability",
@@ -885,7 +955,9 @@ public class DataExporter {
 					"deltaRob",
 					"durationS4C",
 					"durationTool",
-					"maxDiffs"
+					"maxDiffs",
+					"diffsUnder",
+					"diffsAbove"
 					);
 			
 			for (String s : strings) {
@@ -894,10 +966,10 @@ public class DataExporter {
 					for (int gamma = 1; gamma <= 24; ++gamma)
 						out.println(robustnessTestRow(
 								new File(basePath + names[0] + "/results/solution-" + names[1] + ".xml"),
-								new File(basePath + names[0] + "/results/solution-" + names[1] + "-" + (Integer.parseInt(names[1]) / 100 * (100 - variability)) + ".xml"),
-								new File(basePath + names[0] + "/results/solution-" + names[1] + "-" + (Integer.parseInt(names[1]) / 100 * (100 + variability)) + ".xml"),
 								new File(basePath + names[0] + "/results/generated-evaluation-" + names[1] + "-" + names[2] + "-" + variability + "-" + gamma + ".xml"),
-								names[3]));
+								names[3],
+								Integer.parseInt(names[1]),
+								variability));
 			}
 		}
 		
