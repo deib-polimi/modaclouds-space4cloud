@@ -18,6 +18,7 @@
 		<github.user.name>deib-polimi</github.user.name>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<tycho-version>0.22.0</tycho-version>
 	</properties>
 
 	<repositories>
@@ -130,6 +131,12 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
 			</plugin>
 		</plugins>
 		<pluginManagement>
@@ -291,13 +298,13 @@
 		</pluginManagement>
 	</build>
 	<dependencies>
-	    <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-            <version>1.4.01</version>
-        </dependency>
-	
-	    <dependency>
+		<dependency>
+			<groupId>xml-apis</groupId>
+			<artifactId>xml-apis</artifactId>
+			<version>1.4.01</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.jvnet.jaxb2_commons</groupId>
 			<artifactId>jaxb2-basics-runtime</artifactId>
 			<version>0.6.5.1</version>
@@ -349,7 +356,7 @@
 		<dependency>
 			<groupId>it.polimi.modaclouds</groupId>
 			<artifactId>resourcemodel</artifactId>
-			<version>1.1.0</version>
+			<version>1.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>it.polimi.modaclouds.space4cloud</groupId>
@@ -357,19 +364,49 @@
 			<version>0.1.2</version>
 		</dependency>
 		<dependency>
-            <groupId>it.polimi.modaclouds.space4cloud</groupId>
-            <artifactId>privatecloud</artifactId>
-            <version>0.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>it.polimi.modaclouds.space4cloud</groupId>
-            <artifactId>contractor4cloud</artifactId>
-            <version>0.1.2</version>
-        </dependency>
+			<groupId>it.polimi.modaclouds.space4cloud</groupId>
+			<artifactId>privatecloud</artifactId>
+			<version>0.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>it.polimi.modaclouds.space4cloud</groupId>
+			<artifactId>contractor4cloud</artifactId>
+			<version>0.1.2</version>
+		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>17.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.ecore</artifactId>
+			<version>2.11.0-v20150123-0347</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.core</groupId>
+			<artifactId>resources</artifactId>
+			<version>3.3.0-v20070604</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse</groupId>
+			<artifactId>ui</artifactId>
+			<version>3.3.0-I20070614-0800</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.emf</groupId>
+			<artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+			<version>2.11.0-v20150123-0347</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.debug</groupId>
+			<artifactId>core</artifactId>
+			<version>3.3.0-v20070607-1800</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.ui</groupId>
+			<artifactId>console</artifactId>
+			<version>3.2.0-v20070530</version>
 		</dependency>
 	</dependencies>
 	<version>1.0.0</version>
