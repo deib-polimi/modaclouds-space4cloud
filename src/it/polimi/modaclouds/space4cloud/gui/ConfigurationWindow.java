@@ -282,8 +282,14 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 					//					optimizationConfigurationPane.loadConfiguration();
 					//					robustnessConfigurationPane.loadConfiguration();
 					loadConfiguration();
+					
+					extensionSelectionPane.updateUsageModelValidation();
+					extensionSelectionPane.updateResourceEnvironemntModelValidation();
+					extensionSelectionPane.updateConstraintModelValidation();
+					extensionSelectionPane.updateMceVisibility();
 				} catch (IOException ex) {
 					logger.error("Could not load the configuration from the file",e);
+					 JOptionPane.showMessageDialog(null, "Could not load the configuration from the file", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 
