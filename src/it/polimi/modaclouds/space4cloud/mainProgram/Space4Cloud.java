@@ -759,8 +759,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
                     if (contractorTest)
 	                    try {
 	                        Files.copy(
-	                                Paths.get(solution.getParent(), "generated-costs.xml"),
-	                                Paths.get(resultsFolder.toString(), "generated-costs-" + highestPeak + "-" + key + ".xml"), StandardCopyOption.REPLACE_EXISTING);
+	                                Paths.get(solution.getParent(), it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
+	                                Paths.get(resultsFolder.toString(), it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-" + highestPeak + "-" + key + it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION), StandardCopyOption.REPLACE_EXISTING);
 	                    } catch (IOException e) {
 	                        throw new OptimizationException("Error copying: "+solution.getAbsolutePath()+" to: "+resultsFolder.toString()+ Configuration.SOLUTION_FILE_NAME+ "-" + highestPeak + "-" + key + Configuration.SOLUTION_FILE_EXTENSION,e);
 	                    }
@@ -1063,13 +1063,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			if (contractorTest)
 				try{
 					Files.copy(
-							Paths.get(bestSolution.getParent(), "generated-costs.xml"),
-							Paths.get(resultsFolder.toString(), "generated-costs-" + key
-									+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+							Paths.get(bestSolution.getParent(), it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
+							Paths.get(resultsFolder.toString(), it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-" + key
+									+ it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION), StandardCopyOption.REPLACE_EXISTING);
 					Files.copy(
-							Paths.get(bestSolution.getParent(), "generated-costs.xml"),
-							Paths.get(bestSolution.getParent(), "generated-costs-" + key
-									+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+							Paths.get(bestSolution.getParent(), it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
+							Paths.get(bestSolution.getParent(), it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-" + key
+									+ it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
 					throw new RobustnessException("Error copying generated costs: "+bestSolution.getAbsolutePath()+" to: "+resultsFolder.toString()+ File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
 							+ Configuration.SOLUTION_FILE_EXTENSION,e);
@@ -1117,7 +1117,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 						return
 								(pathname.getName().startsWith(Configuration.SOLUTION_FILE_NAME + "-" + keyValue + "-")) ||
 								(pathname.getName().startsWith("costs-" + keyValue + "-")) ||
-								(pathname.getName().startsWith("generated-costs-" + keyValue + "-"));
+								(pathname.getName().startsWith(it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-" + keyValue + "-"));
 					}
 				});
 				
