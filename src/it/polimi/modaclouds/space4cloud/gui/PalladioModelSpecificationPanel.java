@@ -40,13 +40,13 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{350, 50, 0};
 		gridBagLayout.rowHeights = new int[]{30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 0, 0};
-		gridBagLayout.columnWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 
 		JLabel repositoryLabel = new JLabel("Repository Model");
 		GridBagConstraints gbc_repositoryLabel = new GridBagConstraints();
-		gbc_repositoryLabel.anchor = GridBagConstraints.WEST;
+		gbc_repositoryLabel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_repositoryLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_repositoryLabel.gridx = 0;
 		gbc_repositoryLabel.gridy = 0;
@@ -79,7 +79,7 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 
 		JLabel systemLabel = new JLabel("System Model");
 		GridBagConstraints gbc_systemLabel = new GridBagConstraints();
-		gbc_systemLabel.anchor = GridBagConstraints.WEST;
+		gbc_systemLabel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_systemLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_systemLabel.gridx = 0;
 		gbc_systemLabel.gridy = 2;
@@ -111,7 +111,7 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 
 		JLabel allocationLabel = new JLabel("Allocation Model");
 		GridBagConstraints gbc_allocationLabel = new GridBagConstraints();
-		gbc_allocationLabel.anchor = GridBagConstraints.WEST;
+		gbc_allocationLabel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_allocationLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_allocationLabel.gridx = 0;
 		gbc_allocationLabel.gridy = 4;
@@ -144,7 +144,7 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 
 		JLabel resourceModel = new JLabel("Resource Environment Model");
 		GridBagConstraints gbc_resourceModel = new GridBagConstraints();
-		gbc_resourceModel.anchor = GridBagConstraints.WEST;
+		gbc_resourceModel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_resourceModel.insets = new Insets(0, 0, 5, 5);
 		gbc_resourceModel.gridx = 0;
 		gbc_resourceModel.gridy = 6;
@@ -176,7 +176,7 @@ public class PalladioModelSpecificationPanel extends JPanel implements ActionLis
 
 		JLabel usageLabel = new JLabel("Usage Model");
 		GridBagConstraints gbc_usageLabel = new GridBagConstraints();
-		gbc_usageLabel.anchor = GridBagConstraints.WEST;
+		gbc_usageLabel.fill = GridBagConstraints.HORIZONTAL;
 		gbc_usageLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_usageLabel.gridx = 0;
 		gbc_usageLabel.gridy = 8;
