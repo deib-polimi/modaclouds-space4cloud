@@ -1418,9 +1418,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		
 		logger.info("Exporting the optimized costs for Amazon...");
 		
-		int daysConsidered = Configuration.ROBUSTNESS_H;
-		double percentageOfS = Configuration.ROBUSTNESS_Q;
-		double m = 1000.0; // TODO: maybe Configuration.ROBUSTNESS_G ?
+		double m = 1000.0; // TODO: boh?
 		
 		String configuration = null;
 		try {
@@ -1448,7 +1446,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		Contractor.removeTempFiles = true;
 		
 		try {
-			File f = Contractor.perform(configuration, solution, daysConsidered, percentageOfS, m);
+			File f = Contractor.perform(configuration, solution, m);
 			if (f != null && f.exists()) {
 				logger.debug("Optimized costs: " + f.getAbsolutePath());
 			}

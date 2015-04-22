@@ -93,7 +93,7 @@ public class SolutionWindowPanel extends JTabbedPane{
 		infoAll.append("<tr><th style='border: 0; background: black; color: white;'>Information</th><th style='border:0; background: black; color: white;'>Value</th></tr>\n");
 		infoAll.append("<tr><td>Total Cost</td><td>" + solutionMulti.getCost() + "</td></tr>\n");
 		if (Configuration.CONTRACTOR_TEST) {
-			File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "generated-costs.xml").toFile();
+			File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION).toFile();
 			if (f.exists())
 				infoAll.append("<tr><td>Total Cost considering Contracts</td><td>" + SolutionMulti.getCost(f) + "</td></tr>\n");
 		}

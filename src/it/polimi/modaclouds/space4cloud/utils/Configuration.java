@@ -85,7 +85,7 @@ public class Configuration {
 	public static int ROBUSTNESS_VARIABILITY= 0;
 	public static double ROBUSTNESS_Q = 0.15;
 	public static int ROBUSTNESS_G = 24;
-	public static int ROBUSTNESS_H = 1080;
+	public static int ROBUSTNESS_H = 1095;
 	
 
 	//Operations

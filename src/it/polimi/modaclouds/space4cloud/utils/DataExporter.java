@@ -723,7 +723,7 @@ public class DataExporter {
 		
 		String prefix = "costs-";
 		if (Configuration.CONTRACTOR_TEST)
-			prefix = "generated-costs-";
+			prefix = it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-";
 		
 		double costS4C, costLower, costUpper;
 		
@@ -799,7 +799,7 @@ public class DataExporter {
 				count = 0;
 			}
 			
-			if (totNominal[i] + maxDiff[i] == totResult[i]) {
+			if (totResult[i] > totNominal[i]) {
 				//if (ume[i] > peak/2)
 				if (i > 9 && i < 18)
 					diffsAbove++;
@@ -935,7 +935,7 @@ public class DataExporter {
 				"2:8200:c3large:c3.large",
 				"1:19000:c3large:c3.large"
 				};
-		final int[] variabilities = {30, 50, 70, 80};
+		final int[] variabilities = {30, 50, 70, 75, 80};
 		
 		File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "saramattia.csv").toFile();
 		
