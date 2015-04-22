@@ -1074,6 +1074,14 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			
 			if (robustnessVariability > 0) {
 				try {
+					Files.copy(
+							Paths.get(resultsFolder.toString(), "ume-" + key + ".xml"),
+							Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "ume-" + key + ".xml"), StandardCopyOption.REPLACE_EXISTING);
+				} catch (Exception e) {
+					throw new RobustnessException("Error while copying the usage model extensions.", e);
+				}
+				
+				try {
 					performVariability();
 				} catch (OptimizationException e) {
 					throw new RobustnessException("Error while performing the variability test.", e);

@@ -722,7 +722,7 @@ public class DataExporter {
 		int diffsAbove = 0;
 		int[] ume;
 		try {
-			ume = getUsageModelExtAsArray(Paths.get(nominalSolution.getParent(), "ume-" + nominalSolution.getName().substring("solution-".length())).toFile());
+			ume = getUsageModelExtAsArray(Paths.get(nominalSolution.getParent(), "ume-" + peak + ".xml").toFile());
 		} catch (Exception e) {
 			logger.error("Error while reading the Usage Model Extension file.", e);
 			ume = new int[24];
