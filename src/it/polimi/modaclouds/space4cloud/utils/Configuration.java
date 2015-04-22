@@ -82,11 +82,13 @@ public class Configuration {
 	public static boolean run = true;
 
 
-	public static int ROBUSTNESS_VARIABILITY= 0;
+//	public static int ROBUSTNESS_VARIABILITY= 0;
 	public static double ROBUSTNESS_Q = 0.15;
-	public static int ROBUSTNESS_G = 24;
+//	public static int ROBUSTNESS_G = 24;
 	public static int ROBUSTNESS_H = 1095;
 	
+	public static int[] ROBUSTNESS_VARIABILITIES = {0};
+	public static int[] ROBUSTNESS_GS = {24};
 
 	//Operations
 	public static enum Operation {
@@ -187,9 +189,18 @@ public class Configuration {
 
 		prop.put("USE_PRIVATE_CLOUD", Boolean.toString(USE_PRIVATE_CLOUD));
 		prop.put("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
-		prop.put("ROBUSTNESS_VARIABILITY", Integer.toString(ROBUSTNESS_VARIABILITY));
+//		prop.put("ROBUSTNESS_VARIABILITY", Integer.toString(ROBUSTNESS_VARIABILITY));
+		String tmp = "";
+		for (int i = 0; i < ROBUSTNESS_VARIABILITIES.length; ++i)
+			tmp += ROBUSTNESS_VARIABILITIES[i] + ";";
+		prop.put("ROBUSTNESS_VARIABILITY", tmp.substring(0, tmp.length() - 1));
 		prop.put("ROBUSTNESS_Q", Double.toString(ROBUSTNESS_Q));
-		prop.put("ROBUSTNESS_G", Integer.toString(ROBUSTNESS_G));
+//		prop.put("ROBUSTNESS_G", Integer.toString(ROBUSTNESS_G));
+		tmp = "";
+		for (int i = 0; i < ROBUSTNESS_GS.length; ++i)
+			tmp += ROBUSTNESS_GS[i] + ";";
+		prop.put("ROBUSTNESS_G", tmp.substring(0, tmp.length() - 1));
+		
 		prop.put("ROBUSTNESS_H", Integer.toString(ROBUSTNESS_H));
 		
 		prop.put("CONTRACTOR_TEST", Boolean.toString(CONTRACTOR_TEST));
@@ -240,9 +251,33 @@ public class Configuration {
 			ROBUSTNESS_PEAK_TO = Integer.parseInt(prop.getProperty("ROBUSTNESS_PEAK_TO", String.valueOf(ROBUSTNESS_PEAK_FROM)));
 			ROBUSTNESS_STEP_SIZE = Integer.parseInt(prop.getProperty("ROBUSTNESS_STEP_SIZE", String.valueOf(ROBUSTNESS_STEP_SIZE)));
 			ROBUSTNESS_ATTEMPTS = Integer.parseInt(prop.getProperty("ROBUSTNESS_ATTEMPTS", String.valueOf(ROBUSTNESS_ATTEMPTS)));
-			ROBUSTNESS_VARIABILITY = Integer.parseInt(prop.getProperty("ROBUSTNESS_VARIABILITY", String.valueOf(ROBUSTNESS_VARIABILITY)));
+//			ROBUSTNESS_VARIABILITY = Integer.parseInt(prop.getProperty("ROBUSTNESS_VARIABILITY", String.valueOf(ROBUSTNESS_VARIABILITY)));
+			
+			String read = prop.getProperty("ROBUSTNESS_VARIABILITY");
+			if (read != null) {
+				String[] tmp = read.split(";");
+				if (tmp.length > 0) {
+					ROBUSTNESS_VARIABILITIES = new int[tmp.length];
+					for (int i = 0; i < ROBUSTNESS_VARIABILITIES.length; ++i)
+						ROBUSTNESS_VARIABILITIES[i] = Integer.parseInt(tmp[i]);
+				}
+						
+			}
+			
 			ROBUSTNESS_Q = Double.parseDouble(prop.getProperty("ROBUSTNESS_Q", String.valueOf(ROBUSTNESS_Q)));
-			ROBUSTNESS_G= Integer.parseInt(prop.getProperty("ROBUSTNESS_G", String.valueOf(ROBUSTNESS_G)));
+//			ROBUSTNESS_G= Integer.parseInt(prop.getProperty("ROBUSTNESS_G", String.valueOf(ROBUSTNESS_G)));
+			
+			read = prop.getProperty("ROBUSTNESS_G");
+			if (read != null) {
+				String[] tmp = read.split(";");
+				if (tmp.length > 0) {
+					ROBUSTNESS_GS = new int[tmp.length];
+					for (int i = 0; i < ROBUSTNESS_GS.length; ++i)
+						ROBUSTNESS_GS[i] = Integer.parseInt(tmp[i]);
+				}
+						
+			}
+			
 			ROBUSTNESS_H= Integer.parseInt(prop.getProperty("ROBUSTNESS_H", String.valueOf(ROBUSTNESS_H)));
 			REDISTRIBUTE_WORKLOAD = Boolean.parseBoolean(prop.getProperty("REDISTRIBUTE_WORKLOAD", String.valueOf(REDISTRIBUTE_WORKLOAD)));
 			USE_PRIVATE_CLOUD = Boolean.parseBoolean(prop.getProperty("USE_PRIVATE_CLOUD", String.valueOf(USE_PRIVATE_CLOUD)));
@@ -338,8 +373,9 @@ public class Configuration {
 				errors.add("The maximum peak for the robustness test has to be higher than the minimum peak");
 			if(ROBUSTNESS_STEP_SIZE < 1)
 				errors.add("The step size for the robustness test should be at least 1");
-			if(ROBUSTNESS_VARIABILITY < 0 || ROBUSTNESS_VARIABILITY > 100)
-				errors.add("The variability for the robustness test should be a number from 0 to 100");
+			for (int ROBUSTNESS_VARIABILITY : ROBUSTNESS_VARIABILITIES)
+				if(ROBUSTNESS_VARIABILITY < 0 || ROBUSTNESS_VARIABILITY > 100)
+					errors.add("The variability for the robustness test should be a number from 0 to 100");
 		}
 
 		return errors;
@@ -383,9 +419,11 @@ public class Configuration {
 		logger.debug("ROBUSTNESS_PEAK_TO: " + Integer.toString(ROBUSTNESS_PEAK_TO));
 		logger.debug("ROBUSTNESS_STEP_SIZE: " + Integer.toString(ROBUSTNESS_STEP_SIZE));
 		logger.debug("ROBUSTNESS_ATTEMPTS: " + Integer.toString(ROBUSTNESS_ATTEMPTS));
-		logger.debug("ROBUSTNESS_VARIABILITY: " + Integer.toString(ROBUSTNESS_VARIABILITY));
+		for (int ROBUSTNESS_VARIABILITY : ROBUSTNESS_VARIABILITIES)
+			logger.debug("ROBUSTNESS_VARIABILITY: " + Integer.toString(ROBUSTNESS_VARIABILITY));
 		logger.debug("ROBUSTNESS_Q: " + Double.toString(ROBUSTNESS_Q));
-		logger.debug("ROBUSTNESS_G: " + Integer.toString(ROBUSTNESS_G));
+		for (int ROBUSTNESS_G : ROBUSTNESS_GS)
+			logger.debug("ROBUSTNESS_G: " + Integer.toString(ROBUSTNESS_G));
 		logger.debug("ROBUSTNESS_H: " + Integer.toString(ROBUSTNESS_H));
 		logger.debug("REDISTRIBUTE_WORKLOAD: " + Boolean.toString(REDISTRIBUTE_WORKLOAD));
 		logger.debug("USE_PRIVATE_CLOUD: " + Boolean.toString(USE_PRIVATE_CLOUD));

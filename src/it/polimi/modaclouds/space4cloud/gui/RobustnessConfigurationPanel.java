@@ -120,10 +120,17 @@ public class RobustnessConfigurationPanel extends JPanel {
 		stepSize.setText(Integer.toString(Configuration.ROBUSTNESS_STEP_SIZE));
 		attempts.setText(Integer.toString(Configuration.ROBUSTNESS_ATTEMPTS));
 
-		variability.setText(Integer.toString(Configuration.ROBUSTNESS_VARIABILITY));
+		String tmp = "";
+		for (int i : Configuration.ROBUSTNESS_VARIABILITIES)
+			tmp += i + ";";
+		variability.setText(tmp.substring(0, tmp.length() - 1));
 		
 		q.setText(Double.toString(Configuration.ROBUSTNESS_Q));
-		g.setText(Integer.toString(Configuration.ROBUSTNESS_G));
+		
+		tmp = "";
+		for (int i : Configuration.ROBUSTNESS_GS)
+			tmp += i + ";";
+		g.setText(tmp.substring(0, tmp.length() - 1));
 		h.setText(Integer.toString(Configuration.ROBUSTNESS_H));
 
 	}
@@ -154,9 +161,12 @@ public class RobustnessConfigurationPanel extends JPanel {
 		}
 
 		try{
-			Configuration.ROBUSTNESS_VARIABILITY = Integer.parseInt(variability.getText());
+			String[] tmp = variability.getText().split(";");
+			Configuration.ROBUSTNESS_VARIABILITIES = new int[tmp.length];
+			for (int i = 0; i < tmp.length; ++i)
+				Configuration.ROBUSTNESS_VARIABILITIES[i] = Integer.parseInt(tmp[i]);
 		} catch (NumberFormatException e){
-			Configuration.ROBUSTNESS_VARIABILITY = -1;
+			Configuration.ROBUSTNESS_VARIABILITIES = new int[] {-1};
 		}
 		
 		try{
@@ -165,9 +175,12 @@ public class RobustnessConfigurationPanel extends JPanel {
 			Configuration.ROBUSTNESS_Q = -1;
 		}
 		try{
-			Configuration.ROBUSTNESS_G= Integer.parseInt(g.getText());
+			String[] tmp = g.getText().split(";");
+			Configuration.ROBUSTNESS_GS = new int[tmp.length];
+			for (int i = 0; i < tmp.length; ++i)
+				Configuration.ROBUSTNESS_GS[i] = Integer.parseInt(tmp[i]);
 		} catch (NumberFormatException e){
-			Configuration.ROBUSTNESS_G= -1;
+			Configuration.ROBUSTNESS_GS = new int[] {-1};
 		}
 		try{
 			Configuration.ROBUSTNESS_H= Integer.parseInt(h.getText());

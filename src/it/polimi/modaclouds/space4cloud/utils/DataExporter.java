@@ -61,39 +61,14 @@ public class DataExporter {
 	private static final Logger logger = LoggerFactory.getLogger(DataExporter.class);
 	private Path sourcesBasePath;
 	
-	public static List<File> perform(Path sourcesBasePath) {
-		DataExporter data = new DataExporter(sourcesBasePath);
-		return data.exportAll();
-	}
-	
-	public static List<File> evaluate(Path sourcesBasePath) {
-		List<File> res = evaluate(perform(sourcesBasePath));
-		return res;
-	}
-	
-	public static List<File> perform(Path sourcesBasePath, int size) {
-		DataExporter data = new DataExporter(sourcesBasePath);
-		return data.export(size);
-	}
-	
-	public static List<File> perform(Path sourcesBasePath, int size, int variability, int g, double sigma) {
-		DataExporter data = new DataExporter(sourcesBasePath);
-		return data.export(size, variability, g, sigma);
-	}
-	
-	public static List<File> evaluate(Path sourcesBasePath, int size) {
-		List<File> res = evaluate(perform(sourcesBasePath, size));
-		return res;
-	}
-	
 	public static List<File> evaluate(Path sourcesBasePath, int size, int variability, int g, double sigma) {
-		List<File> res = evaluate(perform(sourcesBasePath, size, variability, g, sigma), variability, g);
+		DataExporter data = new DataExporter(sourcesBasePath);
+		List<File> res = evaluate(data.export(size, variability, g, sigma), variability, g);
 		return res;
 	}
 	
 	public static List<File> evaluate(Path sourcesBasePath, int size, int variability, int g) {
-		List<File> res = evaluate(perform(sourcesBasePath, size, variability, g, -1.0), variability, g);
-		return res;
+		return evaluate(sourcesBasePath, size, variability, g, -1.0);
 	}
 	
 	public static List<File> getAllGeneratedFiles(Path sourcesBasePath) {
@@ -111,19 +86,6 @@ public class DataExporter {
 	
 	public DataExporter(Path sourcesBasePath) {
 		this.sourcesBasePath = sourcesBasePath;
-	}
-	
-	public List<File> exportAll() {
-		List<File> res = new ArrayList<File>();
-		
-		for (int size = Configuration.ROBUSTNESS_PEAK_FROM; size <= Configuration.ROBUSTNESS_PEAK_TO; size += Configuration.ROBUSTNESS_STEP_SIZE)
-			res.addAll(export(size));
-		
-		return res;
-	}
-	
-	public List<File> export(int size) {
-		return export(size, Configuration.ROBUSTNESS_VARIABILITY, Configuration.ROBUSTNESS_G, -1.0);
 	}
 	
 	public List<File> export(int size, int variability, int g, double sigma) {
@@ -499,10 +461,6 @@ public class DataExporter {
 	private static final String EVALUATE_FOLDER = "/tmp/sara";
 	
 	public static final String BASE_FILE_NAME = "generated-evaluation-";
-	
-	public static List<File> evaluate(List<File> formattedSolutions) {
-		return evaluate(formattedSolutions, -1, -1);
-	}
 
 	public static List<File> evaluate(List<File> formattedSolutions, int variability, int g) {
 		String suffix = "";
@@ -689,17 +647,10 @@ public class DataExporter {
 		File upperSolution = Paths.get(nominalSolution.getParent(), Configuration.SOLUTION_FILE_NAME + "-" + peak + "-" + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 		
 		Map<String, Integer[]> nominalReplicas = getReplicas(nominalSolution);
-		Map<String, Integer[]> lowerReplicas = getReplicas(lowerSolution);
-		Map<String, Integer[]> upperReplicas = getReplicas(upperSolution);
 		int[] totNominal = new int[24];
-		int[] totLower = new int[24];
-		int[] totUpper = new int[24];
-		int[] maxDiff = new int[24];
 		int[] totResult = new int[24];
 		for (int i = 0; i < 24; ++i) {
 			totNominal[i] = 0;
-			totLower[i] = 0;
-			totUpper[i] = 0;
 			totResult[i] = 0;
 		}
 		for (String key : nominalReplicas.keySet()) {
@@ -707,18 +658,9 @@ public class DataExporter {
 			if (!actualSize.equals(size) && !(actualSize.replace('.', '_')).replaceAll("_", "").equals(size))
 				continue;
 			Integer[] tierNominal = nominalReplicas.get(key);
-			Integer[] tierLower = lowerReplicas.get(key);
-			Integer[] tierUpper = upperReplicas.get(key);
 			for (int i = 0; i < 24; ++i) {
 				totNominal[i] += tierNominal[i];
-				totLower[i] += tierLower[i];
-				totUpper[i] += tierUpper[i];
 			}
-		}
-		for (int i = 0; i < 24; ++i) {
-			int diffA = Math.abs(totNominal[i] - totLower[i]);
-			int diffB = Math.abs(totNominal[i] - totUpper[i]);
-			maxDiff[i] = diffA > diffB ? diffA : diffB;
 		}
 		
 		String prefix = "costs-";
@@ -727,9 +669,9 @@ public class DataExporter {
 		
 		double costS4C, costLower, costUpper;
 		
-		File nominalSolutionCosts = Paths.get(nominalSolution.getParent(), prefix + "-" + peak + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File lowerSolutionCosts = Paths.get(lowerSolution.getParent(), prefix + "-" + peak + "-" + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File upperSolutionCosts = Paths.get(upperSolution.getParent(), prefix + "-" + peak + "-" + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File nominalSolutionCosts = Paths.get(nominalSolution.getParent(), prefix + peak + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File lowerSolutionCosts = Paths.get(lowerSolution.getParent(), prefix + peak + "-" + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File upperSolutionCosts = Paths.get(upperSolution.getParent(), prefix + peak + "-" + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 		
 		if (nominalSolutionCosts.exists() && lowerSolutionCosts.exists() && upperSolutionCosts.exists()) {
 			costS4C = SolutionMulti.getCost(nominalSolutionCosts);
@@ -778,13 +720,22 @@ public class DataExporter {
 		
 		int diffsUnder = 0;
 		int diffsAbove = 0;
-//		int[] ume;
-//		try {
-//			ume = getUsageModelExtAsArray(Paths.get(nominalSolution.getParent(), "ume-" + nominalSolution.getName().substring("solution-".length())).toFile());
-//		} catch (Exception e) {
-//			logger.error("Error while reading the Usage Model Extension file.", e);
-//			ume = new int[24];
-//		}
+		int[] ume;
+		try {
+			ume = getUsageModelExtAsArray(Paths.get(nominalSolution.getParent(), "ume-" + nominalSolution.getName().substring("solution-".length())).toFile());
+		} catch (Exception e) {
+			logger.error("Error while reading the Usage Model Extension file.", e);
+			ume = new int[24];
+		}
+		int iMin = 23, iMax = 0;
+		for (int i = 0; i < ume.length; ++i) {
+			if (ume[i] >= peak/2) {
+				if (iMin > i)
+					iMin = i;
+				if (iMax < i)
+					iMax = i;
+			}
+		}
 		
 		for (int i = 0; i < 24; ++i) {
 			if (maxReplicas < totNominal[i])
@@ -800,8 +751,7 @@ public class DataExporter {
 			}
 			
 			if (totResult[i] > totNominal[i]) {
-				//if (ume[i] > peak/2)
-				if (i > 9 && i < 18)
+				if (i >= iMin && i <= iMax)
 					diffsAbove++;
 				else
 					diffsUnder++;
@@ -895,7 +845,6 @@ public class DataExporter {
 		return append;
 	}
 	
-	@SuppressWarnings("unused")
 	private static int[] getUsageModelExtAsArray(File f)
 			throws JAXBException, IOException, SAXException {
 		int[] res = new int[24];

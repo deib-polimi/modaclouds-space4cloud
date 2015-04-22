@@ -570,8 +570,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	
 	private void performVariability() throws OptimizationException {
 
-		if (Configuration.ROBUSTNESS_VARIABILITY <= 0 || Configuration.USE_PRIVATE_CLOUD)
+		if (Configuration.ROBUSTNESS_VARIABILITIES.length == 0 || Configuration.ROBUSTNESS_GS.length == 0 || Configuration.USE_PRIVATE_CLOUD)
 			return;
+		for (int variability : Configuration.ROBUSTNESS_VARIABILITIES)
+			if (variability <= 0)
+				return;
 
 
 		logger.info("Considering the variability");
@@ -592,7 +595,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 //		performVariability(30, new int[] {10, 20}, results);
 		
-		performVariability(Configuration.ROBUSTNESS_VARIABILITY, new int[] { Configuration.ROBUSTNESS_G }, results);
+//		performVariability(Configuration.ROBUSTNESS_VARIABILITY, new int[] { Configuration.ROBUSTNESS_G }, results);
+		
+		for (int variability : Configuration.ROBUSTNESS_VARIABILITIES)
+			performVariability(variability, Configuration.ROBUSTNESS_GS, results);
 		
 //		performVariability(30, new int[] { Configuration.ROBUSTNESS_G }, results);
 //		performVariability(50, new int[] { Configuration.ROBUSTNESS_G }, results);
@@ -627,10 +633,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			else if (consideredG[i] > DataExporter.DEFAULT_T)
 				consideredG[i] = DataExporter.DEFAULT_T;
 		}
-		
-		int originalVariability = Configuration.ROBUSTNESS_VARIABILITY;
-		
-		Configuration.ROBUSTNESS_VARIABILITY = consideredVariability;
 		
 		String tmpConf = null;
 		try {
@@ -679,16 +681,15 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		
 		try {
-			double key = 1.0 - (Configuration.ROBUSTNESS_VARIABILITY / 100.0);
+			double key = 1.0 - (consideredVariability / 100.0);
 			usageModelExts.put((int)Math.round(key*highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
-			key = 1.0 + (Configuration.ROBUSTNESS_VARIABILITY / 100.0);
+			key = 1.0 + (consideredVariability / 100.0);
 			usageModelExts.put((int)Math.round(key*highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
 		} catch (JAXBException | IOException | SAXException e) {
 			throw new OptimizationException("Error creating a modified usage model extension", e);
 		}
 		
-		int oldVariability = Configuration.ROBUSTNESS_VARIABILITY;
-		Configuration.ROBUSTNESS_VARIABILITY = 0;
+		Configuration.ROBUSTNESS_VARIABILITIES = new int[] {0};
 		Configuration.FUNCTIONALITY = Operation.Optimization;
 		
 		try {
@@ -784,13 +785,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		
 		logger.info("Exporting the data in the simplified output format...");
 		
-		Configuration.ROBUSTNESS_VARIABILITY = oldVariability;
-		
 		List<File> generatedFiles = new ArrayList<File>();
 		
 		for (int g : consideredG) {
-			logger.info("Evaluating with a variability of {} and a g of {}...", Configuration.ROBUSTNESS_VARIABILITY, g);
-			generatedFiles.addAll(DataExporter.evaluate(resultsFolder, highestPeak, Configuration.ROBUSTNESS_VARIABILITY, g)); // TODO: here add the sigma value
+			logger.info("Evaluating with a variability of {} and a g of {}...", consideredVariability, g);
+			generatedFiles.addAll(DataExporter.evaluate(resultsFolder, highestPeak, consideredVariability, g)); // TODO: here add the sigma value
 		}
 		
 		try {
@@ -798,8 +797,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		} catch (Exception e) {
 			logger.error("Error while exporting the results of the robustness test.", e);
 		}
-		
-		Configuration.ROBUSTNESS_VARIABILITY = originalVariability;
 		
 	}
 
@@ -927,7 +924,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 						StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) { }
 			
-			int robustnessVariability = Configuration.ROBUSTNESS_VARIABILITY;
+			int robustnessVariability = Configuration.ROBUSTNESS_VARIABILITIES[0];
 			boolean relaxedInitialSolution = Configuration.RELAXED_INITIAL_SOLUTION;
 			boolean contractorTest = Configuration.CONTRACTOR_TEST;
 
