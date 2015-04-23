@@ -1250,43 +1250,38 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	}
 	
-//	private static File generateModifiedUsageModelExtVariability(File f, double minValueRatio, double maxValueRatio)
-//			throws JAXBException, IOException, SAXException {
-//		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
-//				UsageModelExtensions.class);
-//		
-//		Random rnd = new Random();
-//
-//		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
-//		if (cw != null)
-//			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
-//				int low = (int)Math.round(we.getPopulation() * minValueRatio);
-//				int high = (int)Math.round(we.getPopulation() * maxValueRatio);
-//				
-//				we.setPopulation(rnd.nextInt(high-low) + low);
-//			}
-//
-//		OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
-//		if (ow != null)
-//			for (OpenWorkloadElement we : ow.getWorkloadElement()) {
-//				int low = (int)Math.round(we.getPopulation() * minValueRatio);
-//				int high = (int)Math.round(we.getPopulation() * maxValueRatio);
-//				
-//				we.setPopulation(rnd.nextInt(high-low) + low);
-//			}
-//
-//		String s = Double.toString(minValueRatio) + Double.toString(maxValueRatio);
-//		s = s.replace('.', '-');
-//
-//		File g;
-//
-//		g = File.createTempFile("ume" + s + "-", ".xml");
-//		XMLHelper.serialize(umes, UsageModelExtensions.class,
-//				new FileOutputStream(g));
-//		logger.info(g.getAbsolutePath());
-//		return g;
-//
-//	}
+	@SuppressWarnings("unused")
+	private static File generateModifiedUsageModelExtAddingTheAugmentedPeak(File f, double deltaRatio)
+			throws JAXBException, IOException, SAXException {
+		int addendum = (int)(getMaxPopulation(f) * deltaRatio);
+		
+		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
+				UsageModelExtensions.class);
+
+		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+		if (cw != null)
+			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+				we.setPopulation(we.getPopulation() + addendum);
+			}
+
+		OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+		if (ow != null)
+			for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+				we.setPopulation(we.getPopulation() + addendum);
+			}
+
+		String s = Double.toString(deltaRatio);
+		s = s.replace('.', '-');
+
+		File g;
+
+		g = File.createTempFile("ume" + s + "-", ".xml");
+		XMLHelper.serialize(umes, UsageModelExtensions.class,
+				new FileOutputStream(g));
+		logger.info(g.getAbsolutePath());
+		return g;
+
+	}
 
 	public static int getMaxPopulation(File usageModelExtension) {
 		UsageModelExtensions umes = null;
@@ -1331,16 +1326,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			consoleLogger.info("Optimization ended");		
 			processEnded = true;
 			pcs.firePropertyChange("optimizationEnded", false, true);
-
-//			if (Configuration.ROBUSTNESS_VARIABILITY > 0) {
-//				cleanResources(true);
-//				
-//				try {
-//					performVariability();
-//				} catch (OptimizationException e) {
-//					consoleLogger.error("Error in the variability test", e);
-//				}
-//			}
 			
 			if(!batch)
 				progressWindow.signalCompletion();
@@ -1397,8 +1382,5 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	public void addPropertyChangeListener(PropertyChangeListener listener){
 		pcs.addPropertyChangeListener(listener);
 	}
-
-
-
 
 }

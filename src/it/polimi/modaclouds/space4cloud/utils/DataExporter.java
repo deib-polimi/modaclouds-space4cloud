@@ -762,7 +762,7 @@ public class DataExporter {
 //		logger.debug("Max diffs: {}", maxDiffs);
 		
 		return String.format(
-				"%s,%d,%d,%d,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d",
+				"%s,%d,%d,%d,%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d,%d",
 				size,
 				maxReplicas,
 				variability,
@@ -773,6 +773,7 @@ public class DataExporter {
 				SolutionMulti.costFormatter.format(costTool),
 				deltaFormatter.format((costUpper-costS4C)/costS4C),
 				deltaFormatter.format(costTool/costS4C),
+				deltaFormatter.format(costTool/costUpper),
 				durationS4C,
 				durationTool,
 				maxDiffs,
@@ -805,7 +806,7 @@ public class DataExporter {
 		
 			if (headline)
 				out.printf(
-						"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+						"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 						"vmType",
 						"maxReplicas",
 						"variability",
@@ -815,7 +816,8 @@ public class DataExporter {
 						"costUpper",
 						"costTool",
 						"deltaDet",
-						"deltaRob",
+						"deltaRobNominal",
+						"deltaRobUpper",
 						"durationS4C",
 						"durationTool",
 						"maxDiffs",
@@ -871,12 +873,14 @@ public class DataExporter {
 	}
 	
 	public static File saraMattiaTest() throws Exception {
-		final String basePath = "/Users/ft/Downloads/ConstellationSara6/";
+		Configuration.loadConfiguration("/Users/ft/Desktop/tmp/trash/s4c.properties");
+		
+		final String basePath = "/Users/ft/Downloads/ConstellationSara9/";
 		
 		final String[] strings = {
-				"6:400:m1small:m1.small",
-				"8:1300:m1small:m1.small",
-				"7:3000:m1small:m1.small",
+//				"6:400:m1small:m1.small",
+//				"8:1300:m1small:m1.small",
+//				"7:3000:m1small:m1.small",
 				"3:700:m1medium:m1.medium",
 				"5:2500:m1medium:m1.medium",
 				"4:5500:m1medium:m1.medium",
@@ -884,14 +888,14 @@ public class DataExporter {
 				"2:8200:c3large:c3.large",
 				"1:19000:c3large:c3.large"
 				};
-		final int[] variabilities = {30, 50, 70, 75, 80};
+		final int[] variabilities = {30, 50, 70};
 		
 		File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "saramattia.csv").toFile();
 		
 		try (PrintWriter out = new PrintWriter(f)) {
 		
 			out.printf(
-					"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
+					"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
 					"vmType",
 					"maxReplicas",
 					"variability",
@@ -901,7 +905,8 @@ public class DataExporter {
 					"costUpper",
 					"costTool",
 					"deltaDet",
-					"deltaRob",
+					"deltaRobNominal",
+					"deltaRobUpper",
 					"durationS4C",
 					"durationTool",
 					"maxDiffs",
