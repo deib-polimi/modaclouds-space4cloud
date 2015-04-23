@@ -4,6 +4,7 @@ import it.polimi.modaclouds.qos_models.schema.Constraints;
 import it.polimi.modaclouds.qos_models.schema.MultiCloudExtensions;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
+import it.polimi.modaclouds.qos_models.util.ValidationResult;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
@@ -18,15 +19,14 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.xml.bind.JAXBException;
-
-import org.xml.sax.SAXException;
 
 public class ExtensionModelSpecificationPanel extends JPanel implements
 		ActionListener {
@@ -88,6 +88,7 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 			public void mouseClicked(MouseEvent e) {
 				displayValidationDetail(usageExtensionTextField.getText(),
 						UsageModelExtensions.class);
+				updateUsageModelValidation();
 			}
 		});
 		JLabel emptyLabel = new JLabel("");
@@ -130,12 +131,15 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 
 		resourceEnvironmentNotificationLabel = new JLabel();
 		resourceEnvironmentLabelPanel.add(resourceEnvironmentNotificationLabel);
-		resourceEnvironmentNotificationLabel.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				displayValidationDetail(resourceEnvironmentTextField.getText(),
-						ResourceModelExtension.class);
-			}
-		});
+		resourceEnvironmentNotificationLabel
+				.addMouseListener(new MouseAdapter() {
+					public void mouseClicked(MouseEvent e) {
+						displayValidationDetail(
+								resourceEnvironmentTextField.getText(),
+								ResourceModelExtension.class);
+						updateResourceEnvironemntModelValidation();
+					}
+				});
 		JLabel emptyLabel1 = new JLabel("");
 		GridBagConstraints gbc_emptyLabel1 = new GridBagConstraints();
 		gbc_emptyLabel1.fill = GridBagConstraints.BOTH;
@@ -179,6 +183,7 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 			public void mouseClicked(MouseEvent e) {
 				displayValidationDetail(constraintTextField.getText(),
 						Constraints.class);
+				updateConstraintModelValidation();
 			}
 		});
 		JLabel emptyLabel2 = new JLabel("");
@@ -225,6 +230,7 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 			public void mouseClicked(MouseEvent e) {
 				displayValidationDetail(mceTextField.getText(),
 						MultiCloudExtensions.class);
+				updateMultiCloudModelValidation();
 			}
 		});
 		JLabel emptyLabel3 = new JLabel("");
@@ -259,6 +265,8 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 		gbc_panel.gridx = 0;
 		gbc_panel.gridy = 8;
 		add(panel, gbc_panel);
+		
+			
 	}
 
 	@Override
@@ -347,8 +355,10 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 		mceButton.setEnabled(enabled);
 		mceLabel.setEnabled(enabled);
 	}
+
 	/**
-	 * Validates the usage model extension and update the status of the validation notification icon
+	 * Validates the usage model extension and update the status of the
+	 * validation notification icon
 	 */
 	public void updateUsageModelValidation() {
 		String usageExtensionFile = usageExtensionTextField.getText();
@@ -360,14 +370,15 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 			return;
 		}
 		try {
-			XMLHelper.deserialize(
+			ValidationResult result = XMLHelper.validate(
 					Paths.get(usageExtensionFile).toUri().toURL(),
 					UsageModelExtensions.class);
+			if (!result.isValid()) {
+				usageExtensionNotificationText = "Not Valid";
+				usageExtensionNotificationColor = "red";
+			}
 		} catch (MalformedURLException e) {
 			usageExtensionNotificationText = "No input file";
-			usageExtensionNotificationColor = "red";
-		} catch (JAXBException | SAXException e) {
-			usageExtensionNotificationText = "Not Valid";
 			usageExtensionNotificationColor = "red";
 		} finally {
 			usageExtensionNotificationLabel.setText("<html><font color='"
@@ -375,11 +386,14 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 					+ usageExtensionNotificationText + "</font></html>");
 		}
 	}
+
 	/**
-	 * Validates the resource environment extension model and update the status of the validation notification icon
+	 * Validates the resource environment extension model and update the status
+	 * of the validation notification icon
 	 */
 	public void updateResourceEnvironemntModelValidation() {
-		String environmentExtensionFile = resourceEnvironmentTextField.getText();
+		String environmentExtensionFile = resourceEnvironmentTextField
+				.getText();
 		String environmentExtensionNotificationText = "valid";
 		String environmentExtensionNotificationColor = "green";
 		if (environmentExtensionFile == null
@@ -389,13 +403,15 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 			return;
 		}
 		try {
-			XMLHelper.deserialize(Paths.get(environmentExtensionFile).toUri()
-					.toURL(), ResourceModelExtension.class);
+			ValidationResult result = XMLHelper.validate(
+					Paths.get(environmentExtensionFile).toUri().toURL(),
+					ResourceModelExtension.class);
+			if (!result.isValid()) {
+				environmentExtensionNotificationText = "Not Valid";
+				environmentExtensionNotificationColor = "red";
+			}
 		} catch (MalformedURLException e) {
 			environmentExtensionNotificationText = "No input file";
-			environmentExtensionNotificationColor = "red";
-		} catch (JAXBException | SAXException e) {
-			environmentExtensionNotificationText = "Not Valid";
 			environmentExtensionNotificationColor = "red";
 		} finally {
 			resourceEnvironmentNotificationLabel.setText("<html><font color='"
@@ -403,8 +419,10 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 					+ environmentExtensionNotificationText + "</font></html>");
 		}
 	}
+
 	/**
-	 * Validates the constraint extension model and update the status of the validation notification icon
+	 * Validates the constraint extension model and update the status of the
+	 * validation notification icon
 	 */
 	public void updateConstraintModelValidation() {
 		String constraintExtensionFile = constraintTextField.getText();
@@ -417,13 +435,15 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 			return;
 		}
 		try {
-			XMLHelper.deserialize(Paths.get(constraintExtensionFile).toUri()
-					.toURL(), Constraints.class);
+			ValidationResult result = XMLHelper.validate(
+					Paths.get(constraintExtensionFile).toUri().toURL(),
+					Constraints.class);
+			if (!result.isValid()) {
+				constraintExtensionNotificationText = "Not Valid";
+				constraintExtensionNotificationColor = "red";
+			}
 		} catch (MalformedURLException e) {
 			constraintExtensionNotificationText = "No input file";
-			constraintExtensionNotificationColor = "red";
-		} catch (JAXBException | SAXException e) {
-			constraintExtensionNotificationText = "Not Valid";
 			constraintExtensionNotificationColor = "red";
 		} finally {
 			constraintNotificationLabel.setText("<html><font color='"
@@ -433,7 +453,8 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 	}
 
 	/**
-	 * Validates the multicloud extension model and update the status of the validation notification icon
+	 * Validates the multicloud extension model and update the status of the
+	 * validation notification icon
 	 */
 	public void updateMultiCloudModelValidation() {
 		String multiCloudExtensionFile = mceTextField.getText();
@@ -446,13 +467,15 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 			return;
 		}
 		try {
-			XMLHelper.deserialize(Paths.get(multiCloudExtensionFile).toUri()
-					.toURL(), MultiCloudExtensions.class);
+			ValidationResult result = XMLHelper.validate(
+					Paths.get(multiCloudExtensionFile).toUri().toURL(),
+					MultiCloudExtensions.class);
+			if (!result.isValid()) {
+				multiCloudExtensionNotificationText = "Not Valid";
+				multiCloudExtensionNotificationColor = "red";
+			}
 		} catch (MalformedURLException e) {
 			multiCloudExtensionNotificationText = "No input file";
-			multiCloudExtensionNotificationColor = "red";
-		} catch (JAXBException | SAXException e) {
-			multiCloudExtensionNotificationText = "Not Valid";
 			multiCloudExtensionNotificationColor = "red";
 		} finally {
 			mceNotificationLabel.setText("<html><font color='"
@@ -463,27 +486,33 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 
 	/**
 	 * Provides the user information about the validation of input file
-	 * @param filePath path to the provided file
-	 * @param clazz the class to which the XML parsing should comply with
+	 * 
+	 * @param filePath
+	 *            path to the provided file
+	 * @param clazz
+	 *            the class to which the XML parsing should comply with
 	 */
 	private <T> void displayValidationDetail(String filePath, Class<T> clazz) {
-		String message="Validation compleated succesfully";		
+		List<String> messages = new ArrayList<String>();
 		try {
+			ValidationResult result;
 			if (filePath == null || filePath.isEmpty())
-				message = "No file Selected";
+				messages.add("No file Selected");
 			else if (!Paths.get(filePath).toFile().exists())
-				message = "The specified file does not exist";
-			else
-				XMLHelper.deserialize(Paths.get(filePath).toUri().toURL(),
-						clazz);
+				messages.add("The specified file does not exist");
+			else {
+				result = XMLHelper.validate(
+						Paths.get(filePath).toUri().toURL(), clazz);
+				if (!result.isValid()) {
+					messages.addAll(result.getMessages());
+				}
+			}
 		} catch (MalformedURLException e) {
-			message = "An error occurred while reading input file.";
-			message += "\n" + e.getLocalizedMessage();
-		} catch (JAXBException | SAXException e) {
-			message = "Could not parse the provided file, check its compliance with the correct schema.";
-			message += "\n" + e.getLocalizedMessage();
+			messages.add("An error occurred while reading input file.");
+			messages.add(e.getLocalizedMessage());
 		} finally {
-			 JOptionPane.showMessageDialog(null, message, "Validation Details",JOptionPane.PLAIN_MESSAGE);
+			JOptionPane.showMessageDialog(null, messages, "Validation Details",
+					JOptionPane.PLAIN_MESSAGE);
 		}
 	}
 }
