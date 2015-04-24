@@ -855,8 +855,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			// set the region
 			initialSolution.setRegion(resourceEnvParser.getRegion(provider));
-			
-			
 
 			for (int i = 0; i < 24; i++) {
 				logger.info("Initializing hour " + i);
@@ -934,6 +932,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// STEP 1: load the resource environment
 				for (ResourceContainer c : resourceContainers) {
 					logger.trace("Tier "+c.getId());
+					
+					
 
 
 					CloudService service = null;
@@ -1023,6 +1023,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					 */
 					Tier t = new Tier(c.getId(), c.getEntityName()
 							+ "_CPU_Processor"); // TODO: here for PaaS?
+					
+					//set the name
+					t.setName(resourceEnvParser.getContainerNames().get(c.getId()+ (defaultProvider ? "" : provider)));
 
 					/* creation of a Compute type resource */
 //					service = new Compute(provider, /* cloudProvider, */
@@ -1485,7 +1488,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				optimLogger.info("Long term memory statistics:");
 				for (Tier t : currentSolution.get(0).getApplication(0)
 						.getTiers()) {
-					optimLogger.info("\tTier: " + t.getName() + " Size: "
+					optimLogger.info("\tTier: " + t.getPcmName() + " Size: "
 							+ longTermFrequencyMemory.get(t.getId()).size());
 				}
 				localBestSolution = currentSolution.clone();
@@ -1825,7 +1828,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	protected boolean scramble(Solution sol, Tier selectedTier, int iterations) throws OptimizationException {
 		MoveTypeVM moveVM = new MoveTypeVM(sol);
 		
-		scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
+		scrambleLogger.debug("Selected Tier:" + selectedTier.getPcmName());
 		// Phase2: Retrieve resources that can be exchanged with the current
 		// one
 		CloudService origRes = selectedTier.getCloudService();

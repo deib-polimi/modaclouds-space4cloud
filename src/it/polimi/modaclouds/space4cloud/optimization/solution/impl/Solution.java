@@ -83,7 +83,7 @@ public class Solution implements Cloneable, Serializable {
 	private int generationIteration = 0;
 	
 	private long generationTime =0;
-
+	
 	/**
 	 * if the solution has been evaluated or not.
 	 */
@@ -92,21 +92,27 @@ public class Solution implements Cloneable, Serializable {
 	/** if the solution is feasible or not. */
 	private boolean feasible = false;
 
-//	/** The Cost. */
-//	private double cost = 0;
-	
-//	private double hourlyCosts[] = new double[24];
-	
 	private Map<String, Double[]> hourlyCostsByTier = new HashMap<String, Double[]>();
 
 	/** The Region. */
 	private String region;
 
+//	/** The Cost. */
+//	private double cost = 0;
+	
+//	private double hourlyCosts[] = new double[24];
+	
 	/** The evaluation. */
 	private List<HashMap<Constraint, Boolean>> evaluation;
 
 	private double[] percentageWorkload = new double[24];
 
+	private int totalProviders;
+
+	private double totalCost = 0.0;
+
+	private boolean costsUpdated = false;
+	
 	/**
 	 * Instantiates a new solution.
 	 */
@@ -117,16 +123,6 @@ public class Solution implements Cloneable, Serializable {
 			percentageWorkload[i] = 1.0;
 //			hourlyCosts[i] = 0.0;
 		}
-	}
-	
-	private int totalProviders;
-
-	public int getTotalProviders() {
-		return totalProviders;
-	}
-
-	public void setTotalProviders(int totalProviders) {
-		this.totalProviders = totalProviders;
 	}
 
 	/**
@@ -284,28 +280,24 @@ public class Solution implements Cloneable, Serializable {
 		hourApplication.get(i).setFather(this);
 		hourApplication.get(i).setEvaluated(false);
 	}
-	
-	public boolean usesPaaS() {
-		for (Tier t : hourApplication.get(0).getTiers())
-			if (t.getCloudService() instanceof PaaS)
-				return true;
-		return false;
-	}
 
-	public int getReplicas(Tier t) {
-		CloudService service = t.getCloudService();
-		
-		if (service instanceof IaaS) {
-			IaaS iaaService  = (IaaS) service;
-			return iaaService.getReplicas();
-		} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
-			PaaS paaService  = (PaaS) service;
-			return paaService.getReplicas();
+	/**
+	 * Export the solution in the format of the extension used as input for space4cloud
+	 */
+	public void exportAsExtension(Path fileName){
+		ResourceModelExtension extension = getAsExtension();
+		final String schemaLocation = "http://www.modaclouds.eu/xsd/2013/6/resource-model-extension https://raw.githubusercontent.com/deib-polimi/modaclouds-qos-models/master/metamodels/s4cextension/resource_model_extension.xsd";
+		//serialize them		
+		try {			
+			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()),schemaLocation);
+		} catch (JAXBException e) {
+			logger.error("The generated solution is not valid",e);
+		} catch (FileNotFoundException e) {
+			logger.error("Error exporting the solution",e);
 		}
 		
-		return 0;
 	}
-	
+
 	public void exportCSV(String filename) {
 		String text = "";
 		text += "cost: " + getCost() + "\n";
@@ -339,7 +331,7 @@ public class Solution implements Cloneable, Serializable {
 			logger.error("Error while exporting the solution as a CSV.", e);
 		}
 	}
-
+	
 	public void exportLight(Path filePath) {
 		if (!isEvaluated()) {
 			logger.error("Trying to export a solution that has not been evaluated!");
@@ -376,7 +368,7 @@ public class Solution implements Cloneable, Serializable {
 				// set id, name, provider name, service name, resource name,
 				// service type
 				tier.setAttribute("id", t.getId());
-				tier.setAttribute("name", t.getName());
+				tier.setAttribute("name", t.getPcmName());
 
 				CloudService cs = t.getCloudService();
 				tier.setAttribute("providerName", cs.getProvider());
@@ -450,6 +442,19 @@ public class Solution implements Cloneable, Serializable {
 
 	}
 
+	public void exportPerformancesAsExtension(Path fileName){
+		Performance performances = getPerformancesAsExtension();
+		//serialize them
+		try {
+			XMLHelper.serialize(performances, Performance.class, new FileOutputStream(fileName.toFile()));
+		} catch (JAXBException e) {
+			logger.error("The generated solution is not valid",e);
+		} catch (FileNotFoundException e) {
+			logger.error("Error exporting the solution",e);
+		}
+		
+	}
+	
 	/**
 	 * Gets the application.
 	 * 
@@ -473,407 +478,9 @@ public class Solution implements Cloneable, Serializable {
 	public ArrayList<Instance> getApplications() {
 		return hourApplication;
 	}
-	
-	private double totalCost = 0.0;
 
-	/**
-	 * Gets the cost.
-	 * 
-	 * @return the cost
-	 */
-	public double getCost() {
-		if (!costsUpdated)
-			return totalCost;
-		
-		double cost = 0;
-		for (int h = 0; h < 24; ++h)
-			cost += getCost(h);
-//			cost += hourlyCosts[h];
-		
-		totalCost = cost;
-		costsUpdated = false;
-		
-		return cost;
-	}
-	
-	/**
-	 * Gets the cost for a single hour.
-	 * 
-	 * @return the cost
-	 */
-	public double getCost(int h) {
-//		return hourlyCosts[h];
-		
-		double tot = 0.0;
-		for (String tierId : hourlyCostsByTier.keySet())
-			tot += getCost(tierId, h);
-		
-		return tot;
-	}
-	
-	public double getCost(String tierId, int h) {
-		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
-		if (hourlyCosts == null)
-			return 0.0;
-		
-		return hourlyCosts[h];
-	}
-
-	/**
-	 * Gets the evaluation.
-	 * 
-	 * @return the evaluation
-	 */
-	public List<HashMap<Constraint, Boolean>> getEvaluation() {
-		return evaluation;
-	}
-
-	/**
-	 * Gets the hour application.
-	 * 
-	 * @return the hour application
-	 */
-	public ArrayList<Instance> getHourApplication() {
-		return hourApplication;
-	}
-
-	public int getNumberOfViolatedConstraints() {
-		int temp = 0;
-		for (Instance inst : hourApplication)
-			temp += inst.getNumerOfViolatedConstraints();
-		return temp;
-	}
-
-	public double getPercentageWorkload(int hour) {
-		if (hour < 0)
-			hour = 0;
-		else if (hour > 23)
-			hour = 23;
-		return percentageWorkload[hour];
-	}
-
-	public String getProvider() {
-		try {
-			return getApplication(0).getTiers().get(0).getCloudService()
-					.getProvider();
-		} catch (Exception e) {
-			return "Error";
-		}
-	}
-
-	public String getRegion() {
-		return region;
-	}
-
-	/**
-	 * Retrieves the total number of VMs used for the entire solution
-	 * @return
-	 */
-	public int getTotalVms() {
-		int vms = 0;
-		for (Instance inst : hourApplication)
-			for (Tier t : inst.getTiers())
-				vms += getReplicas(t);
-
-		return vms;
-	}
-
-	/**
-	 * Retireves the total number of VMs used for the specified tier
-	 * @param tierId the id of the Tier
-	 * @return
-	 */
-	public int getVmNumberPerTier(String tierId) {
-		int vms = 0;
-		for (Instance inst : hourApplication)			
-				vms += getReplicas(inst.getTierById(tierId));
-		return vms;
-	}
-
-	/**
-	 * @return the number of the scramble iteration in which the solution have been generated
-	 */
-	public int getGenerationIteration() {
-		return generationIteration;
-	}
-
-	public void setGenerationIteration(int generationIteration) {
-		this.generationIteration = generationIteration;
-	}
-
-	/**
-	 * @return the time elapsed from the starting of the optimization and the generation of the solution
-	 */
-	public long getGenerationTime() {
-		return generationTime;
-	}
-
-	public void setGenerationTime(long generationTime) {
-		this.generationTime = generationTime;
-	}
-
-	/**
-	 * Greater than.
-	 * 
-	 * @param sol
-	 *            the solution to test against this
-	 * @return true, if successful
-	 */
-	public boolean greaterThan(Solution sol) {
-
-		boolean condition = false;
-
-		condition = isFeasible() && sol.isFeasible();
-
-		if (condition) {
-			/* if both are feasible */
-			return getCost() < sol.getCost();
-
-		} else if (!isFeasible() && !sol.isFeasible()) {
-
-			/*
-			 * here we  consider as better the solution with the
-			 * minimum number of violated constraints 
-			 */
-
-			if (getNumberOfViolatedConstraints() <= sol.getNumberOfViolatedConstraints())
-				return true;
-			else
-				return false;
-
-		} else {
-
-			return this.isFeasible();
-		}
-
-	}
-
-	public boolean greaterThan(SolutionMulti sol) {
-		if(sol==null)
-			return true;
-		Solution s = sol.get(getProvider());
-		if (s == null)
-			return true;
-		return greaterThan(s);
-	}
-
-	/**
-	 * Checks if is evaluated.
-	 * 
-	 * @return true, if is evaluated
-	 */
-	public boolean isEvaluated() {
-		return evaluated;
-	}
-
-	/**
-	 * Checks if is feasible.
-	 * 
-	 * @return the feasible
-	 */
-	public boolean isFeasible() {
-
-		for (Instance tmp : hourApplication)
-			if (!tmp.isFeasible() && feasible)
-				logger.error("Inconsistent feasibility");
-
-		return feasible;
-	}
-
-	public int numberOfUnfeasibleHours() {
-		int counter = 0;
-		for (Instance i : hourApplication)
-			if (!i.isFeasible())
-				counter++;
-		return counter;
-	}
-
-	/**
-	 * Sets the cost.
-	 * 
-	 * @param totalCost
-	 *            the new cost
-	 */
-//	public void setCost(int h, double totalCost) {
-////		this.cost = totalCost;
-//		hourlyCosts[h] = totalCost;
-//
-//	}
-	
-	@SuppressWarnings("unused")
-	private boolean isTierIdValid(String tierId) {
-		for (Tier t : hourApplication.get(0).getTiers())
-			if (t.getId().equals(tierId))
-				return true;
-		return false;
-	}
-	
-	private boolean costsUpdated = false;
-	
-	public void setCost(String tierId, int h, double totalCost) {
-//		if (!isTierIdValid(tierId))
-//			return;
-		
-		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
-		if (hourlyCosts == null) {
-			hourlyCosts = new Double[24];
-			for (int hour = 0; hour < 24; ++hour)
-				hourlyCosts[hour] = 0.0;
-			hourlyCostsByTier.put(tierId, hourlyCosts);
-		}
-		
-		if (hourlyCosts[h].doubleValue() != totalCost)
-			costsUpdated = true;
-		
-		hourlyCosts[h] = totalCost;
-	}
-
-	/**
-	 * Sets the evaluated.
-	 * 
-	 * @param b
-	 *            the new evaluated
-	 */
-	private void setEvaluated(boolean b) {
-		this.evaluated = b;
-
-	}
-
-	/**
-	 * Sets the evaluation.
-	 * 
-	 * @param evaluateSolution
-	 *            the evaluate solution
-	 */
-	public void setEvaluation(List<HashMap<Constraint, Boolean>> evaluateSolution) {
-		this.evaluation = evaluateSolution;
-		setFeasible(true);
-
-		// initialize solutions as feasible and counters to 0
-		for (Instance tmp : hourApplication) {
-			tmp.setFeasible(true);
-			tmp.resetViolatedConstraints();
-		}
-
-		int i = 0;
-		//suppose that evaluations and applications are in the same order!
-		for (Map<Constraint, Boolean> feasibilities : evaluation) {
-			Instance app = getApplication(i);
-
-			for (Constraint c : feasibilities.keySet())
-				if (!feasibilities.get(c)) {
-					app.incrementViolatedConstraints(c);
-					app.setFeasible(false);
-					setFeasible(false);
-				}
-			i++;
-		}
-		
-		
-		for (Instance tmp : hourApplication) {
-			if(tmp.getWorkload()==0){
-				tmp.setFeasible(true);
-				setFeasible(true);
-			}
-		}
-		
-	}
-
-
-	/**
-	 * Sets the feasibility.
-	 * 
-	 * @param b
-	 *            the new feasibility
-	 */
-	public void setFeasible(boolean b) {
-		this.feasible = b;
-
-	}
-
-	private void setHourApplication(ArrayList<Instance> hourApplication) {
-		this.hourApplication = hourApplication;
-	}
-
-	public void setPercentageWorkload(int hour, double percentage) {
-		if (hour < 0)
-			hour = 0;
-		else if (hour > 23)
-			hour = 23;
-		if (percentage > 1.0)
-			percentage = 1.0;
-		else if (percentage < 0.0)
-			percentage = 0.0;
-		percentageWorkload[hour] = percentage;
-	}
-
-	public void setRegion(String region) {
-		this.region = region;
-		for (Instance app : hourApplication)
-			app.setRegion(region);
-	}
-	public List<Constraint> getViolatedConstraints(){
-		List<Constraint> violatedConstraints = new ArrayList<>();
-		for(Instance application:hourApplication){
-			violatedConstraints.addAll(application.getViolatedConstraints());
-		}
-		return violatedConstraints;
-	}
-
-	/**
-	 * Show status.
-	 */
-	public String showStatus() {
-		String result = "Solution Status\n";
-		result += "Cost: " + getCost();
-		result += "\tEvaluated: " + evaluated;
-		result += "\tFeasible: " + isFeasible();
-
-		result += "\nProvider: " + getProvider();
-
-		if (getRegion() != null)
-			result += "\nRegion: " + getRegion();
-
-		for (Instance i : hourApplication) {
-			result += "\nHour: " + hourApplication.indexOf(i);
-			result += "\n\tWorkload: " + i.getWorkload() + " ("
-					+ (getPercentageWorkload(hourApplication.indexOf(i)) * 100)
-					+ "%)";
-			result += "\n" + i.showStatus("\t");
-		}
-		return result;
-	}
-
-	@Override
-	public String toString() {
-		String result = "Solution@" + Integer.toHexString(super.hashCode());
-		result += "[Provider: " + getProvider();
-		result += ", Cost: " + getCost();
-		result += ", Evaluated: " + evaluated;
-		result += ", Feasible: " + isFeasible();
-		result += "]";
-		return result;
-	}
-
-	/**
-	 * checks whether at least one of the instances is not evaluated, if so
-	 * marks the entire solution as not evaluated
-	 */
-	public void updateEvaluation() {
-		setEvaluated(true);
-		if (hourApplication.size() < 24) {
-			setEvaluated(false);
-			return;
-		}
-		for (Instance i : hourApplication)
-			if (!i.isEvaluated()) {
-				setEvaluated(false);
-				return;
-			}
-	}
-	
 	public ResourceModelExtension getAsExtension() {
-		//Build the objects
+		//Build the objects		 
 		ObjectFactory factory = new ObjectFactory();
 		ResourceModelExtension extension = factory.createResourceModelExtension();
 		List<ResourceContainer> resourceContainers = extension.getResourceContainer();
@@ -884,6 +491,7 @@ public class Solution implements Cloneable, Serializable {
 			ResourceContainer container = factory.createResourceContainer(); 
 			container.setId(t.getId());
 			containersByID.put(t.getId(), container);
+			container.setName(t.getName());
 			
 			//take out the selected service
 			CloudService service = t.getCloudService();
@@ -937,34 +545,115 @@ public class Solution implements Cloneable, Serializable {
 		
 		return extension;
 	}
+
+	/**
+	 * Gets the cost.
+	 * 
+	 * @return the cost
+	 */
+	public double getCost() {
+		if (!costsUpdated)
+			return totalCost;
+		
+		double cost = 0;
+		for (int h = 0; h < 24; ++h)
+			cost += getCost(h);
+//			cost += hourlyCosts[h];
+		
+		totalCost = cost;
+		costsUpdated = false;
+		
+		return cost;
+	}
 	
 	/**
-	 * Export the solution in the format of the extension used as input for space4cloud
+	 * Gets the cost for a single hour.
+	 * 
+	 * @return the cost
 	 */
-	public void exportAsExtension(Path fileName){
-		ResourceModelExtension extension = getAsExtension();
-		//serialize them		
-		try {			
-			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()));
-		} catch (JAXBException e) {
-			logger.error("The generated solution is not valid",e);
-		} catch (FileNotFoundException e) {
-			logger.error("Error exporting the solution",e);
-		}
+	public double getCost(int h) {
+//		return hourlyCosts[h];
 		
+		double tot = 0.0;
+		for (String tierId : hourlyCostsByTier.keySet())
+			tot += getCost(tierId, h);
+		
+		return tot;
 	}
 
-	public boolean hasAtLeastOneReplicaInOneHour() {
-		for (Instance i : hourApplication) {
-			for (Tier t : i.getTiers()) {
-				int replicas = getReplicas(t);
-				if (replicas > 0)
-					return true;
-			}
-		}
-		return false;
+	public double getCost(String tierId, int h) {
+		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
+		if (hourlyCosts == null)
+			return 0.0;
+		
+		return hourlyCosts[h];
 	}
 	
+	public int getDailyRequestsByTier(String tierId) {
+		{
+			Tier t = hourApplication.get(0).getTierById(tierId);
+			if (t == null)
+				return 0;
+		}
+		
+		int requests = 0;
+		
+		for (Instance app : hourApplication) {
+			Tier t = app.getTierById(tierId);
+			requests += t.getTotalRequests();
+		}
+		
+		return requests;
+	}
+	
+	/**
+	 * Gets the evaluation.
+	 * 
+	 * @return the evaluation
+	 */
+	public List<HashMap<Constraint, Boolean>> getEvaluation() {
+		return evaluation;
+	}
+
+	/**
+	 * @return the number of the scramble iteration in which the solution have been generated
+	 */
+	public int getGenerationIteration() {
+		return generationIteration;
+	}
+
+	/**
+	 * @return the time elapsed from the starting of the optimization and the generation of the solution
+	 */
+	public long getGenerationTime() {
+		return generationTime;
+	}
+
+	/**
+	 * Gets the hour application.
+	 * 
+	 * @return the hour application
+	 */
+	public ArrayList<Instance> getHourApplication() {
+		return hourApplication;
+	}
+
+
+	public int getNumberOfViolatedConstraints() {
+		int temp = 0;
+		for (Instance inst : hourApplication)
+			temp += inst.getNumerOfViolatedConstraints();
+		return temp;
+	}
+
+	public double getPercentageWorkload(int hour) {
+		if (hour < 0)
+			hour = 0;
+		else if (hour > 23)
+			hour = 23;
+		return percentageWorkload[hour];
+	}
+
 	public Performance getPerformancesAsExtension() {
 		Performance performances = new Performance();
 		
@@ -1036,7 +725,7 @@ public class Solution implements Cloneable, Serializable {
 			it.polimi.modaclouds.qos_models.schema.Performance.Tiers.Tier tier = new it.polimi.modaclouds.qos_models.schema.Performance.Tiers.Tier();
 			
 			tier.setId(t.getId());
-			tier.setName(t.getName());
+			tier.setName(t.getPcmName());
 			
 			for (int h = 0; h < 24; ++h) {
 				Instance app = hourApplication.get(h);
@@ -1059,35 +748,349 @@ public class Solution implements Cloneable, Serializable {
 		
 		return performances;
 	}
-	
-	public void exportPerformancesAsExtension(Path fileName){
-		Performance performances = getPerformancesAsExtension();
-		//serialize them
+
+	public String getProvider() {
 		try {
-			XMLHelper.serialize(performances, Performance.class, new FileOutputStream(fileName.toFile()));
-		} catch (JAXBException e) {
-			logger.error("The generated solution is not valid",e);
-		} catch (FileNotFoundException e) {
-			logger.error("Error exporting the solution",e);
+			return getApplication(0).getTiers().get(0).getCloudService()
+					.getProvider();
+		} catch (Exception e) {
+			return "Error";
+		}
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public int getReplicas(Tier t) {
+		CloudService service = t.getCloudService();
+		
+		if (service instanceof IaaS) {
+			IaaS iaaService  = (IaaS) service;
+			return iaaService.getReplicas();
+		} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
+			PaaS paaService  = (PaaS) service;
+			return paaService.getReplicas();
+		}
+		
+		return 0;
+	}
+
+	public int getTotalProviders() {
+		return totalProviders;
+	}
+
+	/**
+	 * Retrieves the total number of VMs used for the entire solution
+	 * @return
+	 */
+	public int getTotalVms() {
+		int vms = 0;
+		for (Instance inst : hourApplication)
+			for (Tier t : inst.getTiers())
+				vms += getReplicas(t);
+
+		return vms;
+	}
+
+	public List<Constraint> getViolatedConstraints(){
+		List<Constraint> violatedConstraints = new ArrayList<>();
+		for(Instance application:hourApplication){
+			violatedConstraints.addAll(application.getViolatedConstraints());
+		}
+		return violatedConstraints;
+	}
+
+	/**
+	 * Retireves the total number of VMs used for the specified tier
+	 * @param tierId the id of the Tier
+	 * @return
+	 */
+	public int getVmNumberPerTier(String tierId) {
+		int vms = 0;
+		for (Instance inst : hourApplication)			
+				vms += getReplicas(inst.getTierById(tierId));
+		return vms;
+	}
+
+	/**
+	 * Greater than.
+	 * 
+	 * @param sol
+	 *            the solution to test against this
+	 * @return true, if successful
+	 */
+	public boolean greaterThan(Solution sol) {
+
+		boolean condition = false;
+
+		condition = isFeasible() && sol.isFeasible();
+
+		if (condition) {
+			/* if both are feasible */
+			return getCost() < sol.getCost();
+
+		} else if (!isFeasible() && !sol.isFeasible()) {
+
+			/*
+			 * here we  consider as better the solution with the
+			 * minimum number of violated constraints 
+			 */
+
+			if (getNumberOfViolatedConstraints() <= sol.getNumberOfViolatedConstraints())
+				return true;
+			else
+				return false;
+
+		} else {
+
+			return this.isFeasible();
+		}
+
+	}
+
+	public boolean greaterThan(SolutionMulti sol) {
+		if(sol==null)
+			return true;
+		Solution s = sol.get(getProvider());
+		if (s == null)
+			return true;
+		return greaterThan(s);
+	}
+
+	public boolean hasAtLeastOneReplicaInOneHour() {
+		for (Instance i : hourApplication) {
+			for (Tier t : i.getTiers()) {
+				int replicas = getReplicas(t);
+				if (replicas > 0)
+					return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if is evaluated.
+	 * 
+	 * @return true, if is evaluated
+	 */
+	public boolean isEvaluated() {
+		return evaluated;
+	}
+	
+	/**
+	 * Checks if is feasible.
+	 * 
+	 * @return the feasible
+	 */
+	public boolean isFeasible() {
+
+		for (Instance tmp : hourApplication)
+			if (!tmp.isFeasible() && feasible)
+				logger.error("Inconsistent feasibility");
+
+		return feasible;
+	}
+	
+	/**
+	 * Sets the cost.
+	 * 
+	 * @param totalCost
+	 *            the new cost
+	 */
+//	public void setCost(int h, double totalCost) {
+////		this.cost = totalCost;
+//		hourlyCosts[h] = totalCost;
+//
+//	}
+	
+	@SuppressWarnings("unused")
+	private boolean isTierIdValid(String tierId) {
+		for (Tier t : hourApplication.get(0).getTiers())
+			if (t.getId().equals(tierId))
+				return true;
+		return false;
+	}
+
+	public int numberOfUnfeasibleHours() {
+		int counter = 0;
+		for (Instance i : hourApplication)
+			if (!i.isFeasible())
+				counter++;
+		return counter;
+	}
+
+	public void setCost(String tierId, int h, double totalCost) {
+//		if (!isTierIdValid(tierId))
+//			return;
+		
+		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
+		if (hourlyCosts == null) {
+			hourlyCosts = new Double[24];
+			for (int hour = 0; hour < 24; ++hour)
+				hourlyCosts[hour] = 0.0;
+			hourlyCostsByTier.put(tierId, hourlyCosts);
+		}
+		
+		if (hourlyCosts[h].doubleValue() != totalCost)
+			costsUpdated = true;
+		
+		hourlyCosts[h] = totalCost;
+	}
+
+
+	/**
+	 * Sets the evaluated.
+	 * 
+	 * @param b
+	 *            the new evaluated
+	 */
+	private void setEvaluated(boolean b) {
+		this.evaluated = b;
+
+	}
+
+	/**
+	 * Sets the evaluation.
+	 * 
+	 * @param evaluateSolution
+	 *            the evaluate solution
+	 */
+	public void setEvaluation(List<HashMap<Constraint, Boolean>> evaluateSolution) {
+		this.evaluation = evaluateSolution;
+		setFeasible(true);
+
+		// initialize solutions as feasible and counters to 0
+		for (Instance tmp : hourApplication) {
+			tmp.setFeasible(true);
+			tmp.resetViolatedConstraints();
+		}
+
+		int i = 0;
+		//suppose that evaluations and applications are in the same order!
+		for (Map<Constraint, Boolean> feasibilities : evaluation) {
+			Instance app = getApplication(i);
+
+			for (Constraint c : feasibilities.keySet())
+				if (!feasibilities.get(c)) {
+					app.incrementViolatedConstraints(c);
+					app.setFeasible(false);
+					setFeasible(false);
+				}
+			i++;
+		}
+		
+		
+		for (Instance tmp : hourApplication) {
+			if(tmp.getWorkload()==0){
+				tmp.setFeasible(true);
+				setFeasible(true);
+			}
 		}
 		
 	}
+
+	/**
+	 * Sets the feasibility.
+	 * 
+	 * @param b
+	 *            the new feasibility
+	 */
+	public void setFeasible(boolean b) {
+		this.feasible = b;
+
+	}
+
+	public void setGenerationIteration(int generationIteration) {
+		this.generationIteration = generationIteration;
+	}
+	public void setGenerationTime(long generationTime) {
+		this.generationTime = generationTime;
+	}
+
+	private void setHourApplication(ArrayList<Instance> hourApplication) {
+		this.hourApplication = hourApplication;
+	}
+
+	public void setPercentageWorkload(int hour, double percentage) {
+		if (hour < 0)
+			hour = 0;
+		else if (hour > 23)
+			hour = 23;
+		if (percentage > 1.0)
+			percentage = 1.0;
+		else if (percentage < 0.0)
+			percentage = 0.0;
+		percentageWorkload[hour] = percentage;
+	}
 	
-	public int getDailyRequestsByTier(String tierId) {
-		{
-			Tier t = hourApplication.get(0).getTierById(tierId);
-			if (t == null)
-				return 0;
+	public void setRegion(String region) {
+		this.region = region;
+		for (Instance app : hourApplication)
+			app.setRegion(region);
+	}
+	
+	public void setTotalProviders(int totalProviders) {
+		this.totalProviders = totalProviders;
+	}
+
+	/**
+	 * Show status.
+	 */
+	public String showStatus() {
+		String result = "Solution Status\n";
+		result += "Cost: " + getCost();
+		result += "\tEvaluated: " + evaluated;
+		result += "\tFeasible: " + isFeasible();
+
+		result += "\nProvider: " + getProvider();
+
+		if (getRegion() != null)
+			result += "\nRegion: " + getRegion();
+
+		for (Instance i : hourApplication) {
+			result += "\nHour: " + hourApplication.indexOf(i);
+			result += "\n\tWorkload: " + i.getWorkload() + " ("
+					+ (getPercentageWorkload(hourApplication.indexOf(i)) * 100)
+					+ "%)";
+			result += "\n" + i.showStatus("\t");
 		}
-		
-		int requests = 0;
-		
-		for (Instance app : hourApplication) {
-			Tier t = app.getTierById(tierId);
-			requests += t.getTotalRequests();
+		return result;
+	}
+	
+	@Override
+	public String toString() {
+		String result = "Solution@" + Integer.toHexString(super.hashCode());
+		result += "[Provider: " + getProvider();
+		result += ", Cost: " + getCost();
+		result += ", Evaluated: " + evaluated;
+		result += ", Feasible: " + isFeasible();
+		result += "]";
+		return result;
+	}
+	
+	/**
+	 * checks whether at least one of the instances is not evaluated, if so
+	 * marks the entire solution as not evaluated
+	 */
+	public void updateEvaluation() {
+		setEvaluated(true);
+		if (hourApplication.size() < 24) {
+			setEvaluated(false);
+			return;
 		}
-		
-		return requests;
+		for (Instance i : hourApplication)
+			if (!i.isEvaluated()) {
+				setEvaluated(false);
+				return;
+			}
+	}
+	
+	public boolean usesPaaS() {
+		for (Tier t : hourApplication.get(0).getTiers())
+			if (t.getCloudService() instanceof PaaS)
+				return true;
+		return false;
 	}
 
 }

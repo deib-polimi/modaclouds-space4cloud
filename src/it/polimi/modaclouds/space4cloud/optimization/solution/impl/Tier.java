@@ -26,6 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilizationConstrainable,
 		Serializable {
 
@@ -34,7 +37,9 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 	 */
 	private static final long serialVersionUID = -2057134756249273580L;
 
-	
+	private static final Logger logger = LoggerFactory
+			.getLogger(Tier.class);
+
 	
 	/** The cloud resource. */
 	private CloudService cloudService;
@@ -45,12 +50,15 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 	/** The id of the Tier*/
 	private String id;
 	
-	/** The name of the Tier*/
+	/** the name of the tier as specified in the extension**/
 	private String name;
+	
+	/** The name of the Tier derived from PCM (needed in the LQN representation)*/
+	private String pcmName;
 	
 	public Tier(String id, String name) {
 		this.id = id;
-		this.name = name;
+		this.pcmName = name;
 	}
 
 	public void addComponent(Component component) {
@@ -61,21 +69,18 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 	@Override
 	public Tier clone() {
 
-		Tier t;
+		Tier t = null;
 		try {
 			t = (Tier) super.clone();
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			t = new Tier(this.id,this.name);
+			logger.error("Not supported cloning of tier");		
 		}
 
 		// clone Cloud Resource
 		try {
 			t.setCloudService(getCloudService().clone());
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Not supported cloning of cloud service");	
 		}
 
 		// cloning the component list
@@ -119,8 +124,8 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 		return id;
 	}
 
-	public String getName() {
-		return name;
+	public String getPcmName() {
+		return pcmName;
 	}
 
 
@@ -155,9 +160,9 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 		// update resource
 		
 		if(cloudService instanceof Compute)
-			((Compute)cloudService).updateUtilization(results.getUtilization(getName()));
+			((Compute)cloudService).updateUtilization(results.getUtilization(getPcmName()));
 		else if(cloudService instanceof Platform)
-			((Platform)cloudService).updateUtilization(results.getUtilization(getName()));
+			((Platform)cloudService).updateUtilization(results.getUtilization(getPcmName()));
 	
 
 		// update components
@@ -182,6 +187,14 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 				total += f.getRequests();
 		
 		return total;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

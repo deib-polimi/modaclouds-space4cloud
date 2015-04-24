@@ -35,6 +35,7 @@ public class ResourceEnvironmentExtensionParser {
 	protected Map<String, String> serviceTypes = new HashMap<>();
 	protected Map<String, String> providers = new HashMap<>();
 	protected Map<String, String> serviceNames = new HashMap<>();
+	protected Map<String, String> containerNames = new HashMap<>();
 	protected Map<String, String> instanceSizes = new HashMap<>();
 	protected Map<String, int[]> instanceReplicas = new HashMap<>();
 	protected Map<String, String> serviceLocations = new HashMap<>();
@@ -60,10 +61,12 @@ public class ResourceEnvironmentExtensionParser {
 			String provider = container.getProvider();
 			String id = container.getId() + (provider!=null?provider:"");
 			providers.put(id, provider);
+			String name = container.getName();
+			containerNames.put(id, name);	
 			if (container.getCloudElement() != null) {
 				CloudService resource = container.getCloudElement();
 				serviceTypes.put(id, resource.getServiceType());
-				serviceNames.put(id, resource.getServiceName());
+				serviceNames.put(id, resource.getServiceName());		
 				instanceSizes.put(id, resource.getResourceSizeID());
 
 				if (resource.getLocation() != null) {
@@ -135,5 +138,11 @@ public class ResourceEnvironmentExtensionParser {
 	public void setRegion(String provider, String value) {
 		serviceLocations.put(provider, value);
 	}
+
+
+	public Map<String, String> getContainerNames() {
+		return containerNames;
+	}
+
 
 }

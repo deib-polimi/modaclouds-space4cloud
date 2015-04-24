@@ -740,7 +740,7 @@ public class EvaluationServer implements ActionListener {
 			if(seriesHandleTiers==null){
 				seriesHandleTiers = new HashMap<>();
 				for(Tier t:sol.getApplication(0).getTiers()){					
-					seriesHandleTiers.put(t.getId(), t.getName());					
+					seriesHandleTiers.put(t.getId(), t.getPcmName());					
 				}
 			}
 
@@ -777,7 +777,7 @@ public class EvaluationServer implements ActionListener {
 				seriesHandleTiers = new HashMap<>();
 				//Tier names and ids are the same for each cloud and each hours
 				for(Tier t:sol.get(0).getApplication(0).getTiers()){					
-					seriesHandleTiers.put(t.getId(), t.getName());					
+					seriesHandleTiers.put(t.getId(), t.getPcmName());					
 				}
 			}
 

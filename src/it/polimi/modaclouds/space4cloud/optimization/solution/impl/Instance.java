@@ -68,7 +68,7 @@ public class Instance implements Cloneable, Serializable {
 
 	public Tier getTierByName(String name){
 		for(Tier t:tiers)
-			if(t.getName().equals(name))
+			if(t.getPcmName().equals(name))
 				return t;
 		return null;
 
@@ -337,7 +337,7 @@ public class Instance implements Cloneable, Serializable {
 		result += "\n\tEvaluated: " + evaluated;
 		result += "\tFeasible: " + feasible;
 		for (Tier t : tiers) {
-			result += "\n" + prefix + "Tier" + t.getName()+" id:"+t.getId();
+			result += "\n" + prefix + "Tier" + t.getPcmName()+" id:"+t.getId();
 			result += "\n" + t.showStatus(prefix + "\t");
 
 		}

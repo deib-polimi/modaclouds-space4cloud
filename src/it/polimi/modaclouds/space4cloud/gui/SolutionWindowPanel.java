@@ -133,7 +133,7 @@ public class SolutionWindowPanel extends JTabbedPane{
 			for (int hour = 0; hour < 24; ++hour) {
 				workload.dataset.addValue(solution.getPercentageWorkload(hour), provider, "" + hour);
 				for (Tier t : solution.getApplication(hour).getTiers()) {
-					allocation.dataset.addValue(getReplicas(t), t.getName(), "" + hour);
+					allocation.dataset.addValue(getReplicas(t), t.getPcmName(), "" + hour);
 				}
 			}
 			
@@ -143,7 +143,7 @@ public class SolutionWindowPanel extends JTabbedPane{
 			if (!set) {
 				infoAll.append("<tr><td>Components</td><td><ul>\n");
 				for (Tier t : solution.getApplication(0).getTiers()) {
-					infoAll.append("<li>" + t.getName() + "</li>\n");
+					infoAll.append("<li>" + t.getPcmName() + "</li>\n");
 				}
 				infoAll.append("</ul></td></tr>\n");
 				infoAll.append("</table>\n</body>\n</html>\n");
@@ -167,7 +167,7 @@ public class SolutionWindowPanel extends JTabbedPane{
 			info.append("<tr><td>Feasible</td><td>" + String.valueOf(solution.isFeasible()) + "</td></tr>\n");
 			info.append("<tr><td>Solution per Component</td><td><ul>\n");
 			for (Tier t : solution.getApplication(0).getTiers()) {
-				info.append("<li>" + t.getName() + "\n<ul>\n");
+				info.append("<li>" + t.getPcmName() + "\n<ul>\n");
 				info.append("<li>" + t.getCloudService().getServiceName() + "</li>\n");
 				info.append("<li>" + t.getCloudService().getResourceName() + "</li>\n");
 				info.append("</ul>\n</li>\n");

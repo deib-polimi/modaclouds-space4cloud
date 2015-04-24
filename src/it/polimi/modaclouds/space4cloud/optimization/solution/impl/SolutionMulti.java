@@ -418,7 +418,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 					// set id, name, provider name, service name, resource name,
 					// service type
 					tier.setAttribute("id", t.getId());
-					tier.setAttribute("name", t.getName());
+					tier.setAttribute("name", t.getPcmName());
 
 					CloudService cs = t.getCloudService();
 					tier.setAttribute("providerName", cs.getProvider());
@@ -1300,9 +1300,10 @@ public class SolutionMulti implements Cloneable, Serializable {
 	 */
 	public boolean exportAsExtension(Path fileName){
 		ResourceModelExtension extension = getAsExtension();
+		final String schemaLocation = "http://www.modaclouds.eu/xsd/2013/6/resource-model-extension https://raw.githubusercontent.com/deib-polimi/modaclouds-qos-models/master/metamodels/s4cextension/resource_model_extension.xsd";
 		//serialize them		
 		try {			
-			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()));
+			XMLHelper.serialize(extension, ResourceModelExtension.class, new FileOutputStream(fileName.toFile()),schemaLocation);
 			return true;
 		} catch (JAXBException e) {
 			logger.error("The generated solution is not valid",e);

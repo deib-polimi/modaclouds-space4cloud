@@ -288,36 +288,36 @@ public class LqnHandler implements Cloneable, Serializable {
 			Compute c_resource = (Compute) service;
 			int multiplicity = c_resource.getNumberOfCores()
 					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"speed-factor", c_resource.getSpeedFactor());
 		} else if (service instanceof Platform) {
 			Platform p = (Platform) service;
 			Compute c_resource = p.getCompute();
 			int multiplicity = c_resource.getNumberOfCores()
 					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"speed-factor", c_resource.getSpeedFactor());
 		} else if (service instanceof Cache) {
 			Cache c = (Cache) service;
 			Compute c_resource = c.getCompute();
 			int multiplicity = c_resource.getNumberOfCores()
 					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"speed-factor", c_resource.getSpeedFactor());
 		} else if (service instanceof Database) {
 			Database db = (Database) service;
 			Compute c_resource = db.getCompute();
 			int multiplicity = c_resource.getNumberOfCores()
 					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"speed-factor", c_resource.getSpeedFactor());
 		} else if (service instanceof Queue) {
 			// TODO: we have to consider the queues as delay centers!!!! this is wrong!!
@@ -325,9 +325,9 @@ public class LqnHandler implements Cloneable, Serializable {
 			Compute c_resource = queue.getCompute();
 			int multiplicity = c_resource.getNumberOfCores()
 					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getName(),
+			changeElementbyName("processor", tier.getPcmName(),
 					"speed-factor", c_resource.getSpeedFactor());
 		}
 

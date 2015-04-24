@@ -488,14 +488,14 @@ public class AssessmentWindow extends WindowAdapter implements
                     if (is.isConstrained(t.getId())) {
                         Double constraint = is.constraint(t.getId());
                         if (constraint != null)
-                            is.plotsModel.addElement(t.getName() + " ("
+                            is.plotsModel.addElement(t.getPcmName() + " ("
                                     + Math.round(sum / 24 * 100) + "%, c: "
                                     + Math.round(constraint * 100) + "%)");
                         else
-                            is.plotsModel.addElement(t.getName() + " ("
+                            is.plotsModel.addElement(t.getPcmName() + " ("
                                     + Math.round(sum / 24 * 100) + "%)");
                     } else
-                        is.sourcesModel.addElement(t.getName() + " ("
+                        is.sourcesModel.addElement(t.getPcmName() + " ("
                                 + Math.round(sum / 24 * 100) + "%)");
                 }
 
@@ -654,10 +654,10 @@ public class AssessmentWindow extends WindowAdapter implements
             is.vmLogger.clear();
             for (int i = 0; i < 24; i++) {
                 for (Tier t : providedSolution.getApplication(i).getTiers()) {
-                    if (is.toBeShown(t.getName())) {
+                    if (is.toBeShown(t.getPcmName())) {
                         is.vmLogger.dataset.addValue(
                                 getReplicas(t),
-                                t.getName(), "" + i);
+                                t.getPcmName(), "" + i);
                     }
                 }
             }
@@ -691,17 +691,17 @@ public class AssessmentWindow extends WindowAdapter implements
             is.utilLogger.clear();
             for (int i = 0; i < 24; i++)
                 for (Tier t : providedSolution.getApplication(i).getTiers())
-                    if (is.toBeShown(t.getName())) {
+                    if (is.toBeShown(t.getPcmName())) {
                         if (is.isConstrained(t.getId())) {
                             Double constraint = is.constraint(t.getId());
                             if (constraint != null)
                                 is.utilLogger.markers
                                         .add(new GenericChart.Marker(
-                                                constraint, t.getName()));
+                                                constraint, t.getPcmName()));
                         }
                         is.utilLogger.dataset.addValue(((Compute) t
                                 .getCloudService()).getUtilization(), t
-                                .getName(), "" + i);
+                                .getPcmName(), "" + i);
                     }
         }
 
