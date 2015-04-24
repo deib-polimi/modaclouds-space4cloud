@@ -505,6 +505,8 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 						Paths.get(filePath).toUri().toURL(), clazz);
 				if (!result.isValid()) {
 					messages.addAll(result.getMessages());
+				}else{
+					messages.add("The provided file is valid");
 				}
 			}
 		} catch (MalformedURLException e) {
