@@ -36,6 +36,8 @@ public enum Metric {
 			return CORES;
 		case "CPUUtilization":
 			return CPU;
+		case "CPU":
+			return CPU;
 		//TODO:not supported
 		case "MachineType":
 			return MACHINETYPE;
