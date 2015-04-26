@@ -361,30 +361,32 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 	 * validation notification icon
 	 */
 	public void updateUsageModelValidation() {
-		String usageExtensionFile = usageExtensionTextField.getText();
-		String usageExtensionNotificationText = "valid";
-		String usageExtensionNotificationColor = "green";
-		if (usageExtensionFile == null || usageExtensionFile.isEmpty()) {
-			usageExtensionNotificationText = "No input file";
-			usageExtensionNotificationColor = "red";
-			return;
-		}
-		try {
-			ValidationResult result = XMLHelper.validate(
-					Paths.get(usageExtensionFile).toUri().toURL(),
-					UsageModelExtensions.class);
-			if (!result.isValid()) {
-				usageExtensionNotificationText = "Not Valid";
-				usageExtensionNotificationColor = "red";
-			}
-		} catch (MalformedURLException e) {
-			usageExtensionNotificationText = "No input file";
-			usageExtensionNotificationColor = "red";
-		} finally {
-			usageExtensionNotificationLabel.setText("<html><font color='"
-					+ usageExtensionNotificationColor + "'>"
-					+ usageExtensionNotificationText + "</font></html>");
-		}
+		updateValidation(usageExtensionTextField, usageExtensionNotificationLabel, UsageModelExtensions.class);
+		
+//		String usageExtensionFile = usageExtensionTextField.getText();
+//		String usageExtensionNotificationText = "valid";
+//		String usageExtensionNotificationColor = "green";
+//		if (usageExtensionFile == null || usageExtensionFile.isEmpty()) {
+//			usageExtensionNotificationText = "No input file";
+//			usageExtensionNotificationColor = "red";
+//			return;
+//		}
+//		try {
+//			ValidationResult result = XMLHelper.validate(
+//					Paths.get(usageExtensionFile).toUri().toURL(),
+//					UsageModelExtensions.class);
+//			if (!result.isValid()) {
+//				usageExtensionNotificationText = "Not Valid";
+//				usageExtensionNotificationColor = "red";
+//			}
+//		} catch (MalformedURLException e) {
+//			usageExtensionNotificationText = "No input file";
+//			usageExtensionNotificationColor = "red";
+//		} finally {
+//			usageExtensionNotificationLabel.setText("<html><font color='"
+//					+ usageExtensionNotificationColor + "'>"
+//					+ usageExtensionNotificationText + "</font></html>");
+//		}
 	}
 
 	/**
@@ -392,32 +394,34 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 	 * of the validation notification icon
 	 */
 	public void updateResourceEnvironemntModelValidation() {
-		String environmentExtensionFile = resourceEnvironmentTextField
-				.getText();
-		String environmentExtensionNotificationText = "valid";
-		String environmentExtensionNotificationColor = "green";
-		if (environmentExtensionFile == null
-				|| environmentExtensionFile.isEmpty()) {
-			environmentExtensionNotificationText = "No input file";
-			environmentExtensionNotificationColor = "red";
-			return;
-		}
-		try {
-			ValidationResult result = XMLHelper.validate(
-					Paths.get(environmentExtensionFile).toUri().toURL(),
-					ResourceModelExtension.class);
-			if (!result.isValid()) {
-				environmentExtensionNotificationText = "Not Valid";
-				environmentExtensionNotificationColor = "red";
-			}
-		} catch (MalformedURLException e) {
-			environmentExtensionNotificationText = "No input file";
-			environmentExtensionNotificationColor = "red";
-		} finally {
-			resourceEnvironmentNotificationLabel.setText("<html><font color='"
-					+ environmentExtensionNotificationColor + "'>"
-					+ environmentExtensionNotificationText + "</font></html>");
-		}
+		updateValidation(resourceEnvironmentTextField, resourceEnvironmentNotificationLabel, ResourceModelExtension.class);
+		
+//		String environmentExtensionFile = resourceEnvironmentTextField
+//				.getText();
+//		String environmentExtensionNotificationText = "valid";
+//		String environmentExtensionNotificationColor = "green";
+//		if (environmentExtensionFile == null
+//				|| environmentExtensionFile.isEmpty()) {
+//			environmentExtensionNotificationText = "No input file";
+//			environmentExtensionNotificationColor = "red";
+//			return;
+//		}
+//		try {
+//			ValidationResult result = XMLHelper.validate(
+//					Paths.get(environmentExtensionFile).toUri().toURL(),
+//					ResourceModelExtension.class);
+//			if (!result.isValid()) {
+//				environmentExtensionNotificationText = "Not Valid";
+//				environmentExtensionNotificationColor = "red";
+//			}
+//		} catch (MalformedURLException e) {
+//			environmentExtensionNotificationText = "No input file";
+//			environmentExtensionNotificationColor = "red";
+//		} finally {
+//			resourceEnvironmentNotificationLabel.setText("<html><font color='"
+//					+ environmentExtensionNotificationColor + "'>"
+//					+ environmentExtensionNotificationText + "</font></html>");
+//		}
 	}
 
 	/**
@@ -425,31 +429,69 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 	 * validation notification icon
 	 */
 	public void updateConstraintModelValidation() {
-		String constraintExtensionFile = constraintTextField.getText();
-		String constraintExtensionNotificationText = "valid";
-		String constraintExtensionNotificationColor = "green";
-		if (constraintExtensionFile == null
-				|| constraintExtensionFile.isEmpty()) {
-			constraintExtensionNotificationText = "No input file";
-			constraintExtensionNotificationColor = "red";
-			return;
-		}
-		try {
-			ValidationResult result = XMLHelper.validate(
-					Paths.get(constraintExtensionFile).toUri().toURL(),
-					Constraints.class);
-			if (!result.isValid()) {
-				constraintExtensionNotificationText = "Not Valid";
-				constraintExtensionNotificationColor = "red";
+		updateValidation(constraintTextField, constraintNotificationLabel, Constraints.class);
+		
+//		String constraintExtensionFile = constraintTextField.getText();
+//		String constraintExtensionNotificationText = "valid";
+//		String constraintExtensionNotificationColor = "green";
+//		if (constraintExtensionFile == null
+//				|| constraintExtensionFile.isEmpty()) {
+//			constraintExtensionNotificationText = "No input file";
+//			constraintExtensionNotificationColor = "red";
+//			return;
+//		}
+//		try {
+//			ValidationResult result = XMLHelper.validate(
+//					Paths.get(constraintExtensionFile).toUri().toURL(),
+//					Constraints.class);
+//			if (!result.isValid()) {
+//				constraintExtensionNotificationText = "Not Valid";
+//				constraintExtensionNotificationColor = "red";
+//			}
+//		} catch (MalformedURLException e) {
+//			constraintExtensionNotificationText = "No input file";
+//			constraintExtensionNotificationColor = "red";
+//		} finally {
+//			constraintNotificationLabel.setText("<html><font color='"
+//					+ constraintExtensionNotificationColor + "'>"
+//					+ constraintExtensionNotificationText + "</font></html>");
+//		}
+	}
+	
+	private <T> void updateValidation(JTextField fieldParam, JLabel labelParam, Class<T> clazzParam) {
+		final JTextField field = fieldParam;
+		final JLabel label = labelParam;
+		final Class<T> clazz = clazzParam;
+		
+		new Thread() {
+			public void run() {
+				String file = field.getText();
+				String notificationText = "Valid";
+				String notificationColor = "green";
+				if (file == null
+						|| file.isEmpty()) {
+					notificationText = "No Input File";
+					notificationColor = "red";
+					return;
+				}
+				try {
+					ValidationResult result = XMLHelper.validate(
+							Paths.get(file).toUri().toURL(),
+							clazz);
+					if (!result.isValid()) {
+						notificationText = "Not Valid";
+						notificationColor = "red";
+					}
+				} catch (MalformedURLException e) {
+					notificationText = "No Input File";
+					notificationColor = "red";
+				} finally {
+					label.setText("<html><font color='"
+							+ notificationColor + "'>"
+							+ notificationText + "</font></html>");
+				}
 			}
-		} catch (MalformedURLException e) {
-			constraintExtensionNotificationText = "No input file";
-			constraintExtensionNotificationColor = "red";
-		} finally {
-			constraintNotificationLabel.setText("<html><font color='"
-					+ constraintExtensionNotificationColor + "'>"
-					+ constraintExtensionNotificationText + "</font></html>");
-		}
+		}.start();
 	}
 
 	/**
@@ -457,31 +499,33 @@ public class ExtensionModelSpecificationPanel extends JPanel implements
 	 * validation notification icon
 	 */
 	public void updateMultiCloudModelValidation() {
-		String multiCloudExtensionFile = mceTextField.getText();
-		String multiCloudExtensionNotificationText = "valid";
-		String multiCloudExtensionNotificationColor = "green";
-		if (multiCloudExtensionFile == null
-				|| multiCloudExtensionFile.isEmpty()) {
-			multiCloudExtensionNotificationText = "No input file";
-			multiCloudExtensionNotificationColor = "red";
-			return;
-		}
-		try {
-			ValidationResult result = XMLHelper.validate(
-					Paths.get(multiCloudExtensionFile).toUri().toURL(),
-					MultiCloudExtensions.class);
-			if (!result.isValid()) {
-				multiCloudExtensionNotificationText = "Not Valid";
-				multiCloudExtensionNotificationColor = "red";
-			}
-		} catch (MalformedURLException e) {
-			multiCloudExtensionNotificationText = "No input file";
-			multiCloudExtensionNotificationColor = "red";
-		} finally {
-			mceNotificationLabel.setText("<html><font color='"
-					+ multiCloudExtensionNotificationColor + "'>"
-					+ multiCloudExtensionNotificationText + "</font></html>");
-		}
+		updateValidation(mceTextField, mceNotificationLabel, MultiCloudExtensions.class);
+		
+//		String multiCloudExtensionFile = mceTextField.getText();
+//		String multiCloudExtensionNotificationText = "valid";
+//		String multiCloudExtensionNotificationColor = "green";
+//		if (multiCloudExtensionFile == null
+//				|| multiCloudExtensionFile.isEmpty()) {
+//			multiCloudExtensionNotificationText = "No input file";
+//			multiCloudExtensionNotificationColor = "red";
+//			return;
+//		}
+//		try {
+//			ValidationResult result = XMLHelper.validate(
+//					Paths.get(multiCloudExtensionFile).toUri().toURL(),
+//					MultiCloudExtensions.class);
+//			if (!result.isValid()) {
+//				multiCloudExtensionNotificationText = "Not Valid";
+//				multiCloudExtensionNotificationColor = "red";
+//			}
+//		} catch (MalformedURLException e) {
+//			multiCloudExtensionNotificationText = "No input file";
+//			multiCloudExtensionNotificationColor = "red";
+//		} finally {
+//			mceNotificationLabel.setText("<html><font color='"
+//					+ multiCloudExtensionNotificationColor + "'>"
+//					+ multiCloudExtensionNotificationText + "</font></html>");
+//		}
 	}
 
 	/**
