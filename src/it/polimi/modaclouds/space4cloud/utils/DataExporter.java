@@ -875,12 +875,12 @@ public class DataExporter {
 	public static File saraMattiaTest() throws Exception {
 		Configuration.loadConfiguration("/Users/ft/Desktop/tmp/trash/s4c.properties");
 		
-		final String basePath = "/Users/ft/Downloads/ConstellationSara9/";
+		final String basePath = "/Users/ft/Downloads/ConstellationSaraAddendum/";
 		
 		final String[] strings = {
-//				"6:400:m1small:m1.small",
-//				"8:1300:m1small:m1.small",
-//				"7:3000:m1small:m1.small",
+				"6:400:m1small:m1.small",
+				"8:1300:m1small:m1.small",
+				"7:3000:m1small:m1.small",
 				"3:700:m1medium:m1.medium",
 				"5:2500:m1medium:m1.medium",
 				"4:5500:m1medium:m1.medium",
