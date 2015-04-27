@@ -1322,7 +1322,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		CostType ct = new CostType();
 		
 		for (int h = 0; h < 24; ++h) {
-			double cost = 0;
+			float cost = 0;
 			for (Solution s : getAll())
 				cost += s.getCost(h);
 			
@@ -1356,10 +1356,10 @@ public class SolutionMulti implements Cloneable, Serializable {
 					
 					ctp = new CostType();
 					
-					double totalCost = 0.0;
+					float totalCost = 0.0f;
 					
 					for (int h = 0; h < 24; ++h) {
-						double cost = s.getCost(t.getId(), h);
+						float cost = (float) s.getCost(t.getId(), h);
 						totalCost += cost;
 						
 						HourPriceType hour = new HourPriceType();
@@ -1373,11 +1373,11 @@ public class SolutionMulti implements Cloneable, Serializable {
 				} else {
 					ctp = p.getCost();
 					
-					double totalCost = ctp.getTotalCost();
+					float totalCost = ctp.getTotalCost();
 					
 					for (HourPriceType hour : ctp.getHourPrice()) {
 						int h = hour.getHour();
-						double cost = s.getCost(t.getId(), h);
+						float cost = (float) s.getCost(t.getId(), h);
 						totalCost += cost;
 						hour.setCost(cost + hour.getCost());
 					}

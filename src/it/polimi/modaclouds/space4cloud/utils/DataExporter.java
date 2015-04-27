@@ -663,24 +663,36 @@ public class DataExporter {
 			}
 		}
 		
-		String prefix = "costs-";
-		if (Configuration.CONTRACTOR_TEST)
-			prefix = it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-";
+//		String prefix = "costs-";
+//		if (Configuration.CONTRACTOR_TEST)
+//			prefix = it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-";
 		
 		double costS4C, costLower, costUpper;
 		
-		File nominalSolutionCosts = Paths.get(nominalSolution.getParent(), prefix + peak + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File lowerSolutionCosts = Paths.get(lowerSolution.getParent(), prefix + peak + "-" + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
-		File upperSolutionCosts = Paths.get(upperSolution.getParent(), prefix + peak + "-" + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		String prefix = "costs-";
+		File nominalCosts = Paths.get(nominalSolution.getParent(), prefix + peak + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File lowerCosts = Paths.get(lowerSolution.getParent(), prefix + peak + "-" + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File upperCosts = Paths.get(upperSolution.getParent(), prefix + peak + "-" + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
 		
-		if (nominalSolutionCosts.exists() && lowerSolutionCosts.exists() && upperSolutionCosts.exists()) {
-			costS4C = SolutionMulti.getCost(nominalSolutionCosts);
-			costLower = SolutionMulti.getCost(lowerSolutionCosts);
-			costUpper = SolutionMulti.getCost(upperSolutionCosts);
+		prefix = it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-";
+		File nominalContractor = Paths.get(nominalSolution.getParent(), prefix + peak + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File lowerContractor = Paths.get(lowerSolution.getParent(), prefix + peak + "-" + (peak / 100 * (100 - variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File upperContractor = Paths.get(upperSolution.getParent(), prefix + peak + "-" + (peak / 100 * (100 + variability)) + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		
+		if (nominalCosts.exists() && lowerCosts.exists() && upperCosts.exists()) {
+			costS4C = SolutionMulti.getCost(nominalCosts);
+			costLower = SolutionMulti.getCost(lowerCosts);
+			costUpper = SolutionMulti.getCost(upperCosts);
 		} else {
 			costS4C = SolutionMulti.getCost(nominalSolution);
 			costLower = SolutionMulti.getCost(lowerSolution);
 			costUpper = SolutionMulti.getCost(upperSolution);
+		}
+		
+		if (nominalContractor.exists() && lowerContractor.exists() && upperContractor.exists()) {
+			costS4C = Math.min(costS4C, SolutionMulti.getCost(nominalContractor));
+			costLower = Math.min(costLower, SolutionMulti.getCost(lowerContractor));
+			costUpper = Math.min(costUpper, SolutionMulti.getCost(upperContractor));
 		}
 		
 		int durationS4C = SolutionMulti.getDuration(nominalSolution);
