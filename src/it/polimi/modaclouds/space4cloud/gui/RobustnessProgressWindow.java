@@ -14,9 +14,7 @@ import it.polimi.modaclouds.space4cloud.privatecloud.Configuration;
 import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ComponentEvent;
@@ -27,15 +25,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.text.FieldPosition;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -48,17 +43,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
 import javax.xml.bind.JAXBException;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtilities;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.CategoryItemLabelGenerator;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
-import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.CategoryItemRenderer;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.osgi.framework.FrameworkUtil;
 import org.w3c.dom.Document;
@@ -173,80 +157,6 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			return false;
 		}
 	}
-	@SuppressWarnings("deprecation")
-	public static void compare(RobustnessProgressWindow rpw1,
-			RobustnessProgressWindow rpw2, String pathFile) {
-		DefaultCategoryDataset costs1 = rpw1.costs.dataset, costs2 = rpw2.costs.dataset;
-		DefaultCategoryDataset costs3 = new DefaultCategoryDataset();
-
-		if (costs1.getColumnCount() != costs2.getColumnCount())
-			return;
-
-		float total = 0, max = Float.MIN_VALUE, min = Float.MAX_VALUE;
-
-		for (int i = 0; i < costs1.getColumnCount(); ++i) {
-			float diff = (float) ((Double) costs1.getValue(0, i) - (Double) costs2
-					.getValue(0, i));
-			total += diff;
-			if (diff < min)
-				min = diff;
-			if (diff > max)
-				max = diff;
-			costs3.addValue(diff, "Diff", costs1.getColumnKey(i));
-		}
-
-		JFreeChart costsGraph = ChartFactory.createLineChart("Total: " + total
-				+ ", Min: " + min + ", Max: " + max, "Max Population",
-				"Difference", costs3, PlotOrientation.VERTICAL, true, true,
-				false);
-		{
-			CategoryPlot plot = (CategoryPlot) costsGraph.getPlot();
-			LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot
-					.getRenderer();
-			renderer.setShapesVisible(true);
-			renderer.setDrawOutlines(true);
-			renderer.setUseFillPaint(true);
-			renderer.setFillPaint(Color.white);
-			Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 11);
-
-			CategoryAxis categoryAxis = plot.getDomainAxis();
-			categoryAxis.setLowerMargin(0.02);
-			categoryAxis.setUpperMargin(0.02);
-			categoryAxis.setTickLabelFont(font);
-
-			NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-			rangeAxis.setTickLabelFont(font);
-
-			CategoryItemRenderer renderer2 = plot
-					.getRenderer();
-			CategoryItemLabelGenerator generator = new StandardCategoryItemLabelGenerator(
-					"{2}", new DecimalFormat("0") {
-
-						/**
-                 *
-                 */
-						private static final long serialVersionUID = 1L;
-
-						@Override
-						public StringBuffer format(double number,
-								StringBuffer result, FieldPosition fieldPosition) {
-							result = new StringBuffer("" + (float) number);
-							return result;
-						}
-
-					});
-			renderer2.setItemLabelGenerator(generator);
-			renderer2.setItemLabelsVisible(true);
-			renderer2.setItemLabelFont(font);
-		}
-
-		try {
-			ChartUtilities.writeChartAsPNG(new FileOutputStream(new File(
-					pathFile)), costsGraph, 1350, 700);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	public static RobustnessProgressWindow redraw(String basePath) {
 		RobustnessProgressWindow rpw = null;
@@ -337,6 +247,42 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 
 	private JFrame gui;
 	private JProgressBar progressBar;
+	
+	public static void drawPopulation(File ume) throws Exception {
+		GenericChart<DefaultCategoryDataset> populations;
+		populations = new GenericChart<DefaultCategoryDataset>(null, "Hour", "Population");
+		populations.dataset = new DefaultCategoryDataset();
+		populations.defaultRange = true;
+		populations.labelsVisible = false;
+		
+		{
+			// Add the workload to the graph
+			
+			UsageModelExtensions umes = XMLHelper.deserialize(ume
+					.toURI().toURL(), UsageModelExtensions.class);
+			
+			ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
+			if (cw != null) {
+				for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
+					populations.dataset.addValue(we.getPopulation(), ume.getName(),
+							"" + we.getHour());
+				}
+			} else {
+	
+				OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
+				if (ow != null) {
+					for (OpenWorkloadElement we : ow.getWorkloadElement()) {
+						populations.dataset.addValue(we.getPopulation(), ume.getName(),
+								"" + we.getHour());
+					}
+				} else {
+					return;
+				}
+			}
+		}
+		populations.updateGraph();
+		populations.save2png(ume.getParent(), ume.getName().replace(".xml", ".png"));
+	}
 	
 	private GenericChart<DefaultCategoryDataset> populations;
 	private GenericChart<DefaultCategoryDataset> solutions;

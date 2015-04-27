@@ -583,25 +583,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			executor = (ThreadPoolExecutor) Executors
 	                .newFixedThreadPool(1);
 		
-//		int[] consideredG = new int[24];
-//		for (int g = 1; g <= 24; ++g)
-//			consideredG[g-1] = g;
-		
 		File results = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, DataExporter.RESULT_CSV).toFile();
-		
-//		performVariability(30, consideredG, results);
-//		performVariability(50, consideredG, results);
-//		performVariability(100, consideredG, results);
-		
-//		performVariability(30, new int[] {10, 20}, results);
-		
-//		performVariability(Configuration.ROBUSTNESS_VARIABILITY, new int[] { Configuration.ROBUSTNESS_G }, results);
 		
 		for (int variability : Configuration.ROBUSTNESS_VARIABILITIES)
 			performVariability(variability, Configuration.ROBUSTNESS_GS, results);
-		
-//		performVariability(30, new int[] { Configuration.ROBUSTNESS_G }, results);
-//		performVariability(50, new int[] { Configuration.ROBUSTNESS_G }, results);
 		
 		try {
 			Files.createFile(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "variability-ended.xml"));
@@ -612,12 +597,6 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	}
 	
 	private void performVariability(int consideredVariability, int[] consideredG, File append) throws OptimizationException {
-
-//		if (Configuration.ROBUSTNESS_VARIABILITY <= 0 || Configuration.USE_PRIVATE_CLOUD)
-//			return;
-//
-//
-//		logger.info("Considering the variability");
 		
 		if (consideredVariability <= 0) {
 			logger.warn("The variability of {}% is too low, exiting.", consideredVariability);
@@ -1261,13 +1240,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
 		if (cw != null)
 			for (ClosedWorkloadElement we : cw.getWorkloadElement()) {
-				we.setPopulation(we.getPopulation() + addendum);
+				we.setPopulation(Math.max(we.getPopulation() + addendum, 1));
 			}
 
 		OpenWorkload ow = umes.getUsageModelExtension().getOpenWorkload();
 		if (ow != null)
 			for (OpenWorkloadElement we : ow.getWorkloadElement()) {
-				we.setPopulation(we.getPopulation() + addendum);
+				we.setPopulation(Math.max(we.getPopulation() + addendum, 1));
 			}
 
 		String s = Double.toString(deltaRatio);

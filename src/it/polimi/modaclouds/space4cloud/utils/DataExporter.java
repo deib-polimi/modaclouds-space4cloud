@@ -663,10 +663,6 @@ public class DataExporter {
 			}
 		}
 		
-//		String prefix = "costs-";
-//		if (Configuration.CONTRACTOR_TEST)
-//			prefix = it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME + "-";
-		
 		double costS4C, costLower, costUpper;
 		
 		String prefix = "costs-";
