@@ -44,10 +44,10 @@ Bundle-ClassPath: .,
  icons/,
  target/dependency/resourcemodel-1.2.0.jar,
  target/dependency/jsch-0.1.52.jar,
- target/dependency/milp-0.1.4.jar,
- target/dependency/contractor4cloud-0.1.6.jar,
- target/dependency/privatecloud-0.1.4.jar,
- target/dependency/qos-models-2.4.4.jar
+ target/dependency/qos-models-2.4.4.jar,
+ target/dependency/milp-0.1.5.jar,
+ target/dependency/contractor4cloud-0.1.7.jar,
+ target/dependency/privatecloud-0.1.5.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.EMFHelper;
   uses:="org.eclipse.emf.ecore,
