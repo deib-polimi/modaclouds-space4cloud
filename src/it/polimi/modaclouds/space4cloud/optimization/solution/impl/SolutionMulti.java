@@ -1449,7 +1449,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 		try {
 			File f = Contractor.perform(configuration, solution, m);
 			if (f != null && f.exists()) {
-				logger.debug("Optimized costs: " + f.getAbsolutePath());
+				logger.info("Optimized costs: " + f.getAbsolutePath());
 			}
 			
 			return f;
