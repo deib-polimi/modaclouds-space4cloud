@@ -1232,7 +1232,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	@SuppressWarnings("unused")
 	private static File generateModifiedUsageModelExtAddingTheAugmentedPeak(File f, double deltaRatio)
 			throws JAXBException, IOException, SAXException {
-		int addendum = (int)(getMaxPopulation(f) * deltaRatio);
+		
+		int addendum = (int)(getMaxPopulation(f) * (deltaRatio - 1));
 		
 		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
 				UsageModelExtensions.class);
