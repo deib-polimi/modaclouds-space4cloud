@@ -883,7 +883,7 @@ public class DataExporter {
 	public static File saraMattiaTest() throws Exception {
 		Configuration.loadConfiguration("/Users/ft/Desktop/tmp/trash/s4c.properties");
 		
-		final String basePath = "/Users/ft/Downloads/ConstellationSaraAddendum/";
+		final String basePath = "/Users/ft/Downloads/ConstellationSaraNew1/";
 		
 		final String[] strings = {
 				"6:400:m1small:m1.small",

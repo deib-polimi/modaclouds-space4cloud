@@ -32,6 +32,7 @@ import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.MachineTypeConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.NumberProvidersConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
@@ -815,29 +816,48 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		// if no provider has been selected pick one form the database
 		boolean defaultProvider = false;
-		if (providers.size() == 0) {
+		
+		int providerMin = 1;
+		{
+			List<Constraint> constraints = constraintHandler.getConstraintByResourceId(Configuration.APPLICATION_ID);
+			
+			for(Constraint c:constraints)
+				if(c instanceof NumberProvidersConstraint)
+					providerMin = ((NumberProvidersConstraint)c).getMin();
+		}
+		
+		if (providers.size() < providerMin) {
 			defaultProvider = true;
-			String defaultProviderName = null;
-			Iterator<String> iter = dataHandler.getCloudProviders().iterator();
-
-			do {
-				defaultProviderName = iter.next();
-				// skip the generic provider whose data might not be relevant
-
-				// and those that do not offer Compute services.  (use only IaaS now)
-
-				if (defaultProviderName.equals("Generic")
-						|| dataHandler.getServices(defaultProviderName,
-								"Compute").size() == 0)
-					defaultProviderName = null;
-			} while (defaultProviderName == null && iter.hasNext());
-
-			if (defaultProviderName == null){
-				logger.error("No provider with services of type Compute has been found");
-				throw new InitializationException("No default provider could be found");
+			Set<String> providerNames = dataHandler.getCloudProviders();
+			
+			if (providerNames.size() < providerMin) {
+				logger.error("There are not enough providers in the database!");
+				throw new InitializationException("There are not enough providers in the database!");
 			}
-			providers.add(defaultProviderName);
-			logger.info("No provider specified in the extension, defaulting on "+ defaultProviderName);
+			
+			while (providers.size() < providerMin) {
+				String defaultProviderName = null;
+				Iterator<String> iter = providerNames.iterator();
+	
+				do {
+					defaultProviderName = iter.next();
+					// skip the generic provider whose data might not be relevant
+	
+					// and those that do not offer Compute services.  (use only IaaS now)
+	
+					if (defaultProviderName.equals("Generic")
+							|| dataHandler.getServices(defaultProviderName,
+									"Compute").size() == 0 || providers.contains(defaultProviderName))
+						defaultProviderName = null;
+				} while (defaultProviderName == null && iter.hasNext());
+	
+				if (defaultProviderName == null){
+					logger.error("No provider with services of type Compute has been found");
+					throw new InitializationException("No default provider could be found");
+				}
+				providers.add(defaultProviderName);
+				logger.info("No provider specified in the extension, defaulting on "+ defaultProviderName);
+			}
 
 		}
 

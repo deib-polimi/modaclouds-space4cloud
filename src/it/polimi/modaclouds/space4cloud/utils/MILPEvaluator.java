@@ -134,11 +134,6 @@ public class MILPEvaluator {
 		evaluationTime = -1L;
 	}
 
-	public void setMinimumNumberOfProviders(int num) {
-		solver.setMinimumNumberOfProviders(num);
-		reset();
-	}
-
 	public void setProviders(String... provider) {
 		solver.setProviders(provider);
 		reset();

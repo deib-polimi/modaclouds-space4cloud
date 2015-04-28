@@ -136,6 +136,9 @@ public class ConstraintHandler {
 			case DBTECHNOLOGY:
 				constraint = new DBTechnologyConstraint(cons);
 				break;
+			case NUMBERPROVIDERS:
+				constraint = new NumberProvidersConstraint(cons);
+				break;
 			default:
 				logger.warn("Metric: "+metric+" not yet supported, the constraint will be ignored");
 			}

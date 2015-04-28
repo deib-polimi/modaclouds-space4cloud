@@ -20,7 +20,8 @@ public enum Metric {
 			"CPUUtilization"), MACHINETYPE("MachineType"), SERVICETYPE(
 			"ServiceType"), RESPONSETIME("ResponseTime"), AVAILABILITY(
 			"Availability"), RELIABILITY("Reliability"), WORKLOADPERCENTAGE("WorkloadPercentage"),
-			PROGRAMMINGLANGUAGE("ProgrammingLanguage"), DBTYPE("DBType"), DBTECHNOLOGY("DBTechnology");
+			PROGRAMMINGLANGUAGE("ProgrammingLanguage"), DBTYPE("DBType"), DBTECHNOLOGY("DBTechnology"),
+			NUMBERPROVIDERS("NumberProviders");
 
 	public static Metric getMetricFromTag(String tag) {
 		switch (tag) {
@@ -60,6 +61,8 @@ public enum Metric {
 			return DBTYPE;
 		case "DBTechnology":
 			return DBTECHNOLOGY;
+		case "NumberProviders":
+			return NUMBERPROVIDERS;
 		default:
 			return null;
 		}
