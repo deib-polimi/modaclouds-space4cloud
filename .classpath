@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="target/dependency/contractor4cloud-0.1.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/contractor4cloud-0.1.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/milp-0.1.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/privatecloud-0.1.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/qos-models-2.4.4.jar"/>

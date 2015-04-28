@@ -371,7 +371,7 @@
 		<dependency>
 			<groupId>it.polimi.modaclouds.space4cloud</groupId>
 			<artifactId>contractor4cloud</artifactId>
-			<version>0.1.7</version>
+			<version>0.1.8</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
