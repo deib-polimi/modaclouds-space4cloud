@@ -27,6 +27,7 @@ import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
+import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
@@ -1183,6 +1184,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		logger.info(this.initialSolution.showStatus());
 		
 		bestSolutions.add(initialSolution);
+		firePropertyChange(OptimizationProgressWindow.FIRST_SOLUTION_AVAILABLE, false, true);
 	}
 
 	/**

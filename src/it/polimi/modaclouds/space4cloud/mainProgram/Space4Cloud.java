@@ -538,6 +538,18 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 
 		engine.addPropertyChangeListener(this);
+		
+		// create the progress window
+		if (!batch) {
+			progressWindow = new OptimizationProgressWindow();
+			progressWindow.setCostLogger(engine.getCostLogger());
+			progressWindow.setVMLogger(engine.getVMLogger());
+			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
+			progressWindow.setMax(100);
+			progressWindow.addPropertyChangeListener(this);
+			engine.addPropertyChangeListener(progressWindow);
+			engine.getEvalServer().addPropertyChangeListener(progressWindow);
+		}
 
 		// load the initial solution from the PCM specified in the
 		// configuration and the extension
@@ -550,18 +562,18 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		engine.setDuration(duration);
 
-		// create the progress window
-		if (!batch) {
-			progressWindow = new OptimizationProgressWindow();
-			progressWindow.setCostLogger(engine.getCostLogger());
-			progressWindow.setVMLogger(engine.getVMLogger());
-			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
-			progressWindow.setMax(100);
-			progressWindow.addPropertyChangeListener(this);
-			engine.addPropertyChangeListener(progressWindow);
-			engine.getEvalServer().addPropertyChangeListener(progressWindow);
-
-		}
+//		// create the progress window
+//		if (!batch) {
+//			progressWindow = new OptimizationProgressWindow();
+//			progressWindow.setCostLogger(engine.getCostLogger());
+//			progressWindow.setVMLogger(engine.getVMLogger());
+//			progressWindow.setConstraintsLogger(engine.getConstraintsLogger());
+//			progressWindow.setMax(100);
+//			progressWindow.addPropertyChangeListener(this);
+//			engine.addPropertyChangeListener(progressWindow);
+//			engine.getEvalServer().addPropertyChangeListener(progressWindow);
+//
+//		}
 
 		// start the optimization
 		logger.info("Starting the optimization");

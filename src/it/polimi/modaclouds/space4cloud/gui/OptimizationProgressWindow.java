@@ -145,8 +145,8 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 //		lowerPane.add(btnStop);
 
 		btnInspectSolution = new JButton("Inspect Solution");
-//		btnInspectSolution.setEnabled(false);
-		btnInspectSolution.setEnabled(true);
+		btnInspectSolution.setEnabled(false);
+//		btnInspectSolution.setEnabled(true);
 		btnInspectSolution.addActionListener(this);
 		lowerPane.add(btnInspectSolution);
 
@@ -170,7 +170,6 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 
 
 	}
-
 
 	public void setConstraintsLogger(GenericChart<XYSeriesCollection> constraintsLogger) {
 		this.constraintsLogger = constraintsLogger;
@@ -299,6 +298,7 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		}		
 	}
 
+	public static final String FIRST_SOLUTION_AVAILABLE = "FirstSolutionAvailable";
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -308,6 +308,8 @@ public class OptimizationProgressWindow extends WindowAdapter implements Propert
 		} else if (evt.getPropertyName().equals("totalNumberOfEvaluations")) {
 			updateImages();
 		} 	else if (evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED)) {
+			btnInspectSolution.setEnabled(true);
+		} 	else if (evt.getPropertyName().equals(FIRST_SOLUTION_AVAILABLE)) {
 			btnInspectSolution.setEnabled(true);
 		} 	
 		//forward stopped status to listeners (windows)
