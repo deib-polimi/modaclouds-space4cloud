@@ -772,7 +772,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IPath location = org.eclipse.core.runtime.Path.fromOSString(Paths.get(
 				Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY, Configuration.LAUNCH_CONFIG).toString());
-		IFile ifile = workspace.getRoot().getFileForLocation(location);
+		@SuppressWarnings("deprecation")
+		IFile ifile = workspace.getRoot().findFilesForLocation(location)[0]; // getFileForLocation(location);
 		ILaunchConfiguration launchConfig = DebugPlugin.getDefault()
 				.getLaunchManager().getLaunchConfiguration(ifile);
 
