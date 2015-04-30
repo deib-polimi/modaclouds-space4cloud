@@ -763,11 +763,14 @@ public class AssessmentWindow extends WindowAdapter implements
                             Double constraint = is
                                     .constraint(f.getId());
                             if (constraint != null)
-                                is.rtLogger.markers
-                                        .add(new GenericChart.Marker(
-                                                constraint, c.getName()
-                                                        + ":"
-                                                        + f.getName()));
+//                                is.rtLogger.markers
+//                                        .add(new GenericChart.Marker(
+//                                                constraint, c.getName()
+//                                                        + ":"
+//                                                        + f.getName()));
+                            	is.rtLogger.addMarker(constraint, c.getName()
+                            							+ ":"
+                            							+ f.getName());
                         }
                     }
                 }
@@ -794,9 +797,11 @@ public class AssessmentWindow extends WindowAdapter implements
                 if (is.isConstrained(t.getId())) {
                     Double constraint = is.constraint(t.getId());
                     if (constraint != null)
-                        is.utilLogger.markers
-                                .add(new GenericChart.Marker(
-                                        constraint, t.getPcmName()));
+//                        is.utilLogger.markers
+//                                .add(new GenericChart.Marker(
+//                                        constraint, t.getPcmName()));
+                    	is.utilLogger.addMarker(
+                    			constraint, t.getPcmName());
                 }
             }
         

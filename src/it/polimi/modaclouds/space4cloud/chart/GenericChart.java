@@ -69,6 +69,7 @@ public class GenericChart<E> extends JPanel {
 	public static class Marker {
 		double position;
 		String label;
+		String hiddenLabel;
 		
 		public Marker(double position, String label) {
 			this.position = position;
@@ -81,6 +82,27 @@ public class GenericChart<E> extends JPanel {
 	}
 	
 	public List<Marker> markers;
+	
+	public void addMarker(double position, String label) {
+		for (Marker m : markers) {
+			if (m.position == position) {
+				if (m.hiddenLabel == null || m.hiddenLabel.equals(""))
+					m.hiddenLabel = m.label;
+				
+				if (m.label == null || m.label.equals(""))
+					m.label = label;
+				else if (label != null && !label.equals(""))
+					m.label += ", " + label;
+				
+				Marker newm = new Marker(position);
+				newm.hiddenLabel = label;
+				markers.add(newm);
+				
+				return;
+			}
+		}
+		markers.add(new Marker(position, label));
+	}
 	
 	public GenericChart(String title, String x, String y) {
 		super();
@@ -234,7 +256,11 @@ public class GenericChart<E> extends JPanel {
 					marker.setLabelAnchor(RectangleAnchor.BOTTOM_LEFT);
 //					marker.setLabelOffset(new RectangleInsets(10.0, 10.0, 3.0, 3.0));
 					
-					if (!m.label.equals("")) {
+					if (m.hiddenLabel != null && !m.hiddenLabel.equals("")) {
+						Paint p = renderer.lookupSeriesPaint(dataset.getRowIndex(m.hiddenLabel));
+						if (p != null)
+							marker.setPaint(p);
+					} else if (!m.label.equals("")) {
 						Paint p = renderer.lookupSeriesPaint(dataset.getRowIndex(m.label));
 						if (p != null)
 							marker.setPaint(p);
