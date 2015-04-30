@@ -507,7 +507,8 @@ public class AssessmentWindow extends WindowAdapter implements
                 for (Tier t : providedSolution.getApplication(0).getTiers()) {
                     double sum = 0.0;
                     for (int i = 0; i < 24; i++) {
-                        sum += getUtilization(t);
+                    	Tier tmp = providedSolution.getApplication(i).getTierById(t.getId());
+                        sum += getUtilization(tmp);
                     }
 
                     if (is.isConstrained(t.getId())) {
@@ -533,7 +534,7 @@ public class AssessmentWindow extends WindowAdapter implements
                                 .getTierById(t.getId()).getComponents())
                             for (Functionality f : c.getFunctionalities()) {
                                 if (f.isEvaluated()) {
-                                    Double sum = sums.get(f.getName());
+                                    Double sum = sums.get(c.getName() + ":" + f.getName());
                                     if (sum == null)
                                         sum = 0.0;
 
@@ -751,6 +752,27 @@ public class AssessmentWindow extends WindowAdapter implements
 
         // plotting the response Times
         is.rtLogger.clear();
+        
+        for (Tier t : providedSolution.getApplication(0).getTiers())
+            for (Component c : t.getComponents())
+                for (Functionality f : c.getFunctionalities()) {
+                    if (f.isEvaluated()
+                            && is.toBeShown(c.getName() + ":"
+                                    + f.getName())) {
+                        if (is.isConstrained(f.getId())) {
+                            Double constraint = is
+                                    .constraint(f.getId());
+                            if (constraint != null)
+                                is.rtLogger.markers
+                                        .add(new GenericChart.Marker(
+                                                constraint, c.getName()
+                                                        + ":"
+                                                        + f.getName()));
+                        }
+                    }
+                }
+        
+        
         for (int i = 0; i < 24; i++)
             for (Tier t : providedSolution.getApplication(i).getTiers())
                 for (Component c : t.getComponents())
@@ -758,16 +780,6 @@ public class AssessmentWindow extends WindowAdapter implements
                         if (f.isEvaluated()
                                 && is.toBeShown(c.getName() + ":"
                                         + f.getName())) {
-                            if (is.isConstrained(f.getId())) {
-                                Double constraint = is
-                                        .constraint(f.getId());
-                                if (constraint != null)
-                                    is.rtLogger.markers
-                                            .add(new GenericChart.Marker(
-                                                    constraint, c.getName()
-                                                            + ":"
-                                                            + f.getName()));
-                            }
                             is.rtLogger.dataset.addValue(
                                     f.getResponseTime(), c.getName() + ":"
                                             + f.getName(), "" + i);
@@ -776,16 +788,21 @@ public class AssessmentWindow extends WindowAdapter implements
 
         // plotting the utilization
         is.utilLogger.clear();
+        
+        for (Tier t : providedSolution.getApplication(0).getTiers())
+            if (is.toBeShown(t.getPcmName())) {
+                if (is.isConstrained(t.getId())) {
+                    Double constraint = is.constraint(t.getId());
+                    if (constraint != null)
+                        is.utilLogger.markers
+                                .add(new GenericChart.Marker(
+                                        constraint, t.getPcmName()));
+                }
+            }
+        
         for (int i = 0; i < 24; i++)
             for (Tier t : providedSolution.getApplication(i).getTiers())
                 if (is.toBeShown(t.getPcmName())) {
-                    if (is.isConstrained(t.getId())) {
-                        Double constraint = is.constraint(t.getId());
-                        if (constraint != null)
-                            is.utilLogger.markers
-                                    .add(new GenericChart.Marker(
-                                            constraint, t.getPcmName()));
-                    }
                     is.utilLogger.dataset.addValue(((Compute) t
                             .getCloudService()).getUtilization(), t
                             .getPcmName(), "" + i);
