@@ -332,8 +332,8 @@ public class AssessmentWindow extends WindowAdapter implements
             is.vmLogger.labelsVisible = false;
             is.vmLogger.pointsVisible = false;
 //            is.vmLogger.defaultRange = true;
-            is.vmLogger.shownValsAboveMax = 1;
-            is.vmLogger.shownValsBelowMin = 1;
+            is.vmLogger.shownValsAboveMax = 0.5;
+            is.vmLogger.shownValsBelowMin = 0.5;
             
             imageContainerPanel.add(is.vmLogger);
 
