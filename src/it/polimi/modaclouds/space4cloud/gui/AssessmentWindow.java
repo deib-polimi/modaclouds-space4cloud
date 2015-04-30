@@ -331,7 +331,10 @@ public class AssessmentWindow extends WindowAdapter implements
             is.vmLogger.dataset = new DefaultCategoryDataset();
             is.vmLogger.labelsVisible = false;
             is.vmLogger.pointsVisible = false;
-            is.vmLogger.defaultRange = true;
+//            is.vmLogger.defaultRange = true;
+            is.vmLogger.shownValsAboveMax = 1;
+            is.vmLogger.shownValsBelowMin = 1;
+            
             imageContainerPanel.add(is.vmLogger);
 
             is.utilLogger = new GenericChart<DefaultCategoryDataset>(
