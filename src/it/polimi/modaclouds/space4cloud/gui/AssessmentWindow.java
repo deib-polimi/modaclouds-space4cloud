@@ -32,6 +32,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -49,6 +50,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
@@ -60,6 +62,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -80,7 +83,7 @@ public class AssessmentWindow extends WindowAdapter implements
         PropertyChangeListener, ActionListener, ComponentListener {
 
     private class InternalSolution {
-        @SuppressWarnings("unused")
+//        @SuppressWarnings("unused")
         String provider;
 
         GenericChart<DefaultCategoryDataset> vmLogger, rtLogger, utilLogger;
@@ -96,6 +99,7 @@ public class AssessmentWindow extends WindowAdapter implements
         JButton addAllPlot;
         JButton remAllPlot;
         JButton update;
+        JButton save;
 
         boolean isConstrained(String resourceId) {
             if (constraintHandler == null || solutionMulti == null)
@@ -208,13 +212,13 @@ public class AssessmentWindow extends WindowAdapter implements
                 } else if (e.getSource().equals(is.update)) {
                     logger.trace("Update Button Event");
                     try {
-                        redrawGraphs();
-                        updateGraphs();
+                        redrawGraphs(is);
+                        updateGraphs(is);
                     } catch (NumberFormatException | IOException e1) {
                         logger.error("Exception updating graphs ",e);
                     }
 
-                    updateImages();
+                    updateImages(is);
                 } else if (e.getSource().equals(is.addAllPlot)) {
                     logger.trace("Add all plot event");
                     while (is.sourcesModel.size() > 0) {
@@ -229,7 +233,22 @@ public class AssessmentWindow extends WindowAdapter implements
                         is.sourcesModel.addElement(el);
                         is.plotsModel.remove(0);
                     }
-                }
+                } else if (e.getSource().equals(is.save)) {
+                    logger.trace("Save Button Event");
+                    try {
+                        updateGraphs(is);
+                        is.rtLogger.save2png("images/responseTimes-" + is.provider + ".png");
+                        is.utilLogger.save2png("images/cpuUtilizations-" + is.provider + ".png");
+                        is.vmLogger.save2png("images/vms-" + is.provider + ".png");
+                        
+                        JOptionPane.showMessageDialog(frame,
+                        		"Images saved in " + Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "images").toString(),
+                        		FRAME_NAME,
+                        		JOptionPane.INFORMATION_MESSAGE);
+                    } catch (NumberFormatException | IOException e1) {
+                        logger.error("Exception saving graphs ",e);
+                    }
+                } 
             }
         }
     }
@@ -271,14 +290,14 @@ public class AssessmentWindow extends WindowAdapter implements
         tab.removeAll();
 
         workload = new GenericChart<DefaultCategoryDataset>("Workload", "Hour",
-                "Y");
+                "Population");
         workload.dataset = new DefaultCategoryDataset();
         workload.labelsVisible = false;
         workload.pointsVisible = false;
         workload.defaultRange = true;
 
         availability = new GenericChart<DefaultCategoryDataset>("Availability",
-                "Hour", "Y") {
+                "Hour", "Availability") {
             private static final long serialVersionUID = -1913979813319452034L;
 
             public String getFormattedValue(double number) {
@@ -308,7 +327,7 @@ public class AssessmentWindow extends WindowAdapter implements
             imageContainerPanel.setLayout(new GridLayout(3, 1, 0, 0));
 
             is.vmLogger = new GenericChart<DefaultCategoryDataset>(
-                    "Number of VMs", "Hour", "Y");
+                    "Number of VMs", "Hour", "VMs");
             is.vmLogger.dataset = new DefaultCategoryDataset();
             is.vmLogger.labelsVisible = false;
             is.vmLogger.pointsVisible = false;
@@ -316,7 +335,7 @@ public class AssessmentWindow extends WindowAdapter implements
             imageContainerPanel.add(is.vmLogger);
 
             is.utilLogger = new GenericChart<DefaultCategoryDataset>(
-                    "CPU Utilization", "Hour", "Y");
+                    "CPU Utilization", "Hour", "Utilization");
             is.utilLogger.dataset = new DefaultCategoryDataset();
             is.utilLogger.labelsVisible = false;
             is.utilLogger.pointsVisible = false;
@@ -324,7 +343,7 @@ public class AssessmentWindow extends WindowAdapter implements
             imageContainerPanel.add(is.utilLogger);
 
             is.rtLogger = new GenericChart<DefaultCategoryDataset>(
-                    "Average Response Times", "Hour", "Y");
+                    "Average Response Times", "Hour", "Response Times");
             is.rtLogger.dataset = new DefaultCategoryDataset();
             is.rtLogger.labelsVisible = false;
             is.rtLogger.pointsVisible = false;
@@ -334,10 +353,10 @@ public class AssessmentWindow extends WindowAdapter implements
             {
                 GridBagLayout gridBagLayout = new GridBagLayout();
                 gridBagLayout.columnWidths = new int[] { 201, 0 };
-                gridBagLayout.rowHeights = new int[] { 70, 40, 70, 40, 0 };
+                gridBagLayout.rowHeights = new int[] { 70, 40, 70, 40, 40, 0 };
                 gridBagLayout.columnWeights = new double[] { 1.0,
                         Double.MIN_VALUE };
-                gridBagLayout.rowWeights = new double[] { 1.0, 0.0, 1.0, 0.0,
+                gridBagLayout.rowWeights = new double[] { 1.0, 0.0, 1.0, 0.0, 0.0, 
                         Double.MIN_VALUE };
                 GridBagConstraints c = new GridBagConstraints();
 
@@ -374,6 +393,7 @@ public class AssessmentWindow extends WindowAdapter implements
                 is.remAllPlot = new JButton(((char) 8613) + "" + ((char) 8613)
                         + "" + ((char) 8613)); // "/\\/\\");
                 is.update = new JButton("Update");
+                is.save = new JButton("Save graphs as images");
 
                 JPanel pan = new JPanel(new GridLayout(1, 2));
                 pan.add(is.addAllPlot);
@@ -388,6 +408,7 @@ public class AssessmentWindow extends WindowAdapter implements
                 is.addAllPlot.addActionListener(this);
                 is.remAllPlot.addActionListener(this);
                 is.update.addActionListener(this);
+                is.save.addActionListener(this);
 
                 c.fill = GridBagConstraints.BOTH;
 
@@ -407,9 +428,13 @@ public class AssessmentWindow extends WindowAdapter implements
                 // c.gridheight = GridBagConstraints.REMAINDER;
                 configurationPan.add(listScrollPane, c);
 
-                c.insets = new Insets(10, 10, 10, 10);
+                c.insets = new Insets(10, 10, 0, 10);
                 c.gridy = 3;
                 configurationPan.add(is.update, c);
+                
+                c.insets = new Insets(0, 10, 10, 10);
+                c.gridy = 4;
+                configurationPan.add(is.save, c);
 
                 // Create a split pane with the two scroll panes in it.
                 JSplitPane splitPane = new JSplitPane(
@@ -650,62 +675,121 @@ public class AssessmentWindow extends WindowAdapter implements
             String provider = providedSolution.getProvider();
             InternalSolution is = solutions.get(provider);
 
-            // plotting the number of VMs
-            is.vmLogger.clear();
-            for (int i = 0; i < 24; i++) {
-                for (Tier t : providedSolution.getApplication(i).getTiers()) {
-                    if (is.toBeShown(t.getPcmName())) {
-                        is.vmLogger.dataset.addValue(
-                                getReplicas(t),
-                                t.getPcmName(), "" + i);
-                    }
-                }
-            }
-
-            // plotting the response Times
-            is.rtLogger.clear();
-            for (int i = 0; i < 24; i++)
-                for (Tier t : providedSolution.getApplication(i).getTiers())
-                    for (Component c : t.getComponents())
-                        for (Functionality f : c.getFunctionalities()) {
-                            if (f.isEvaluated()
-                                    && is.toBeShown(c.getName() + ":"
-                                            + f.getName())) {
-                                if (is.isConstrained(f.getId())) {
-                                    Double constraint = is
-                                            .constraint(f.getId());
-                                    if (constraint != null)
-                                        is.rtLogger.markers
-                                                .add(new GenericChart.Marker(
-                                                        constraint, c.getName()
-                                                                + ":"
-                                                                + f.getName()));
-                                }
-                                is.rtLogger.dataset.addValue(
-                                        f.getResponseTime(), c.getName() + ":"
-                                                + f.getName(), "" + i);
-                            }
-                        }
-
-            // plotting the utilization
-            is.utilLogger.clear();
-            for (int i = 0; i < 24; i++)
-                for (Tier t : providedSolution.getApplication(i).getTiers())
-                    if (is.toBeShown(t.getPcmName())) {
-                        if (is.isConstrained(t.getId())) {
-                            Double constraint = is.constraint(t.getId());
-                            if (constraint != null)
-                                is.utilLogger.markers
-                                        .add(new GenericChart.Marker(
-                                                constraint, t.getPcmName()));
-                        }
-                        is.utilLogger.dataset.addValue(((Compute) t
-                                .getCloudService()).getUtilization(), t
-                                .getPcmName(), "" + i);
-                    }
+//            // plotting the number of VMs
+//            is.vmLogger.clear();
+//            for (int i = 0; i < 24; i++) {
+//                for (Tier t : providedSolution.getApplication(i).getTiers()) {
+//                    if (is.toBeShown(t.getPcmName())) {
+//                        is.vmLogger.dataset.addValue(
+//                                getReplicas(t),
+//                                t.getPcmName(), "" + i);
+//                    }
+//                }
+//            }
+//
+//            // plotting the response Times
+//            is.rtLogger.clear();
+//            for (int i = 0; i < 24; i++)
+//                for (Tier t : providedSolution.getApplication(i).getTiers())
+//                    for (Component c : t.getComponents())
+//                        for (Functionality f : c.getFunctionalities()) {
+//                            if (f.isEvaluated()
+//                                    && is.toBeShown(c.getName() + ":"
+//                                            + f.getName())) {
+//                                if (is.isConstrained(f.getId())) {
+//                                    Double constraint = is
+//                                            .constraint(f.getId());
+//                                    if (constraint != null)
+//                                        is.rtLogger.markers
+//                                                .add(new GenericChart.Marker(
+//                                                        constraint, c.getName()
+//                                                                + ":"
+//                                                                + f.getName()));
+//                                }
+//                                is.rtLogger.dataset.addValue(
+//                                        f.getResponseTime(), c.getName() + ":"
+//                                                + f.getName(), "" + i);
+//                            }
+//                        }
+//
+//            // plotting the utilization
+//            is.utilLogger.clear();
+//            for (int i = 0; i < 24; i++)
+//                for (Tier t : providedSolution.getApplication(i).getTiers())
+//                    if (is.toBeShown(t.getPcmName())) {
+//                        if (is.isConstrained(t.getId())) {
+//                            Double constraint = is.constraint(t.getId());
+//                            if (constraint != null)
+//                                is.utilLogger.markers
+//                                        .add(new GenericChart.Marker(
+//                                                constraint, t.getPcmName()));
+//                        }
+//                        is.utilLogger.dataset.addValue(((Compute) t
+//                                .getCloudService()).getUtilization(), t
+//                                .getPcmName(), "" + i);
+//                    }
+            redrawGraphs(is);
         }
 
         alreadyUpdating = false;
+    }
+    
+    private void redrawGraphs(InternalSolution is) throws NumberFormatException, IOException {
+        Solution providedSolution = solutionMulti.get(is.provider);
+
+        // plotting the number of VMs
+        is.vmLogger.clear();
+        for (int i = 0; i < 24; i++) {
+            for (Tier t : providedSolution.getApplication(i).getTiers()) {
+                if (is.toBeShown(t.getPcmName())) {
+                    is.vmLogger.dataset.addValue(
+                            getReplicas(t),
+                            t.getPcmName(), "" + i);
+                }
+            }
+        }
+
+        // plotting the response Times
+        is.rtLogger.clear();
+        for (int i = 0; i < 24; i++)
+            for (Tier t : providedSolution.getApplication(i).getTiers())
+                for (Component c : t.getComponents())
+                    for (Functionality f : c.getFunctionalities()) {
+                        if (f.isEvaluated()
+                                && is.toBeShown(c.getName() + ":"
+                                        + f.getName())) {
+                            if (is.isConstrained(f.getId())) {
+                                Double constraint = is
+                                        .constraint(f.getId());
+                                if (constraint != null)
+                                    is.rtLogger.markers
+                                            .add(new GenericChart.Marker(
+                                                    constraint, c.getName()
+                                                            + ":"
+                                                            + f.getName()));
+                            }
+                            is.rtLogger.dataset.addValue(
+                                    f.getResponseTime(), c.getName() + ":"
+                                            + f.getName(), "" + i);
+                        }
+                    }
+
+        // plotting the utilization
+        is.utilLogger.clear();
+        for (int i = 0; i < 24; i++)
+            for (Tier t : providedSolution.getApplication(i).getTiers())
+                if (is.toBeShown(t.getPcmName())) {
+                    if (is.isConstrained(t.getId())) {
+                        Double constraint = is.constraint(t.getId());
+                        if (constraint != null)
+                            is.utilLogger.markers
+                                    .add(new GenericChart.Marker(
+                                            constraint, t.getPcmName()));
+                    }
+                    is.utilLogger.dataset.addValue(((Compute) t
+                            .getCloudService()).getUtilization(), t
+                            .getPcmName(), "" + i);
+                }
     }
 
     public void show() {
@@ -723,15 +807,22 @@ public class AssessmentWindow extends WindowAdapter implements
         for (String key : solutions.keySet()) {
             InternalSolution is = solutions.get(key);
 
-            is.vmLogger.updateGraph();
-            is.rtLogger.updateGraph();
-            is.utilLogger.updateGraph();
+//            is.vmLogger.updateGraph();
+//            is.rtLogger.updateGraph();
+//            is.utilLogger.updateGraph();
+            updateGraphs(is);
         }
 
         workload.updateGraph();
         availability.updateGraph();
 
         alreadyUpdating = false;
+    }
+    
+    private void updateGraphs(InternalSolution is) throws NumberFormatException, IOException {
+    	is.vmLogger.updateGraph();
+        is.rtLogger.updateGraph();
+        is.utilLogger.updateGraph();
     }
 
     private void updateImages() {
@@ -744,19 +835,21 @@ public class AssessmentWindow extends WindowAdapter implements
         alreadyUpdatingImages = true;
 
         for (String provider : solutions.keySet()) {
+        	
             InternalSolution is = solutions.get(provider);
 
-            if (is.rtLogger != null) {
-                is.rtLogger.updateImage();
-            }
-
-            if (is.vmLogger != null) {
-                is.vmLogger.updateImage();
-            }
-
-            if (is.utilLogger != null) {
-                is.utilLogger.updateImage();
-            }
+//            if (is.rtLogger != null) {
+//                is.rtLogger.updateImage();
+//            }
+//
+//            if (is.vmLogger != null) {
+//                is.vmLogger.updateImage();
+//            }
+//
+//            if (is.utilLogger != null) {
+//                is.utilLogger.updateImage();
+//            }
+            updateImages(is);	
         }
 
         if (workload != null) {
@@ -769,6 +862,20 @@ public class AssessmentWindow extends WindowAdapter implements
 
         alreadyUpdatingImages = false;
         updateTimer.stop();
+    }
+    
+    private void updateImages(InternalSolution is) {
+    	if (is.rtLogger != null) {
+            is.rtLogger.updateImage();
+        }
+
+        if (is.vmLogger != null) {
+            is.vmLogger.updateImage();
+        }
+
+        if (is.utilLogger != null) {
+            is.utilLogger.updateImage();
+        }
     }
 
     @Override
