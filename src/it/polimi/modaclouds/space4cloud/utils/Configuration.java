@@ -4,11 +4,20 @@ import it.polimi.modaclouds.space4cloud.gui.CloudBurstingPanel;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -482,6 +491,76 @@ public class Configuration {
 
 	public static synchronized void resume(){
 		run = true;
+	}
+	
+	private static Path replaceAllOccurrencies(Path p, String suffix, Map<String, String> subs) throws Exception {
+		if (!p.toFile().exists())
+			return null;
+		
+		if (subs.size() == 0)
+			return p;
+		
+		String baseFile = new String(Files.readAllBytes(p)); //, Charset.defaultCharset()); // StandardCharsets.UTF_8);
+		
+		boolean done = false;
+		
+		for (String orig : subs.keySet()) {
+			Matcher m = java.util.regex.Pattern.compile(orig).matcher(baseFile);
+			while (m.find()) {
+				if (!m.group().equals(subs.get(orig)))
+					done = true;
+			}
+			baseFile = m.replaceAll(subs.get(orig));
+			
+//			baseFile = baseFile.replaceAll(orig, subs.get(orig));
+		}
+		
+		if (!done)
+			return p;
+		
+		String fullName = p.toFile().getName();
+		int i = fullName.lastIndexOf('.');
+		String name = fullName.substring(0, i);
+		String ext = fullName.substring(i);
+		Path newp = Paths.get(p.getParent().toString(), name + suffix + ext);
+		
+		try (PrintWriter out = new PrintWriter(new FileWriter(newp.toFile()))) {
+			out.printf(baseFile);
+			out.flush();
+		}
+		
+		return newp;
+	}
+	
+	public static String getDate() {
+		Calendar c = Calendar.getInstance();
+		
+		DecimalFormat f = new DecimalFormat("00");
+		
+		return String.format("%d%s%s-%s%s%s",
+				c.get(Calendar.YEAR),
+				f.format(c.get(Calendar.MONTH) + 1),
+				f.format(c.get(Calendar.DAY_OF_MONTH)),
+				f.format(c.get(Calendar.HOUR_OF_DAY)),
+				f.format(c.get(Calendar.MINUTE)),
+				f.format(c.get(Calendar.SECOND))
+				);
+	}
+	
+	public static void fixPalladioFiles() throws Exception {
+		Map<String, String> subs = new HashMap<String, String>();
+		subs.put("href=\"[a-z]+.repository", "href=\"" + Paths.get(Configuration.PALLADIO_REPOSITORY_MODEL).toFile().getName());
+		
+		String suffix = getDate();
+		
+		Configuration.PALLADIO_SYSTEM_MODEL = replaceAllOccurrencies(Paths.get(Configuration.PALLADIO_SYSTEM_MODEL), suffix, subs).toString();
+		
+		subs.put("href=\"[a-z]+.resourceenvironment", "href=\"" + Paths.get(Configuration.PALLADIO_RESOURCE_MODEL).toFile().getName());
+		subs.put("href=\"[a-z]+.system", "href=\"" + Paths.get(Configuration.PALLADIO_SYSTEM_MODEL).toFile().getName());
+		
+		Configuration.PALLADIO_ALLOCATION_MODEL = replaceAllOccurrencies(Paths.get(Configuration.PALLADIO_ALLOCATION_MODEL), suffix, subs).toString();
+		Configuration.PALLADIO_USAGE_MODEL = replaceAllOccurrencies(Paths.get(Configuration.PALLADIO_USAGE_MODEL), suffix, subs).toString();
+		
 	}
 
 }
