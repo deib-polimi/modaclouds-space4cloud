@@ -81,7 +81,7 @@ public class Configuration {
 	public static int ROBUSTNESS_PEAK_FROM 	= 100;
 	public static int ROBUSTNESS_PEAK_TO 	= 10000;
 	public static int ROBUSTNESS_STEP_SIZE 	= 300;
-	public static int ROBUSTNESS_ATTEMPTS 	= 5;
+	public static int ROBUSTNESS_ATTEMPTS 	= 1;
 
 
 	public static boolean REDISTRIBUTE_WORKLOAD = false;
