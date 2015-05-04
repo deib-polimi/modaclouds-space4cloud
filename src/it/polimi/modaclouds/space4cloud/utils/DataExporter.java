@@ -11,6 +11,7 @@ import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
 import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.contractor4cloud.Contractor;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult;
 import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult.Problem;
@@ -18,9 +19,11 @@ import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult.Result
 import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult.Result.WorstRealization;
 import it.polimi.modaclouds.space4cloud.evaluationresult.EvaluationResult.Result.X;
 import it.polimi.modaclouds.space4cloud.evaluationresult.Instance;
+import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -457,7 +460,8 @@ public class DataExporter {
 		return replicasMap;
 	}
 	
-	private static final String EVALUATE_COMMAND = "/usr/optimization/costiSaraMattia/main";
+	private static final String EVALUATE_COMMAND = "/usr/optimization/costiSaraMattia/main"; // TODO re-enable this one
+//	private static final String EVALUATE_COMMAND = "/usr/optimization/costiSaraMattiaMod/main";
 	private static final String EVALUATE_FOLDER = "/tmp/sara";
 	
 	public static final String BASE_FILE_NAME = "generated-evaluation-";
@@ -880,10 +884,12 @@ public class DataExporter {
 
 	}
 	
-	public static File saraMattiaTest() throws Exception {
-		Configuration.loadConfiguration("/Users/ft/Desktop/tmp/trash/s4c.properties");
+	public static File saraMattiaTest(String basePath, String configuration) throws Exception {
+//		Configuration.loadConfiguration("/Users/ft/Desktop/tmp/trash/s4c.properties");
+//		
+//		final String basePath = "/Users/ft/Downloads/ConstellationSaraNew1/";
 		
-		final String basePath = "/Users/ft/Downloads/ConstellationSaraNew1/";
+		Configuration.loadConfiguration(configuration);
 		
 		final String[] strings = {
 				"6:400:m1small:m1.small",
@@ -898,7 +904,8 @@ public class DataExporter {
 				};
 		final int[] variabilities = {30, 50, 70};
 		
-		File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "saramattia.csv").toFile();
+//		File f = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "saramattia.csv").toFile();
+		File f = Paths.get(basePath, "saramattia.csv").toFile();
 		
 		try (PrintWriter out = new PrintWriter(f)) {
 		
@@ -925,42 +932,142 @@ public class DataExporter {
 			for (String s : strings) {
 				String[] names = s.split(":");
 				for (int variability : variabilities)
-					for (int gamma = 1; gamma <= 24; ++gamma)
+					for (int gamma = 1; gamma <= 24; ++gamma) {
+						logger.info("Considering {} with variability {} and gamma {}...", basePath + names[0] + "/results/solution-" + names[1] + ".xml", variability, gamma);
 						out.println(robustnessTestRow(
 								new File(basePath + names[0] + "/results/solution-" + names[1] + ".xml"),
 								new File(basePath + names[0] + "/results/generated-evaluation-" + names[1] + "-" + names[2] + "-" + variability + "-" + gamma + ".xml"),
 								names[3],
 								Integer.parseInt(names[1]),
 								variability));
+					}
 			}
 		}
 		
 		return f;
 	}
 	
+//	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		try {
-			Configuration.loadConfiguration("/Users/ft/Development/workspace-s4c-runtime/Constellation/batch.prop-small10-30-24.properties");
-//			List<File> res = evaluate(Paths.get("/Users/ft/Development/workspace-s4c-runtime/Constellation/space4cloud/results/"), 400, 100, 20);
+			String basePath             = "/Users/ft/Downloads/ConstellationSaraNew1-100000/";
+			String configurationLocal   = "/Users/ft/Desktop/tmp/trash/s4cRob.properties";
+			String configurationRemote  = "/Users/ft/Desktop/tmp/trash/s4cRobRemote.properties";
 			
-			saraMattiaTest();
-				
-			
-//			Configuration.loadConfiguration("/Users/ft/Desktop/tmp/Sara Mattia/aaa/conf.properties");
-//		
-//			List<File> files = new ArrayList<File>();
-//			files.add(new File("/Users/ft/Desktop/tmp/Sara Mattia/aaa/costs-1900-m2xlarge.txt"));
-//			List<File> res = evaluate(files);
-//			for (File f : res)
-//				System.out.println("> " + f.getAbsolutePath());
-//			
-//			res = getAllGeneratedFiles(Paths.get("/Users/ft/Desktop/tmp/Sara Mattia/aaa"));
-//			for (File f : res)
-//				System.out.println("> " + f.getAbsolutePath());
+//			recallContractor(basePath, configurationLocal);
+			recallRobustnessTest(basePath, configurationRemote);
+			saraMattiaTest(basePath, configurationLocal);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static List<File> recallContractor(String basePath, String configuration) throws Exception {
+		Configuration.loadConfiguration(configuration);
+		
+		List<File> generated = new ArrayList<File>();
+		
+		File[] folders = Paths.get(basePath).toFile().listFiles(new FileFilter() {
+			
+			@Override
+			public boolean accept(File pathname) {
+						try {
+							Integer.parseInt(pathname.getName());
+							return true;
+						} catch (Exception e) {
+							return false;
+						}
+			}
+		});
+		
+		for (File parent : folders) {
+			parent = Paths.get(parent.toString(), "results").toFile();
+			
+			File[] files = parent.listFiles(new FileFilter() {
+				
+				@Override
+				public boolean accept(File pathname) {
+					return
+							(pathname.getName().startsWith("solution-"));
+				}
+			});
+			
+			for (File f : files) {
+				Contractor.removeTempFiles = false;
+				
+				File res = null;
+				
+				try {
+					logger.info("Considering {}...", f.getName());
+					res = Contractor.perform(configuration, f.getAbsolutePath(), f.getParent().toString(), 1000.0);
+					if (f != null && f.exists())
+						logger.debug("Solution: " + f.getAbsolutePath());
+					else {
+						logger.error("No solution!");
+						continue;
+					}
+				} catch (Exception e) {
+					logger.error("Error while getting the solution!", e);
+					continue;
+				}
+				
+				res.renameTo(Paths.get(f.getParent(), f.getName().replaceAll("solution", "generated-costs")).toFile());
+				generated.add(res);
+			}
+		}
+		
+		return generated;
+		
+	}
+	
+	public static List<File> recallRobustnessTest(String basePath, String configuration) throws Exception {
+		Configuration.loadConfiguration(configuration);
+		
+		List<File> generated = new ArrayList<File>();
+ 		
+		File[] folders = Paths.get(basePath).toFile().listFiles(new FileFilter() {
+			
+			@Override
+			public boolean accept(File pathname) {
+						try {
+							Integer.parseInt(pathname.getName());
+							return true;
+						} catch (Exception e) {
+							return false;
+						}
+			}
+		});
+		
+		for (File parent : folders) {
+			parent = Paths.get(parent.toString(), "results").toFile();
+			
+			File[] files = parent.listFiles(new FileFilter() {
+				
+				@Override
+				public boolean accept(File pathname) {
+					return
+							(pathname.getName().startsWith("ume-"));
+				}
+			});
+			
+			if (files.length == 0)
+				continue;
+			
+			int highestPeak = Space4Cloud.getMaxPopulation(files[0]);
+			
+			int[] gammas = Configuration.ROBUSTNESS_GS;
+			int[] variabilities = Configuration.ROBUSTNESS_VARIABILITIES;
+			
+			for (int variability : variabilities)
+				for (int gamma : gammas) {
+					logger.info("Evaluating {} with a variability of {} and a gamma of {}...", highestPeak, variability, gamma);
+					generated.addAll(DataExporter.evaluate(parent.toPath(), highestPeak, variability, gamma, 100));
+				}
+		}
+		
+		return generated;
+		
 	}
 	
 }
