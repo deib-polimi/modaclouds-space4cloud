@@ -890,6 +890,7 @@ public class DataExporter {
 //		final String basePath = "/Users/ft/Downloads/ConstellationSaraNew1/";
 		
 		Configuration.loadConfiguration(configuration);
+		Configuration.initDatabaseConfiguration();
 		
 		final String[] strings = {
 				"6:400:m1small:m1.small",
@@ -950,7 +951,7 @@ public class DataExporter {
 //	@SuppressWarnings("unused")
 	public static void main(String[] args) {
 		try {
-			String basePath             = "/Users/ft/Downloads/ConstellationSaraNew1-100000/";
+			String basePath             = "/Users/ft/Downloads/ConstellationSaraNew1-bigM1e6/";
 			String configurationLocal   = "/Users/ft/Desktop/tmp/trash/s4cRob.properties";
 			String configurationRemote  = "/Users/ft/Desktop/tmp/trash/s4cRobRemote.properties";
 			
@@ -965,6 +966,7 @@ public class DataExporter {
 	
 	public static List<File> recallContractor(String basePath, String configuration) throws Exception {
 		Configuration.loadConfiguration(configuration);
+		Configuration.initDatabaseConfiguration();
 		
 		List<File> generated = new ArrayList<File>();
 		
@@ -1023,6 +1025,7 @@ public class DataExporter {
 	
 	public static List<File> recallRobustnessTest(String basePath, String configuration) throws Exception {
 		Configuration.loadConfiguration(configuration);
+		Configuration.initDatabaseConfiguration();
 		
 		List<File> generated = new ArrayList<File>();
  		

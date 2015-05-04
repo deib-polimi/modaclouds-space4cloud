@@ -1,15 +1,21 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.gui.CloudBurstingPanel;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -562,6 +568,36 @@ public class Configuration {
 		Configuration.PALLADIO_ALLOCATION_MODEL = replaceAllOccurrencies(Paths.get(Configuration.PALLADIO_ALLOCATION_MODEL), suffix, subs).toString();
 		Configuration.PALLADIO_USAGE_MODEL = replaceAllOccurrencies(Paths.get(Configuration.PALLADIO_USAGE_MODEL), suffix, subs).toString();
 		
+	}
+	
+	public static void initDatabaseConfiguration() throws Exception {
+		InputStream dbConfigurationStream = null;
+		//load the configuration file if specified 
+
+		if(Configuration.DB_CONNECTION_FILE != null && Paths.get(Configuration.DB_CONNECTION_FILE).toFile().exists()){
+			try {
+				dbConfigurationStream = new FileInputStream(Configuration.DB_CONNECTION_FILE);
+			} catch (FileNotFoundException e) {
+				logger.warn("Could not load the dabase configuration from: "+Configuration.DB_CONNECTION_FILE+". Will try to use the default one");
+				dbConfigurationStream = Configuration.class.getResourceAsStream(Configuration.DEFAULT_DB_CONNECTION_FILE);
+			}
+		}else{
+			//if the file has not been specified or it does not exist use the one with default values embedded in the plugin				
+			dbConfigurationStream = Configuration.class.getResourceAsStream(Configuration.DEFAULT_DB_CONNECTION_FILE);				
+		}
+
+		try {
+			DatabaseConnector.initConnection(dbConfigurationStream);
+			DataHandlerFactory.getHandler();
+		} catch (SQLException | IOException | DatabaseConnectionFailureExteption e) {
+			throw new Exception("Error connecting to the Database",e);
+		}		
+
+		try {
+			dbConfigurationStream.close();
+		} catch (IOException e) {
+			logger.error("Error closing the dabase configuration");
+		}
 	}
 
 }

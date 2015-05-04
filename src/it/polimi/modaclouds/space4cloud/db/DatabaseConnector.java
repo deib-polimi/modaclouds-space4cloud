@@ -44,7 +44,7 @@ public class DatabaseConnector {
 //	
 
 	public static String url = "jdbc:mysql://localhost:3306/"; //109.231.122.191:3306/";		
-	public static String dbName = "cloud-copy";
+	public static String dbName = "cloud";
 	public static String driver = "com.mysql.jdbc.Driver";
 	public static String userName = "moda";
 	public static String password = "modaclouds";

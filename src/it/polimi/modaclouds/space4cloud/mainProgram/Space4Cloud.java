@@ -21,7 +21,6 @@ import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
 import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
 import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.exceptions.AssesmentException;
@@ -55,12 +54,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -211,34 +207,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		//initialize the connection to the database
 
 		consoleLogger.info("Connecting to the resource model database");
-		InputStream dbConfigurationStream = null;
-		//load the configuration file if specified 
-
-		if(Configuration.DB_CONNECTION_FILE != null && Paths.get(Configuration.DB_CONNECTION_FILE).toFile().exists()){
-			try {
-				dbConfigurationStream = new FileInputStream(Configuration.DB_CONNECTION_FILE);
-			} catch (FileNotFoundException e) {
-				consoleLogger.warn("Could not load the dabase configuration from: "+Configuration.DB_CONNECTION_FILE+". Will try to use the default one");
-				dbConfigurationStream = this.getClass().getResourceAsStream(Configuration.DEFAULT_DB_CONNECTION_FILE);
-			}
-		}else{
-			//if the file has not been specified or it does not exist use the one with default values embedded in the plugin				
-			dbConfigurationStream = this.getClass().getResourceAsStream(Configuration.DEFAULT_DB_CONNECTION_FILE);				
-		}
-
 		try {
-			DatabaseConnector.initConnection(dbConfigurationStream);
-			DataHandlerFactory.getHandler();
-		} catch (SQLException | IOException | DatabaseConnectionFailureExteption e) {
-			logger.error("Error connecting to the Database",e);
-			signalError("An error occured connecting to the database"+e.getLocalizedMessage());
+			Configuration.initDatabaseConfiguration();
+		} catch (Exception e) {
+			consoleLogger.error("Error while initializing the connection to the database.", e);
 			return;
-		}		
-
-		try {
-			dbConfigurationStream.close();
-		} catch (IOException e) {
-			logger.error("Error closing the dabase configuration");
 		}
 
 		//If the chosen solver is LINE try to connect to it or launch it locally. 		
