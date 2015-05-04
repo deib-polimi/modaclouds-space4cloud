@@ -179,8 +179,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		}
 		
 		try {
-			Configuration.fixPalladioFiles();
 			consoleLogger.debug("Fixing the Palladio files...");
+			Configuration.fixPalladioFiles();
 		} catch (Exception e) {
 			logger.error("Error while fixing the Palladio files.", e);
 		}

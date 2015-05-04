@@ -506,7 +506,7 @@ public class Configuration {
 		
 		for (String orig : subs.keySet()) {
 			Matcher m = java.util.regex.Pattern.compile(orig).matcher(baseFile);
-			while (m.find()) {
+			while (m.find() && !done) {
 				if (!m.group().equals(subs.get(orig)))
 					done = true;
 			}
@@ -522,6 +522,7 @@ public class Configuration {
 		int i = fullName.lastIndexOf('.');
 		String name = fullName.substring(0, i);
 		String ext = fullName.substring(i);
+//		Path newp = Files.createTempFile(name, ext);
 		Path newp = Paths.get(p.getParent().toString(), name + suffix + ext);
 		
 		try (PrintWriter out = new PrintWriter(new FileWriter(newp.toFile()))) {
@@ -537,7 +538,7 @@ public class Configuration {
 		
 		DecimalFormat f = new DecimalFormat("00");
 		
-		return String.format("%d%s%s-%s%s%s",
+		return String.format("%d%s%s%s%s%s",
 				c.get(Calendar.YEAR),
 				f.format(c.get(Calendar.MONTH) + 1),
 				f.format(c.get(Calendar.DAY_OF_MONTH)),
@@ -549,14 +550,14 @@ public class Configuration {
 	
 	public static void fixPalladioFiles() throws Exception {
 		Map<String, String> subs = new HashMap<String, String>();
-		subs.put("href=\"[a-z]+.repository", "href=\"" + Paths.get(Configuration.PALLADIO_REPOSITORY_MODEL).toFile().getName());
+		subs.put("[a-z]+.repository", Paths.get(Configuration.PALLADIO_REPOSITORY_MODEL).toFile().getName());
 		
 		String suffix = getDate();
 		
 		Configuration.PALLADIO_SYSTEM_MODEL = replaceAllOccurrencies(Paths.get(Configuration.PALLADIO_SYSTEM_MODEL), suffix, subs).toString();
 		
-		subs.put("href=\"[a-z]+.resourceenvironment", "href=\"" + Paths.get(Configuration.PALLADIO_RESOURCE_MODEL).toFile().getName());
-		subs.put("href=\"[a-z]+.system", "href=\"" + Paths.get(Configuration.PALLADIO_SYSTEM_MODEL).toFile().getName());
+		subs.put("[a-z]+.resourceenvironment", Paths.get(Configuration.PALLADIO_RESOURCE_MODEL).toFile().getName());
+		subs.put("[a-z]+.system", Paths.get(Configuration.PALLADIO_SYSTEM_MODEL).toFile().getName());
 		
 		Configuration.PALLADIO_ALLOCATION_MODEL = replaceAllOccurrencies(Paths.get(Configuration.PALLADIO_ALLOCATION_MODEL), suffix, subs).toString();
 		Configuration.PALLADIO_USAGE_MODEL = replaceAllOccurrencies(Paths.get(Configuration.PALLADIO_USAGE_MODEL), suffix, subs).toString();
