@@ -15,13 +15,13 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.lqn;
 
-import it.polimi.modaclouds.space4cloud.line.CmcqnModel;
-import it.polimi.modaclouds.space4cloud.line.Percentile;
-import it.polimi.modaclouds.space4cloud.line.Processor;
-import it.polimi.modaclouds.space4cloud.line.ResponseTimeDistribution;
-import it.polimi.modaclouds.space4cloud.line.SEFF;
-import it.polimi.modaclouds.space4cloud.line.Station;
-import it.polimi.modaclouds.space4cloud.line.Workload;
+import it.polimi.modaclouds.space4cloud.schemas.line.CmcqnModel;
+import it.polimi.modaclouds.space4cloud.schemas.line.Percentile;
+import it.polimi.modaclouds.space4cloud.schemas.line.Processor;
+import it.polimi.modaclouds.space4cloud.schemas.line.ResponseTimeDistribution;
+import it.polimi.modaclouds.space4cloud.schemas.line.SEFF;
+import it.polimi.modaclouds.space4cloud.schemas.line.Station;
+import it.polimi.modaclouds.space4cloud.schemas.line.Workload;
 import it.polimi.modaclouds.space4cloud.utils.XMLHelper;
 
 import java.io.File;

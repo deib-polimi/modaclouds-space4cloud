@@ -8,7 +8,7 @@
 	<xs:annotation>
 		<xs:appinfo>
 			<jaxb:schemaBindings>
-				<jaxb:package name="it.polimi.modaclouds.space4cloud.line" />
+				<jaxb:package name="it.polimi.modaclouds.space4cloud.schemas.line" />
 			</jaxb:schemaBindings>
 		</xs:appinfo>
 	</xs:annotation>

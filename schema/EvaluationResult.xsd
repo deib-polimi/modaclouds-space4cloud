@@ -10,7 +10,7 @@
     <xs:annotation>
         <xs:appinfo>
             <jaxb:schemaBindings>
-                <jaxb:package name="it.polimi.modaclouds.space4cloud.evaluationresult" />
+                <jaxb:package name="it.polimi.modaclouds.space4cloud.schemas.evaluationresult" />
             </jaxb:schemaBindings>
         </xs:appinfo>
     </xs:annotation>

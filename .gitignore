@@ -1,8 +1,7 @@
 /.settings
 .classpath
 .DS_Store
-/src/it/polimi/modaclouds/space4cloud/line/*
-/src/it/polimi/modaclouds/space4cloud/generated/*
+/src/it/polimi/modaclouds/space4cloud/schemas/*
 /src/META-INF/*
 /target
 /src/META-INF/*
