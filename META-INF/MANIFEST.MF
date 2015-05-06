@@ -70,7 +70,7 @@ Export-Package: icons,
  it.polimi.modaclouds.space4cloud.handlers;uses:="org.eclipse.core.commands",
  it.polimi.modaclouds.space4cloud.impl;uses:="org.w3c.dom,it.polimi.modaclouds.space4cloud.iterfaces",
  it.polimi.modaclouds.space4cloud.iterfaces;uses:="org.w3c.dom",
- it.polimi.modaclouds.space4cloud.line,
+ it.polimi.modaclouds.space4cloud.schemas.line,
  it.polimi.modaclouds.space4cloud.lqn;uses:="it.polimi.modaclouds.space4cloud.optimization.solution.impl,org.w3c.dom",
  it.polimi.modaclouds.space4cloud.mainProgram;uses:="it.polimi.modaclouds.space4cloud.exceptions,it.polimi.modaclouds.space4cloud.db,javax.xml.bind",
  it.polimi.modaclouds.space4cloud.optimization;
