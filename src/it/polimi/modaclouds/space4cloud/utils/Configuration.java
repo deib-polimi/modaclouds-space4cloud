@@ -316,6 +316,10 @@ public class Configuration {
 			return Paths.get(PROJECT_BASE_FOLDER).getFileName().toString(); 
 		return null;
 	}
+	
+	public static boolean isRunningLocally() {
+		return (SSH_HOST.equals("localhost") || SSH_HOST.equals("127.0.0.1"));
+	}
 
 	/**
 	 * Checks if the configuration is valid returning a list of errors
@@ -364,7 +368,7 @@ public class Configuration {
 				errors.add("The number of scale in convergence iterations must be positive");
 
 			//check the initial solution generation
-			if(RELAXED_INITIAL_SOLUTION || REDISTRIBUTE_WORKLOAD){
+			if ((RELAXED_INITIAL_SOLUTION || REDISTRIBUTE_WORKLOAD || USE_PRIVATE_CLOUD || CONTRACTOR_TEST) && !isRunningLocally()) {
 				if(SSH_USER_NAME==null|| SSH_USER_NAME.isEmpty())
 					errors.add("The user name for SSH connection has to be provided to perform the initial solution generation");
 				if(SSH_PASSWORD==null|| SSH_PASSWORD.isEmpty())
