@@ -31,12 +31,11 @@ public abstract class Database extends PaaS {
 			String serviceType, String serviceName, String resourceName, DatabaseType type, String technology,
 			boolean ssdOptimized, int storage, int dataReplicas, boolean multiAzReplicas, Compute compute) {
 		super(provider, serviceType, serviceName, resourceName, Database.DEFAULT_REPLICAS, dataReplicas,
-				Database.DEFAULT_REPLICAS_CHANGEABLE, Database.DEFAULT_REPLICAS_PAYED_SINGULARLY);
+				Database.DEFAULT_REPLICAS_CHANGEABLE, Database.DEFAULT_REPLICAS_PAYED_SINGULARLY, compute);
 		
 		this.type = type;
 		this.ssdOptimized = ssdOptimized;
 		this.multiAzReplicas = multiAzReplicas;
-		this.compute = compute;
 		this.storage = storage;
 		this.technology = technology;
 	}
@@ -46,8 +45,6 @@ public abstract class Database extends PaaS {
 	private boolean multiAzReplicas;
 	
 	private int storage;
-	
-	private Compute compute;
 	
 	private DatabaseType type;
 	
@@ -99,14 +96,6 @@ public abstract class Database extends PaaS {
 
 	public void setMultiAzReplicas(boolean multiAzReplicas) {
 		this.multiAzReplicas = multiAzReplicas;
-	}
-
-	public Compute getCompute() {
-		return compute;
-	}
-
-	public void setCompute(Compute compute) {
-		this.compute = compute;
 	}
 
 	@Override
@@ -167,7 +156,6 @@ public abstract class Database extends PaaS {
 				.append(ssdOptimized, tmp.ssdOptimized)
 				.append(multiAzReplicas, tmp.multiAzReplicas)
 				.append(storage, tmp.storage)
-				.append(compute, tmp.compute)
 				.append(type, tmp.type)
 				.appendSuper(super.equals(obj)).isEquals();
 	}
@@ -182,8 +170,7 @@ public abstract class Database extends PaaS {
 				.append(ssdOptimized)
 				.append(multiAzReplicas)
 				.append(storage)
-				.append(type)
-				.append(compute).toHashCode();
+				.append(type).toHashCode();
 
 	}
 

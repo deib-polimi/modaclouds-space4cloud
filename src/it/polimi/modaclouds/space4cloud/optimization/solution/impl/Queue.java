@@ -1,11 +1,11 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-
-public class Queue extends PaaS {
+public class Queue extends PaaS implements DelayCenter {
 
 	/**
 	 * 
@@ -18,14 +18,13 @@ public class Queue extends PaaS {
 			int maxConnections, int dataReplicas, boolean multiAzReplicas, int maxRequests, double multiplyingFactor, double delay,
 			Compute compute) {
 	super(provider, serviceType, serviceName, resourceName, Queue.DEFAULT_REPLICAS, dataReplicas,
-			Queue.DEFAULT_REPLICAS_CHANGEABLE, Queue.DEFAULT_REPLICAS_PAYED_SINGULARLY);
+			Queue.DEFAULT_REPLICAS_CHANGEABLE, Queue.DEFAULT_REPLICAS_PAYED_SINGULARLY, compute);
 		
 		this.requestSize = requestSize;
 		this.orderPreserving = orderPreserving;
 		this.maxConnections = maxConnections;
 		this.multiAzReplicas = multiAzReplicas;
 		this.maxRequests = maxRequests;
-		this.compute = compute;
 		this.multiplyingFactor = multiplyingFactor;
 		this.delay = delay;
 	}
@@ -118,16 +117,6 @@ public class Queue extends PaaS {
 
 	public void setMaxRequests(int maxRequests) {
 		this.maxRequests = maxRequests;
-	}
-	
-	private Compute compute;
-
-	public Compute getCompute() {
-		return compute;
-	}
-
-	public void setCompute(Compute compute) {
-		this.compute = compute;
 	}
 
 	public void setMultiAzReplicas(boolean multiAzReplicas) {

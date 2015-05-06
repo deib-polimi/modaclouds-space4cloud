@@ -19,11 +19,10 @@ public abstract class Platform extends PaaS {
 			int replicas, int dataReplicas, boolean multiAzReplicas,
 			List<String> supportedPlatforms, PlatformType platformType, Compute compute, int storage, int maxConnections,
 			boolean replicasChangeable, boolean replicasPayedSingularly) {
-		super(provider, serviceType, serviceName, resourceName, replicas, dataReplicas, replicasChangeable, replicasPayedSingularly);
+		super(provider, serviceType, serviceName, resourceName, replicas, dataReplicas, replicasChangeable, replicasPayedSingularly, compute);
 		this.multiAzReplicas = multiAzReplicas;
 		this.supportedPlatforms = supportedPlatforms;
 		this.platformType = platformType;
-		this.compute = compute;
 		this.storage = storage;
 		this.maxConnections = maxConnections;
 	}
@@ -60,8 +59,6 @@ public abstract class Platform extends PaaS {
 	
 	private PlatformType platformType;
 	
-	private Compute compute;
-	
 	private boolean multiAzReplicas;
 	
 	private int storage;
@@ -91,20 +88,12 @@ public abstract class Platform extends PaaS {
 	public void setPlatformType(PlatformType platformType) {
 		this.platformType = platformType;
 	}
-
-	public Compute getCompute() {
-		return compute;
-	}
-
-	public void setCompute(Compute compute) {
-		this.compute = compute;
-	}
 	
 	public void setIaasResources(String provider, String serviceType, String serviceName,
 			String resourceName, int replicas,
 			int numberOfCores, double speed, int ram) {
-		compute = new Compute(provider, serviceType, serviceName, 
-				resourceName, replicas, numberOfCores, speed, ram);
+		setCompute(new Compute(provider, serviceType, serviceName, 
+				resourceName, replicas, numberOfCores, speed, ram));
 	}
 
 	public boolean isMultiAzReplicas() {
@@ -193,7 +182,6 @@ public abstract class Platform extends PaaS {
 		return new EqualsBuilder()
 				.appendSuper(sameSupportedPlatforms)
 				.append(platformType, tmp.platformType)
-				.append(compute, tmp.compute)
 				.append(multiAzReplicas, tmp.multiAzReplicas)
 				.append(storage, tmp.storage)
 				.append(maxConnections, tmp.maxConnections)
@@ -208,7 +196,6 @@ public abstract class Platform extends PaaS {
 				.appendSuper(super.hashCode())
 				.append(supportedPlatforms)
 				.append(platformType)
-				.append(compute)
 				.append(multiAzReplicas)
 				.append(storage)
 				.append(maxConnections).toHashCode();

@@ -16,12 +16,10 @@
 package it.polimi.modaclouds.space4cloud.lqn;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.DelayCenter;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 import java.io.File;
@@ -125,7 +123,6 @@ public class LqnHandler implements Cloneable, Serializable {
 			lqnH.setLqnDOM(null);
 			lqnH.setLqnFilePath(lqnClone.toPath());
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
 			logger.error("Error cloning the lqn handler",e);
 			lqnH = new LqnHandler(lqnClone);
 		}
@@ -292,43 +289,31 @@ public class LqnHandler implements Cloneable, Serializable {
 					"multiplicity", multiplicity);
 			changeElementbyName("processor", tier.getPcmName(),
 					"speed-factor", c_resource.getSpeedFactor());
-		} else if (service instanceof Platform) {
-			Platform p = (Platform) service;
-			Compute c_resource = p.getCompute();
-			int multiplicity = c_resource.getNumberOfCores()
-					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getPcmName(),
-					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getPcmName(),
-					"speed-factor", c_resource.getSpeedFactor());
-		} else if (service instanceof Cache) {
-			Cache c = (Cache) service;
-			Compute c_resource = c.getCompute();
-			int multiplicity = c_resource.getNumberOfCores()
-					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getPcmName(),
-					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getPcmName(),
-					"speed-factor", c_resource.getSpeedFactor());
-		} else if (service instanceof Database) {
-			Database db = (Database) service;
-			Compute c_resource = db.getCompute();
-			int multiplicity = c_resource.getNumberOfCores()
-					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getPcmName(),
-					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getPcmName(),
-					"speed-factor", c_resource.getSpeedFactor());
-		} else if (service instanceof Queue) {
-			// TODO: we have to consider the queues as delay centers!!!! this is wrong!!
-			Queue queue = (Queue) service;
-			Compute c_resource = queue.getCompute();
-			int multiplicity = c_resource.getNumberOfCores()
-					* c_resource.getReplicas();
-			changeElementbyName("processor", tier.getPcmName(),
-					"multiplicity", multiplicity);
-			changeElementbyName("processor", tier.getPcmName(),
-					"speed-factor", c_resource.getSpeedFactor());
+		} else if (service instanceof PaaS) {
+			if (service instanceof DelayCenter) {
+				// TODO: we have to consider the delay!!!! this is wrong!!
+				PaaS p = (PaaS) service;
+				Compute c_resource = p.getCompute();
+				int multiplicity = c_resource.getNumberOfCores()
+						* c_resource.getReplicas() * p.getReplicas();
+				
+				@SuppressWarnings("unused")
+				double delay = ((DelayCenter)p).getDelay();
+				
+				changeElementbyName("processor", tier.getPcmName(),
+						"multiplicity", multiplicity);
+				changeElementbyName("processor", tier.getPcmName(),
+						"speed-factor", c_resource.getSpeedFactor());
+			} else {
+				PaaS p = (PaaS) service;
+				Compute c_resource = p.getCompute();
+				int multiplicity = c_resource.getNumberOfCores()
+						* c_resource.getReplicas() * p.getReplicas();
+				changeElementbyName("processor", tier.getPcmName(),
+						"multiplicity", multiplicity);
+				changeElementbyName("processor", tier.getPcmName(),
+						"speed-factor", c_resource.getSpeedFactor());
+			}
 		}
 
 		// TODO add other cloud resource types.

@@ -17,12 +17,11 @@ public class Cache extends PaaS {
 			String engine, int dataReplicas, boolean multiAzReplicas, int maxConnections, int storage,
 			Compute compute) {
 		super(provider, serviceType, serviceName, resourceName, Cache.DEFAULT_REPLICAS, dataReplicas,
-				Cache.DEFAULT_REPLICAS_CHANGEABLE, Cache.DEFAULT_REPLICAS_PAYED_SINGULARLY);
+				Cache.DEFAULT_REPLICAS_CHANGEABLE, Cache.DEFAULT_REPLICAS_PAYED_SINGULARLY, compute);
 		this.engine = engine;
 		this.multiAzReplicas = multiAzReplicas;
 		this.maxConnections = maxConnections;
 		this.storage = storage;
-		this.compute = compute;
 	}
 	
 	private String engine;
@@ -32,8 +31,6 @@ public class Cache extends PaaS {
 	private int maxConnections;
 	
 	private int storage;
-	
-	private Compute compute;
 	
 	public static final int DEFAULT_STORAGE = Integer.MAX_VALUE;
 	public static final int DEFAULT_MAX_CONNECTIONS = Integer.MAX_VALUE;
@@ -73,14 +70,6 @@ public class Cache extends PaaS {
 
 	public void setStorage(int storage) {
 		this.storage = storage;
-	}
-
-	public Compute getCompute() {
-		return compute;
-	}
-
-	public void setCompute(Compute compute) {
-		this.compute = compute;
 	}
 
 	@Override
@@ -129,7 +118,6 @@ public class Cache extends PaaS {
 				.append(multiAzReplicas, tmp.multiAzReplicas)
 				.append(maxConnections, tmp.maxConnections)
 				.append(storage, tmp.storage)
-				.append(compute, tmp.compute)
 				.appendSuper(super.equals(obj)).isEquals();
 	}
 
@@ -142,8 +130,7 @@ public class Cache extends PaaS {
 				.append(engine)
 				.append(multiAzReplicas)
 				.append(maxConnections)
-				.append(storage)
-				.append(compute).toHashCode();
+				.append(storage).toHashCode();
 
 	}
 }

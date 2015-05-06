@@ -30,13 +30,15 @@ public abstract class PaaS extends CloudService implements
 
 	public PaaS(String provider, String serviceType,
 			String serviceName, String resourceName,
-			int replicas, int dataReplicas, boolean replicasChangeable, boolean replicasPayedSingularly) {
+			int replicas, int dataReplicas, boolean replicasChangeable, boolean replicasPayedSingularly, Compute compute) {
 		super(provider, serviceType, serviceName, resourceName);
 		
 		this.replicas = replicas;
 		this.dataReplicas = dataReplicas;
 		this.replicasChangeable = replicasChangeable;
 		this.replicasPayedSingularly = replicasPayedSingularly;
+		
+		this.compute = compute;
 		
 		setLQNPropertyTAG("speedFactor"); // TODO: is this thing actually used?
 	}
@@ -48,6 +50,16 @@ public abstract class PaaS extends CloudService implements
 	private boolean replicasChangeable;
 	
 	private boolean replicasPayedSingularly;
+	
+	private Compute compute;
+	
+	public Compute getCompute() {
+		return compute;
+	}
+
+	public void setCompute(Compute compute) {
+		this.compute = compute;
+	}
 	
 	public static final int DEFAULT_REPLICAS = 1;
 	public static final int DEFAULT_DATA_REPLICAS = 1;
@@ -139,6 +151,7 @@ public abstract class PaaS extends CloudService implements
 				.append(dataReplicas, tmp.dataReplicas)
 				.append(replicasChangeable, tmp.replicasChangeable)
 				.append(replicasPayedSingularly, tmp.replicasPayedSingularly)
+				.append(compute, tmp.compute)
 				.appendSuper(super.equals(obj)).isEquals();
 	}
 	
@@ -151,6 +164,7 @@ public abstract class PaaS extends CloudService implements
 				.append(replicas)
 				.append(dataReplicas)
 				.append(replicasChangeable)
+				.append(compute)
 				.append(replicasPayedSingularly).toHashCode();
 
 	}
