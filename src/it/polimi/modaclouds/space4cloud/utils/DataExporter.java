@@ -460,8 +460,7 @@ public class DataExporter {
 		return replicasMap;
 	}
 	
-	private static final String EVALUATE_COMMAND = "/usr/optimization/costiSaraMattia/main"; // TODO re-enable this one
-//	private static final String EVALUATE_COMMAND = "/usr/optimization/costiSaraMattiaMod/main";
+	private static final String EVALUATE_COMMAND = "/home/server/costiSaraMattia/main";
 	private static final String EVALUATE_FOLDER = "/tmp/sara";
 	
 	public static final String BASE_FILE_NAME = "generated-evaluation-";
