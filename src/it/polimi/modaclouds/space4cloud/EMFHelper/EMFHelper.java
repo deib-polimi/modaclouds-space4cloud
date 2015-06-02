@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -230,27 +229,6 @@ public class EMFHelper {
 		resourceSet.getPackageRegistry().put(UsagemodelPackage.eNS_URI,
 				UsagemodelPackage.eINSTANCE);
 
-	}
-
-	public static boolean retainAll(
-			Collection<? extends Identifier> collection,
-			Collection<? extends EObject> itemsToRetain) {
-		boolean removedAny = false;
-		for (Iterator<? extends Identifier> iterator = collection.iterator(); iterator
-				.hasNext();) {
-			Identifier identifier = iterator.next();
-			boolean identifierContainedInItemsToRetain = false;
-			for (EObject identifierToRetain : itemsToRetain) {
-				if (checkIdentity(identifier, identifierToRetain)) {
-					identifierContainedInItemsToRetain = true;
-				}
-			}
-			if (!identifierContainedInItemsToRetain) {
-				iterator.remove();
-				removedAny = true;
-			}
-		}
-		return removedAny;
 	}
 
 	public static Entity retrieveEntityByID(List<? extends Entity> entities,

@@ -968,12 +968,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					// to
 					// the
 					// resource
+					if(!resourceEnvParser.getServiceType().containsKey(c.getId() + (defaultProvider ? "" : provider)))
+						throw new InitializationException("The tier with ID "+c.getId()+" could not be initialized");
 					String serviceType = resourceEnvParser.getServiceType()
 							.get(c.getId() + (defaultProvider ? "" : provider)); // Service
+					
+					if(!resourceEnvParser.getInstanceSize().containsKey(c.getId() + (defaultProvider ? "" : provider)))
+						throw new InitializationException("The tier with ID "+c.getId()+" could not be initialized");
 					String resourceSize = resourceEnvParser.getInstanceSize()
 							.get(c.getId() + (defaultProvider ? "" : provider));
+					
+					if(!resourceEnvParser.getServiceName().containsKey(c.getId() + (defaultProvider ? "" : provider)))
+						throw new InitializationException("The tier with ID "+c.getId()+" could not be initialized");
 					String serviceName = resourceEnvParser.getServiceName()
 							.get(c.getId() + (defaultProvider ? "" : provider));
+					
+					if(!resourceEnvParser.getInstanceReplicas().containsKey(c.getId() + (defaultProvider ? "" : provider)))
+						throw new InitializationException("The tier with ID "+c.getId()+" could not be initialized");					
 					int replicas = resourceEnvParser.getInstanceReplicas().get(
 							c.getId() + (defaultProvider ? "" : provider))[i];
 
