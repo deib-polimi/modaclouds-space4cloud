@@ -1,6 +1,6 @@
 Index: .classpath
 ===================================================================
---- .classpath	(revision 25017)
+--- .classpath	(revision 26823)
 +++ .classpath	(working copy)
 @@ -1,6 +1,6 @@
  <?xml version="1.0" encoding="UTF-8"?>
@@ -12,7 +12,7 @@ Index: .classpath
  	<classpathentry kind="src" path="resources"/>
 Index: .settings/org.eclipse.jdt.core.prefs
 ===================================================================
---- .settings/org.eclipse.jdt.core.prefs	(revision 25017)
+--- .settings/org.eclipse.jdt.core.prefs	(revision 26823)
 +++ .settings/org.eclipse.jdt.core.prefs	(working copy)
 @@ -1,7 +1,7 @@
 -#Wed Apr 22 06:02:19 CEST 2009
@@ -28,22 +28,20 @@ Index: .settings/org.eclipse.jdt.core.prefs
 +org.eclipse.jdt.core.compiler.source=1.7
 Index: META-INF/MANIFEST.MF
 ===================================================================
---- META-INF/MANIFEST.MF	(revision 25017)
+--- META-INF/MANIFEST.MF	(revision 26823)
 +++ META-INF/MANIFEST.MF	(working copy)
-@@ -40,7 +40,10 @@
-  de.uka.ipd.sdq.pcmsolver.models,
-  de.uka.ipd.sdq.pcmsolver.runconfig,
-  de.uka.ipd.sdq.pcmsolver.tests,
-+ de.uka.ipd.sdq.pcmsolver.tests.MediaStore,
-+ de.uka.ipd.sdq.pcmsolver.tests.MediaStore2,
-  de.uka.ipd.sdq.pcmsolver.transformations,
-+ de.uka.ipd.sdq.pcmsolver.transformations.pcm2capra,
-  de.uka.ipd.sdq.pcmsolver.transformations.pcm2lqn,
-  de.uka.ipd.sdq.pcmsolver.transformations.pcm2regex,
+@@ -45,6 +45,7 @@
   de.uka.ipd.sdq.pcmsolver.visitors,
+  de.uka.ipd.sdq.pcmsolver.visualisation
+ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+-Import-Package: org.eclipse.ui.part,
++Import-Package: org.apache.commons.lang.time,
++ org.eclipse.ui.part,
+  org.eclipse.ui.views.navigator
+ Bundle-Vendor: sdq.ipd.uka.de
 Index: build.properties
 ===================================================================
---- build.properties	(revision 25017)
+--- build.properties	(revision 26823)
 +++ build.properties	(working copy)
 @@ -2,5 +2,7 @@
  bin.includes = plugin.xml,\
@@ -56,20 +54,33 @@ Index: build.properties
 +src.includes = resources/
 Index: src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(revision 25017)
+--- src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(revision 26823)
 +++ src/de/uka/ipd/sdq/pcmsolver/RunPCMAnalysisJob.java	(working copy)
-@@ -67,7 +67,7 @@
- 					"Invoked reliability analysis using wrong job class!");
- 		} else if (configuration.getSolver().equals(MessageStrings.SRE_SOLVER)) {
+@@ -69,8 +69,9 @@
  			strategy = new Pcm2RegExStrategy(configuration);
--		} else if (configuration.getSolver().equals(MessageStrings.LQNS_SOLVER)) {
-+		} else if (configuration.getSolver().equals(MessageStrings.LQNS_SOLVER)|| configuration.getSolver().equals(MessageStrings.PERFENGINE_SOLVER)) {
+ 		} else if (configuration.getSolver().equals(MessageStrings.LQNS_SOLVER)) {
  			strategy = new Pcm2LqnStrategy(configuration);
- 		} else if (configuration.getSolver()
- 				.equals(MessageStrings.LQSIM_SOLVER)) {
+-		} else if (configuration.getSolver()
+-				.equals(MessageStrings.LQSIM_SOLVER)) {
++		} else if (configuration.getSolver().equals(MessageStrings.PERFENGINE_SOLVER)) {
++			strategy = new Pcm2LqnStrategy(configuration);
++		} else if (configuration.getSolver().equals(MessageStrings.LQSIM_SOLVER)) {
+ 			strategy = new Pcm2LqnStrategy(configuration);
+ 		}
+ 
+@@ -125,8 +126,7 @@
+ 		return "Run PCM Analysis";
+ 	}
+ 
+-	public void cleanup(IProgressMonitor monitor)
+-			throws CleanupFailedException {
++	public void cleanup(IProgressMonitor monitor) throws CleanupFailedException {
+ 		// Nothing to do here
+ 	}
+ }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(revision 25017)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(revision 26823)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java	(working copy)
 @@ -1,8 +1,12 @@
 +/*
@@ -759,13 +770,13 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
 -		
 +
 +		try{
-+			textPerfEngOutputDir.setText(configuration.getAttribute(MessageStrings.PERF_ENG_OUT_DIR, System.getProperty("user.dir")));
++			textPerfEngOutputDir.setText(configuration.getAttribute(MessageStrings.LINE_OUT_DIR, System.getProperty("user.dir")));
 +		} catch(CoreException e){
 +			textPerfEngOutputDir.setText(System.getProperty("user.dir"));
 +		}
 +
 +		try{
-+			textPerfEngPropFile.setText(configuration.getAttribute(MessageStrings.PERF_ENG_PROP_FILE, System.getProperty("user.dir")+"LINE.properties"));
++			textPerfEngPropFile.setText(configuration.getAttribute(MessageStrings.LINE_PROP_FILE, System.getProperty("user.dir")+"LINE.properties"));
 +		} catch(CoreException e){
 +			textPerfEngPropFile.setText(System.getProperty("user.dir")+"LINE.properties");
 +		}
@@ -794,7 +805,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
  		}
  		try {
 +			this.debugButton.setSelection(configuration.getAttribute(
-+					MessageStrings.DEBUG_PERF_ENG, true));
++					MessageStrings.DEBUG_LINE, true));
 +		} catch (CoreException e) {
 +			this.debugButton.setSelection(true);
 +		}
@@ -853,7 +864,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
 +
  		configuration.setAttribute(MessageStrings.STOP_ON_MESSAGE_LOSS_LQNS, lqnsConfigStopOnMessageLoss.getSelection());
  		configuration.setAttribute(MessageStrings.STOP_ON_MESSAGE_LOSS_LQSIM, lqsimConfigStopOnMessageLoss.getSelection());
-+		configuration.setAttribute(MessageStrings.DEBUG_PERF_ENG, debugButton.getSelection());
++		configuration.setAttribute(MessageStrings.DEBUG_LINE, debugButton.getSelection());
  
  		configuration.setAttribute(MessageStrings.INFINITE_TASK_MULTIPLICITY, lqnsConfigInfTaskMult.getSelection());
 -		
@@ -867,8 +878,8 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
  		configuration.setAttribute(MessageStrings.PRAGMAS, lqnsConfigPragma.getText());
 -		
 +
-+		configuration.setAttribute(MessageStrings.PERF_ENG_OUT_DIR, textPerfEngOutputDir.getText());
-+		configuration.setAttribute(MessageStrings.PERF_ENG_PROP_FILE, textPerfEngPropFile.getText());
++		configuration.setAttribute(MessageStrings.LINE_OUT_DIR, textPerfEngOutputDir.getText());
++		configuration.setAttribute(MessageStrings.LINE_PROP_FILE, textPerfEngPropFile.getText());
  		configuration.setAttribute(MessageStrings.LQNS_OUTPUT_DIR, textLqnsOutputDir.getText());
  		configuration.setAttribute(MessageStrings.LQSIM_OUTPUT_DIR, textLqsimOutputDir.getText());
  		configuration.setAttribute(MessageStrings.SRE_OUTPUT_FILE, textSREOutputFile.getText());
@@ -1187,7 +1198,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MainConfigTab.java
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(revision 25017)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(revision 26823)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java	(working copy)
 @@ -1,68 +1,153 @@
 +/*
@@ -1335,17 +1346,17 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/MessageStrings.java
 +
 +	public static final String PERFENGINE_SOLVER = "LINE";
 +
-+	public static final String DEBUG_PERF_ENG = "PerfEngineDebug";
++	public static final String DEBUG_LINE = "PerfEngineDebug";
 +
-+	public static final String PERF_ENG_OUT_DIR = "perfengOutputDir";
++	public static final String LINE_OUT_DIR = "perfengOutputDir";
 +	
-+	public static final String PERF_ENG_PROP_FILE = "perfEngPropFile";
++	public static final String LINE_PROP_FILE = "perfEngPropFile";
 +	
 +
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(revision 25017)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(revision 26823)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigBuilder.java	(working copy)
 @@ -1,3 +1,6 @@
 +/*
@@ -1372,9 +1383,9 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigB
  				: MessageStrings.LQN_OUTPUT_HUMAN);
  		config.setLqnsOutputDir(hasAttribute(MessageStrings.LQNS_OUTPUT_DIR) ? getStringAttribute(MessageStrings.LQNS_OUTPUT_DIR)
  				: System.getProperty("user.dir"));
-+		config.setPerfEngOutputDir(hasAttribute(MessageStrings.PERF_ENG_OUT_DIR) ? getStringAttribute(MessageStrings.PERF_ENG_OUT_DIR)
++		config.setLINEOutputDir(hasAttribute(MessageStrings.LINE_OUT_DIR) ? getStringAttribute(MessageStrings.LINE_OUT_DIR)
 +				: System.getProperty("user.dir"));
-+		config.setPerfEngPropFile(hasAttribute(MessageStrings.PERF_ENG_PROP_FILE) ? getStringAttribute(MessageStrings.PERF_ENG_PROP_FILE)
++		config.setLINEPropFile(hasAttribute(MessageStrings.LINE_PROP_FILE) ? getStringAttribute(MessageStrings.LINE_PROP_FILE)
 +				: System.getProperty("user.dir")+System.getProperty("file.separator")+"LINE.properties");
  		config.setLqsimOutput(hasAttribute(MessageStrings.LQSIM_OUTPUT) ? getStringAttribute(MessageStrings.LQSIM_OUTPUT)
  				: MessageStrings.LQN_OUTPUT_HUMAN);
@@ -1386,8 +1397,8 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigB
 +		
 +		
 +		
-+		config.setDebugPerfEngine(hasAttribute(MessageStrings.DEBUG_PERF_ENG) 
-+				? getBooleanAttribute(MessageStrings.DEBUG_PERF_ENG)
++		config.setDebugLINE(hasAttribute(MessageStrings.DEBUG_LINE) 
++				? getBooleanAttribute(MessageStrings.DEBUG_LINE)
 +				: false);
 +		
  		config.setStopOnMessageLossLQSim(hasAttribute(MessageStrings.STOP_ON_MESSAGE_LOSS_LQSIM) 
@@ -1405,7 +1416,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverConfigurationBasedConfigB
  }
 Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(revision 25017)
+--- src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(revision 26823)
 +++ src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.java	(working copy)
 @@ -1,466 +1,1048 @@
 +/*
@@ -1455,11 +1466,11 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.
 +	/** The lqns output dir. */
  	private String lqnsOutputDir;
 +	
-+	/** The perfEng output dir. */
-+	private String perfEngOutputDir;
++	/** The LINE output dir. */
++	private String LINEOutputDir;
 +	
-+	/** The perfEng properties file. */
-+	private String perfEngPropFile;
++	/** The LINE properties file. */
++	private String LINEPropFile;
  
 +	/** The lqsim blocks. */
  	private String lqsimBlocks;
@@ -1543,7 +1554,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.
  	private boolean stopOnMessageLossLQNS;
 +	
 +	/** The stop on message loss lqns. */
-+	private boolean debugPerfEngine;
++	private boolean debugLINEine;
 +	
 +	/** The stop on message loss lq sim. */
  	private boolean stopOnMessageLossLQSim;
@@ -1606,8 +1617,8 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.
 +	 *
 +	 * @return the stop on message loss lqns
 +	 */
-+	public boolean getDebugPerfEng() {
-+		return this.debugPerfEngine;
++	public boolean getDebugLINE() {
++		return this.debugLINEine;
 +	}
 +
 +	/**
@@ -1772,12 +1783,12 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.
 +	 *
 +	 * @return the lqns output dir
 +	 */
-+	public String getPerfEngOutputDir() {
-+		return perfEngOutputDir;
++	public String getLINEOutputDir() {
++		return LINEOutputDir;
 +	}
 +
-+	public String getPerfEngPropFile() {
-+		return perfEngPropFile;
++	public String getLINEPropFile() {
++		return LINEPropFile;
 +	}
 +
 +	/**
@@ -2061,8 +2072,8 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.
 +	 *
 +	 * @param b the new stop on message loss lqns
 +	 */
-+	public void setDebugPerfEngine(boolean b) {
-+		this.debugPerfEngine = b;
++	public void setDebugLINE(boolean b) {
++		this.debugLINEine = b;
 +	}
 +
 +	/* (non-Javadoc)
@@ -2302,12 +2313,12 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.
 +	 *
 +	 * @param lqnsOutputDir the new lqns output dir
 +	 */
-+	public void setPerfEngOutputDir(String perfEngOutDir) {
-+		this.perfEngOutputDir = perfEngOutDir;
++	public void setLINEOutputDir(String LINEOutDir) {
++		this.LINEOutputDir = LINEOutDir;
 +	}
 +
-+	public void setPerfEngPropFile(String perfEngPropFile) {
-+		this.perfEngPropFile = perfEngPropFile;
++	public void setLINEPropFile(String LINEPropFile) {
++		this.LINEPropFile = LINEPropFile;
 +	}
 +
 +	/**
@@ -2525,12 +2536,27 @@ Index: src/de/uka/ipd/sdq/pcmsolver/runconfig/PCMSolverWorkflowRunConfiguration.
  	}
  
  
-Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.java
+Index: src/de/uka/ipd/sdq/pcmsolver/transformations/line/LineServerHandler.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.java	(revision 0)
-+++ src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.java	(revision 0)
-@@ -0,0 +1,233 @@
-+package de.uka.ipd.sdq.pcmsolver.transformations.pcm2lqn;
+--- src/de/uka/ipd/sdq/pcmsolver/transformations/line/LineServerHandler.java	(revision 0)
++++ src/de/uka/ipd/sdq/pcmsolver/transformations/line/LineServerHandler.java	(revision 0)
+@@ -0,0 +1,307 @@
++/*******************************************************************************
++ * Copyright 2014 Giovanni Paolo Gibilisco
++ * 
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ ******************************************************************************/
++package de.uka.ipd.sdq.pcmsolver.transformations.line;
 +
 +import java.io.BufferedReader;
 +import java.io.File;
@@ -2538,162 +2564,255 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +import java.io.IOException;
 +import java.io.InputStreamReader;
 +import java.io.PrintWriter;
-+import java.net.MalformedURLException;
 +import java.net.Socket;
-+import java.net.URL;
 +import java.net.UnknownHostException;
 +import java.util.Properties;
 +
-+import org.eclipse.core.runtime.FileLocator;
-+
++import org.apache.log4j.Logger;
 +
 +public class LineServerHandler {
-+	/** LINE connection handlers**/
++	/** LINE connection handlers **/
++	private String host = null;
++	private int port=-1;
 +	private Socket lineSocket = null;
 +	private PrintWriter out = null;
 +	private BufferedReader processIn = null;
 +	private BufferedReader socketIn = null;
-+	private String linePropFilePath;
-+	private Logger processLog;
-+	private Logger socketLog;
++	private MessageHandler processMessages;
++	private MessageHandler socketMessages;
 +	private boolean localInstance = false;
 +	private Process proc;
-+	String MCR_dir = null;
++	private File directory = null;
++	private String MCR_dir = null;
++	private String propertyFile = null;
++	private static final Logger logger = Logger.getLogger(LineServerHandler.class);
++	private final static String LINE_UNIX = "run_LINE.sh";
++	private final static String LINE_WINDOWS = "LINE";
 +	
 +
-+	public void connectToLINEServer() {
-+		connectToLINEServer(null,-1);		
++	/**
++	 * Handler for all interactions with an instance of LINE
++	 * @param properyFile
++	 */
++	public LineServerHandler(String properyFile) {
++		this.propertyFile = properyFile;
 +	}
 +
-+	public void connectToLINEServer(String configFilePath){
-+		linePropFilePath = configFilePath;
-+		connectToLINEServer();
++
++	/**
++	 * Closes the connection with the server
++	 */
++	public void closeConnections() {
++
++		//Send LINE command to close the connection
++		if(out!= null && lineSocket != null && !lineSocket.isClosed()){
++			String command = "CLOSE";
++			out.println(command);
++			out.flush();
++		}
++		if (out != null)
++			out.close();
++
++		try {
++			if (socketMessages != null && socketIn != null) {
++				socketMessages.close();
++				socketIn.close();
++				socketIn = null;
++				socketMessages = null;				
++			}
++			if (lineSocket != null){
++				lineSocket.close();
++				socketMessages = null;	
++			}
++		} catch (IOException e) {
++			logger.error("Error in closing LINE connection");
++		}
 +	}
-+
-+
-+	public void connectToLINEServer(String host, int port){				
-+
++	
++	private void loadProperties(){
 +		Properties lineProperties = new Properties();
-+		boolean defaultValues = false;
-+		URL linePropFileURL = null;		
-+		File linePropFile = null;
++
 +		
 +		try {
-+			linePropFileURL = FileLocator.toFileURL(new URL(linePropFilePath));
-+			linePropFile = new File(linePropFileURL.getFile());
-+		} catch (MalformedURLException e2) {
-+			//if it is not a workspace url but a path to a file
-+			linePropFile = new File(linePropFilePath);
-+		} catch (IOException e2) {
-+			System.out.println("Could not load line property file, will use default values");
-+			defaultValues=true;
-+		}
-+
-+		if(linePropFile==null)
-+			defaultValues = true;
-+		File directory = null;
-+		try{
-+
-+			if(!defaultValues){
-+				FileInputStream propInput = new FileInputStream(linePropFile);
-+				lineProperties.load(propInput);
-+				propInput.close();
-+			}else{
-+				host = "localhost";
-+				port = 5463;
-+			}
-+			if(host == null)
++			FileInputStream propInput = new FileInputStream(propertyFile);
++			lineProperties.load(propInput);
++			propInput.close();
++			if (host == null)
 +				host = lineProperties.getProperty("host", "localhost");
 +			if (port == -1)
-+				port = Integer.parseInt(lineProperties.getProperty("port", "5463"));	
-+			directory = new File(lineProperties.getProperty("directory",null));			
++				port = Integer.parseInt(lineProperties.getProperty("port",
++						"5463"));
++			directory = new File(lineProperties.getProperty("directory", null));
 +			MCR_dir = lineProperties.getProperty("MCR_dir","/usr/local/MATLAB/MATLAB_Compiler_Runtime/v81");
-+			//try to connect
-+			initLINEConnection(host,port);
++		}catch(IOException e){
++			logger.error("Could not load LINE connection properties",e);
++		}
++	}
++
++	/**
++	 * Connects to LINE server, if no instance of line server is found then a new one is launched
++	 */
++	public void connectToLINEServer() {
++
++		
++		loadProperties();
++		
++		try {			
++			// try to connect
++			logger.info("connecting to LINE");
++			initLINEConnection();
 +		} catch (UnknownHostException e) {
-+			//fallback to local host and retry
-+			if(host != "localhost"){
++			// fallback to local host and retry
++			if (host != "localhost") {
 +				closeConnections();
-+				System.out.println("Don't know about host:"+host+". Switching to localhost and trying reconnection.");
-+				host = "localhost";		
-+				connectToLINEServer(host, port);
++				logger.info("Don't know about host:" + host
++						+ ". Switching to localhost and trying reconnection.");
++				host = "localhost";
++				connectToLINEServer();
++			}else{
++				logger.error("Error while connecting to localhost",e);
 +			}
 +		} catch (IOException e) {
 +			closeConnections();
-+			//fall back to local host and launch LINE
-+			System.out.println("Could not connect to LINE on host: "+host+" on port: "+port+
-+					"\ntrying to launch line locally and connect to localhost.");			
-+			launchLine(linePropFile,directory);
++			// fall back to local host and launch LINE
++			logger.info("Could not connect to LINE on host: "
++					+ host
++					+ " on port: "
++					+ port
++					+ " trying to launch line locally and connect to localhost. This might take a while..");
++			//launch line locally
 +			host = "localhost";
++			launchLine();			
 +			try {
-+				initLINEConnection(host, port);
++				initLINEConnection();
 +			} catch (IOException e1) {
 +				closeConnections();
-+				System.err.println("Could not connect to local instance of LINE");
-+				e1.printStackTrace();
++				logger.error("Could not connect to local instance of LINE",e1);				
 +			}
 +		}
 +	}
 +
++	private void reConnect(){
++		try {
++			initLINEConnection();
++		} catch (IOException e) {
++			logger.error("Error in re-connecting to LINE",e);
++		}
++	}
 +
-+	private void initLINEConnection(String host, int port) throws IOException{
-+		lineSocket = new Socket(host, port); 
++	private void initLINEConnection() throws IOException {
++		lineSocket = new Socket(host, port);
 +
 +		out = new PrintWriter(lineSocket.getOutputStream());
-+		if(socketIn==null)
-+			socketIn = new BufferedReader(new InputStreamReader(lineSocket.getInputStream()));
-+		if(socketLog ==null){
-+			socketLog = new Logger(socketIn,"socket");
-+			(new Thread(socketLog)).start();
++		if (socketIn == null)
++			socketIn = new BufferedReader(new InputStreamReader(
++					lineSocket.getInputStream()));
++		if (socketMessages == null) {
++			socketMessages = new MessageHandler(socketIn, "socket");
++			(new Thread(socketMessages)).start();
 +		}
-+
-+		while(!socketLog.isConnected())
-+			try {				
++		while (!socketMessages.isConnected())
++			try {
 +				Thread.sleep(100);
 +			} catch (InterruptedException e) {
-+				// TODO Auto-generated catch block
-+				e.printStackTrace();
++				logger.error("Error while waiting for LINE connection",e);
 +			}
-+		System.out.println("Connected to LINE on "+host+":"+port);
++		logger.info("Connected to LINE on " + host + ":" + port);
 +	}
-+	
-+	private final static String LINE_UNIX = "run_LINE.sh";
-+	private final static String LINE_WINDOWS = "LINE";
 +
-+	private boolean launchLine(File linePropFile, File directory){
++	/**
++	 * checks if the model submitted with the specified modelFile has been solved. 
++	 * @param modelFile
++	 * @return
++	 */
++	public boolean isSolved(String modelFile) {
++		return socketMessages.isModelEvaluated(modelFile);
++	}
++
++	
++	/**
++	 * Launches a new instance of line
++	 * @return
++	 */
++	public boolean launchLine() {
 +		try {
-+			String lineInvocation = /*"LINE"+*/ " "+"\""+linePropFile.getAbsolutePath().replace('\\', '/')+"\"";
++//			String lineInvocation = "LINE" + " " + "\""
++//					+ propFile.getAbsolutePath().replace('\\', '/') + "\"";
++			
++			String lineInvocation = /*"LINE" +*/ " " + "\""
++					+ propertyFile.replace('\\', '/') + "\"";
 +			
 +			if (System.getProperty("os.name").indexOf("Windows") > -1)
 +				lineInvocation = LINE_WINDOWS + lineInvocation;
 +			else
-+				lineInvocation = LINE_UNIX+" "+MCR_dir+" "+linePropFile.getAbsolutePath().replace('\\', '/');
++				lineInvocation = LINE_UNIX+" "+MCR_dir+" "+propertyFile.replace('\\', '/');
 +			
-+			System.out.println(lineInvocation);
++			logger.debug(lineInvocation);
 +			ProcessBuilder pb = new ProcessBuilder(lineInvocation.split("\\s"));
 +			pb.directory(directory);
-+			pb.redirectErrorStream(true);			
++			pb.redirectErrorStream(true);
 +			proc = pb.start();
-+			processIn = new BufferedReader (new InputStreamReader(proc.getInputStream()));			
-+			processLog = new Logger(processIn,"process");
-+			(new Thread(processLog)).start();
-+			while(!processLog.isRunning()) Thread.sleep(100);;
++			processIn = new BufferedReader(new InputStreamReader(
++					proc.getInputStream()));
++			processMessages = new MessageHandler(processIn, "process");
++			(new Thread(processMessages)).start();
++			while (!processMessages.isRunning())
++				Thread.sleep(100);
++
 +			localInstance = true;
 +
-+			//the startup has ended
++			// the startup has ended
++			logger.info("Local instance of LINE launched");
++
 +			return true;
-+		} catch (IOException e) {
-+			// TODO Auto-generated catch block
-+			e.printStackTrace();
-+			return false;
-+		} catch (InterruptedException e) {
-+			// TODO Auto-generated catch block
-+			e.printStackTrace();
++		} catch (IOException | InterruptedException e) {
++			logger.error("Error in launching LINE",e);
 +			return false;
 +		}
++
 +	}
 +
-+	public void terminateLine(){
++	/**
++	 * solves a LQN model
++	 * @param modelFilePath
++	 * @param REfilePath - path to a random enviroment to apply to the model
++	 */
++	public void solve(String modelFilePath, String REfilePath) {
++
++		//check that the connection is alive
++		if(out.checkError()){
++			logger.info("Connection with LINE server has encoutner a problem, trying to reconnect...");
++			reConnect();
++		}
++
++		modelFilePath = modelFilePath.replace('\\', '/');
++		if (REfilePath != null)
++			REfilePath = REfilePath.replace('\\', '/');
++		// build the command
++		String command = "SOLVE " + modelFilePath;
++		if (REfilePath != null)
++			command += " " + REfilePath;
++
++		// "D://line_test//ofbiz ("+numExp+").xml D://line_test//ofbizRE ("+numExp+").xml";
++		logger.debug("Sending: " + command);
++
++		//reset the Logger in case a previous model with the same name have been specified
++		socketMessages.reset(modelFilePath);
++
++		// send the command
++		out.println(command);
++		out.flush();
++
++		return;
++
++	}
++
++
++
++	/**
++	 * Closes connections to an instance of LINE and, if the instance is local it terminates ir
++	 */
++	public void terminateLine() {
 +		if (localInstance) {
 +			//If LINE was launched by SPACE4Cloud close it
 +			out.println("QUIT");
@@ -2701,74 +2820,97 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/LineServerHandler.ja
 +			try {
 +				proc.waitFor();
 +			} catch (InterruptedException e) {
-+				e.printStackTrace();
++				logger.error("Error in Quitting LINE",e);
 +			}
 +			
-+			if (processLog != null && processIn != null) {
-+				processLog.close();
++			if (processMessages != null && processIn != null) {
++				processMessages.close();
 +				try {
 +					processIn.close();
 +				} catch (IOException e) {
-+					e.printStackTrace();
++					logger.error("Error in closing the process reader of LINE",e);
 +				}
 +			}
 +		}
++
++		//otherwise just close the connection
 +		closeConnections();
 +
 +	}
 +
-+	public void closeConnections(){
-+		//Send LINE command to close the connection
-+				if(out!= null && lineSocket != null && !lineSocket.isClosed()){
-+					String command = "CLOSE";
-+					out.println(command);
-+					out.flush();
-+				}
-+				if (out != null)
-+					out.close();
-+
-+				try {
-+					if (socketLog != null && socketIn != null) {
-+						socketLog.close();
-+						socketIn.close();
-+						socketIn = null;
-+						socketLog = null;				
-+					}
-+					if (lineSocket != null){
-+						lineSocket.close();
-+						socketLog = null;	
-+					}
-+				} catch (IOException e) {
-+					e.printStackTrace();
-+				}
-+	}
-+
-+	public void solve(String modelFilePath, String REfilePath) {
-+
-+		modelFilePath = modelFilePath.replace('\\', '/');
-+		if(REfilePath != null)
-+			REfilePath = REfilePath.replace('\\', '/');
-+		//build the command
-+		String command = "SOLVE " + modelFilePath;
-+		if(REfilePath != null)
-+			command +=" "+REfilePath;
-+		//send the command
-+		out.println(command);
-+		out.flush();
-+		return;
++	/**
++	 * Clear the handler from events of previous evaluations
++	 */
++	public void clear() {
++		socketMessages.clear();
 +
 +	}
 +
-+	public boolean isSolved(String modelFile){
-+		return socketLog.isModelEvaluated(modelFile);
-+	}
++
 +}
-Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Logger.java
+Index: src/de/uka/ipd/sdq/pcmsolver/transformations/line/LineServerHandlerFactory.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Logger.java	(revision 0)
-+++ src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Logger.java	(revision 0)
-@@ -0,0 +1,98 @@
-+package de.uka.ipd.sdq.pcmsolver.transformations.pcm2lqn;
+--- src/de/uka/ipd/sdq/pcmsolver/transformations/line/LineServerHandlerFactory.java	(revision 0)
++++ src/de/uka/ipd/sdq/pcmsolver/transformations/line/LineServerHandlerFactory.java	(revision 0)
+@@ -0,0 +1,37 @@
++package de.uka.ipd.sdq.pcmsolver.transformations.line;
++
++import org.apache.log4j.Logger;
++
++
++public class LineServerHandlerFactory {
++	
++	private static LineServerHandler handler = null;
++	private static String propfile = null; 
++	private static final Logger logger = Logger.getLogger(LineServerHandlerFactory.class);
++	public static LineServerHandler getHandler(){
++		if(propfile == null){
++			logger.error("No property file has been specified for LINE");
++			return null;
++		}
++		if(handler==null){
++			handler = new LineServerHandler(propfile);
++		}
++		return handler;
++	}
++	
++	/**
++	 * Destroys the instance of the handler
++	 */
++	public static void clearHandler(){
++		handler = null;
++	}
++
++	/**
++	 * Specify the path to the LINE.properties file containing details about the connection to the server and parameters to launch a new server
++	 * @param linePropFile
++	 */
++	public static void setLINEPropertyFile(String linePropFile) {
++		propfile = linePropFile;
++	}
++
++}
+Index: src/de/uka/ipd/sdq/pcmsolver/transformations/line/MessageHandler.java
+===================================================================
+--- src/de/uka/ipd/sdq/pcmsolver/transformations/line/MessageHandler.java	(revision 0)
++++ src/de/uka/ipd/sdq/pcmsolver/transformations/line/MessageHandler.java	(revision 0)
+@@ -0,0 +1,183 @@
++/*******************************************************************************
++ * Copyright 2014 Giovanni Paolo Gibilisco
++ * 
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ ******************************************************************************/
++package de.uka.ipd.sdq.pcmsolver.transformations.line;
 +
 +import java.io.BufferedReader;
 +import java.io.IOException;
@@ -2776,21 +2918,41 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Logger.java
 +import java.util.HashMap;
 +import java.util.Map;
 +
-+public class Logger implements Runnable {
++import org.apache.commons.lang.time.StopWatch;
++import org.apache.log4j.Logger;
++
++public class MessageHandler implements Runnable {
 +	private BufferedReader in;
 +	private boolean read = true;
 +	private boolean running = false;
 +	private boolean connected = false;
-+	private Map<String,String> evaluations = new HashMap<String, String>();
++	private Map<String, String> evaluations = new HashMap<String, String>();
++	private Map<String, StopWatch> timers = new HashMap<String, StopWatch>();
++	private static final Logger logger = Logger.getLogger(MessageHandler.class);
++	private static final Object SUBMITTED = "SUBMITTED";
++	private static final Object SOLVED = "SOLVED";
 +
-+	String prefix="";
-+	public Logger(BufferedReader in, String prefix) {
++	String prefix = "";
++
++	public MessageHandler(BufferedReader in, String prefix) {
 +		this.in = in;
-+		if(prefix != null)
-+			this.prefix = prefix; 
++		if (prefix != null)
++			this.prefix = prefix;
 +	}
-+	public synchronized void close(){
++
++	public synchronized void close() {
 +		read = false;
++	}
++
++	public synchronized boolean isConnected() {
++		return connected;
++	}
++
++	public synchronized boolean isModelEvaluated(String modelPath) {
++		modelPath = Paths.get(modelPath).toString();
++		return evaluations.containsKey(modelPath)
++				&& evaluations.get(modelPath).equals("SOLVED");
++		// TODO clear the model form the map?
 +	}
 +
 +	private synchronized boolean isRead() {
@@ -2801,74 +2963,124 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Logger.java
 +		return running;
 +	}
 +
-+	public synchronized boolean isConnected(){
-+		return connected;
++	private void logTime(String modelName, long time) {
++		logger.info(modelName + ", " + evaluations.get(modelName) + ", "
++				+ time);
 +	}
 +
 +	@Override
 +	public void run() {
-+		while(isRead())
++		while (isRead())
 +			try {
-+				Thread.sleep(100);
-+				if(in.ready()){
++				if(!in.ready())
++					Thread.sleep(100);
++				if (in.ready()) {
 +					String line = in.readLine();
-+					System.out.println("LINE "+prefix+": "+line);
++					logger.debug("LINE " + prefix + ": " + line);
 +
-+					//set the starting
-+					if(line.contains("Listening on port"))
++					// set the starting
++					if (line.contains("Listening on port"))
 +						setRunning(true);
-+					if(line.contains("LINE READY"))
++					if (line.contains("LINE READY"))
 +						setConnected(true);
-+					if(line.contains("LINE STOP"))
++					if (line.contains("LINE STOP"))
 +						setRunning(false);
-+					if(line.contains("MODEL"))
++					if (line.contains("ERROR"))
++						manageError(line);
++					else if (line.contains("MODEL"))
 +						updateModelEvaluation(line);
++
 +				}
 +
 +			} catch (IOException e) {
-+				if(e.getMessage().equals("Stream closed"))
-+					System.out.println("LINE "+prefix+": "+e.getMessage());
-+				else 
-+					e.printStackTrace();
++				if (e.getMessage().equals("Stream closed"))
++					logger.debug("LINE " + prefix + ": " + e.getMessage());
++				else
++					logger.error("Error in reading from LINE output",e);
 +			} catch (InterruptedException e) {
-+				// TODO Auto-generated catch block
-+				e.printStackTrace();
++				logger.error("Error in reading from LINE output",e);
 +			}
 +	}
 +
-+	private synchronized void setRunning(boolean running){
-+		this.running = running;
++	private void manageError(String line) {
++		logger.error("LINE error:"+line);		
 +	}
 +
-+	private synchronized void setConnected(boolean connected){
++	private synchronized void setConnected(boolean connected) {
 +		this.connected = connected;
 +	}
 +
-+	private synchronized void updateModelEvaluation(String message){
-+		message = message.trim().replaceAll(" +", " ");		
-+		String[] tokens = message.split(" ");
-+		String modelName = tokens[1];		
-+		modelName = modelName.replace("_res.xml", ".xml");
-+		modelName = Paths.get(modelName).toString();
-+		String status = null;		
-+		if(tokens.length == 4)
-+			status = tokens[3];
-+		else
-+			status = tokens[2];
-+		evaluations.put(modelName,status);
-+	}
-+	
-+	public synchronized boolean isModelEvaluated(String modelPath){
-+		modelPath = Paths.get(modelPath).toString();
-+		return evaluations.containsKey(modelPath) && evaluations.get(modelPath).equals("SOLVED");		
-+		//TODO clear the model form the map?
++	private synchronized void setRunning(boolean running) {
++		this.running = running;
 +	}
 +
++	private synchronized void updateModelEvaluation(String message) {
++		message = message.trim().replaceAll(" +", " ");
++		String[] tokens = message.split(" ");
++		
++		int offset = 0;
++		
++		String modelName = tokens[1];
++		
++		while (modelName.indexOf("xml") == -1) {
++			modelName += " " + tokens[2 + offset];
++			offset++;
++		}
++		
++		modelName = modelName.replace("_line.xml", ".xml");
++		modelName = Paths.get(modelName).toString();
++		String status = null;
++		if (tokens.length == (4 + offset))
++			status = tokens[3 + offset];
++		else
++			status = tokens[2 + offset];
++		evaluations.put(modelName, status);
++
++		if (status.equals(SUBMITTED)) {
++			StopWatch timer = new StopWatch();
++			timer.start();
++			timers.put(modelName, timer);
++		} else if (status.equals(SOLVED)) {
++			long time = -1;
++			try {
++				if(timers.containsKey(modelName)){
++					timers.get(modelName).stop();
++					time = timers.get(modelName).getTime();
++				}
++			} catch (IllegalStateException e) {
++				logger.error("Error in taking the time, will put -1",e);				
++			} finally
++			{
++				logTime(modelName,time);
++			}
++
++		}
++
++	}
++
++	/**
++	 * Removes the specified model from the list of model waiting from an evaluation
++	 * @param modelFilePath
++	 */
++	public synchronized void reset(String modelFilePath) {
++		evaluations.remove(modelFilePath);
++		timers.remove(modelFilePath);
++
++	}
++
++	/**
++	 * Clears the list of models waiting for an evaluation
++	 */
++	public void clear() {
++		evaluations.clear();
++		timers.clear();
++
++	}
 +
 +}
 Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 ===================================================================
---- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(revision 25017)
+--- src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(revision 26823)
 +++ src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java	(working copy)
 @@ -1,13 +1,21 @@
 +/*
@@ -2892,7 +3104,13 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  import java.util.Date;
  import java.util.List;
  import java.util.concurrent.TimeUnit;
-@@ -28,6 +36,7 @@
+@@ -24,10 +32,13 @@
+ import de.uka.ipd.sdq.pcmsolver.runconfig.PCMSolverWorkflowRunConfiguration;
+ import de.uka.ipd.sdq.pcmsolver.transformations.ContextWrapper;
+ import de.uka.ipd.sdq.pcmsolver.transformations.SolverStrategy;
++import de.uka.ipd.sdq.pcmsolver.transformations.line.LineServerHandler;
++import de.uka.ipd.sdq.pcmsolver.transformations.line.LineServerHandlerFactory;
+ import de.uka.ipd.sdq.pcmsolver.visitors.UsageModelVisitor;
  import de.uka.ipd.sdq.pcmsolver.visualisation.LQNHtmlResultGenerator;
  import de.uka.ipd.sdq.pcmsolver.visualisation.LQNResultEditorInput;
  
@@ -2900,7 +3118,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  /**
   * This is an excerpt of Heiko's dissertation (see below for link)
   * 
-@@ -72,29 +81,61 @@
+@@ -72,29 +83,61 @@
   */
  public class Pcm2LqnStrategy implements SolverStrategy {
  
@@ -2930,7 +3148,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  	private static final String FILENAME_LQSIM = "lqsim";
 +
 +	/** The Constant FILENAME_LQSIM. */
-+	private static final String FILENAME_PERFENG = "LINE";
++	private static final String FILENAME_LINE = "LINE";
 +
 +	/** The Constant FILENAME_LQN2XML. */
  	private static final String FILENAME_LQN2XML = "lqn2xml";
@@ -2964,7 +3182,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  	public Pcm2LqnStrategy(PCMSolverWorkflowRunConfiguration configuration) {
  		config = configuration;
  
-@@ -109,131 +150,343 @@
+@@ -109,131 +152,234 @@
  				+ System.getProperty("file.separator") + "pcm2lqn" + timestamp
  				+ ".out";
  		filenameResultXML = getOutputFolder()
@@ -2994,8 +3212,8 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  	private String getOutputFolder() {
  		if (getSolverProgramName().equals(FILENAME_LQNS)) {
  			return config.getLqnsOutputDir();
-+		} else if (getSolverProgramName().equals(FILENAME_PERFENG)) {
-+			return config.getPerfEngOutputDir();
++		} else if (getSolverProgramName().equals(FILENAME_LINE)) {
++			return config.getLINEOutputDir();
  		} else {
  			return config.getLqsimOutputDir();
  		}
@@ -3018,8 +3236,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 +	 */
  	public void solve() {
  		String solverProgram = getSolverProgramName();
--		String lqnsOutputType = getLqnsOutputTypeName();
-+		String lqnsOutputType = getLqnsOutputTypeName();		
+ 		String lqnsOutputType = getLqnsOutputTypeName();
  		String lqnSimOutputType = getLqsimOutputTypeName();
 -		
 +
@@ -3028,8 +3245,6 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  		String resultFile = "";
  		String inputFile = "";
 +		String xmlresultFile = "";
-+
-+		File  folder = null; //diretory of execution of the perfromance engine
  
  		long timeBeforeCalc = System.nanoTime();
  
@@ -3079,42 +3294,6 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 +					xmlresultFile = filenameResultXML;
 +					command = solverProgram + options + " -o " + resultFile
 +							+ " " + inputFile;
-+					// NEW CODE
-+					//
-+					//Read the XML input file encoding the LQN instance
-+					FileReader fr = new FileReader(inputFile);
-+					BufferedReader br = new BufferedReader(fr);
-+					//Skip the first line (wrong encoding ASCII)
-+					br.readLine();
-+					//Read the following lines
-+					List<String> content = new ArrayList<String>();
-+					String line = br.readLine();
-+					while (line != null) {
-+						content.add(line + "\n");
-+						line = br.readLine();
-+					}
-+					//Close the file
-+					br.close();
-+					fr.close();
-+					//Delete the file
-+					File f = new File(inputFile);
-+					f.delete();
-+					//Create a new file with the same name and start writing in it
-+					FileWriter fw = new FileWriter(f);
-+					BufferedWriter bw = new BufferedWriter(fw);
-+					//Write the correct XML header (encoding us-ascii)
-+					bw.write("<?xml version=\"1.0\" encoding=\"us-ascii\"?>\n");
-+					bw.flush();
-+					//Write all the following lines
-+					for (String s : content) {
-+						bw.write(s);
-+						bw.flush();
-+					}
-+					//Close the file
-+					bw.close();
-+					fw.close();
-+					//
-+					// END NEW CODE
  				} else if (lqnsOutputType.equals(MessageStrings.LQN_OUTPUT_XML)
 -						|| lqnsOutputType.equals(MessageStrings.LQN_OUTPUT_HTML)) {
 +						|| lqnsOutputType
@@ -3132,45 +3311,6 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 +					resultFile = filenameResultXML;
 +					xmlresultFile = filenameResultXML;
 +					command = solverProgram + options + " " + inputFile;
-+
-+					// NEW CODE
-+					//
-+					//Read the XML input file encoding the LQN instance
-+					FileReader fr = new FileReader(inputFile);
-+					BufferedReader br = new BufferedReader(fr);
-+					//Skip the first line (wrong encoding ASCII)
-+					br.readLine();
-+					//Read the following lines
-+					List<String> content = new ArrayList<String>();
-+					String line = br.readLine();
-+					while (line != null) {
-+						content.add(line + "\n");
-+						line = br.readLine();
-+					}
-+					//Close the file
-+					br.close();
-+					fr.close();
-+					//Delete the file
-+					File f = new File(inputFile);
-+					f.delete();
-+					//Create a new file with the same name and start writing in it
-+					FileWriter fw = new FileWriter(f);
-+					BufferedWriter bw = new BufferedWriter(fw);
-+					//Write the correct XML header (encoding us-ascii)
-+					bw.write("<?xml version=\"1.0\" encoding=\"us-ascii\"?>\n");
-+					bw.flush();
-+					//Write all the following lines
-+					for (String s : content) {
-+						bw.write(s);
-+						bw.flush();
-+					}
-+					//Close the file
-+					bw.close();
-+					fw.close();
-+					//
-+					// END NEW CODE
-+
-+
  				}
  			} else if (solverProgram.equals(FILENAME_LQSIM)) {
  				// LQSim config
@@ -3266,7 +3406,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 -			pb.redirectErrorStream(true);
 -			Process proc = pb.start();
 +			//Perfromance Engine Solution Method
-+			else if(solverProgram.equals(FILENAME_PERFENG)){	
++			else if(solverProgram.equals(FILENAME_LINE)){	
 +				inputFile = filenameInputXML;
 +				resultFile = filenameResultXML;
  
@@ -3276,71 +3416,39 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 -			// StreamGobbler(proc.getInputStream(), "OUTPUT");
 -			// errorGobbler.start();
 -			// outputGobbler.start();
-+				//Patch for the xml file
-+				// NEW CODE
-+				//
-+				//Read the XML input file encoding the LQN instance
-+				FileReader fr = new FileReader(inputFile);
-+				BufferedReader br = new BufferedReader(fr);
-+				//Skip the first line (wrong encoding ASCII)
-+				br.readLine();
-+				//Read the following lines
-+				List<String> content = new ArrayList<String>();
-+				String line = br.readLine();
-+				while (line != null) {
-+					content.add(line + "\n");
-+					line = br.readLine();
-+				}
-+				//Close the file
-+				br.close();
-+				fr.close();
-+				//Delete the file
-+				File f = new File(inputFile);
-+				f.delete();
-+				//Create a new file with the same name and start writing in it				
-+				File recordFile = new File(inputFile);			
-+				FileWriter recordFw = new FileWriter(recordFile);
-+				BufferedWriter recordBw = new BufferedWriter(recordFw);
-+				//Write the correct XML header (encoding us-ascii)
-+				recordBw.write("<?xml version=\"1.0\" encoding=\"us-ascii\"?>\n");
-+				recordBw.flush();
-+				//Write all the following lines
-+				for (String s : content) {
-+					recordBw.write(s);
-+					recordBw.flush();
-+				}
-+				//Close the file
-+				recordBw.close();
-+				recordFw.close();
-+				//
-+				// END NEW CODE
- 
--			errorMessages = readStream(proc.getInputStream());
-+				LineServerHandler lineHandler = new LineServerHandler();
++				//fix the xml header
++				fixXmlHeader(inputFile);
++
++				LineServerHandlerFactory.setLINEPropertyFile(config.getLINEPropFile());
++				LineServerHandler lineHandler = LineServerHandlerFactory.getHandler();
 +				//connect to LINE
-+				lineHandler.connectToLINEServer(config.getPerfEngPropFile());
- 
--			exitVal = proc.waitFor();
--			proc.destroy();
-+				String inputFileAbsPath = new File(inputFile).getAbsolutePath(); 
-+				//solve the model
-+				lineHandler.solve(inputFileAbsPath,null);
-+				while(!lineHandler.isSolved(inputFileAbsPath)) Thread.sleep(100);
++				lineHandler.connectToLINEServer();			
++				String  inputFileAbsPath = new File(inputFile).getAbsolutePath();
++				
++				//solve without random enviroment
++				lineHandler.solve(inputFileAbsPath,null);		
++				// wait for the model to be solved
++				while (!lineHandler.isSolved(inputFileAbsPath))
++					try {
++						Thread.sleep(100);
++					} catch (InterruptedException e) {
++						logger.error("Error watiting for LINE solution",e);
++					}
++						
 +				//terminate the connection
 +				lineHandler.terminateLine();				
  
+-			errorMessages = readStream(proc.getInputStream());
 +			}
-+
-+			if(!solverProgram.equals(FILENAME_PERFENG)){
+ 
+-			exitVal = proc.waitFor();
+-			proc.destroy();
++			//if we did not use line the proceed with executable invocation
++			if(!solverProgram.equals(FILENAME_LINE)){
 +				logger.warn("Calling LQN analysis tool with " + command);
 +				ProcessBuilder pb = new ProcessBuilder(splitToCommandArray(command));
-+
-+				if (solverProgram.equals(FILENAME_PERFENG)) {													
-+					pb.directory(folder);
-+
-+				}
 +				pb.redirectErrorStream(true);
-+
+ 
 +				long lStartTime = System.nanoTime();
 +				Process proc = pb.start();
 +				// StreamGobbler errorGobbler = new
@@ -3364,7 +3472,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  		} catch (Throwable e) {
  			logger.error("Running " + solverProgram + " failed!");
  			throw new RuntimeException(e);
-@@ -245,63 +498,94 @@
+@@ -245,63 +391,138 @@
  		overallDuration += duration;
  		logger.warn("Finished Running " + solverProgram + ":\t\t" + duration
  				+ " ms");
@@ -3385,7 +3493,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 -		} else if (exitVal == LQNS_RETURN_MODEL_FAILED_TO_CONVERGE){
 -			logger.error(solverProgram + " exited with " + exitVal
 +		//If we are using LQNS
-+		if(!solverProgram.equals(FILENAME_PERFENG)){
++		if(!solverProgram.equals(FILENAME_LINE)){
 +			if (exitVal == LQNS_RETURN_SUCCESS) {
 +				logger.warn("Analysis Result has been written to: " + resultFile);
 +				if (lqnsOutputType.equals(MessageStrings.LQN_OUTPUT_HTML)&& config.isShowHtmlResults()) {
@@ -3441,7 +3549,51 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
 +			logger.info("Using the perfromance Engine Solver");
 +			logger.info("Exit val: "+exitVal);
 +			logger.info("Results writte in: "+resultFile);
++		}
++	}
++
++	
++	/**
++	 * Original patch from Gregory Franks, usex to fix the xml header of the generated file
++	 * @param inputFile
++	 * @throws FileNotFoundException
++	 * @throws IOException
++	 */
++	private void fixXmlHeader(String inputFile) throws FileNotFoundException,
++			IOException {
++		//Read the XML input file encoding the LQN instance
++		FileReader fr = new FileReader(inputFile);
++		BufferedReader br = new BufferedReader(fr);
++		//Skip the first line (wrong encoding ASCII)
++		br.readLine();
++		//Read the following lines
++		List<String> content = new ArrayList<String>();
++		String line = br.readLine();
++		while (line != null) {
++			content.add(line + "\n");
++			line = br.readLine();
  		}
++		//Close the file
++		br.close();
++		fr.close();
++		//Delete the file
++		File f = new File(inputFile);
++		f.delete();
++		//Create a new file with the same name and start writing in it				
++		File recordFile = new File(inputFile);			
++		FileWriter recordFw = new FileWriter(recordFile);
++		BufferedWriter recordBw = new BufferedWriter(recordFw);
++		//Write the correct XML header (encoding us-ascii)
++		recordBw.write("<?xml version=\"1.0\" encoding=\"us-ascii\"?>\n");
++		recordBw.flush();
++		//Write all the following lines
++		for (String s : content) {
++			recordBw.write(s);
++			recordBw.flush();
++		}
++		//Close the file
++		recordBw.close();
++		recordFw.close();
  	}
  
 +
@@ -3456,7 +3608,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  			return FILENAME_LQNS;
 -		} else {
 +		} else if (config.getSolver().equals(MessageStrings.PERFENGINE_SOLVER)) {
-+			return FILENAME_PERFENG;
++			return FILENAME_LINE;
 +		} else{
  			return FILENAME_LQSIM;
  		}
@@ -3471,8 +3623,8 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  	private String getLqnsOutputTypeName() {
  		return config.getLqnsOutput();
  	}
++	
  
-+
 +	/**
 +	 * Gets the lqsim output type name.
 +	 *
@@ -3491,7 +3643,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  	 */
  	private void showOutput(String filename) {
  		FileInputStream fis = null;
-@@ -322,9 +606,9 @@
+@@ -322,9 +543,9 @@
  		String content = new String(b);
  
  		final String htmlText = getHtmlForLqnResult(content);
@@ -3504,7 +3656,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  
  		Display.getDefault().asyncExec(new Runnable() {
  			public void run() {
-@@ -340,20 +624,30 @@
+@@ -340,20 +561,30 @@
  				}
  			}
  		});
@@ -3540,7 +3692,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  	public void transform(PCMInstance model) {
  		long startTime = System.nanoTime();
  
-@@ -379,11 +673,17 @@
+@@ -379,11 +610,17 @@
  		logger.warn("Finished PCM2LQN:\t\t" + duration2 + " ms");
  	}
  
@@ -3561,7 +3713,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  			lqnBuilder.setIsLQSimAnalysis(true);
  		}
  
-@@ -397,8 +697,8 @@
+@@ -397,8 +634,8 @@
  
  		lqnBuilder.finalizeLqnModel(config);
  
@@ -3572,7 +3724,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  		lqnXmlHandler.saveModelToXMI(filenameInputXML);
  
  		Pcm2LqnHelper.clearGuidMap();
-@@ -439,11 +739,12 @@
+@@ -439,11 +676,12 @@
  				logger.info("lqn2xml terminated successfully");
  			} else {
  				logger.error("lqn2xml terminated unsuccessfully. Exit value was "
@@ -3587,7 +3739,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  			e.printStackTrace();
  		}
  	}
-@@ -466,7 +767,7 @@
+@@ -466,7 +704,7 @@
  			// Process proc = Runtime.getRuntime().exec(
  			// FILENAME_LQN2XML+" -o" + FILENAME_RESULT_XML +
  			// " -Oxml " + FILENAME_INPUT_XML);
@@ -3596,7 +3748,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  			Process proc = pb.start();
  
  			// StreamGobbler errorGobbler = new StreamGobbler(proc
-@@ -484,31 +785,35 @@
+@@ -484,31 +722,35 @@
  			if (exitVal == 0) {
  				logger.info("lqn2xml terminated sucessfully");
  			} else {
@@ -3641,7 +3793,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  	 */
  	private String readStream(InputStream is) {
  		String errorMessages = "";
-@@ -533,12 +838,23 @@
+@@ -533,12 +775,23 @@
  		return errorMessages;
  	}
  
@@ -3665,7 +3817,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  	private boolean isDebug() {
  		int level = config.getDebugLevel();
  		if (level <= 1) {
-@@ -561,7 +877,13 @@
+@@ -561,7 +814,13 @@
  		// default:
  		// return Level.INFO;
  	}
@@ -3680,7 +3832,7 @@ Index: src/de/uka/ipd/sdq/pcmsolver/transformations/pcm2lqn/Pcm2LqnStrategy.java
  }
  
  // TODO: Anne: delete this method and the related comments above if the changes
-@@ -598,4 +920,7 @@
+@@ -598,4 +857,7 @@
  			ioe.printStackTrace();
  		}
  	}
