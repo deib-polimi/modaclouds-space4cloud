@@ -337,7 +337,7 @@ public class Instance implements Cloneable, Serializable {
 		result += "\n\tEvaluated: " + evaluated;
 		result += "\tFeasible: " + feasible;
 		for (Tier t : tiers) {
-			result += "\n" + prefix + "Tier" + t.getPcmName()+" id:"+t.getId();
+			result += "\n" + prefix + "Tier: " + t.getPcmName()+"\tId: "+t.getId();
 			result += "\n" + t.showStatus(prefix + "\t");
 
 		}

@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-
 import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -41,18 +39,6 @@ public abstract class Platform extends PaaS {
 			utilization = -1;
 		// System.err.println("Processor name "+getName()+" not found in the results");
 
-	}
-
-	@Override
-	public double getResponseTime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void update(LqnResultParser parser) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	private List<String> supportedPlatforms;

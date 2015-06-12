@@ -18,6 +18,7 @@ package it.polimi.modaclouds.space4cloud.optimization.constraints;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 
 public class RamConstraint extends ArchitecturalConstraint {
@@ -45,13 +46,16 @@ public class RamConstraint extends ArchitecturalConstraint {
 				return Double.NEGATIVE_INFINITY;
 			return checkConstraintDistance(((Tier) resource).getCloudService());
 			//if the tier is hosted on a compute resource							
-		}else if(resource instanceof Compute){
+		} else if(resource instanceof Compute) {
 			Compute computeResource = (Compute) resource;
 			return checkConstraintDistance(computeResource.getRam());			
-		}else{
+		} else if(resource instanceof Platform) {
+			Compute computeResource = ((Platform)resource).getCompute();
+			return checkConstraintDistance(computeResource.getRam());			
+		} else{
 			throw new ConstraintEvaluationException("Evaluating a RAM constraint on a wrong resource with id: "+resource.getId()+
 					" RAM constraints should be evaluated against "+Tier.class+" hosted on a Compute resource or "+Compute.class+
-					"resources, the specified resource is of type: "+resource.getClass());	
+					" resources, the specified resource is of type: "+resource.getClass());	
 		}
 	}
 

@@ -24,11 +24,9 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandl
 import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -511,7 +509,7 @@ public class AssessmentWindow extends WindowAdapter implements
                     double sum = 0.0;
                     for (int i = 0; i < 24; i++) {
                     	Tier tmp = providedSolution.getApplication(i).getTierById(t.getId());
-                        sum += getUtilization(tmp);
+                        sum += tmp.getUtilization();
                     }
 
                     if (is.isConstrained(t.getId())) {
@@ -811,8 +809,7 @@ public class AssessmentWindow extends WindowAdapter implements
         for (int i = 0; i < 24; i++)
             for (Tier t : providedSolution.getApplication(i).getTiers())
                 if (is.toBeShown(t.getPcmName())) {
-                    is.utilLogger.dataset.addValue(((Compute) t
-                            .getCloudService()).getUtilization(), t
+                    is.utilLogger.dataset.addValue(t.getUtilization(), t
                             .getPcmName(), "" + i);
                 }
     }
@@ -909,16 +906,6 @@ public class AssessmentWindow extends WindowAdapter implements
         frame.dispose();
         pcs.firePropertyChange("WindowClosed", false, true);
         logger.trace("Window Closed");
-    }
-
-    private double getUtilization(Tier t) {
-        CloudService cs = t.getCloudService();
-        if (cs instanceof Compute)
-            return ((Compute) cs).getUtilization();
-        else if (cs instanceof Platform)
-            return ((Platform) cs).getUtilization();
-
-        return 0.0;
     }
 
     private int getReplicas(Tier t) {

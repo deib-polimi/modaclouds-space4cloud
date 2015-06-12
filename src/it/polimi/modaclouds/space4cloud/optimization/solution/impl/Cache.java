@@ -3,8 +3,6 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-
 public class Cache extends PaaS {
 
 	/**
@@ -70,18 +68,6 @@ public class Cache extends PaaS {
 
 	public void setStorage(int storage) {
 		this.storage = storage;
-	}
-
-	@Override
-	public double getResponseTime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void update(LqnResultParser parser) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	@Override

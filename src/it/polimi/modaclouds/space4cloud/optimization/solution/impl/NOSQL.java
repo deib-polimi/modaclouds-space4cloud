@@ -15,8 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -113,25 +111,6 @@ public class NOSQL extends Database {
 				// if deriving: appendSuper(super.hashCode()).
 				.appendSuper(super.hashCode())
 				.append(maxEntrySize).toHashCode();
-
-	}
-
-	@Override
-	public double getResponseTime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable
-	 * #update(it.polimi.modaclouds.space4cloud.lqn.LqnResultParser)
-	 */
-	@Override
-	public void update(LqnResultParser parser) {
-		// TODO Auto-generated method stub
 
 	}
 	

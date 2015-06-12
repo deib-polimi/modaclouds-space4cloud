@@ -603,7 +603,9 @@ public class Solution implements Cloneable, Serializable {
 			requests += t.getTotalRequests();
 		}
 		
-		return requests;
+		if (requests > 0)
+			return requests;
+		return 0;
 	}
 	
 	/**

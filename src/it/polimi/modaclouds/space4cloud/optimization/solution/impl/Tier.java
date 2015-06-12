@@ -172,12 +172,11 @@ public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilization
 
 	@Override
 	public double getUtilization() {
-		if(cloudService instanceof Compute)
-			return ((Compute)cloudService).getUtilization();
-		else if (cloudService instanceof Platform)
-			return ((Platform)cloudService).getUtilization();
-			//TODO: we should raise some kind of warning here
-			return -1;
+		if(cloudService instanceof Compute || cloudService instanceof Platform)
+			return cloudService.getUtilization();
+		
+		logger.warn("Getting the utilization of a tier using the wrong kind of resource (" + cloudService.getClass() + ")");
+		return cloudService.getUtilization();
 	}
 	
 	public int getTotalRequests() {

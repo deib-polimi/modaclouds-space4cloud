@@ -18,10 +18,7 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
-
-public abstract class PaaS extends CloudService implements
-		IResponseTimeConstrainable {
+public abstract class PaaS extends CloudService {
 
 	/**
 	 * 
@@ -68,7 +65,7 @@ public abstract class PaaS extends CloudService implements
 	
 	@Override
 	public String showStatus(String prefix) {
-		return super.showStatus(prefix) + "\t replicas: " + getReplicas() + "\t data replicas: " + getDataReplicas();
+		return super.showStatus(prefix) + "\tReplicas: " + getReplicas() + "\tData Replicas: " + getDataReplicas();
 	}
 	
 	public int getDataReplicas() {

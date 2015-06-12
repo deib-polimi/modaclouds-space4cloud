@@ -11,6 +11,7 @@ import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -170,6 +171,10 @@ public class SolutionWindowPanel extends JTabbedPane{
 				info.append("<li>" + t.getPcmName() + "\n<ul>\n");
 				info.append("<li>" + t.getCloudService().getServiceName() + "</li>\n");
 				info.append("<li>" + t.getCloudService().getResourceName() + "</li>\n");
+				if (t.getCloudService() instanceof Queue)
+					info.append("<li>Daily requests: " + solution.getDailyRequestsByTier(t.getId()) * ((Queue)t.getCloudService()).getMultiplyingFactor() + "</li>\n");
+				else
+					info.append("<li>Daily requests: " + solution.getDailyRequestsByTier(t.getId()) + "</li>\n");
 				info.append("</ul>\n</li>\n");
 			}
 			info.append("</ul></td></tr>\n");

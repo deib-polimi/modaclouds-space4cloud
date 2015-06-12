@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -27,18 +25,6 @@ public class Queue extends PaaS implements DelayCenter {
 		this.maxRequests = maxRequests;
 		this.multiplyingFactor = multiplyingFactor;
 		this.delay = delay;
-	}
-
-	@Override
-	public double getResponseTime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public void update(LqnResultParser parser) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	private int requestSize;

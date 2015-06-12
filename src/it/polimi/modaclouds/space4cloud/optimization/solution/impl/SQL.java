@@ -18,8 +18,6 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-
 // TODO: Auto-generated Javadoc
 /**
  * The Class SQL.
@@ -132,25 +130,6 @@ public class SQL extends Database {
 				.appendSuper(super.hashCode())
 				.append(maxConnections)
 				.append(maxRollbackHours).toHashCode();
-
-	}
-
-	@Override
-	public double getResponseTime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable
-	 * #update(it.polimi.modaclouds.space4cloud.lqn.LqnResultParser)
-	 */
-	@Override
-	public void update(LqnResultParser parser) {
-		// TODO Auto-generated method stub
 
 	}
 

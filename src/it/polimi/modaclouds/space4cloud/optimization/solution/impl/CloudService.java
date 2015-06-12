@@ -25,7 +25,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
  * @author MODAClouds The abstract class CloudService define the general Cloud
  *         Resource type.
  */
-public abstract class CloudService implements Cloneable, Serializable, IConstrainable{
+public abstract class CloudService implements Cloneable, Serializable, IConstrainable {
 	/**
 	 * 
 	 */
@@ -105,9 +105,9 @@ public abstract class CloudService implements Cloneable, Serializable, IConstrai
 	}
 
 	public String showStatus(String prefix) {
-		return prefix + "\t type: "
-				+ getServiceType() + "\t provider: " + getProvider()
-				+ "\t service Name: " + getServiceName() + "\t resource Name: "
+		return prefix + "\tType: "
+				+ getServiceType() + "\tProvider: " + getProvider()
+				+ "\tService Name: " + getServiceName() + "\tResource Name: "
 				+ getResourceName();
 	}
 	
@@ -140,6 +140,11 @@ public abstract class CloudService implements Cloneable, Serializable, IConstrai
 	}
 	
 	public double getDataConsumed(int storage, int requests, int providers) {
+		// TODO: implement this for all the kinds of services!
+		return 0.0;
+	}
+	
+	public double getUtilization() {
 		// TODO: implement this for all the kinds of services!
 		return 0.0;
 	}

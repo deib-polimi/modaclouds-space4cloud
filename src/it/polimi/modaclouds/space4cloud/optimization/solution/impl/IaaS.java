@@ -48,6 +48,6 @@ public abstract class IaaS extends CloudService {
 
 	@Override
 	public String showStatus(String prefix) {
-		return super.showStatus(prefix) + "\t Replicas: " + replicas;
+		return super.showStatus(prefix) + "\tReplicas: " + replicas;
 	}
 }

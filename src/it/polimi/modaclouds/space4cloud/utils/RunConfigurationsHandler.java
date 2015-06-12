@@ -122,7 +122,7 @@ public class RunConfigurationsHandler {
 			else if (x.getAttribute("key").equals(
 					MessageStrings.LQNS_OUTPUT_DIR)
 					|| x.getAttribute("key").equals(
-							MessageStrings.LINE_OUT_DIR))
+							MessageStrings.PERF_ENG_OUT_DIR))
 				//TODO:check patch versions
 				e_out = x;
 			else if (x.getAttribute("key").equals("perfEngPropFile"))

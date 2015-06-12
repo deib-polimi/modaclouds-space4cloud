@@ -18,8 +18,6 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-
 public abstract class Database extends PaaS {
 
 	/**
@@ -96,12 +94,6 @@ public abstract class Database extends PaaS {
 
 	public void setMultiAzReplicas(boolean multiAzReplicas) {
 		this.multiAzReplicas = multiAzReplicas;
-	}
-
-	@Override
-	public void update(LqnResultParser parser) {
-		// TODO Auto-generated method stub
-
 	}
 	
 	public static enum DatabaseType {
