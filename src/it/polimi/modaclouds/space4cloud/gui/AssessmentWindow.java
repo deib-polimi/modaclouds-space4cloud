@@ -912,11 +912,10 @@ public class AssessmentWindow extends WindowAdapter implements
         CloudService serv = t.getCloudService();
 
         if (serv instanceof IaaS) {
-            IaaS res = (IaaS) t.getCloudService();
-            return res.getReplicas();
-        } else if (serv instanceof PaaS) {
-            return 1;
-        }
+			return ((IaaS) t.getCloudService()).getReplicas();
+		} else if (serv instanceof PaaS) {
+			return ((PaaS) t.getCloudService()).getReplicas();
+		}
         return 0;
     }
 

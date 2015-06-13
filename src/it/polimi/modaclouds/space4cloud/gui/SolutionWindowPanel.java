@@ -196,10 +196,9 @@ public class SolutionWindowPanel extends JTabbedPane{
 		CloudService serv = t.getCloudService();
 		
 		if (serv instanceof IaaS) {
-			IaaS res = (IaaS) t.getCloudService();
-			return res.getReplicas();
+			return ((IaaS) t.getCloudService()).getReplicas();
 		} else if (serv instanceof PaaS) {
-			return 1;
+			return ((PaaS) t.getCloudService()).getReplicas();
 		}
 		return 0;
 	}

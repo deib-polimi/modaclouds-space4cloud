@@ -26,6 +26,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -370,12 +371,10 @@ public class ConstraintHandler {
 	public Set<Tier> filterResourcesForScaleOut(Set<Tier> affectedTiers) {
 		Set<Tier> tiers = new HashSet<Tier>(affectedTiers);
 		for(Tier t:affectedTiers){
-			if(t.getCloudService() instanceof IaaS){
-				for(Constraint c:getConstraintByResourceId(t.getId(), ReplicasConstraint.class)){				
-					if(((ReplicasConstraint) c).hasMaxReplica(((IaaS)t.getCloudService()))){
-						tiers.remove(t);
-						continue;
-					}
+			for(Constraint c:getConstraintByResourceId(t.getId(), ReplicasConstraint.class)){				
+				if(((ReplicasConstraint) c).hasMaxReplica(t.getCloudService())){
+					tiers.remove(t);
+					continue;
 				}
 			}
 		}
@@ -396,14 +395,17 @@ public class ConstraintHandler {
 			resources.add(new ArrayList<Tier>(hourResource));
 
 		for (Tier t:vettResTot.get(hour)){
-			if(t.getCloudService() instanceof IaaS ){
+			if (t.getCloudService() instanceof IaaS || t.getCloudService() instanceof PaaS) {
 				//filter resources with just 1 replica
-				if(((IaaS)t.getCloudService()).getReplicas() == 1)
+				if ( 
+						(t.getCloudService() instanceof IaaS && ((IaaS)t.getCloudService()).getReplicas() == 1) ||
+						(t.getCloudService() instanceof PaaS && ((PaaS)t.getCloudService()).getReplicas() == 1)
+						)
 					resources.get(hour).remove(t);
 				else{
 					//filter resources with minimum number of replicas
 					for(Constraint c:getConstraintByResourceId(t.getId(), ReplicasConstraint.class)){
-						if(((ReplicasConstraint) c).hasMinReplica(((IaaS) t.getCloudService())))
+						if(((ReplicasConstraint) c).hasMinReplica(t.getCloudService()))
 							resources.get(hour).remove(t);
 					}
 				}

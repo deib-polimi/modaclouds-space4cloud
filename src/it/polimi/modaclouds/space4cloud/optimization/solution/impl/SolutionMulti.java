@@ -648,6 +648,28 @@ public class SolutionMulti implements Cloneable, Serializable {
 						continue;
 					List<ReplicaElement> hourAllocations = r.getReplicaElement();
 					
+					if (hourAllocations.size() < 24) {
+						int minValue = 0;
+						ArrayList<Integer> hours = new ArrayList<Integer>();
+						for (ReplicaElement m : hourAllocations) {
+							hours.add(m.getHour());
+							if (minValue > m.getValue())
+								minValue = m.getValue();
+						}
+						
+						if (cs.getServiceType().equals("PaaS"))
+							minValue = 1;
+						
+						for (int h = 0; h < 24; ++h) {
+							if (hours.contains(h))
+								continue;
+							ReplicaElement m = new ReplicaElement();
+							m.setHour(h);
+							m.setValue(minValue);
+							hourAllocations.add(m);
+						}
+					}
+					
 					for (ReplicaElement m : hourAllocations) {
 						int hour = m.getHour();
 						int allocation = m.getValue();
@@ -720,6 +742,7 @@ public class SolutionMulti implements Cloneable, Serializable {
 					String tierId = tier.getAttribute("id");
 					String resourceName = tier.getAttribute("resourceName");
 					String serviceName = tier.getAttribute("serviceName");
+					String serviceType = tier.getAttribute("serviceType");
 	
 					Solution solution = get(provider);
 					if (solution == null)
@@ -740,6 +763,44 @@ public class SolutionMulti implements Cloneable, Serializable {
 	
 					NodeList hourAllocations = tier
 							.getElementsByTagName("HourAllocation");
+					
+					if (hourAllocations.getLength() < 24) {
+						int minValue = 0;
+						ArrayList<Integer> hours = new ArrayList<Integer>();
+						
+						for (int j = 0; j < hourAllocations.getLength(); ++j) {
+							Node m = hourAllocations.item(j);
+		
+							if (m.getNodeType() != Node.ELEMENT_NODE)
+								continue;
+		
+							Element hourAllocation = (Element) m;
+							int hour = Integer.parseInt(hourAllocation
+									.getAttribute("hour"));
+							int allocation = Integer.parseInt(hourAllocation
+									.getAttribute("allocation"));
+							
+							hours.add(hour);
+							if (minValue > allocation)
+								minValue = allocation;
+						}
+						
+						if (serviceType.equals("PaaS"))
+							minValue = 1;
+						
+						for (int h = 0; h < 24; ++h) {
+							if (hours.contains(h))
+								continue;
+							
+							Element m = doc.createElement("HourAllocation");
+							m.setAttribute("hour", Integer.valueOf(h).toString());
+							m.setAttribute("allocation", Integer.valueOf(minValue).toString());
+							
+							tier.appendChild(m);
+						}
+					}
+					
+					hourAllocations = tier.getElementsByTagName("HourAllocation");
 	
 					for (int j = 0; j < hourAllocations.getLength(); ++j) {
 						Node m = hourAllocations.item(j);
