@@ -106,6 +106,14 @@ public class AssessmentWindow extends WindowAdapter implements
             List<Constraint> constraints = constraintHandler
                     .getConstraintByResourceId(resourceId);
 
+            for (Constraint c : constraints) {
+                if (c instanceof UsageConstraint) {
+                    UsageConstraint constraint = (UsageConstraint) c;
+                    if (constraint.getMax() == 1.0)
+                    	return constraints.remove(constraint);
+                }
+            }
+            
             return (constraints.size() > 0);
         }
 
@@ -135,9 +143,8 @@ public class AssessmentWindow extends WindowAdapter implements
                     return constraint.getMax();
                 } else if (c instanceof UsageConstraint) {
                     UsageConstraint constraint = (UsageConstraint) c;
-                    return constraint.getMax(); // / (100); // * 100); // TODO:
-                                                // check the constraints! this
-                                                // shouldn't be done here!
+                    if (constraint.getMax() != 1.0)
+                    	return constraint.getMax();
                 }
             }
 

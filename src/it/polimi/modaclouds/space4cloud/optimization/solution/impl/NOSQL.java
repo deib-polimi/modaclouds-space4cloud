@@ -17,6 +17,8 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Class NOSQL.
@@ -30,6 +32,8 @@ public class NOSQL extends Database {
 	 * 
 	 */
 	private static final long serialVersionUID = -1597143518905843001L;
+	
+	private static final Logger logger = LoggerFactory.getLogger(NOSQL.class);
 
 	/**
 	 * Instantiates a new nosql.
@@ -75,15 +79,22 @@ public class NOSQL extends Database {
 	 * #clone()
 	 */
 	@Override
-	public NOSQL clone() {
-
-		NOSQL nosql = new NOSQL(new String(this.getProvider()), new String(
-				this.getServiceType()), new String(this.getServiceName()),
-				new String(this.getResourceName()),
-				new String(getTechnology()),
-				this.isSsdOptimized(), this.getStorage(), this.getReplicas(), this.isMultiAzReplicas(), this.getMaxEntrySize(),
-				this.getCompute().clone()
-				);
+	public CloudService clone() {
+		NOSQL nosql = null;
+		
+		try {
+			nosql = (NOSQL) super.clone();
+			nosql.setMaxEntrySize(this.getMaxEntrySize());
+		} catch (Exception e) {
+			logger.error("Error while cloning the NOSQL instance. Creating a new instance.");
+			nosql = new NOSQL(new String(this.getProvider()), new String(
+					this.getServiceType()), new String(this.getServiceName()),
+					new String(this.getResourceName()),
+					new String(getTechnology()),
+					this.isSsdOptimized(), this.getStorage(), this.getReplicas(), this.isMultiAzReplicas(), this.getMaxEntrySize(),
+					this.getCompute().clone()
+					);
+		}
 
 		return nosql;
 	}

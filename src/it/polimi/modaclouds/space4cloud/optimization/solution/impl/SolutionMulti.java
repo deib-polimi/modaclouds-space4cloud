@@ -35,6 +35,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -62,7 +63,7 @@ import org.xml.sax.SAXException;
  * particular case, that of a single solution.
  * 
  */
-public class SolutionMulti implements Cloneable, Serializable {
+public class SolutionMulti implements Cloneable, Serializable, Iterable<Solution> {
 
 	private static final long serialVersionUID = -9050926347950168327L;
 	private static final Logger logger = LoggerFactory.getLogger(SolutionMulti.class);
@@ -352,7 +353,6 @@ public class SolutionMulti implements Cloneable, Serializable {
 			outFile.println(text);
 			outFile.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			logger.error("Error while exporting the data via CSV.", e);
 		}
 	}
@@ -1598,6 +1598,11 @@ public class SolutionMulti implements Cloneable, Serializable {
 		
 		return res;
 
+	}
+
+	@Override
+	public Iterator<Solution> iterator() {
+		return solutions.values().iterator();
 	}
 
 }

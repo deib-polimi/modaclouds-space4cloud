@@ -11,7 +11,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 public class PluginConsoleAppender extends WriterAppender {
 
-	public static final String CONSOLE_NAME = "Space4Cloud";
+	public static final String CONSOLE_NAME = "Space 4Clouds";
 	MessageConsoleStream out = null;
 
 	public PluginConsoleAppender() {

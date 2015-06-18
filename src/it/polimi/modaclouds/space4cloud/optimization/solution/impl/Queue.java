@@ -2,6 +2,8 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Queue extends PaaS implements DelayCenter {
 
@@ -9,6 +11,8 @@ public class Queue extends PaaS implements DelayCenter {
 	 * 
 	 */
 	private static final long serialVersionUID = -838586291140506813L;
+	
+	private static final Logger logger = LoggerFactory.getLogger(Queue.class);
 
 	public Queue(String provider, String serviceType, String serviceName,
 			String resourceName,
@@ -110,22 +114,36 @@ public class Queue extends PaaS implements DelayCenter {
 	}
 	
 	@Override
-	public Queue clone() {
-		Queue queue = new Queue(
-				new String(getProvider()),
-				new String(getServiceType()),
-				new String(getServiceName()),
-				new String(getResourceName()),
-				this.getRequestSize(),
-				this.isOrderPreserving(),
-				this.getMaxConnections(),
-				this.getDataReplicas(),
-				this.isMultiAzReplicas(),
-				this.getMaxRequests(),
-				this.getMultiplyingFactor(),
-				this.getDelay(),
-				this.getCompute().clone()
-				);
+	public CloudService clone() {
+		Queue queue = null;
+		
+		try {
+			queue = (Queue) super.clone();
+			queue.setRequestSize(this.getRequestSize());
+			queue.setOrderPreserving(this.isOrderPreserving());
+			queue.setMaxConnections(this.getMaxConnections());
+			queue.setMultiAzReplicas(this.isMultiAzReplicas());
+			queue.setMaxRequests(this.getMaxRequests());
+			queue.setMultiplyingFactor(this.getMultiplyingFactor());
+			queue.setDelay(this.getDelay());
+		} catch (Exception e) {
+			logger.error("Error while cloning the Queue instance. Creating a new instance.");
+			queue = new Queue(
+					new String(getProvider()),
+					new String(getServiceType()),
+					new String(getServiceName()),
+					new String(getResourceName()),
+					this.getRequestSize(),
+					this.isOrderPreserving(),
+					this.getMaxConnections(),
+					this.getDataReplicas(),
+					this.isMultiAzReplicas(),
+					this.getMaxRequests(),
+					this.getMultiplyingFactor(),
+					this.getDelay(),
+					this.getCompute().clone()
+					);
+		}
 		
 		return queue;
 	}

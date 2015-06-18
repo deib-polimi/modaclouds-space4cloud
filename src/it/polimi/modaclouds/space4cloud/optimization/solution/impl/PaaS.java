@@ -148,7 +148,7 @@ public abstract class PaaS extends CloudService {
 				.append(dataReplicas, tmp.dataReplicas)
 				.append(replicasChangeable, tmp.replicasChangeable)
 				.append(replicasPayedSingularly, tmp.replicasPayedSingularly)
-				.append(compute, tmp.compute)
+				.appendSuper(compute.equals(tmp.compute))
 				.appendSuper(super.equals(obj)).isEquals();
 	}
 	
@@ -161,9 +161,20 @@ public abstract class PaaS extends CloudService {
 				.append(replicas)
 				.append(dataReplicas)
 				.append(replicasChangeable)
-				.append(compute)
+				.appendSuper(compute.hashCode())
 				.append(replicasPayedSingularly).toHashCode();
 
+	}
+	
+	@Override
+	public CloudService clone() throws CloneNotSupportedException {
+		PaaS clone = (PaaS) super.clone();
+		clone.setReplicas(this.getReplicas());
+		clone.setCompute(this.getCompute().clone());
+		clone.setDataReplicas(this.getDataReplicas());
+		clone.setReplicasChangeable(this.areReplicasChangeable());
+		clone.setReplicasPayedSingularly(this.areReplicasPayedSingularly());
+		return clone;
 	}
 
 }

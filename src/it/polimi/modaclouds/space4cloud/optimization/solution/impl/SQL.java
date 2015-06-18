@@ -17,6 +17,8 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -28,6 +30,8 @@ public class SQL extends Database {
 	 * 
 	 */
 	private static final long serialVersionUID = -4717640652547301426L;
+	
+	private static final Logger logger = LoggerFactory.getLogger(SQL.class);
 
 	/**
 	 * Instantiates a new sql.
@@ -86,22 +90,31 @@ public class SQL extends Database {
 	 * #clone()
 	 */
 	@Override
-	public SQL clone() {
-		SQL sql = new SQL(
-				new String(this.getProvider()),
-				new String(this.getServiceType()),
-				new String(this.getServiceName()),
-				new String(this.getResourceName()),
-				new String(this.getTechnology()),
-				this.isSsdOptimized(),
-				this.getStorage(),
-				this.getMaxConnections(),
-				this.getMaxRollbackHours(),
-				this.getReplicas(),
-				this.isMultiAzReplicas(),
-				this.getCompute().clone()
-				);
-
+	public CloudService clone() {
+		SQL sql = null;
+		
+		try {
+			sql = (SQL) super.clone();
+			sql.setMaxConnections(this.getMaxConnections());
+			sql.setMaxRollbackHours(this.getMaxRollbackHours());
+		} catch (Exception e) {
+			logger.error("Error while cloning the SQL instance. Creating a new instance.");
+			sql = new SQL(
+					new String(this.getProvider()),
+					new String(this.getServiceType()),
+					new String(this.getServiceName()),
+					new String(this.getResourceName()),
+					new String(this.getTechnology()),
+					this.isSsdOptimized(),
+					this.getStorage(),
+					this.getMaxConnections(),
+					this.getMaxRollbackHours(),
+					this.getReplicas(),
+					this.isMultiAzReplicas(),
+					this.getCompute().clone()
+					);
+		}
+		
 		return sql;
 	}
 	

@@ -17,6 +17,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -24,6 +25,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -52,6 +54,24 @@ public class SolutionWindowPanel extends JTabbedPane{
 
     private HashMap<String, JPanel> informationPanels;
     private HashMap<String, JLabel> informationLabels;
+    
+    public static void show(SolutionMulti solutionMulti) {
+    	JFrame gui = new JFrame();
+    	gui.setTitle("Solution Viewer");
+    	gui.setMinimumSize(new Dimension(900, 600));
+    	gui.setLocationRelativeTo(null);
+		gui.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		
+		gui.add(new SolutionWindowPanel(solutionMulti));
+		
+		gui.setVisible(true);
+    }
+    
+    public static void show(Solution solution) {
+    	SolutionMulti solutionMulti = new SolutionMulti();
+    	solutionMulti.add(solution);
+    	show(solutionMulti);
+    }
 
     public SolutionWindowPanel(SolutionMulti solutionMulti, File usageModelExtension) {
         super();
