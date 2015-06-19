@@ -784,7 +784,7 @@ public class DataHandler {
 				cp.getName(), ((PaaS)service).getReplicas(), cp);
 	}
 	
-	private PaaS getPaaSfromCloudPlatform(String provider, String serviceType, String serviceName, String resourceName, int replicasUh, CloudPlatform cp) {
+	private PaaS getPaaSfromCloudPlatform(String provider, String serviceType, String serviceName, String resourceName, int serviceReplicas, CloudPlatform cp) {
 
 //		double speed = 0;
 //		int numberOfCores = 0;
@@ -811,7 +811,7 @@ public class DataHandler {
 			return p;
 		
 		Compute c = null;
-		int replicas = 1;
+		int replicas = serviceReplicas;
 		int dataReplicas = 1;
 		int storage = 0;
 		if (st != null)
@@ -819,7 +819,7 @@ public class DataHandler {
 		
 		switch (pt) {
 		case Frontend:
-			replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Frontend.DEFAULT_REPLICAS);
+			replicas *= getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Frontend.DEFAULT_REPLICAS);
 			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Frontend.DEFAULT_DATA_REPLICAS);
 			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
 					cr.getName() /*resourceName*/, replicas, cr);
@@ -836,7 +836,7 @@ public class DataHandler {
 					getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS_PAYED_SINGULARLY, Frontend.DEFAULT_REPLICAS_PAYED_SINGULARLY));
 			break;
 		case Backend:
-			replicas = getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Backend.DEFAULT_REPLICAS);
+			replicas *= getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Backend.DEFAULT_REPLICAS);
 			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Backend.DEFAULT_DATA_REPLICAS);
 			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
 					cr.getName() /*resourceName*/, replicas, cr);
@@ -853,7 +853,6 @@ public class DataHandler {
 					getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS_PAYED_SINGULARLY, Backend.DEFAULT_REPLICAS_PAYED_SINGULARLY));
 			break;
 		case Queue:
-			replicas = 1;
 			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Queue.DEFAULT_DATA_REPLICAS);
 			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
 					cr.getName() /*resourceName*/, replicas, cr);
@@ -870,7 +869,6 @@ public class DataHandler {
 					c);
 			break;
 		case Cache:
-			replicas = 1;
 			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, Cache.DEFAULT_DATA_REPLICAS);
 			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
 					cr.getName() /*resourceName*/, replicas, cr);
@@ -888,7 +886,6 @@ public class DataHandler {
 			
 			switch (dbt) {
 			case Relational:
-				replicas = 1;
 				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, SQL.DEFAULT_DATA_REPLICAS);
 				c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
 						cr.getName() /*resourceName*/, replicas, cr);
@@ -906,7 +903,6 @@ public class DataHandler {
 				DatabaseTechnology dbtech = DatabaseTechnology.getByName(((Database)cp).getTechnology());
 				switch (dbtech) {
 				case TableDatastore:
-					replicas = 1;
 					dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, TableDatastore.DEFAULT_DATA_REPLICAS);
 					c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
 							cr.getName() /*resourceName*/, replicas, cr);
@@ -920,7 +916,6 @@ public class DataHandler {
 							c);
 					break;
 				case BlobDatastore:
-					replicas = 1;
 					dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, BlobDatastore.DEFAULT_DATA_REPLICAS);
 					c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
 							cr.getName() /*resourceName*/, replicas, cr);
