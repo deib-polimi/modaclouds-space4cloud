@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.exceptions;
 
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-
 import java.util.concurrent.ExecutionException;
 
 public class OptimizationException extends ExecutionException {

@@ -398,8 +398,8 @@ public class ConstraintHandler {
 			if (t.getCloudService() instanceof IaaS || t.getCloudService() instanceof PaaS) {
 				//filter resources with just 1 replica
 				if ( 
-						(t.getCloudService() instanceof IaaS && ((IaaS)t.getCloudService()).getReplicas() == 1) ||
-						(t.getCloudService() instanceof PaaS && ((PaaS)t.getCloudService()).getReplicas() == 1)
+						(t.getCloudService() instanceof IaaS && (t.getCloudService().getReplicas() == 1)) ||
+						(t.getCloudService() instanceof PaaS && (t.getCloudService().getReplicas() == 1))
 						)
 					resources.get(hour).remove(t);
 				else{

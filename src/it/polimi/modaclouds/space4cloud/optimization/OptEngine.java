@@ -494,8 +494,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// if the cloud service hosting the application tier is a IaaS
 				if ((t.getCloudService() instanceof IaaS &&
 						// and it has more than one replica
-						((IaaS) t.getCloudService()).getReplicas() > 1) ||
-						(t.getCloudService() instanceof PaaS && ((PaaS)t.getCloudService()).areReplicasChangeable() &&  ((PaaS) t.getCloudService()).getReplicas() > 1))
+						(t.getCloudService().getReplicas() > 1) ||
+						(t.getCloudService() instanceof PaaS && ((PaaS)t.getCloudService()).areReplicasChangeable() && (t.getCloudService().getReplicas() > 1))))
 					// add it to the list of resources that can be scaled in
 					resMemory.add(t);
 
@@ -646,9 +646,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				for (int i = 0; i < 24; i++) {
 
 					for (int j = 0; j < vettResTot.get(i).size(); j++)
-						if ( (vettResTot.get(i).get(j).getCloudService() instanceof IaaS && ((IaaS) vettResTot.get(i).get(j).getCloudService()).getReplicas() == 1) ||
+						if ( (vettResTot.get(i).get(j).getCloudService() instanceof IaaS && vettResTot.get(i).get(j).getCloudService().getReplicas() == 1) ||
 								(vettResTot.get(i).get(j).getCloudService() instanceof PaaS && ((PaaS) vettResTot.get(i).get(j).getCloudService()).areReplicasChangeable() &&
-										((PaaS) vettResTot.get(i).get(j).getCloudService()).getReplicas() == 1) )
+										vettResTot.get(i).get(j).getCloudService().getReplicas() == 1) )
 							vettResTot.get(i).remove(j);
 
 					if (vettResTot.get(i).size() > 0) {

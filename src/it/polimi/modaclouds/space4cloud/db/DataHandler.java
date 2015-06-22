@@ -366,7 +366,7 @@ public class DataHandler {
 	private IaaS getIaaSfromCloudResource(CloudService service, CloudResource cr) {
 		return getIaaSfromCloudResource(
 				service.getProvider(), service.getServiceType(), service.getServiceName(),
-				cr.getName(), ((IaaS) service).getReplicas(), cr);
+				cr.getName(), service.getReplicas(), cr);
 	}
 	
 	public CloudService getCloudService(String provider, String serviceType, String serviceName, String resourceName, int replicas) {
@@ -781,7 +781,7 @@ public class DataHandler {
 	private PaaS getPaaSfromCloudPlatform(CloudService service, CloudPlatform cp) {
 		return getPaaSfromCloudPlatform(
 				service.getProvider(), service.getServiceType(), service.getServiceName(),
-				cp.getName(), ((PaaS)service).getReplicas(), cp);
+				cp.getName(), service.getReplicas(), cp);
 	}
 	
 	private PaaS getPaaSfromCloudPlatform(String provider, String serviceType, String serviceName, String resourceName, int serviceReplicas, CloudPlatform cp) {

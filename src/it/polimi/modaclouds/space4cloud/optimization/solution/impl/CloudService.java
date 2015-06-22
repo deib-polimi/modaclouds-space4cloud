@@ -148,4 +148,9 @@ public abstract class CloudService implements Cloneable, Serializable, IConstrai
 		// TODO: implement this for all the kinds of services!
 		return 0.0;
 	}
+	
+	public int getReplicas() {
+		// TODO: implement this for all the kinds of services!
+		return 0;
+	}
 }

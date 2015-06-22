@@ -765,17 +765,7 @@ public class Solution implements Cloneable, Serializable {
 	}
 
 	public int getReplicas(Tier t) {
-		CloudService service = t.getCloudService();
-		
-		if (service instanceof IaaS) {
-			IaaS iaaService  = (IaaS) service;
-			return iaaService.getReplicas();
-		} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
-			PaaS paaService  = (PaaS) service;
-			return paaService.getReplicas();
-		}
-		
-		return 0;
+		return t.getCloudService().getReplicas();
 	}
 
 	public int getTotalProviders() {
@@ -824,25 +814,18 @@ public class Solution implements Cloneable, Serializable {
 	 */
 	public boolean greaterThan(Solution sol) {
 
-		boolean condition = false;
-
-		condition = isFeasible() && sol.isFeasible();
-
-		if (condition) {
+		if (isFeasible() && sol.isFeasible()) {
 			/* if both are feasible */
 			return getCost() < sol.getCost();
 
 		} else if (!isFeasible() && !sol.isFeasible()) {
 
 			/*
-			 * here we  consider as better the solution with the
-			 * minimum number of violated constraints 
+			 * if both are unfeasible we  consider as better the solution
+			 * with the minimum number of violated constraints among the two
 			 */
 
-			if (getNumberOfViolatedConstraints() <= sol.getNumberOfViolatedConstraints())
-				return true;
-			else
-				return false;
+			return (getNumberOfViolatedConstraints() <= sol.getNumberOfViolatedConstraints());
 
 		} else {
 
@@ -852,7 +835,7 @@ public class Solution implements Cloneable, Serializable {
 	}
 
 	public boolean greaterThan(SolutionMulti sol) {
-		if(sol==null)
+		if (sol==null)
 			return true;
 		Solution s = sol.get(getProvider());
 		if (s == null)

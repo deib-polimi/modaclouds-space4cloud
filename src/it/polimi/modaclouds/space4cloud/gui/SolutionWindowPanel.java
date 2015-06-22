@@ -8,9 +8,6 @@ import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
@@ -213,14 +210,7 @@ public class SolutionWindowPanel extends JTabbedPane{
     }
     
     private int getReplicas(Tier t) {
-		CloudService serv = t.getCloudService();
-		
-		if (serv instanceof IaaS) {
-			return ((IaaS) t.getCloudService()).getReplicas();
-		} else if (serv instanceof PaaS) {
-			return ((PaaS) t.getCloudService()).getReplicas();
-		}
-		return 0;
+		return t.getCloudService().getReplicas();
 	}
 
     public void setPopulation(File usageModelExtension) {

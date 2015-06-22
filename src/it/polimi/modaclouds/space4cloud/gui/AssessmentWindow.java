@@ -22,11 +22,8 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.AvgRTConstraint
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
@@ -916,14 +913,7 @@ public class AssessmentWindow extends WindowAdapter implements
     }
 
     private int getReplicas(Tier t) {
-        CloudService serv = t.getCloudService();
-
-        if (serv instanceof IaaS) {
-			return ((IaaS) t.getCloudService()).getReplicas();
-		} else if (serv instanceof PaaS) {
-			return ((PaaS) t.getCloudService()).getReplicas();
-		}
-        return 0;
+        return t.getCloudService().getReplicas();
     }
 
 }

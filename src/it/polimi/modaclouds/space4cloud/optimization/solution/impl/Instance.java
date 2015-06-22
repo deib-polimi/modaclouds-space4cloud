@@ -199,15 +199,7 @@ public class Instance implements Cloneable, Serializable {
 	}
 	
 	private int getReplicas(Tier t) {
-		CloudService serv = t.getCloudService();
-		
-		if (serv instanceof IaaS) {
-			IaaS res = (IaaS) t.getCloudService();
-			return res.getReplicas();
-		} else if (serv instanceof PaaS) {
-			return 1;
-		}
-		return 0;
+		return t.getCloudService().getReplicas();
 	}
 
 	/**

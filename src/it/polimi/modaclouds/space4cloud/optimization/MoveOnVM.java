@@ -100,11 +100,7 @@ public class MoveOnVM extends AbsMoveHour {
 			return;
 		}
 		
-		int replicas = 0;
-		if (cs instanceof IaaS)
-			replicas = ((IaaS) cs).getReplicas();
-		else
-			replicas = ((PaaS) cs).getReplicas();
+		int replicas = cs.getReplicas();
 		
 		//avoid breaking constraints when scaling in	
 		List<Constraint> constraints =  ConstraintHandlerFactory.getConstraintHandler().getConstraintByResourceId(tier.getId(), ReplicasConstraint.class);
@@ -135,11 +131,7 @@ public class MoveOnVM extends AbsMoveHour {
 			return;
 		}
 		
-		int replicas = 0;
-		if (cs instanceof IaaS)
-			replicas = ((IaaS) cs).getReplicas();
-		else
-			replicas = ((PaaS) cs).getReplicas();
+		int replicas = cs.getReplicas();
 
 		int newReplicas = (int) Math.ceil(replicas * (1 / factor));
 		//avoid breaking constraints when scaling in 		
@@ -169,11 +161,7 @@ public class MoveOnVM extends AbsMoveHour {
 			return;
 		}
 		
-		int replicas = 0;
-		if (cs instanceof IaaS)
-			replicas = ((IaaS) cs).getReplicas();
-		else
-			replicas = ((PaaS) cs).getReplicas();
+		int replicas = cs.getReplicas();
 		
 		//avoid breaking constraints when scaling out	
 		List<Constraint> constraints =  ConstraintHandlerFactory.getConstraintHandler().getConstraintByResourceId(tier.getId(), ReplicasConstraint.class);
@@ -205,11 +193,7 @@ public class MoveOnVM extends AbsMoveHour {
 			return;
 		}
 		
-		int replicas = 0;
-		if (cs instanceof IaaS)
-			replicas = ((IaaS) cs).getReplicas();
-		else
-			replicas = ((PaaS) cs).getReplicas();
+		int replicas = cs.getReplicas();
 				
 		int newReplicas = (int) Math.ceil(replicas * factor);
 		//avoid breaking constraints when scaling in 		
