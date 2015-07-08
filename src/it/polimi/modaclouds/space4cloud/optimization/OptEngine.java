@@ -2107,6 +2107,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @return
 	 */
 	private double getEfficiency(CloudService resource, String region) {
+		if (Configuration.BENCHMARK != Configuration.Benchmark.None) {
+			return dataHandler.getBenchmarkValue(resource, Configuration.BENCHMARK.toString());
+		}
+		
 		Compute computeRes = null;
 		if (resource instanceof Compute)
 			computeRes = (Compute) resource;

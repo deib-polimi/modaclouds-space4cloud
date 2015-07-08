@@ -886,10 +886,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 			}
 		
 		Map<String, Double> instance = benchmarksMap.get(instanceType);
-		if (instance == null) {
-			logger.warn("Instance {} not in the benchmark database.", instanceType);
+		if (instance == null)
 			return new HashSet<String>();
-		}
 		
 		return instance.keySet();
 	}
@@ -910,16 +908,12 @@ public class ProviderDBConnector implements GenericDBConnector {
 			}
 		
 		Map<String, Double> instance = benchmarksMap.get(instanceType);
-		if (instance == null) {
-			logger.warn("Instance {} not in the benchmark database.", instanceType);
+		if (instance == null)
 			return 0.0;
-		}
 		
 		Double val = instance.get(tool);
-		if (val == null) {
-			logger.warn("Tool {} not in the benchmark database.", tool);
+		if (val == null)
 			return 0.0;
-		}
 		return val;
 	}
 	

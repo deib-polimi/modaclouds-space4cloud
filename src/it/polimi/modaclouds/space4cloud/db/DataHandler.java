@@ -52,6 +52,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.TableDatastor
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -133,6 +134,14 @@ public class DataHandler {
 				}
 			}
 //		}
+			
+		CloudService res = handler.getCloudService("Amazon", "Compute", "Elastic Compute Cloud (EC2)", "m1.medium", 1);
+		for (String s : handler.getSimilarResourcesWithBenchmarkValue(res, "Filebench")) {
+			logger.info("Filebench: {}", s);
+		}
+		for (String s : handler.getSimilarResourcesWithBenchmarkValue(res, "DaCapo")) {
+			logger.info("DaCapo: {}", s);
+		}
 
 		logger.info("End");
 
@@ -1043,7 +1052,7 @@ public class DataHandler {
 		return resources;
 	}
 	
-	public double getBenchmarkValue(IaaS service, String tool) {
+	public double getBenchmarkValue(CloudService service, String tool) {
 		return getBenchmarkValue(service.getProvider(), service.getResourceName(), tool);
 	}
 	
@@ -1051,12 +1060,22 @@ public class DataHandler {
 		return cloudProviders.getProviderDBConnectors().get(provider).getBenchmarkValue(resourceName, tool);
 	}
 	
-	public Set<String> getBenchmarkMethods(IaaS service) {
+	public Set<String> getBenchmarkMethods(CloudService service) {
 		return getBenchmarkMethods(service.getProvider(), service.getResourceName());
 	}
 	
 	public Set<String> getBenchmarkMethods(String provider, String resourceName) {
 		return cloudProviders.getProviderDBConnectors().get(provider).getBenchmarkMethods(resourceName);
+	}
+	
+	public Set<String> getSimilarResourcesWithBenchmarkValue(CloudService service, String tool) {
+		Set<String> res = new HashSet<String>();
+		List<String> sizes = getCloudElementSizes(service.getProvider(), service.getServiceName());
+		for (String size : sizes) {
+			if (getBenchmarkValue(service.getProvider(), size, tool) > 0)
+				res.add(size);
+		}
+		return res;
 	}
 	
 }

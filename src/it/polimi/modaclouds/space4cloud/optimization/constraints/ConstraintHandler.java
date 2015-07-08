@@ -20,6 +20,9 @@ import it.polimi.modaclouds.qos_models.schema.Constraints;
 import it.polimi.modaclouds.qos_models.schema.QosMetricAggregation;
 import it.polimi.modaclouds.qos_models.schema.Range;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
@@ -65,13 +68,18 @@ public class ConstraintHandler {
 	private static final Logger logger = LoggerFactory.getLogger(ConstraintHandler.class);
 	public  static final String AVERAGE_AGGREGATION = "Average";
 	public static final String PERCENTILE_AGGREGATION = "Percentile";
-
+	
+	private DataHandler dataHandler;
 
 	/**
 	 * The Constraint handler should be accessed by its factory  
 	 */
 	public ConstraintHandler() {
-
+		try {
+			dataHandler = DataHandlerFactory.getHandler();
+		} catch (DatabaseConnectionFailureExteption e) {
+			logger.error("Error while getting the data handler.", e);
+		}
 	}
 
 	/**
@@ -353,6 +361,18 @@ public class ConstraintHandler {
 			if(resource instanceof Compute && ((Compute)resource).getNumberOfCores()==0)
 				result.remove(resource);
 
+		if (Configuration.BENCHMARK != Configuration.Benchmark.None && resList.size() > 0) {
+			Set<String> resourcesWithBenchmark = dataHandler.getSimilarResourcesWithBenchmarkValue(resList.get(0), Configuration.BENCHMARK.toString());
+			
+			if (resourcesWithBenchmark.size() == 0) {
+				logger.warn("No resource has a valid benchmark value for the benchmark {}. Disabling it.", Configuration.BENCHMARK.toString());
+				Configuration.BENCHMARK = Configuration.Benchmark.None;
+			} else {
+				for(CloudService resource:resList)
+					if (!resourcesWithBenchmark.contains(resource.getResourceName()))
+						result.remove(resource);
+			}
+		}
 
 
 		resList.clear();
