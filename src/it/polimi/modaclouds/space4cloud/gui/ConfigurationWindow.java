@@ -52,6 +52,7 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 	private RobustnessConfigurationPanel robustnessConfigurationPane;
 	private CloudBurstingPanel cloudBurstingPanel;
 	private ExternalServerPanel externalServerPanel;
+	private Design2RuntimePanel design2RuntimePanel;
 	private static final Logger logger = LoggerFactory.getLogger(ConfigurationWindow.class);
 	private boolean disposed = false;
 	private boolean cancelled = true;
@@ -227,6 +228,12 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 		tabNumber = tabbedPane.indexOfComponent(externalServerPanel);
 		tabbedPane.setEnabledAt(tabNumber, false);
 		
+		design2RuntimePanel = new Design2RuntimePanel();
+		design2RuntimePanel.setPreferredSize(getContentPane().getPreferredSize());
+		tabbedPane.addTab(design2RuntimePanel.getName(), design2RuntimePanel);
+		tabNumber = tabbedPane.indexOfComponent(design2RuntimePanel);
+		tabbedPane.setEnabledAt(tabNumber, true);
+		
 		optimizationConfigurationPane.addPropertyChangeListener(this);
 		functionalityPane.addPropertyChangeListener(this);
 
@@ -249,6 +256,8 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 				robustnessConfigurationPane.updateConfiguration();
 				optimizationConfigurationPane.updateConfiguration();
 			}
+			externalServerPanel.updateConfiguration();
+			design2RuntimePanel.updateConfiguration();
 			List<String> errors = Configuration.checkValidity();
 			if(!errors.isEmpty()){
 				String message="";
@@ -306,6 +315,7 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 				cloudBurstingPanel.updateConfiguration();
 			
 			externalServerPanel.updateConfiguration();
+			design2RuntimePanel.updateConfiguration();
 
 			File configurationFile = FileLoader.saveFile("Load SPACE4Cloud Configuration", "properties");
 			if(configurationFile!=null){
@@ -351,6 +361,9 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 		} else if(evt.getPropertyName().equals(FunctionalityPanel.contractorProperty)) {
 			boolean visibility = optimizationConfigurationPane.sshNeeded();
 			setPanelVisibility(externalServerPanel, visibility);
+		} else if(evt.getPropertyName().equals(FunctionalityPanel.design2runtimeProperty)) {
+			boolean visibility = Configuration.GENERATE_DESIGN_TO_RUNTIME_FILES;
+			setPanelVisibility(design2RuntimePanel, visibility);
 		}
 	}
 
@@ -378,6 +391,7 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 		robustnessConfigurationPane.loadConfiguration();
 		cloudBurstingPanel.loadConfiguration();
 		externalServerPanel.loadConfiguration();
+		design2RuntimePanel.loadConfiguration();
 		
 		int index = tabbedPane.getSelectedIndex(), origIndex = index;
 		boolean found = false;

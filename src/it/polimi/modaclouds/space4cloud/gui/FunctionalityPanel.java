@@ -25,6 +25,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 	public static final String functionalityProperty = "functionality";
 	public static final String privateCloudProperty = "privateCloud";
 	public static final String contractorProperty = "contractor";
+	public static final String design2runtimeProperty = "design2runtime";
 	
 	private static final long serialVersionUID = -5356951769849277734L;
 	private static final String PANEL_NAME = "Functionality"; //"Functionality Selection";
@@ -43,6 +44,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 
 	private JCheckBox usePrivateCloud;
 	private JCheckBox useContractor;
+	private JCheckBox generateDesign2Runtime;
 
 	/**
 	 * Create the panel.
@@ -247,6 +249,15 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		useContractor = new JCheckBox("Consider the contracts (when possible)");
 		add(useContractor, gbc_contractor);
 		useContractor.addActionListener(this);
+		
+		GridBagConstraints gbc_design2runtime = new GridBagConstraints();
+		gbc_design2runtime.fill = GridBagConstraints.HORIZONTAL;		
+		gbc_design2runtime.gridx = 0;
+		gbc_design2runtime.gridy = 10;
+		gbc_design2runtime.insets = new Insets(0, 0, 5, 5);
+		generateDesign2Runtime = new JCheckBox("Generate the Design2Runtime files");
+		add(generateDesign2Runtime, gbc_design2runtime);
+		generateDesign2Runtime.addActionListener(this);
 	}
 
 	@Override
@@ -278,15 +289,17 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		} else if(e.getSource().equals(useContractor)){
 			Configuration.CONTRACTOR_TEST = useContractor.isSelected();
 			setContractorVisibility(useContractor.isSelected());
-		}
-		else if(e.getSource().equals(randomEnvironmentButton)){
+		} else if(e.getSource().equals(randomEnvironmentButton)){
 			File randomEnvFile = FileLoader.loadFile("Random Enviroment specification"); // TODO: what extension should this have?
 			if(randomEnvFile!=null){
 				Configuration.RANDOM_ENV_FILE=randomEnvFile.getAbsolutePath();
 				Configuration.PROJECT_BASE_FOLDER=randomEnvFile.getParent().toString();
 				randomEnvironmentText.setText(randomEnvFile.getAbsolutePath());
 			}
-		}
+		} else if(e.getSource().equals(generateDesign2Runtime)){
+			Configuration.GENERATE_DESIGN_TO_RUNTIME_FILES = generateDesign2Runtime.isSelected();
+			setDesign2RuntimeVisibility(generateDesign2Runtime.isSelected());
+		} 
 	}
 
 	/**
@@ -303,6 +316,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		
 		setPrivateCloudVisibility(Configuration.USE_PRIVATE_CLOUD);
 		setContractorVisibility(Configuration.CONTRACTOR_TEST);
+		setDesign2RuntimeVisibility(Configuration.GENERATE_DESIGN_TO_RUNTIME_FILES);
 	}
 
 
@@ -364,6 +378,12 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		useContractor.setSelected(shown);
 		firePropertyChange(contractorProperty, !shown, shown);
 	}
+	
+	private void setDesign2RuntimeVisibility(boolean shown) {
+//		boolean old = usePrivateCloud.isSelected();
+		generateDesign2Runtime.setSelected(shown);
+		firePropertyChange(design2runtimeProperty, !shown, shown);
+	}
 
 	/**
 	 * Updates values in the Configuration class according to those selected in the panel
@@ -376,6 +396,7 @@ public class FunctionalityPanel extends JPanel implements ActionListener {
 		Configuration.RANDOM_ENV_FILE = randomEnvironmentText.getText();
 		Configuration.USE_PRIVATE_CLOUD = usePrivateCloud.isSelected();
 		Configuration.CONTRACTOR_TEST = useContractor.isSelected();
+		Configuration.GENERATE_DESIGN_TO_RUNTIME_FILES = generateDesign2Runtime.isSelected();
 	}
 
 }

@@ -96,36 +96,39 @@ public class DataHandler {
 			logger.info("Provider: "+provider);
 			
 			String[] servicesTypes = new String[] {
-//					"Compute",
+					"Compute",
 //					"Frontend",
 //					"Backend",
 //					"Middleware",
-					"Queue",
+//					"Queue",
 //					"Cache",
-					"NoSQL_DB",
+//					"NoSQL_DB",
 //					"RelationalDB",
-					"Storage"
+//					"Storage"
 				};
 			
 			for (String s : servicesTypes) {
 				List<String> services = handler.getServices(provider, s);
 				for(String service:services){
-					logger.info("> "+service + " (" + s +")");
+//					logger.info("> "+service + " (" + s +")");
 					
 					List<String> sizes = handler.getCloudElementSizes(provider, service);
 					for(String size:sizes){
-						logger.info("> > "+size);
+//						logger.info("> > "+size);
 						
-						CloudElement ce = handler.getCloudElement(provider, service, size);
-						if (ce != null) {
-							logger.info("> > > " + ce.toString());
-							if (ce instanceof CloudPlatform) {
-								EList<CloudResource> resources = handler.getCloudPlatformRunOnResources(provider, service, size);
-								
-								for(CloudResource cr:resources)
-									logger.info("> > > > "+cr.toString());
-							}
-						}
+						for (String tool : handler.getBenchmarkMethods(provider, size))
+							logger.info("{}, tool: {}, benchmark: {}", size, tool, handler.getBenchmarkValue(provider, size, tool));
+						
+//						CloudElement ce = handler.getCloudElement(provider, service, size);
+//						if (ce != null) {
+//							logger.info("> > > " + ce.toString());
+//							if (ce instanceof CloudPlatform) {
+//								EList<CloudResource> resources = handler.getCloudPlatformRunOnResources(provider, service, size);
+//								
+//								for(CloudResource cr:resources)
+//									logger.info("> > > > "+cr.toString());
+//							}
+//						}
 					}
 				}
 			}
@@ -1038,6 +1041,22 @@ public class DataHandler {
 			}
 		}
 		return resources;
+	}
+	
+	public double getBenchmarkValue(IaaS service, String tool) {
+		return getBenchmarkValue(service.getProvider(), service.getResourceName(), tool);
+	}
+	
+	public double getBenchmarkValue(String provider, String resourceName, String tool) {
+		return cloudProviders.getProviderDBConnectors().get(provider).getBenchmarkValue(resourceName, tool);
+	}
+	
+	public Set<String> getBenchmarkMethods(IaaS service) {
+		return getBenchmarkMethods(service.getProvider(), service.getResourceName());
+	}
+	
+	public Set<String> getBenchmarkMethods(String provider, String resourceName) {
+		return cloudProviders.getProviderDBConnectors().get(provider).getBenchmarkMethods(resourceName);
 	}
 	
 }

@@ -374,6 +374,11 @@
 			<version>0.1.9</version>
 		</dependency>
 		<dependency>
+            <groupId>it.polimi.modaclouds</groupId>
+            <artifactId>adaptationDesignTime4Cloud</artifactId>
+            <version>1.0</version>
+        </dependency>
+		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>17.0</version>

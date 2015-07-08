@@ -57,8 +57,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +93,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 	private Map<String, PaaS_Service> paasMap;
 	
 	private Map<String, Double> availabilitiesMap;
+	
+	private Map<String, Map<String, Double>> benchmarksMap;
 	
 //	private static final Logger logger = LoggerHelper.getLogger(ProviderDBConnector.class);
 	private static final Logger logger = LoggerFactory.getLogger(ProviderDBConnector.class);
@@ -866,6 +870,97 @@ public class ProviderDBConnector implements GenericDBConnector {
 		}
 		rs.close();
 	
+	}
+	
+	@Override
+	public Set<String> getBenchmarkMethods(String instanceType) {
+		if (instanceType == null)
+			throw new RuntimeException("The instance type cannot be null!");
+		
+		if (benchmarksMap == null)
+			try {
+				defineBenchmarkValues();
+			} catch (Exception e) {
+				logger.error("Error while getting the benchmark values for " + provider.getName() + ".", e);
+				return new HashSet<String>();
+			}
+		
+		Map<String, Double> instance = benchmarksMap.get(instanceType);
+		if (instance == null) {
+			logger.warn("Instance {} not in the benchmark database.", instanceType);
+			return new HashSet<String>();
+		}
+		
+		return instance.keySet();
+	}
+	
+	@Override
+	public double getBenchmarkValue(String instanceType, String tool) {
+		if (instanceType == null)
+			throw new RuntimeException("The instance type cannot be null!");
+		if (tool == null)
+			throw new RuntimeException("The tool cannot be null!");
+		
+		if (benchmarksMap == null)
+			try {
+				defineBenchmarkValues();
+			} catch (Exception e) {
+				logger.error("Error while getting the benchmark values for " + provider.getName() + ".", e);
+				return 0.0;
+			}
+		
+		Map<String, Double> instance = benchmarksMap.get(instanceType);
+		if (instance == null) {
+			logger.warn("Instance {} not in the benchmark database.", instanceType);
+			return 0.0;
+		}
+		
+		Double val = instance.get(tool);
+		if (val == null) {
+			logger.warn("Tool {} not in the benchmark database.", tool);
+			return 0.0;
+		}
+		return val;
+	}
+	
+	private void defineBenchmarkValues() throws SQLException {
+		benchmarksMap = new HashMap<String, Map<String, Double>>();
+		
+		defineBenchmarkValues("DaCapo");
+		defineBenchmarkValues("Filebench");
+	}
+	
+	private void defineBenchmarkValues(String tool) throws SQLException {
+		String query = "";
+		if (tool.equalsIgnoreCase("DaCapo")) {
+			query = "SELECT InstanceType, 100000/AVG(PerformanceTime_ms) FROM DaCapo " +
+					"WHERE CloudProvider=\"%s\" AND Workload=\"tomcat\" " +
+					"GROUP BY InstanceType";
+		} else if (tool.equalsIgnoreCase("FileBench")) {
+			query = "SELECT InstanceType, 100/AVG(Latency) FROM Filebench " +
+					"WHERE Ops!=0 AND OpsPerSecond!=0 AND ReadWrite!=0 AND MbPerSecond!=0 AND CpuOperations!=0 AND Latency!=0 " +
+					"AND CloudProvider=\"%s\" AND Workload=\"fileserver\" AND InstanceType!=\"t1.micro\" " +
+					"GROUP BY InstanceType";
+		} else {
+			throw new RuntimeException("Tool " + tool + " not recognized!");
+		}
+		
+		try (ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(String.format(
+				query,
+				provider.getName().toLowerCase()))) {
+		
+			while (rs.next()) {
+				String instanceType = rs.getString(1);
+				double value = rs.getDouble(2);
+				
+				Map<String, Double> newInstance = benchmarksMap.get(instanceType);
+				if (newInstance == null) {
+					newInstance = new HashMap<String, Double>();
+					benchmarksMap.put(instanceType, newInstance);
+				}
+				newInstance.put(tool, value);
+			}
+		}
 	}
 
 }

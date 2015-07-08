@@ -1,6 +1,7 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Benchmark;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
 
 import java.awt.Component;
@@ -38,8 +39,8 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 	private JCheckBox initialSolutionBox;
 	private JLabel emptyLabel;
 	private JLabel emptyLabel2;
-	private JPanel panel;
 	private JCheckBox redistributeWorkloadBox;
+	private JComboBox<Benchmark> selectionBenchmarkBox;
 	/**
 	 * Create the panel.
 	 */
@@ -47,9 +48,9 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		setName(PANEL_NAME);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{201, 201, 0};
-		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 0, 0};
+		gridBagLayout.rowHeights = new int[]{35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0};
 		setLayout(gridBagLayout);
 
 		JLabel tabuMemoryLabel = new JLabel("Tabu Memory Size");
@@ -199,7 +200,6 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_redistributeWorkloadBox.gridy = 8;
 		add(redistributeWorkloadBox, gbc_redistributeWorkloadBox);
 		
-		
 		emptyLabel2 = new JLabel("");
 		GridBagConstraints gbc_emptyLabel2 = new GridBagConstraints();
 		gbc_emptyLabel2.insets = new Insets(0, 0, 5, 0);
@@ -207,13 +207,23 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		gbc_emptyLabel2.gridy = 8;
 		add(emptyLabel2, gbc_emptyLabel2);
 		
-		panel = new JPanel();
-		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.insets = new Insets(0, 0, 0, 5);
-		gbc_panel.fill = GridBagConstraints.BOTH;
-		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 12;
-		add(panel, gbc_panel);
+		GridBagConstraints gbc_selectionBenchmarkLabel = new GridBagConstraints();
+		gbc_selectionBenchmarkLabel.fill = GridBagConstraints.HORIZONTAL;
+		gbc_selectionBenchmarkLabel.insets = new Insets(0, 0, 5, 5);
+		gbc_selectionBenchmarkLabel.gridx = 0;
+		gbc_selectionBenchmarkLabel.gridy = 9;
+		add(new JLabel("Selection Benchmark"), gbc_selectionBenchmarkLabel);
+		
+		selectionBenchmarkBox = new JComboBox<Benchmark>();
+		selectionBenchmarkBox.setModel(new DefaultComboBoxModel<Benchmark>(Benchmark.values()));
+		selectionBenchmarkBox.addActionListener(this);
+		selectionBenchmarkBox.setSelectedItem(Benchmark.None);
+		GridBagConstraints gbc_selectionBenchmarkBox = new GridBagConstraints();
+		gbc_selectionBenchmarkBox.insets = new Insets(0, 0, 5, 0);
+		gbc_selectionBenchmarkBox.fill = GridBagConstraints.HORIZONTAL;
+		gbc_selectionBenchmarkBox.gridx = 1;
+		gbc_selectionBenchmarkBox.gridy = 9;
+		add(selectionBenchmarkBox, gbc_selectionBenchmarkBox);
 	}
 
 	@Override
@@ -254,6 +264,9 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		scaleInConfText.setText(Integer.toString(Configuration.SCALE_IN_CONV_ITERS));
 		initialSolutionBox.setSelected(Configuration.RELAXED_INITIAL_SOLUTION);
 		redistributeWorkloadBox.setSelected(Configuration.REDISTRIBUTE_WORKLOAD);
+		
+		selectionBenchmarkBox.setSelectedItem(Configuration.BENCHMARK);
+		
 		updateSSHVisibility();
 		
 	}
@@ -297,6 +310,8 @@ public class OptimizationConfigurationPanel extends JPanel implements ActionList
 		Configuration.RELAXED_INITIAL_SOLUTION = initialSolutionBox.isSelected();
 		
 		Configuration.REDISTRIBUTE_WORKLOAD = redistributeWorkloadBox.isSelected();
+		
+		Configuration.BENCHMARK = (Benchmark) selectionBenchmarkBox.getSelectedItem();
 	}
 
 	

@@ -18,6 +18,7 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import it.polimi.modaclouds.adaptationDesignTime4Cloud.Main.AdaptationModelBuilder;
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
@@ -2351,19 +2352,36 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 
 		logger.info(bestSolution.showStatus());
-		bestSolution.exportLight(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_LIGHT_FILE_NAME+Configuration.SOLUTION_FILE_EXTENSION));
-
-//		for(Solution sol:bestSolution.getAll())
-//			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
-
-		bestSolution.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
-
-		bestSolution.exportCSV(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_CSV_FILE_NAME));
 		
-		bestSolution.exportCostsAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY, "costs" + Configuration.SOLUTION_FILE_EXTENSION));
+		String basePath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY).toString();
+		
+		bestSolution.exportLight(Paths.get(basePath,Configuration.SOLUTION_LIGHT_FILE_NAME+Configuration.SOLUTION_FILE_EXTENSION));
+
+		for(Solution sol:bestSolution.getAll())
+			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
+
+		bestSolution.exportAsExtension(Paths.get(basePath,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
+
+		bestSolution.exportCSV(Paths.get(basePath,Configuration.SOLUTION_CSV_FILE_NAME));
+		
+		bestSolution.exportCostsAsExtension(Paths.get(basePath, "costs" + Configuration.SOLUTION_FILE_EXTENSION));
 		
 		for (Solution s : bestSolution.getAll())
-			s.exportPerformancesAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION));
+			s.exportPerformancesAsExtension(Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION));
+		
+		if (Configuration.GENERATE_DESIGN_TO_RUNTIME_FILES) {
+			logger.info("Calling the DesignToRuntimeConnector project...");
+			AdaptationModelBuilder amb = new AdaptationModelBuilder(Paths.get(Configuration.DB_CONNECTION_FILE).toString()); // TODO: è un full path?
+			for (Solution s : bestSolution.getAll())
+				amb.createAdaptationModelAndRules(
+						basePath,
+						Paths.get(basePath,Configuration.SOLUTION_FILE_NAME+s.getProvider()+Configuration.SOLUTION_FILE_EXTENSION).toString(),
+						Paths.get(Configuration.FUNCTIONALITY_TO_TIER_FILE).toString(),
+						Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION).toString(),
+						Configuration.OPTIMIZATION_WINDOW_LENGTH,
+						Configuration.TIMESTEP_DURATION,
+						s.getProvider());
+		}
 	}
 
 

@@ -33,6 +33,7 @@ import it.polimi.modaclouds.resourcemodel.cloud.PaaS_Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -197,5 +198,9 @@ public interface GenericDBConnector {
 	public double getAvailability();
 	
 	public double getAvailability(String region);
+	
+	public Set<String> getBenchmarkMethods(String instanceType);
+	
+	public double getBenchmarkValue(String instanceType, String tool);
 	
 }
