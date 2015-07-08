@@ -2371,7 +2371,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		
 		if (Configuration.GENERATE_DESIGN_TO_RUNTIME_FILES) {
 			logger.info("Calling the DesignToRuntimeConnector project...");
-			AdaptationModelBuilder amb = new AdaptationModelBuilder(Paths.get(Configuration.DB_CONNECTION_FILE).toString()); // TODO: è un full path?
+			AdaptationModelBuilder amb = new AdaptationModelBuilder(Paths.get(Configuration.DB_CONNECTION_FILE).toString());
 			for (Solution s : bestSolution.getAll())
 				amb.createAdaptationModelAndRules(
 						basePath,

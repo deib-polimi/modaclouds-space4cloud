@@ -31,6 +31,20 @@
 			<url>https://github.com/deib-polimi/deib-polimi-mvn-repo/raw/master/snapshots</url>
 		</repository>
 	</repositories>
+	
+	<distributionManagement>
+        <repository>
+            <id>internal-repo</id>
+            <name>Temporary Staging Repository</name>
+            <url>file://${project.build.directory}/mvn-repo/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>internal-snapshot-repo</id>
+            <name>Temporary Staging Snapshot Repository</name>
+            <url>file://${project.build.directory}/mvn-repo/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+	
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
@@ -313,7 +327,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.7</version>
+			<version>1.7.12</version>
 		</dependency>
 
 		<dependency>
@@ -324,7 +338,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.30</version>
+			<version>5.1.36</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -335,7 +349,7 @@
 		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
-			<version>1.0.17</version>
+			<version>1.0.19</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -346,12 +360,18 @@
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.1.52</version>
+			<version>0.1.53</version>
 		</dependency>
 		<dependency>
 			<groupId>it.polimi.modaclouds.qos-models</groupId>
 			<artifactId>qos-models</artifactId>
-			<version>2.4.4</version>
+			<version>3.0.1</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>log4j-over-slf4j</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>it.polimi.modaclouds</groupId>
@@ -381,7 +401,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>17.0</version>
+			<version>18.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.emf</groupId>
