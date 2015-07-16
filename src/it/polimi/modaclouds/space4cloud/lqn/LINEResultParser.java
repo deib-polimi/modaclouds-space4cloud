@@ -130,6 +130,10 @@ public class LINEResultParser extends LqnResultParser implements Serializable {
 		TransformerFactory transformerFactory = TransformerFactory
 				.newInstance();
 		javax.xml.transform.Transformer transformer = null;
+		String separator = System.getProperty("line.separator");
+		String newSeparator = "\n";
+		System.setProperty("line.separator", newSeparator);
+
 		try {
 			transformer = transformerFactory.newTransformer();
 		} catch (TransformerConfigurationException e) {
@@ -142,6 +146,7 @@ public class LINEResultParser extends LqnResultParser implements Serializable {
 		} catch (TransformerException e) {
 			logger.error("Error while fixing schema reference",e);
 		}
+		System.setProperty("line.separator", separator);
 	}
 
 	@Override

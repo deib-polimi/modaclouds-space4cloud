@@ -267,7 +267,7 @@ public class DataHandler {
 		// TODO: Controllare questa cosa :(
 		for (CloudResource cr : cloudResourceList) {
 			if (cr.getName().equals(resourceName))
-				if (!firstWithValidCost || (cr.getHasCost() != null && cr.getHasCost().size() > 0))
+				if (!firstWithValidCost || (cr.getHasCost() != null && cr.getHasCost().size() > 0) || cr.getHasCostProfile() != null )
 					return cr;
 		}
 		

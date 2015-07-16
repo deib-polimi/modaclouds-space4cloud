@@ -131,7 +131,8 @@ import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
 /**
  * @author Michele Ciavotta Class defining the optimization engine.
  */
-public class OptEngine extends SwingWorker<Void, Void> implements PropertyChangeListener{
+public class OptEngine extends SwingWorker<Void, Void> implements
+		PropertyChangeListener {
 
 	protected SolutionMulti initialSolution = null;
 
@@ -158,9 +159,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	private static final int MAX_SCRAMBLE_NO_CHANGE = 10;
 
 	protected int MAX_SCRUMBLE_ITERS = 20; /*
-	 * 40 Now it is a constant in the future it
-	 * might become a parameter
-	 */
+											 * 40 Now it is a constant in the
+											 * future it might become a
+											 * parameter
+											 */
 
 	protected int MAXFEASIBILITYITERATIONS = 10; // 20
 
@@ -211,8 +213,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 *            : the constraint handler
 	 * @throws DatabaseConnectionFailureExteption
 	 */
-	public OptEngine(ConstraintHandler handler,
-			boolean batch) throws DatabaseConnectionFailureExteption {
+	public OptEngine(ConstraintHandler handler, boolean batch)
+			throws DatabaseConnectionFailureExteption {
 
 		loadConfiguration();
 
@@ -322,7 +324,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		for (Instance i : sol.getApplications())
 			tmp += i.getWorkload() + " ";
 		logger.debug(tmp);
-		logger.debug("Trying to change the " + hour + " hour using this rate: " + rate);
+		logger.debug("Trying to change the " + hour + " hour using this rate: "
+				+ rate);
 
 		MoveChangeWorkload move = new MoveChangeWorkload(sol);
 
@@ -343,17 +346,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	}
 
-
-
-
 	@Override
 	protected Void doInBackground() throws Exception {
 		if (initialSolution.size() == 1)
 			Configuration.REDISTRIBUTE_WORKLOAD = false;
-		try{
-		optimize();
-		}catch(OptimizationException e){
-			logger.error("Optimization raised an exception",e);
+		try {
+			optimize();
+		} catch (OptimizationException e) {
+			logger.error("Optimization raised an exception", e);
 		}
 		if (!batch)
 			BestSolutionExplorer.prepare(this);
@@ -371,8 +371,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 *            of the resource in the constraint
 	 * @return a IaaS resource on which to perform a scale operation.
 	 */
-	protected Tier findResource(Instance application, String id,
-			Policy policy) {
+	protected Tier findResource(Instance application, String id, Policy policy) {
 
 		Tier resource = null;
 		IConstrainable constrainedResource = application
@@ -393,7 +392,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// with random policy
 			if (policy == Policy.Random)
 				selectedFun = functionalityChain.get(new Random()
-				.nextInt(functionalityChain.size()));
+						.nextInt(functionalityChain.size()));
 
 			// just the first of the list
 			else if (policy == Policy.First)
@@ -405,7 +404,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				for (Functionality f : functionalityChain)
 					if (f.isEvaluated()
 							&& f.getResponseTime() > selectedFun
-							.getResponseTime())
+									.getResponseTime())
 						selectedFun = f;
 			}
 
@@ -465,7 +464,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	}
 
-
 	/**
 	 * @param sol
 	 * @return
@@ -494,9 +492,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			for (Tier t : i.getTiers())
 				// if the cloud service hosting the application tier is a IaaS
 				if ((t.getCloudService() instanceof IaaS &&
-						// and it has more than one replica
-						(t.getCloudService().getReplicas() > 1) ||
-						(t.getCloudService() instanceof PaaS && ((PaaS)t.getCloudService()).areReplicasChangeable() && (t.getCloudService().getReplicas() > 1))))
+				// and it has more than one replica
+						(t.getCloudService().getReplicas() > 1) || (t
+						.getCloudService() instanceof PaaS
+						&& ((PaaS) t.getCloudService()).areReplicasChangeable() && (t
+						.getCloudService().getReplicas() > 1))))
 					// add it to the list of resources that can be scaled in
 					resMemory.add(t);
 
@@ -541,10 +541,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * 
 	 * @param sol
 	 *            is the current solution
-
-	 * @throws OptimizationException 
+	 * 
+	 * @throws OptimizationException
 	 */
-	protected void InternalOptimization(Solution sol) throws OptimizationException {
+	protected void InternalOptimization(Solution sol)
+			throws OptimizationException {
 
 		/*
 		 * 
@@ -566,8 +567,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		 * 
 		 * - ragionando alla lavagna con gibbo ci siamo resi conto che una mossa
 		 * di bilanciamento ha gli stessi effetti di una di variazione. per
-		 * questo non e' necessario far seguire ad una mossa di bilanciamento una
-		 * serie di mosse di variazione per far assestare i risultati.
+		 * questo non e' necessario far seguire ad una mossa di bilanciamento
+		 * una serie di mosse di variazione per far assestare i risultati.
 		 */
 
 		// if the solution is unfeasible there is a first phase in which the
@@ -583,18 +584,17 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		updateLocalBestSolution(sol);
 
 		optimLogger.info("costReduction phase");
-		if(sol.isFeasible()){
+		if (sol.isFeasible()) {
 			IteratedRandomScaleInLS(sol);
-		}
-		else{
+		} else {
 			logger.info("Solution not feasible, skipping scale in");
 		}
 		// optimLogger.trace("optimized solution"+sol.showStatus());
 
 	}
 
-
-	protected void InternalOptimization(SolutionMulti sol) throws OptimizationException {
+	protected void InternalOptimization(SolutionMulti sol)
+			throws OptimizationException {
 
 		for (Solution s : sol.getAll())
 			InternalOptimization(s);
@@ -616,10 +616,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return true;
 	}
 
-
-	protected void IteratedRandomScaleInLS(Solution sol) throws OptimizationException {
-		for(Constraint constraint:sol.getViolatedConstraints()){
-			if(constraint instanceof RamConstraint){
+	protected void IteratedRandomScaleInLS(Solution sol)
+			throws OptimizationException {
+		for (Constraint constraint : sol.getViolatedConstraints()) {
+			if (constraint instanceof RamConstraint) {
 				logger.info("Wron type of VM selected, make feasible will not be executed");
 				return;
 			}
@@ -647,9 +647,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				for (int i = 0; i < 24; i++) {
 
 					for (int j = 0; j < vettResTot.get(i).size(); j++)
-						if ( (vettResTot.get(i).get(j).getCloudService() instanceof IaaS && vettResTot.get(i).get(j).getCloudService().getReplicas() == 1) ||
-								(vettResTot.get(i).get(j).getCloudService() instanceof PaaS && ((PaaS) vettResTot.get(i).get(j).getCloudService()).areReplicasChangeable() &&
-										vettResTot.get(i).get(j).getCloudService().getReplicas() == 1) )
+						if ((vettResTot.get(i).get(j).getCloudService() instanceof IaaS && vettResTot
+								.get(i).get(j).getCloudService().getReplicas() == 1)
+								|| (vettResTot.get(i).get(j).getCloudService() instanceof PaaS
+										&& ((PaaS) vettResTot.get(i).get(j)
+												.getCloudService())
+												.areReplicasChangeable() && vettResTot
+										.get(i).get(j).getCloudService()
+										.getReplicas() == 1))
 							vettResTot.get(i).remove(j);
 
 					if (vettResTot.get(i).size() > 0) {
@@ -670,12 +675,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				}
 
-
-
 				try {
 					evalServer.EvaluateSolution(sol);
 				} catch (EvaluationException e) {
-					throw new OptimizationException("","scaleIn",e);
+					throw new OptimizationException("", "scaleIn", e);
 				}
 				updateBestSolution(sol);
 
@@ -707,17 +710,18 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	}
 
-
 	@Override
-	protected void done(){      
+	protected void done() {
 		evalServer.terminateServer();
 		try {
 			get();
 		} catch (InterruptedException e) {
-			logger.error("Interrupted ending of optimization engine",e);            
+			logger.error("Interrupted ending of optimization engine", e);
 		} catch (ExecutionException e) {
-			logger.error("Execution exception occurred in the optimization engine",e);
-		} catch (CancellationException e){
+			logger.error(
+					"Execution exception occurred in the optimization engine",
+					e);
+		} catch (CancellationException e) {
 			logger.debug("Execution was cancelled");
 		}
 
@@ -735,7 +739,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @throws JAXBException
 	 */
 	public void loadInitialSolution() throws InitializationException {
-		loadInitialSolution(null,null);
+		loadInitialSolution(null, null);
 	}
 
 	/**
@@ -744,7 +748,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * 
 	 */
 	public void loadInitialSolution(File generatedInitialSolution,
-			File generatedInitialMce) throws  InitializationException {
+			File generatedInitialMce) throws InitializationException {
 		boolean closedWorkload = true;
 
 		// initialSolution = new Solution();
@@ -754,25 +758,28 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		ResourceEnvironmentExtensionParser resourceEnvParser;
 		try {
-			resourceEnvParser = new ResourceEnvironmentExtensionParser();           
+			resourceEnvParser = new ResourceEnvironmentExtensionParser();
 		} catch (ResourceEnvironmentLoadingException e) {
-			throw new InitializationException("Error loading the resource environment extension",e);
+			throw new InitializationException(
+					"Error loading the resource environment extension", e);
 		}
 
 		UsageModelExtensionParser usageModelParser;
 		try {
-			usageModelParser = new UsageModelExtensionParser(Paths.get(Configuration.USAGE_MODEL_EXTENSION).toFile());
+			usageModelParser = new UsageModelExtensionParser(Paths.get(
+					Configuration.USAGE_MODEL_EXTENSION).toFile());
 		} catch (ParserConfigurationException | SAXException | IOException
 				| JAXBException e) {
-			throw new InitializationException("Error loading the usage model extension",e);
+			throw new InitializationException(
+					"Error loading the usage model extension", e);
 		}
-
-
 
 		// get the PCM from the launch configuration
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IPath location = org.eclipse.core.runtime.Path.fromOSString(Paths.get(
-				Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY, Configuration.LAUNCH_CONFIG).toString());
+				Configuration.PROJECT_BASE_FOLDER,
+				Configuration.WORKING_DIRECTORY, Configuration.LAUNCH_CONFIG)
+				.toString());
 		@SuppressWarnings("deprecation")
 		IFile ifile = workspace.getRoot().findFilesForLocation(location)[0]; // getFileForLocation(location);
 		ILaunchConfiguration launchConfig = DebugPlugin.getDefault()
@@ -789,25 +796,25 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				.getResourceEnvironment()
 				.getResourceContainer_ResourceEnvironment();
 
-
-		EList<UsageScenario> scenarios = pcm.getUsageModel().getUsageScenario_UsageModel();
-		if(scenarios.size() >1){
+		EList<UsageScenario> scenarios = pcm.getUsageModel()
+				.getUsageScenario_UsageModel();
+		if (scenarios.size() > 1) {
 			logger.warn("Multiple user scenarios defined, Space4Cloud currently only support single scenarios");
-			throw new InitializationException("Multiple user scenarios defined in the PCM model");
-		} else if(scenarios.size() == 0){
-			throw new InitializationException("No usage scenario have been defined in the PCM");        
+			throw new InitializationException(
+					"Multiple user scenarios defined in the PCM model");
+		} else if (scenarios.size() == 0) {
+			throw new InitializationException(
+					"No usage scenario have been defined in the PCM");
 		}
-		if(scenarios.get(0).getWorkload_UsageScenario() instanceof ClosedWorkload)
+		if (scenarios.get(0).getWorkload_UsageScenario() instanceof ClosedWorkload)
 			closedWorkload = true;
 		else
 			closedWorkload = false;
 
-		if(!closedWorkload){
-			throw new InitializationException("No usage scenario have been defined in the PCM");
+		if (!closedWorkload) {
+			throw new InitializationException(
+					"No usage scenario have been defined in the PCM");
 		}
-
-
-
 
 		// we need to create a Solution object for each one of the providers
 
@@ -819,47 +826,54 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		// if no provider has been selected pick one form the database
 		boolean defaultProvider = false;
-		
+
 		int providerMin = 1;
 		{
-			List<Constraint> constraints = constraintHandler.getConstraintByResourceId(Configuration.APPLICATION_ID);
-			
-			for(Constraint c:constraints)
-				if(c instanceof NumberProvidersConstraint)
-					providerMin = ((NumberProvidersConstraint)c).getMin();
+			List<Constraint> constraints = constraintHandler
+					.getConstraintByResourceId(Configuration.APPLICATION_ID);
+
+			for (Constraint c : constraints)
+				if (c instanceof NumberProvidersConstraint)
+					providerMin = ((NumberProvidersConstraint) c).getMin();
 		}
-		
+
 		if (providers.size() < providerMin) {
 			defaultProvider = true;
 			Set<String> providerNames = dataHandler.getCloudProviders();
-			
+
 			if (providerNames.size() < providerMin) {
 				logger.error("There are not enough providers in the database!");
-				throw new InitializationException("There are not enough providers in the database!");
+				throw new InitializationException(
+						"There are not enough providers in the database!");
 			}
-			
+
 			while (providers.size() < providerMin) {
 				String defaultProviderName = null;
 				Iterator<String> iter = providerNames.iterator();
-	
+
 				do {
 					defaultProviderName = iter.next();
-					// skip the generic provider whose data might not be relevant
-	
-					// and those that do not offer Compute services.  (use only IaaS now)
-	
+					// skip the generic provider whose data might not be
+					// relevant
+
+					// and those that do not offer Compute services. (use only
+					// IaaS now)
+
 					if (defaultProviderName.equals("Generic")
 							|| dataHandler.getServices(defaultProviderName,
-									"Compute").size() == 0 || providers.contains(defaultProviderName))
+									"Compute").size() == 0
+							|| providers.contains(defaultProviderName))
 						defaultProviderName = null;
 				} while (defaultProviderName == null && iter.hasNext());
-	
-				if (defaultProviderName == null){
+
+				if (defaultProviderName == null) {
 					logger.error("No provider with services of type Compute has been found");
-					throw new InitializationException("No default provider could be found");
+					throw new InitializationException(
+							"No default provider could be found");
 				}
 				providers.add(defaultProviderName);
-				logger.info("No provider specified in the extension, defaulting on "+ defaultProviderName);
+				logger.info("No provider specified in the extension, defaulting on "
+						+ defaultProviderName);
 			}
 
 		}
@@ -868,13 +882,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			Solution initialSolution = new Solution();
 
-
 			try {
 				initialSolution.buildFolderStructure(provider);
 			} catch (IOException e) {
-				throw new InitializationException("No default provider could be found");
+				throw new InitializationException(
+						"No default provider could be found");
 			}
-
 
 			// set the region
 			initialSolution.setRegion(resourceEnvParser.getRegion(provider));
@@ -884,17 +897,17 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				Instance application = new Instance();
 				initialSolution.addApplication(application);
 				File[] models = Paths
-						.get(Configuration.PROJECT_BASE_FOLDER, 
-								Configuration.WORKING_DIRECTORY, 
-								Configuration.PERFORMANCE_RESULTS_FOLDER, 
-								provider,
-								Configuration.FOLDER_PREFIX + i).toFile()
-								.listFiles(new FilenameFilter() {
-									@Override
-									public boolean accept(File dir, String name) {
-										return name.endsWith(".xml") && ! name.contains("line");
-									}
-								});
+						.get(Configuration.PROJECT_BASE_FOLDER,
+								Configuration.WORKING_DIRECTORY,
+								Configuration.PERFORMANCE_RESULTS_FOLDER,
+								provider, Configuration.FOLDER_PREFIX + i)
+						.toFile().listFiles(new FilenameFilter() {
+							@Override
+							public boolean accept(File dir, String name) {
+								return name.endsWith(".xml")
+										&& !name.contains("line");
+							}
+						});
 				// suppose there is just 1 model
 				Path lqnModelPath = models[0].toPath();
 				application.initLqnHandler(lqnModelPath);
@@ -906,46 +919,40 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				double arrivalRate = -1;
 
 				application.setClosedWorkload(closedWorkload);
-				if(closedWorkload && !usageModelParser.isClosedWorkload())
-					throw new InitializationException("The PCM model constains an closed workload while the usage model extension does not");
-
-
+				if (closedWorkload && !usageModelParser.isClosedWorkload())
+					throw new InitializationException(
+							"The PCM model constains an closed workload while the usage model extension does not");
 
 				if (usageModelParser.getPopulations().size() == 1)
 					population = usageModelParser.getPopulations().values()
-					.iterator().next()[i];
+							.iterator().next()[i];
 				if (usageModelParser.getThinkTimes().size() == 1)
 					thinktime = usageModelParser.getThinkTimes().values()
-					.iterator().next()[i];
+							.iterator().next()[i];
 
 				if (usageModelParser.getArrivalRates().size() == 1)
 					arrivalRate = usageModelParser.getArrivalRates().values()
-					.iterator().next()[i];
+							.iterator().next()[i];
 
-				
 				double percentage = (double) 1 / providers.size();
-				
-				population = (int) Math.ceil(population * percentage);
 
+				population = (int) Math.ceil(population * percentage);
 
 				initialSolution.setPercentageWorkload(i, percentage);
 
-				if(application.isClosedWorkload()){
+				if (application.isClosedWorkload()) {
 					application.getLqnHandler().setPopulation(population);
 					application.getLqnHandler().setThinktime(thinktime);
-				}
-				else{
+				} else {
 					application.getLqnHandler().setArrivalRate(arrivalRate);
 				}
 
-				application.getLqnHandler().saveToFile();   
-				if(application.isClosedWorkload()){
+				application.getLqnHandler().saveToFile();
+				if (application.isClosedWorkload()) {
 					application.setWorkload(population);
+				} else {
+					application.setWorkload((int) arrivalRate);
 				}
-				else{
-					application.setWorkload((int)arrivalRate);
-				}
-
 
 				// // create a tier for each resource container
 				// EList<ResourceContainer> resourceContainers = pcm
@@ -954,10 +961,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 				// STEP 1: load the resource environment
 				for (ResourceContainer c : resourceContainers) {
-					logger.trace("Tier "+c.getId());
-					
-					
-
+					logger.trace("Tier " + c.getId());
 
 					CloudService service = null;
 					// switch over the type of cloud service
@@ -969,23 +973,31 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					// to
 					// the
 					// resource
-					if(!resourceEnvParser.getServiceType().containsKey(c.getId() + (defaultProvider ? "" : provider)))
-						throw new InitializationException("The tier with ID "+c.getId()+" could not be initialized");
+					if (!resourceEnvParser.getServiceType().containsKey(
+							c.getId() + (defaultProvider ? "" : provider)))
+						throw new InitializationException("The tier with ID "
+								+ c.getId() + " could not be initialized");
 					String serviceType = resourceEnvParser.getServiceType()
 							.get(c.getId() + (defaultProvider ? "" : provider)); // Service
-					
-					if(!resourceEnvParser.getInstanceSize().containsKey(c.getId() + (defaultProvider ? "" : provider)))
-						throw new InitializationException("The tier with ID "+c.getId()+" could not be initialized");
+
+					if (!resourceEnvParser.getInstanceSize().containsKey(
+							c.getId() + (defaultProvider ? "" : provider)))
+						throw new InitializationException("The tier with ID "
+								+ c.getId() + " could not be initialized");
 					String resourceSize = resourceEnvParser.getInstanceSize()
 							.get(c.getId() + (defaultProvider ? "" : provider));
-					
-					if(!resourceEnvParser.getServiceName().containsKey(c.getId() + (defaultProvider ? "" : provider)))
-						throw new InitializationException("The tier with ID "+c.getId()+" could not be initialized");
+
+					if (!resourceEnvParser.getServiceName().containsKey(
+							c.getId() + (defaultProvider ? "" : provider)))
+						throw new InitializationException("The tier with ID "
+								+ c.getId() + " could not be initialized");
 					String serviceName = resourceEnvParser.getServiceName()
 							.get(c.getId() + (defaultProvider ? "" : provider));
-					
-					if(!resourceEnvParser.getInstanceReplicas().containsKey(c.getId() + (defaultProvider ? "" : provider)))
-						throw new InitializationException("The tier with ID "+c.getId()+" could not be initialized");					
+
+					if (!resourceEnvParser.getInstanceReplicas().containsKey(
+							c.getId() + (defaultProvider ? "" : provider)))
+						throw new InitializationException("The tier with ID "
+								+ c.getId() + " could not be initialized");
 					int replicas = resourceEnvParser.getInstanceReplicas().get(
 							c.getId() + (defaultProvider ? "" : provider))[i];
 
@@ -997,15 +1009,15 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					// .next();
 
 					// pick a service if not specified by the extension
-//					if (serviceName == null)
-//						logger.info("provider: " + provider + " default: "
-//								+ defaultProvider);
+					// if (serviceName == null)
+					// logger.info("provider: " + provider + " default: "
+					// + defaultProvider);
 					logger.trace("serviceType: " + serviceType);
-					
+
 					String actualProvider = provider;
 					if (actualProvider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
 						boolean keepGoing = true;
-						for (int pi = 0; pi < providers.size() && keepGoing; ++pi) {							
+						for (int pi = 0; pi < providers.size() && keepGoing; ++pi) {
 							String p = providers.get(pi);
 							if (p.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
 								continue;
@@ -1017,39 +1029,41 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 							}
 						}
 					}
-					
+
 					for (String st : dataHandler.getServices(actualProvider, // cloudProvider,
 							serviceType))
 						logger.trace("\tService Name: " + st);
 					serviceName = dataHandler.getServices(actualProvider, // cloudProvider,
 							serviceType).get(0);
 					// if the resource size has not been decided pick one
-					if (resourceSize == null){
+					if (resourceSize == null) {
 						logger.trace("Defaulting on resource Size");
 						resourceSize = dataHandler
 								.getCloudElementSizes(actualProvider,/*
-								 * cloudProvider,
-								 */serviceName)
-								 .iterator().next();
+																	 * cloudProvider
+																	 * ,
+																	 */
+										serviceName).iterator().next();
 					}
-					logger.trace("default size"+resourceSize);
-					
+					logger.trace("default size" + resourceSize);
 
-//					double speed = dataHandler.getProcessingRate(actualProvider, // cloudProvider,
-//							serviceName, resourceSize);
-//					logger.trace("processing rate "+speed);
-//
-//					int ram = dataHandler.getAmountMemory(actualProvider, // cloudProvider,
-//							serviceName, resourceSize);
-//					logger.trace("ram "+ram);
-//
-//
-//					int numberOfCores = dataHandler.getNumberOfReplicas(
-//							actualProvider, /* cloudProvider, */serviceName,
-//							resourceSize);
-//
-//					logger.trace("cores "+numberOfCores);
-
+					// double speed =
+					// dataHandler.getProcessingRate(actualProvider, //
+					// cloudProvider,
+					// serviceName, resourceSize);
+					// logger.trace("processing rate "+speed);
+					//
+					// int ram = dataHandler.getAmountMemory(actualProvider, //
+					// cloudProvider,
+					// serviceName, resourceSize);
+					// logger.trace("ram "+ram);
+					//
+					//
+					// int numberOfCores = dataHandler.getNumberOfReplicas(
+					// actualProvider, /* cloudProvider, */serviceName,
+					// resourceSize);
+					//
+					// logger.trace("cores "+numberOfCores);
 
 					/*
 					 * each tier has a certain kind of cloud resource and a
@@ -1057,18 +1071,29 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 					 */
 					Tier t = new Tier(c.getId(), c.getEntityName()
 							+ "_CPU_Processor"); // TODO: here for PaaS?
-					
-					//set the name
-					t.setName(resourceEnvParser.getContainerNames().get(c.getId()+ (defaultProvider ? "" : provider)));
+
+					// set the name
+					t.setName(resourceEnvParser.getContainerNames().get(
+							c.getId() + (defaultProvider ? "" : provider)));
 
 					/* creation of a Compute type resource */
-//					service = new Compute(provider, /* cloudProvider, */
-//							serviceType, serviceName, resourceSize, replicas,
-//							numberOfCores, speed, ram);
+					// service = new Compute(provider, /* cloudProvider, */
+					// serviceType, serviceName, resourceSize, replicas,
+					// numberOfCores, speed, ram);
 
-					service = dataHandler.getCloudService(provider, serviceType, serviceName, resourceSize, replicas);
-					
-					
+					service = dataHandler.getCloudService(provider,
+							serviceType, serviceName, resourceSize, replicas);
+
+					if (service == null)
+						throw new InitializationException(
+								"The tier with ID "
+										+ c.getId()
+										+ " could not be initialized, no service of type: "
+										+ serviceType + " with name: "
+										+ serviceName + " and size: "
+										+ resourceSize
+										+ " could be found for ptovider: "
+										+ provider);
 					t.setService(service);
 
 					application.addTier(t);
@@ -1090,7 +1115,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 						.getAllocationContexts_Allocation();
 
 				Map<String, Functionality> functionalities = new HashMap<>();
-				Map<String,String> startActionId2FunId = new HashMap<>();
+				Map<String, String> startActionId2FunId = new HashMap<>();
 
 				for (AllocationContext context : allocations) {
 					String containerId = context
@@ -1100,7 +1125,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 							.getEncapsulatedComponent__AssemblyContext();
 
 					// create the component
-					Component comp = new Component(repositoryComp.getId(),repositoryComp.getEntityName());
+					Component comp = new Component(repositoryComp.getId(),
+							repositoryComp.getEntityName());
 
 					// add the functionalities (from SEFFs)
 					EList<ServiceEffectSpecification> seffs = ((BasicComponent) repositoryComp)
@@ -1125,8 +1151,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 										.getEntityName()
 										+ "_" + sig.getEntityName(), null);
 
-							}else if(a instanceof StartAction){
-								startActionId2FunId.put(a.getId(),function.getId());
+							} else if (a instanceof StartAction) {
+								startActionId2FunId.put(a.getId(),
+										function.getId());
 
 							}
 						}
@@ -1135,7 +1162,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 										.eContainer()).getEntityName()
 										+ "_"
 										+ s.getDescribedService__SEFF()
-										.getEntityName(), function);
+												.getEntityName(), function);
 						comp.addFunctionality(function);
 					}
 
@@ -1165,18 +1192,17 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				// initialize the constrinable hashmap
 				application.initConstrainableResources();
 
-
-
-				//fill the lqnProcessorId in the functionality by using the mapping 
-				//between the start action and looking in the lqn file
-				Map<String,String> processorId2FunId = application.getLqnHandler().getProcessorIdMap(startActionId2FunId);
+				// fill the lqnProcessorId in the functionality by using the
+				// mapping
+				// between the start action and looking in the lqn file
+				Map<String, String> processorId2FunId = application
+						.getLqnHandler().getProcessorIdMap(startActionId2FunId);
 				LqnResultParser.setIdSubstitutionMap(processorId2FunId);
 
 				// use the initial evaluation to initialize parser and
 				// structures
 
-				//evalServer.evaluateInstance(application);
-
+				// evalServer.evaluateInstance(application);
 
 				// initialSolution.showStatus();
 			}
@@ -1186,25 +1212,29 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 		this.initialSolution.setFrom(generatedInitialSolution,
 				generatedInitialMce);
-		
+
 		try {
 			evalServer.StartTimer();
 			evalServer.EvaluateSolution(initialSolution);
 			evalServer.StopTimer();
 		} catch (EvaluationException e) {
-			throw new InitializationException("Could not evaulate the initial solution",e);
+			throw new InitializationException(
+					"Could not evaulate the initial solution", e);
 		}
 		logger.info(this.initialSolution.showStatus());
-		
+
 		bestSolutions.add(initialSolution);
-		firePropertyChange(OptimizationProgressWindow.FIRST_SOLUTION_AVAILABLE, false, true);
+		firePropertyChange(OptimizationProgressWindow.FIRST_SOLUTION_AVAILABLE,
+				false, true);
 	}
 
 	/**
 	 * Loads the solution from a serliazed object
-	 * @throws InitializationException 
+	 * 
+	 * @throws InitializationException
 	 * */
-	public void loadInitialSolutionObject(File file) throws InitializationException {
+	public void loadInitialSolutionObject(File file)
+			throws InitializationException {
 
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
@@ -1216,23 +1246,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			fis.close();
 		} catch (Exception e) {
 
-			throw new InitializationException("Error initializng the solution from: "+file.getAbsolutePath(),e);
+			throw new InitializationException(
+					"Error initializng the solution from: "
+							+ file.getAbsolutePath(), e);
 		}
 		logger.info("Deserialized: " + initialSolution);
 	}
-	
-	
+
 	protected void makeFeasible(SolutionMulti sol) throws OptimizationException {
 		for (Solution s : sol.getAll())
 			makeFeasible(s);
 	}
 
-
 	/**
 	 * Make the solution feseable by performing scale out operations
 	 * 
 	 * @param sol
-	 * @throws OptimizationException 
+	 * @throws OptimizationException
 	 */
 	protected void makeFeasible(Solution sol) throws OptimizationException {
 
@@ -1241,82 +1271,93 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		numberOfFeasibilityIterations = 0;
 		while (!sol.isFeasible() && !isMaxNumberOfFesibilityIterations()) {
 			boolean evaluateAgain = false;
-			
-			for(Constraint constraint:sol.getViolatedConstraints()){
-				if(constraint instanceof RamConstraint){
-					//if the unfeasibility is due to a violated ram constraint this procedure is ineffective and should be terminated          
-					//since vmType is constant among hours we can just look at the first one
+
+			for (Constraint constraint : sol.getViolatedConstraints()) {
+				if (constraint instanceof RamConstraint) {
+					// if the unfeasibility is due to a violated ram constraint
+					// this procedure is ineffective and should be terminated
+					// since vmType is constant among hours we can just look at
+					// the first one
 					logger.info("Wrong type of VM selected, make feasible will not be executed");
 					return;
 				} else if (constraint instanceof ReplicasConstraint) {
-					// if the unfeasibility is due to a replicas constraint, we fix it here
+					// if the unfeasibility is due to a replicas constraint, we
+					// fix it here
 					ReplicasConstraint rconstraint = (ReplicasConstraint) constraint;
-					
+
 					for (int h = 0; h < 24; ++h) {
-						Tier t = sol.getApplication(h).getTierById(constraint.getResourceID());
+						Tier t = sol.getApplication(h).getTierById(
+								constraint.getResourceID());
 						CloudService service = t.getCloudService();
 						if (rconstraint.hasMaxReplica(service)) {
 							if (service instanceof IaaS) {
-								((IaaS)service).setReplicas(rconstraint.getMax());
+								((IaaS) service).setReplicas(rconstraint
+										.getMax());
 								evaluateAgain = true;
-							} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
-								((PaaS)service).setReplicas(rconstraint.getMax());
+							} else if (service instanceof PaaS
+									&& ((PaaS) service).areReplicasChangeable()) {
+								((PaaS) service).setReplicas(rconstraint
+										.getMax());
 								evaluateAgain = true;
 							}
-						}
-						else if (rconstraint.hasMinReplica(service)) {
+						} else if (rconstraint.hasMinReplica(service)) {
 							if (service instanceof IaaS) {
-								((IaaS)service).setReplicas(rconstraint.getMin());
+								((IaaS) service).setReplicas(rconstraint
+										.getMin());
 								evaluateAgain = true;
-							} else if (service instanceof PaaS && ((PaaS)service).areReplicasChangeable()) {
-								((PaaS)service).setReplicas(rconstraint.getMin());
+							} else if (service instanceof PaaS
+									&& ((PaaS) service).areReplicasChangeable()) {
+								((PaaS) service).setReplicas(rconstraint
+										.getMin());
 								evaluateAgain = true;
 							}
 						}
 					}
 				} else if (constraint instanceof MachineTypeConstraint) {
 					for (int h = 0; h < 24; ++h) {
-						Tier t = sol.getApplication(h).getTierById(constraint.getResourceID());
+						Tier t = sol.getApplication(h).getTierById(
+								constraint.getResourceID());
 						if (scramble(sol, t, 0))
 							evaluateAgain = true;
 					}
 				}
 			}
-			
+
 			if (evaluateAgain)
 				try {
 					evalServer.EvaluateSolution(sol);
 				} catch (EvaluationException e) {
 					logger.error("Error while evaluating the solution.", e);
 				}
-			
+
 			logger.info("\tFeasibility iteration: "
-					+ numberOfFeasibilityIterations);   
+					+ numberOfFeasibilityIterations);
 
 			double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
-					* numberOfFeasibilityIterations
-					/ MAXFEASIBILITYITERATIONS;
+					* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
 			for (int i = 0; i < 24; i++) {
 
-				if(sol.getHourApplication().get(i).isFeasible())
+				if (sol.getHourApplication().get(i).isFeasible())
 					continue;
 
 				Set<Tier> affectedTiers = new HashSet<>();
 
-
 				// for each constraint find the IaaS affected resource and add
 				// it to the set. Multiple constraints affecting the same
 				// resource are ignored since we use a Set as memory
-				for (Constraint c : sol.getApplication(i).getViolatedConstraints())
-					affectedTiers.add(findResource(sol.getApplication(i),c.getResourceID()));
+				for (Constraint c : sol.getApplication(i)
+						.getViolatedConstraints())
+					affectedTiers.add(findResource(sol.getApplication(i),
+							c.getResourceID()));
 
-				//remove resources that have reached the maximum replica constraint
-				affectedTiers = constraintHandler.filterResourcesForScaleOut(affectedTiers);
+				// remove resources that have reached the maximum replica
+				// constraint
+				affectedTiers = constraintHandler
+						.filterResourcesForScaleOut(affectedTiers);
 				// this is the list of the
 				// resouces that doesn't
 				// satisfy the constraints
 				// now we will scaleout the resources
-
 
 				if (affectedTiers.size() > 0) {
 					MoveOnVM moveVM_i = new MoveOnVM(sol, i);
@@ -1331,7 +1372,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			try {
 				evalServer.EvaluateSolution(sol);
 			} catch (EvaluationException e) {
-				throw new OptimizationException("","makeFeasible",e);
+				throw new OptimizationException("", "makeFeasible", e);
 			}
 
 			numberOfFeasibilityIterations += 1;
@@ -1343,15 +1384,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.info("Max number of feasibility iterations reached");
 	}
 
-
-	private SolutionMulti considerPrivateCloud(SolutionMulti solutionMulti) throws Exception {
+	private SolutionMulti considerPrivateCloud(SolutionMulti solutionMulti)
+			throws Exception {
 		SolutionMulti sol = PrivateCloud.getSolution(solutionMulti);
 		if (sol != null) {
 			logger.info("A solution using the private cloud has been found!");
 			evalServer.EvaluateSolution(sol);
 			logger.info(sol.showStatus());
-		}
-		else
+		} else
 			logger.info("No solution considering the private cloud!");
 
 		return sol;
@@ -1362,21 +1402,20 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * problem.
 	 * 
 	 * @return the integer -1 an error has happened.
-	 * @throws OptimizationException 
+	 * @throws OptimizationException
 	 */
 	public Integer optimize() throws OptimizationException {
-
 
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
 			return -1;
 		optimLogger.trace("starting the optimization");
-		//start the timer
+		// start the timer
 		timer.start();
 		try {
 			evalServer.EvaluateSolution(initialSolution);
 		} catch (EvaluationException e) {
-			throw new OptimizationException("","initialEvaluation",e);
+			throw new OptimizationException("", "initialEvaluation", e);
 		}// evaluate the current
 
 		// solution
@@ -1399,7 +1438,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
 				+ bestSolution.isFeasible());
 		timer.unsplit();
-
 
 		numberOfIterations = 1;
 		currentSolution = initialSolution.clone(); // the best solution is the
@@ -1425,27 +1463,27 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			updateBestSolution(currentSolution, true);
 		}
 
-		//        if (Configuration.USE_PRIVATE_CLOUD) {
-		//        	// make feasible:
-		//            makeFeasible(currentSolution);
-		//            
-		//            // scale in:
-		//            InternalOptimization(currentSolution);
-		//        	
-		//    		try {
-		//    			evalServer.EvaluateSolution(currentSolution);
-		//		    	currentSolution = considerPrivateCloud(currentSolution);
-		//		    	bestSolution = currentSolution.clone();
-		//		    	localBestSolution = currentSolution.clone();
-		//		    	updateBestSolution(currentSolution, true);
-		//		    	updateLocalBestSolution(currentSolution, true);
-		//		    	
-		//				return 0;
-		//    		} catch (Exception e) {
-		//    			logger.error("Error while dealing with the private cloud!", e);
-		//    			return -1;
-		//    		}
-		//    	}
+		// if (Configuration.USE_PRIVATE_CLOUD) {
+		// // make feasible:
+		// makeFeasible(currentSolution);
+		//
+		// // scale in:
+		// InternalOptimization(currentSolution);
+		//
+		// try {
+		// evalServer.EvaluateSolution(currentSolution);
+		// currentSolution = considerPrivateCloud(currentSolution);
+		// bestSolution = currentSolution.clone();
+		// localBestSolution = currentSolution.clone();
+		// updateBestSolution(currentSolution, true);
+		// updateLocalBestSolution(currentSolution, true);
+		//
+		// return 0;
+		// } catch (Exception e) {
+		// logger.error("Error while dealing with the private cloud!", e);
+		// return -1;
+		// }
+		// }
 
 		while (!isMaxNumberOfIterations()) {
 
@@ -1454,14 +1492,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			// 2: Internal Optimization process
 
-			if(Configuration.isPaused())
+			if (Configuration.isPaused())
 				waitForResume();
 
-
-			////////////////////
+			// //////////////////
 			if (bestSolutionUpdated && Configuration.REDISTRIBUTE_WORKLOAD) {
 
-				optimLogger.info("The best solution did change, so let's redistribuite the workload...");
+				optimLogger
+						.info("The best solution did change, so let's redistribuite the workload...");
 
 				currentSolution = bestSolution.clone();
 
@@ -1474,12 +1512,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				maximizeWorkloadPercentagesForLeastUsedTier(currentSolution);
 				optimLogger.debug(currentSolution.showWorkloadPercentages());
 
-
-				optimLogger.debug("My method:\n" + currentSolution.showWorkloadPercentages());
+				optimLogger.debug("My method:\n"
+						+ currentSolution.showWorkloadPercentages());
 
 				optimLogger.info("Updating best solutions");
 
-				//both sohuld be feasible
+				// both sohuld be feasible
 				bestSolution = currentSolution.clone();
 				localBestSolution = currentSolution.clone();
 
@@ -1489,7 +1527,6 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// //////////////////
 
 			// 2: Internal Optimization process
-
 
 			InternalOptimization(currentSolution);
 
@@ -1509,7 +1546,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			optimLogger.info("Scramble");
 			optimLogger.info("Tabu List Size: " + tabuSolutionList.size());
 
-			if(Configuration.isPaused())
+			if (Configuration.isPaused())
 				waitForResume();
 
 			solutionChanged = scramble(currentSolution);
@@ -1518,7 +1555,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// long-ferm memory)
 			if (!solutionChanged) {
 				optimLogger
-				.info("Stuck in a local optimum, using long term memory");
+						.info("Stuck in a local optimum, using long term memory");
 				currentSolution = longTermMemoryRestart(currentSolution);
 				optimLogger.info("Long term memory statistics:");
 				for (Tier t : currentSolution.get(0).getApplication(0)
@@ -1530,18 +1567,18 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			}
 
-			setProgress((numberOfIterations*100/MAX_SCRUMBLE_ITERS));
+			setProgress((numberOfIterations * 100 / MAX_SCRUMBLE_ITERS));
 			// increment the number of iterations
 			numberOfIterations += 1;
-			firePropertyChange("iteration", numberOfIterations-1, numberOfIterations);
+			firePropertyChange("iteration", numberOfIterations - 1,
+					numberOfIterations);
 
 		}
 
-
 		// We now consider the private cloud, if we have to
 		if (Configuration.USE_PRIVATE_CLOUD) {
-			//Debuggin 
-			//exportSolution();
+			// Debuggin
+			// exportSolution();
 
 			try {
 				SolutionMulti sol = considerPrivateCloud(bestSolution);
@@ -1574,12 +1611,13 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			logger.error("Unable to create charts", e);
 		}
 
-		//		exportSolution(); TODO: this is always called twice, becaue Space4Cloud calls it at the end of the process! Disabled here.
-		evalServer.showStatistics();        
+		// exportSolution(); TODO: this is always called twice, becaue
+		// Space4Cloud calls it at the end of the process! Disabled here.
+		evalServer.showStatistics();
 
-		//		if (!batch)
-		//			SolutionWindow.show(bestSolution);
-		
+		// if (!batch)
+		// SolutionWindow.show(bestSolution);
+
 		if (Configuration.CONTRACTOR_TEST)
 			bestSolution.generateOptimizedCosts();
 
@@ -1587,13 +1625,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	}
 
-
 	private void waitForResume() throws OptimizationException {
 		boolean fired = false;
-		while(Configuration.isPaused())
-			if(!fired){
+		while (Configuration.isPaused())
+			if (!fired) {
 				firePropertyChange("Stopped", false, true);
-				fired=true;
+				fired = true;
 			}
 		try {
 			Thread.sleep(100);
@@ -1611,9 +1648,10 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @param solMulti
 	 *            the corrent solution
 	 * @return the changed solution
-	 * @throws OptimizationException 
+	 * @throws OptimizationException
 	 */
-	private SolutionMulti longTermMemoryRestart(SolutionMulti solMulti) throws OptimizationException {
+	private SolutionMulti longTermMemoryRestart(SolutionMulti solMulti)
+			throws OptimizationException {
 
 		for (Solution s : solMulti.getAll()) {
 			Solution sol = longTermMemoryRestart(s);
@@ -1629,10 +1667,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @param solver
 	 *            the current solution
 	 * @return the changed solution
-
-	 * @throws OptimizationException 
+	 * 
+	 * @throws OptimizationException
 	 */
-	private Solution longTermMemoryRestart(Solution sol) throws OptimizationException {
+	private Solution longTermMemoryRestart(Solution sol)
+			throws OptimizationException {
 
 		if (longTermFrequencyMemory == null)
 			longTermFrequencyMemory = evalServer.getLongTermFrequencyMemory();
@@ -1661,7 +1700,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 			}
 			if (newRes == null) {
-				throw new OptimizationException("longTermMemoryRestart: No resource found!");
+				throw new OptimizationException(
+						"longTermMemoryRestart: No resource found!");
 			}
 			moveVM.changeMachine(t.getId(), newRes);
 		}
@@ -1669,26 +1709,25 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		try {
 			evalServer.EvaluateSolution(sol);
 		} catch (EvaluationException e) {
-			throw new OptimizationException("","longTermMemoryRestart",e);
+			throw new OptimizationException("", "longTermMemoryRestart", e);
 		}
 		return sol;
 
 	}
 
-
-
-	private SolutionMulti setWorkloadPercentagesFromMILP(SolutionMulti currentSolution) {
+	private SolutionMulti setWorkloadPercentagesFromMILP(
+			SolutionMulti currentSolution) {
 		MILPEvaluator reval = new MILPEvaluator();
 
 		SolutionMulti tempSolution = currentSolution.clone();
-
 
 		Path p = null;
 		try {
 			p = Files.createTempFile("sol", ".xml");
 		} catch (IOException e) {
 			logger.error("Error while creating a temporary file.", e);
-			p = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "soltmp.xml");
+			p = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+					Configuration.WORKING_DIRECTORY, "soltmp.xml");
 		}
 		currentSolution.exportLight(p);
 
@@ -1706,77 +1745,85 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return currentSolution;
 	}
 
-	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution) throws OptimizationException {	
-		double wpMin = 0.0; //the minimum workload balance constraint
-		List<Constraint> constraints = constraintHandler.getConstraintByResourceId(Configuration.APPLICATION_ID);
-		for(Constraint c:constraints)
-			if(c instanceof WorkloadPercentageConstraint)
-				wpMin = ((WorkloadPercentageConstraint)c).getMin();
+	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(
+			SolutionMulti currentSolution) throws OptimizationException {
+		double wpMin = 0.0; // the minimum workload balance constraint
+		List<Constraint> constraints = constraintHandler
+				.getConstraintByResourceId(Configuration.APPLICATION_ID);
+		for (Constraint c : constraints)
+			if (c instanceof WorkloadPercentageConstraint)
+				wpMin = ((WorkloadPercentageConstraint) c).getMin();
 
-		if(wpMin>1)
+		if (wpMin > 1)
 			wpMin /= 100;
 
-
-		//the increments
-		double[] increments = new double[24];		
-		//the ending conditions
+		// the increments
+		double[] increments = new double[24];
+		// the ending conditions
 		boolean[] keepGoing = new boolean[24];
-		//the or of the previous conditions
-		boolean stillWork= true;		
-		//a single solution memory to rollback
+		// the or of the previous conditions
+		boolean stillWork = true;
+		// a single solution memory to rollback
 		SolutionMulti lastSolution;
 
-
-		//initialize variables
-		for(int i=0;i<24;i++){
-			increments[i]=0.1;
-			keepGoing[i]=true;
+		// initialize variables
+		for (int i = 0; i < 24; i++) {
+			increments[i] = 0.1;
+			keepGoing[i] = true;
 		}
 
-		do{
-			//ave the current solution in the memory (should always be feasible)
+		do {
+			// ave the current solution in the memory (should always be
+			// feasible)
 			lastSolution = currentSolution.clone();
 
-			for(int hour=0;hour<24;hour++){
-				if(!keepGoing[hour])
+			for (int hour = 0; hour < 24; hour++) {
+				if (!keepGoing[hour])
 					continue;
 
-				//retrieve the least used provider
-				Map<Solution,Tier> mostUsedTiers = new HashMap<Solution,Tier>(currentSolution.getAll().size());
-				//retrieve the most used tier for all the solutions
-				for (Solution sol : currentSolution.getAll()) {					
+				// retrieve the least used provider
+				Map<Solution, Tier> mostUsedTiers = new HashMap<Solution, Tier>(
+						currentSolution.getAll().size());
+				// retrieve the most used tier for all the solutions
+				for (Solution sol : currentSolution.getAll()) {
 					for (Tier t : sol.getApplication(hour).getTiers()) {
-						//base case
+						// base case
 						if (!mostUsedTiers.containsKey(sol)) {
 							mostUsedTiers.put(sol, t);
 						} else {
-							if (t.getUtilization() > mostUsedTiers.get(sol).getUtilization()) {
-								mostUsedTiers.put(sol,t);
+							if (t.getUtilization() > mostUsedTiers.get(sol)
+									.getUtilization()) {
+								mostUsedTiers.put(sol, t);
 							}
 						}
 					}
 				}
 
-				//the least used provider (According to the maximum used tiers only)
-				Solution leastUsedProvider = null;				
-				
-				//get the less used provider (looking only at the most used tier)
-				for(Solution sol: mostUsedTiers.keySet()){
-					//base case
-					if(leastUsedProvider == null){
+				// the least used provider (According to the maximum used tiers
+				// only)
+				Solution leastUsedProvider = null;
+
+				// get the less used provider (looking only at the most used
+				// tier)
+				for (Solution sol : mostUsedTiers.keySet()) {
+					// base case
+					if (leastUsedProvider == null) {
 						leastUsedProvider = sol;
-					}else{
-						if(mostUsedTiers.get(sol).getUtilization() < mostUsedTiers.get(leastUsedProvider).getUtilization()){
-							leastUsedProvider=sol;
+					} else {
+						if (mostUsedTiers.get(sol).getUtilization() < mostUsedTiers
+								.get(leastUsedProvider).getUtilization()) {
+							leastUsedProvider = sol;
 						}
 					}
 				}
 
-				//calculate the increment of workload for the minimum used provider
+				// calculate the increment of workload for the minimum used
+				// provider
 				double wpStar = leastUsedProvider.getPercentageWorkload(hour);
 				double diff = 1 - wpStar;
 				double rate = increments[hour];
-				//keep the remainder of the difference to split it on other proividers if needed
+				// keep the remainder of the difference to split it on other
+				// proividers if needed
 				double remainder = 0.0;
 				if (diff < rate) {
 					rate = diff;
@@ -1786,43 +1833,43 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 						keepGoing[hour] = false;
 				}
 
-				
 				changeWorkload(leastUsedProvider, hour, wpStar + rate);
-				//update the workload percentage with the new value (re-read in order to avoid wrong rounding should be wpStar+rate)
+				// update the workload percentage with the new value (re-read in
+				// order to avoid wrong rounding should be wpStar+rate)
 				wpStar = leastUsedProvider.getPercentageWorkload(hour);
-				
-				
-				//fix the workload of other providers by removing the one used for the increment and splitting the remainder (if any) 
+
+				// fix the workload of other providers by removing the one used
+				// for the increment and splitting the remainder (if any)
 				for (Solution sol : currentSolution.getAll()) {
 					if (!sol.equals(leastUsedProvider)) {
 						double wp = sol.getPercentageWorkload(hour);
-						//avoid breaking theminimum workload constraint, in case it is violated then fix it
+						// avoid breaking theminimum workload constraint, in
+						// case it is violated then fix it
 						if (wp > 0 && wp < wpMin) {
 							remainder += wpMin - wp + rate;
 							changeWorkload(sol, hour, wpMin);
 						} else {
-							//                  double wpMin = 0.0;
+							// double wpMin = 0.0;
 							diff = wp - wpMin;
-							double dec = rate / (currentSolution.size() - 1) + remainder;
+							double dec = rate / (currentSolution.size() - 1)
+									+ remainder;
 
 							if (diff < dec) {
 								remainder = dec - diff;
 								dec = diff;
 							}
 
-
-							//                  System.out.println(currentSolution.showWorkloadPercentages());
+							// System.out.println(currentSolution.showWorkloadPercentages());
 							changeWorkload(sol, hour, wp - dec);
-							//                  System.out.println(currentSolution.showWorkloadPercentages());
+							// System.out.println(currentSolution.showWorkloadPercentages());
 						}
 					}
 				}
-				
-				if (remainder != 0.0) {
-					//              System.out.println(currentSolution.showWorkloadPercentages());
-					changeWorkload(leastUsedProvider, hour, wpStar - remainder);
-					//              System.out.println(currentSolution.showWorkloadPercentages());
 
+				if (remainder != 0.0) {
+					// System.out.println(currentSolution.showWorkloadPercentages());
+					changeWorkload(leastUsedProvider, hour, wpStar - remainder);
+					// System.out.println(currentSolution.showWorkloadPercentages());
 
 					if (increments[hour] == 0.1)
 						increments[hour] = 0.05;
@@ -1831,22 +1878,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				}
 
 			}
-			
-			//evaluate the solution only after all the moves have been performed
+
+			// evaluate the solution only after all the moves have been
+			// performed
 			try {
 				evalServer.EvaluateSolution(currentSolution);
 			} catch (EvaluationException e) {
-				throw new OptimizationException("","workloadDistribution",e);
+				throw new OptimizationException("", "workloadDistribution", e);
 			}
 
-			//a big or of all the ending conditions to check if some hour still has some balancing work to do	
+			// a big or of all the ending conditions to check if some hour still
+			// has some balancing work to do
 			stillWork = false;
-			for(int i=0;i<24;i++){
+			for (int i = 0; i < 24; i++) {
 				stillWork = stillWork || keepGoing[i];
 			}
 
-		}while(currentSolution.isFeasible() && stillWork);
-
+		} while (currentSolution.isFeasible() && stillWork);
 
 		if (!currentSolution.isFeasible())
 			currentSolution = lastSolution.clone();
@@ -1854,15 +1902,15 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		return currentSolution;
 	}
 
-
 	protected void resetNoImprovementCounter() {
 
 		this.numIterNoImprov = 0;
 	}
-	
-	protected boolean scramble(Solution sol, Tier selectedTier, int iterations) throws OptimizationException {
+
+	protected boolean scramble(Solution sol, Tier selectedTier, int iterations)
+			throws OptimizationException {
 		MoveTypeVM moveVM = new MoveTypeVM(sol);
-		
+
 		scrambleLogger.debug("Selected Tier:" + selectedTier.getPcmName());
 		// Phase2: Retrieve resources that can be exchanged with the current
 		// one
@@ -1874,15 +1922,16 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		try {
 			constraintHandler.filterResources(resList, selectedTier);
 		} catch (ConstraintEvaluationException e) {
-			throw new OptimizationException("Error filtering resources for scramble",e);
+			throw new OptimizationException(
+					"Error filtering resources for scramble", e);
 		}
 
 		// if no resource can substitute the current one increase the number
 		// of iterations without a change and try again
 		if (resList.size() == 0) {
 			scrambleLogger
-			.warn("No resource found for scramble after constraint check, iteration: "
-					+ iterations);
+					.warn("No resource found for scramble after constraint check, iteration: "
+							+ iterations);
 			return false;
 		}
 
@@ -1895,16 +1944,15 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 				scrambleLogger.debug(s);
 			}
 			scrambleLogger
-			.warn("No resource found for scramble after memory check, iteration: "
-					+ iterations);
+					.warn("No resource found for scramble after memory check, iteration: "
+							+ iterations);
 			return false;
 		}
 
 		// Phase3: choose the new resource. Policy: roulette selection
 		// 3.1Calculate the cumulative fitness
 		double[] cumulativeFitnesses = new double[resList.size()];
-		cumulativeFitnesses[0] = getEfficiency(resList.get(0),
-				sol.getRegion());
+		cumulativeFitnesses[0] = getEfficiency(resList.get(0), sol.getRegion());
 		for (int i = 1; i < resList.size(); i++) {
 			double fitness = getEfficiency(resList.get(i), sol.getRegion());
 			cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
@@ -1924,20 +1972,19 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		CloudService newRes = resList.get(index);
 
 		// debugging
-		//          scrambleLogger.debug("Sorted Resources");
-		//          for (IaaS res : resList) {
-		//              if (newRes.equals(res))
-		//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
-		//                          + " res: " + res.getResourceName() + " value: "
-		//                          + getEfficiency(res, sol.getRegion())
-		//                          + " <--- SELECTED");
-		//              else
-		//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
-		//                          + " res:" + res.getResourceName() + " value: "
-		//                          + getEfficiency(res, sol.getRegion()));
-		//          }
-		//          scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
-
+		// scrambleLogger.debug("Sorted Resources");
+		// for (IaaS res : resList) {
+		// if (newRes.equals(res))
+		// scrambleLogger.debug("Index: " + resList.indexOf(res)
+		// + " res: " + res.getResourceName() + " value: "
+		// + getEfficiency(res, sol.getRegion())
+		// + " <--- SELECTED");
+		// else
+		// scrambleLogger.debug("Index: " + resList.indexOf(res)
+		// + " res:" + res.getResourceName() + " value: "
+		// + getEfficiency(res, sol.getRegion()));
+		// }
+		// scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
 
 		// Phase4: performs the change and evaluate the solution
 		// add the new configuration in the memory
@@ -1945,7 +1992,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		try {
 			evalServer.EvaluateSolution(sol);
 		} catch (EvaluationException e) {
-			throw new OptimizationException("","scramble",e);
+			throw new OptimizationException("", "scramble", e);
 		}
 
 		tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
@@ -1965,8 +2012,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 *            current solution
 	 * @return returns true if the scramble has changed the solution, false if
 	 *         the maximum number of scramble iterations has been reached
-	 * @throws OptimizationException 
-	 * @throws ConstraintEvaluationException 
+	 * @throws OptimizationException
+	 * @throws ConstraintEvaluationException
 	 */
 	protected boolean scramble(Solution sol) throws OptimizationException {
 		/**
@@ -1983,7 +2030,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		 */
 
 		// Phase0: initialization
-//		MoveTypeVM moveVM = new MoveTypeVM(sol);
+		// MoveTypeVM moveVM = new MoveTypeVM(sol);
 		boolean done = false; // tells if something has changed
 		int iterations = 0; // number of iterations without a change in the
 		// solution
@@ -1997,97 +2044,104 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 			List<Tier> tierList = sol.getApplication(0).getTiers();
 			Tier selectedTier = tierList.get(random.nextInt(tierList.size()));
-//			scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
-//			// Phase2: Retrieve resources that can be exchanged with the current
-//			// one
-//			CloudService origRes = selectedTier.getCloudService();
-//			List<CloudService> resList = dataHandler.getSameService(origRes,
-//					sol.getRegion());
-//			// filter resources according to architectural constraints
-//
-//			try {
-//				constraintHandler.filterResources(resList, selectedTier);
-//			} catch (ConstraintEvaluationException e) {
-//				throw new OptimizationException("Error filtering resources for scramble",e);
-//			}
-//
-//			// if no resource can substitute the current one increase the number
-//			// of iterations without a change and try again
-//			if (resList.size() == 0) {
-//				scrambleLogger
-//				.warn("No resource found for scramble after constraint check, iteration: "
-//						+ iterations);
-//				iterations++;
-//				continue;
-//			}
-//
-//			resList = filterByMemory(resList, sol, selectedTier);
-//			// if no resource can substitute the current one increase the number
-//			// of iterations without a change and try again
-//			if (resList.size() == 0) {
-//				scrambleLogger.debug("MemoryDump");
-//				for (String s : tabuSolutionList.keySet()) {
-//					scrambleLogger.debug(s);
-//				}
-//				scrambleLogger
-//				.warn("No resource found for scramble after memory check, iteration: "
-//						+ iterations);
-//				iterations++;
-//				continue;
-//			}
-//
-//			// Phase3: choose the new resource. Policy: roulette selection
-//			// 3.1Calculate the cumulative fitness
-//			double[] cumulativeFitnesses = new double[resList.size()];
-//			cumulativeFitnesses[0] = getEfficiency(resList.get(0),
-//					sol.getRegion());
-//			for (int i = 1; i < resList.size(); i++) {
-//				double fitness = getEfficiency(resList.get(i), sol.getRegion());
-//				cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
-//			}
-//			// get a random number weighted by the highest cumulative fitness
-//			// value
-//			double randomFitness = random.nextDouble()
-//					* cumulativeFitnesses[cumulativeFitnesses.length - 1];
-//			// search for the value
-//			int index = Arrays.binarySearch(cumulativeFitnesses, randomFitness);
-//			if (index < 0) {
-//				// Convert negative insertion point to array index.
-//				index = Math.abs(index + 1);
-//			}
-//
-//			// get the resource.
-//			CloudService newRes = resList.get(index);
-//
-//			// debugging
-//			//          scrambleLogger.debug("Sorted Resources");
-//			//          for (IaaS res : resList) {
-//			//              if (newRes.equals(res))
-//			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
-//			//                          + " res: " + res.getResourceName() + " value: "
-//			//                          + getEfficiency(res, sol.getRegion())
-//			//                          + " <--- SELECTED");
-//			//              else
-//			//                  scrambleLogger.debug("Index: " + resList.indexOf(res)
-//			//                          + " res:" + res.getResourceName() + " value: "
-//			//                          + getEfficiency(res, sol.getRegion()));
-//			//          }
-//			//          scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
-//
-//
-//			// Phase4: performs the change and evaluate the solution
-//			// add the new configuration in the memory
-//			moveVM.changeMachine(selectedTier.getId(), newRes);
-//			try {
-//				evalServer.EvaluateSolution(sol);
-//			} catch (EvaluationException e) {
-//				throw new OptimizationException("","scramble",e);
-//			}
-//
-//			tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
-//			scrambleLogger.debug("Memory size " + tabuSolutionList.size());
-//			done = true;
-			
+			// scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
+			// // Phase2: Retrieve resources that can be exchanged with the
+			// current
+			// // one
+			// CloudService origRes = selectedTier.getCloudService();
+			// List<CloudService> resList = dataHandler.getSameService(origRes,
+			// sol.getRegion());
+			// // filter resources according to architectural constraints
+			//
+			// try {
+			// constraintHandler.filterResources(resList, selectedTier);
+			// } catch (ConstraintEvaluationException e) {
+			// throw new
+			// OptimizationException("Error filtering resources for scramble",e);
+			// }
+			//
+			// // if no resource can substitute the current one increase the
+			// number
+			// // of iterations without a change and try again
+			// if (resList.size() == 0) {
+			// scrambleLogger
+			// .warn("No resource found for scramble after constraint check, iteration: "
+			// + iterations);
+			// iterations++;
+			// continue;
+			// }
+			//
+			// resList = filterByMemory(resList, sol, selectedTier);
+			// // if no resource can substitute the current one increase the
+			// number
+			// // of iterations without a change and try again
+			// if (resList.size() == 0) {
+			// scrambleLogger.debug("MemoryDump");
+			// for (String s : tabuSolutionList.keySet()) {
+			// scrambleLogger.debug(s);
+			// }
+			// scrambleLogger
+			// .warn("No resource found for scramble after memory check, iteration: "
+			// + iterations);
+			// iterations++;
+			// continue;
+			// }
+			//
+			// // Phase3: choose the new resource. Policy: roulette selection
+			// // 3.1Calculate the cumulative fitness
+			// double[] cumulativeFitnesses = new double[resList.size()];
+			// cumulativeFitnesses[0] = getEfficiency(resList.get(0),
+			// sol.getRegion());
+			// for (int i = 1; i < resList.size(); i++) {
+			// double fitness = getEfficiency(resList.get(i), sol.getRegion());
+			// cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
+			// }
+			// // get a random number weighted by the highest cumulative fitness
+			// // value
+			// double randomFitness = random.nextDouble()
+			// * cumulativeFitnesses[cumulativeFitnesses.length - 1];
+			// // search for the value
+			// int index = Arrays.binarySearch(cumulativeFitnesses,
+			// randomFitness);
+			// if (index < 0) {
+			// // Convert negative insertion point to array index.
+			// index = Math.abs(index + 1);
+			// }
+			//
+			// // get the resource.
+			// CloudService newRes = resList.get(index);
+			//
+			// // debugging
+			// // scrambleLogger.debug("Sorted Resources");
+			// // for (IaaS res : resList) {
+			// // if (newRes.equals(res))
+			// // scrambleLogger.debug("Index: " + resList.indexOf(res)
+			// // + " res: " + res.getResourceName() + " value: "
+			// // + getEfficiency(res, sol.getRegion())
+			// // + " <--- SELECTED");
+			// // else
+			// // scrambleLogger.debug("Index: " + resList.indexOf(res)
+			// // + " res:" + res.getResourceName() + " value: "
+			// // + getEfficiency(res, sol.getRegion()));
+			// // }
+			// // scrambleLogger.debug("Selected index:" +
+			// resList.indexOf(newRes));
+			//
+			//
+			// // Phase4: performs the change and evaluate the solution
+			// // add the new configuration in the memory
+			// moveVM.changeMachine(selectedTier.getId(), newRes);
+			// try {
+			// evalServer.EvaluateSolution(sol);
+			// } catch (EvaluationException e) {
+			// throw new OptimizationException("","scramble",e);
+			// }
+			//
+			// tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol),
+			// null);
+			// scrambleLogger.debug("Memory size " + tabuSolutionList.size());
+			// done = true;
+
 			done = scramble(sol, selectedTier, iterations);
 			iterations++;
 		}
@@ -2108,21 +2162,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 */
 	private double getEfficiency(CloudService resource, String region) {
 		if (Configuration.BENCHMARK != Configuration.Benchmark.None) {
-			return dataHandler.getBenchmarkValue(resource, Configuration.BENCHMARK.toString());
+			return dataHandler.getBenchmarkValue(resource,
+					Configuration.BENCHMARK.toString());
 		}
-		
+
 		Compute computeRes = null;
 		if (resource instanceof Compute)
 			computeRes = (Compute) resource;
 		else if (resource instanceof Database)
-			computeRes = ((Database)resource).getCompute();
+			computeRes = ((Database) resource).getCompute();
 		else if (resource instanceof Platform)
-			computeRes = ((Platform)resource).getCompute();
+			computeRes = ((Platform) resource).getCompute();
 		else if (resource instanceof it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache)
-			computeRes = ((it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache)resource).getCompute();
+			computeRes = ((it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache) resource)
+					.getCompute();
 		else if (resource instanceof Queue)
-			computeRes = ((Queue)resource).getCompute();
-		
+			computeRes = ((Queue) resource).getCompute();
+
 		if (computeRes != null) {
 			double cost = evalServer.getCostEvaulator().getResourceAverageCost(
 					computeRes, region);
@@ -2151,8 +2207,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @return the list of resources filtered by those resources that has
 	 *         already been evaluated.
 	 */
-	private List<CloudService> filterByMemory(List<CloudService> resourceList, Solution sol,
-			Tier selectedTier) {
+	private List<CloudService> filterByMemory(List<CloudService> resourceList,
+			Solution sol, Tier selectedTier) {
 		// Filter resources that have been already used
 
 		final String token = "jfhbvwiuahj038h9nvlbv93vbie";
@@ -2226,7 +2282,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	 * @return true if sol has become the new best solution
 	 */
 	protected boolean checkBestSolution(Solution sol, boolean force) {
-		if (force || sol.greaterThan(bestSolution)) {    
+		if (force || sol.greaterThan(bestSolution)) {
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
 			timer.split();
@@ -2235,19 +2291,20 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			bestSolution.setGenerationIteration(numberOfIterations);
 			bestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
-			
-			if(bestSolutions !=  null) {
+
+			if (bestSolutions != null) {
 				bestSolutions.add(bestSolution.clone());
-				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
-//				bse.propertyChange(new PropertyChangeEvent(this, "BSEAddedValue", false, true));
+				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE,
+						false, true);
+				// bse.propertyChange(new PropertyChangeEvent(this,
+				// "BSEAddedValue", false, true));
 			}
-			
+
 			optimLogger.info("updated best solution");
 			return true;
 		}
 		return false;
 	}
-
 
 	protected boolean updateBestSolution(Solution sol) {
 		return updateBestSolution(sol, false);
@@ -2255,8 +2312,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	protected boolean updateBestSolution(Solution sol, boolean force) {
 		boolean result = checkBestSolution(sol, force);
-		if(result) 
-			updateCostLogImage(bestSolution,bestSolutionSerieHandler);
+		if (result)
+			updateCostLogImage(bestSolution, bestSolutionSerieHandler);
 		return result;
 	}
 
@@ -2268,12 +2325,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		boolean updated = false;
 		for (Solution s : sol.getAll())
 			updated = updated || checkBestSolution(s, force);
-		if(updated)
-			updateCostLogImage(bestSolution,bestSolutionSerieHandler);
+		if (updated)
+			updateCostLogImage(bestSolution, bestSolutionSerieHandler);
 	}
 
-
-	private void updateCostLogImage(SolutionMulti solution, String seriesHandler){
+	private void updateCostLogImage(SolutionMulti solution, String seriesHandler) {
 		logger.warn("" + solution.getCost() + ", "
 				+ TimeUnit.MILLISECONDS.toSeconds(solution.getGenerationTime())
 				+ ", " + solution.isFeasible());
@@ -2291,7 +2347,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			// sol.exportLight(filename);
 			localBestSolution.add(sol.clone());
 			this.numIterNoImprov = 0;
-			timer.split();			
+			timer.split();
 			localBestSolution.setGenerationIteration(numberOfIterations);
 			localBestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
@@ -2303,7 +2359,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 
 	protected boolean updateLocalBestSolution(Solution sol, boolean force) {
 		boolean result = checkLocalBestSolution(sol, force);
-		if(result)
+		if (result)
 			updateCostLogImage(localBestSolution, localBestSolutionSerieHandler);
 		return result;
 	}
@@ -2320,10 +2376,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		boolean updated = false;
 		for (Solution s : sol.getAll())
 			updated = updated || checkLocalBestSolution(s, force);
-		if(updated)
+		if (updated)
 			updateCostLogImage(localBestSolution, localBestSolutionSerieHandler);
 	}
-
 
 	protected void loadConfiguration() {
 		MAXFEASIBILITYITERATIONS = Configuration.FEASIBILITY_ITERS;
@@ -2332,14 +2387,16 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 		SELECTION_POLICY = Configuration.SELECTION_POLICY;
 	}
 
-
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if(evt.getSource().equals(evalServer) && evt.getPropertyName().equals("EvaluationError")){
+		if (evt.getSource().equals(evalServer)
+				&& evt.getPropertyName().equals("EvaluationError")) {
 			logger.error("Optimizaiton ending due to evaluation error");
 			cancel(true);
-		} else if(evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED)){
-			firePropertyChange(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED, false, true);
+		} else if (evt.getPropertyName().equals(
+				BestSolutionExplorer.PROPERTY_WINDOW_CLOSED)) {
+			firePropertyChange(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED,
+					false, true);
 		}
 	}
 
@@ -2349,45 +2406,63 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 			bestSolution = initialSolution;
 		}
 
-
 		if (duration != null) {
 			bestSolution.setGenerationTime(duration.getTime());
 		}
 
-
 		logger.info(bestSolution.showStatus());
-		
-		String basePath = Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY).toString();
-		
-		bestSolution.exportLight(Paths.get(basePath,Configuration.SOLUTION_LIGHT_FILE_NAME+Configuration.SOLUTION_FILE_EXTENSION));
 
-		for(Solution sol:bestSolution.getAll())
-			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,Configuration.WORKING_DIRECTORY,Configuration.SOLUTION_FILE_NAME+sol.getProvider()+Configuration.SOLUTION_FILE_EXTENSION));
+		String basePath = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+				Configuration.WORKING_DIRECTORY).toString();
 
-		bestSolution.exportAsExtension(Paths.get(basePath,Configuration.SOLUTION_FILE_NAME+"Total"+Configuration.SOLUTION_FILE_EXTENSION));
+		bestSolution.exportLight(Paths.get(basePath,
+				Configuration.SOLUTION_LIGHT_FILE_NAME
+						+ Configuration.SOLUTION_FILE_EXTENSION));
 
-		bestSolution.exportCSV(Paths.get(basePath,Configuration.SOLUTION_CSV_FILE_NAME));
-		
-		bestSolution.exportCostsAsExtension(Paths.get(basePath, "costs" + Configuration.SOLUTION_FILE_EXTENSION));
-		
+		for (Solution sol : bestSolution.getAll())
+			sol.exportAsExtension(Paths.get(Configuration.PROJECT_BASE_FOLDER,
+					Configuration.WORKING_DIRECTORY,
+					Configuration.SOLUTION_FILE_NAME + sol.getProvider()
+							+ Configuration.SOLUTION_FILE_EXTENSION));
+
+		bestSolution.exportAsExtension(Paths.get(basePath,
+				Configuration.SOLUTION_FILE_NAME + "Total"
+						+ Configuration.SOLUTION_FILE_EXTENSION));
+
+		bestSolution.exportCSV(Paths.get(basePath,
+				Configuration.SOLUTION_CSV_FILE_NAME));
+
+		bestSolution.exportCostsAsExtension(Paths.get(basePath, "costs"
+				+ Configuration.SOLUTION_FILE_EXTENSION));
+
 		for (Solution s : bestSolution.getAll())
-			s.exportPerformancesAsExtension(Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION));
-		
+			s.exportPerformancesAsExtension(Paths.get(basePath, "performance"
+					+ s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION));
+
 		if (Configuration.GENERATE_DESIGN_TO_RUNTIME_FILES) {
 			logger.info("Calling the DesignToRuntimeConnector project...");
-			AdaptationModelBuilder amb = new AdaptationModelBuilder(Paths.get(Configuration.DB_CONNECTION_FILE).toString());
+			AdaptationModelBuilder amb = new AdaptationModelBuilder(Paths.get(
+					Configuration.DB_CONNECTION_FILE).toString());
 			for (Solution s : bestSolution.getAll())
 				amb.createAdaptationModelAndRules(
 						basePath,
-						Paths.get(basePath,Configuration.SOLUTION_FILE_NAME+s.getProvider()+Configuration.SOLUTION_FILE_EXTENSION).toString(),
-						Paths.get(Configuration.FUNCTIONALITY_TO_TIER_FILE).toString(),
-						Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION).toString(),
+						Paths.get(
+								basePath,
+								Configuration.SOLUTION_FILE_NAME
+										+ s.getProvider()
+										+ Configuration.SOLUTION_FILE_EXTENSION)
+								.toString(),
+						Paths.get(Configuration.FUNCTIONALITY_TO_TIER_FILE)
+								.toString(),
+						Paths.get(
+								basePath,
+								"performance" + s.getProvider()
+										+ Configuration.SOLUTION_FILE_EXTENSION)
+								.toString(),
 						Configuration.OPTIMIZATION_WINDOW_LENGTH,
-						Configuration.TIMESTEP_DURATION,
-						s.getProvider());
+						Configuration.TIMESTEP_DURATION, s.getProvider());
 		}
 	}
-
 
 	private StopWatch duration = null;
 
@@ -2396,14 +2471,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 	}
 
 	public void inspect() {
-		if(bestSolutions != null && bestSolutions.size() >0)
+		if (bestSolutions != null && bestSolutions.size() > 0)
 			BestSolutionExplorer.show(this);
-		/*if(bestSolution != null)
-	            SolutionWindow.show(bestSolution);*/
+		/*
+		 * if(bestSolution != null) SolutionWindow.show(bestSolution);
+		 */
 	}
-	
+
 	public synchronized List<SolutionMulti> getBestSolutions() {
 		return bestSolutions;
 	}
 }
-
