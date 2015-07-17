@@ -940,6 +940,22 @@ public class ProviderDBConnector implements GenericDBConnector {
 		}
 		
 		String providerName = provider.getName().toLowerCase();
+		String base = null;
+		switch (providerName) {
+		case "microsoft": {
+			providerName = "azure";
+			base = "A1";
+			break;
+		}
+		case "amazon": {
+			base = "m1.small";
+			break;
+		}
+		case "flexiant": {
+			base = "1Gb-1CPU";
+			break;
+		}
+		}
 		if (providerName.equals("microsoft"))
 			providerName = "azure";
 		
@@ -958,6 +974,15 @@ public class ProviderDBConnector implements GenericDBConnector {
 				}
 				newInstance.put(tool, value);
 			}
+		}
+		
+		double baseValue = benchmarksMap.get(base).get(tool);
+		for (String instanceType : benchmarksMap.keySet()) {
+			Map<String, Double> instance = benchmarksMap.get(instanceType);
+			if (instance == null || !instance.containsKey(tool))
+				continue;
+			double value = instance.get(tool);
+			benchmarksMap.get(instanceType).put(tool, value / baseValue);
 		}
 	}
 
