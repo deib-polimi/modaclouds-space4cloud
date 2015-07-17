@@ -1040,16 +1040,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 						logger.trace("Defaulting on resource Size");
 						resourceSize = dataHandler
 								.getCloudElementSizes(actualProvider,/*
-<<<<<<< HEAD
 								 * cloudProvider,
 								 */serviceName, Configuration.BENCHMARK.toString())
 								 .iterator().next();
-=======
-																	 * cloudProvider
-																	 * ,
-																	 */
-										serviceName).iterator().next();
->>>>>>> 80cb830e72a94b693bd6ccd2ba6ba845c37ad509
 					}
 					logger.trace("default size" + resourceSize);
 
