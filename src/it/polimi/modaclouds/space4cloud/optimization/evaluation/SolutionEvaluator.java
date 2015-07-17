@@ -181,7 +181,7 @@ public class SolutionEvaluator implements Runnable {
 			// fast option			
 			ProcessBuilder pb = new ProcessBuilder(splitToCommandArray(command));
 			Process proc = pb.start();
-			readStream(proc.getInputStream(), false);
+			readStream(proc.getInputStream(), true);
 			readStream(proc.getErrorStream(), true);
 			int exitVal = -1;
 			try{

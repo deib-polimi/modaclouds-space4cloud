@@ -214,6 +214,10 @@ public class LqnHandler implements Cloneable, Serializable {
 		if (lqnDOM == null)
 			initDom();
 		try {
+			//Workaropund for LQNS, it doesn't like \r so we force the use of \n
+			String separator = System.getProperty("line.separator");
+			String newSeparator = "\n";
+			System.setProperty("line.separator", newSeparator);
 			TransformerFactory transformerFactory = TransformerFactory
 					.newInstance();
 			Transformer transformer;
@@ -221,6 +225,7 @@ public class LqnHandler implements Cloneable, Serializable {
 			DOMSource source = new DOMSource(lqnDOM);
 			StreamResult result = new StreamResult(lqnFilePath.toFile());
 			transformer.transform(source, result);
+			System.setProperty("line.separator", separator);
 		} catch (TransformerException e) {
 			logger.error("Error saving the lqn file",e);
 		}
