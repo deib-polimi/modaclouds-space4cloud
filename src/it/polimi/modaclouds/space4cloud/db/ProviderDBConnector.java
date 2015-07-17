@@ -939,9 +939,13 @@ public class ProviderDBConnector implements GenericDBConnector {
 			throw new RuntimeException("Tool " + tool + " not recognized!");
 		}
 		
+		String providerName = provider.getName().toLowerCase();
+		if (providerName.equals("microsoft"))
+			providerName = "azure";
+		
 		try (ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(String.format(
 				query,
-				provider.getName().toLowerCase()))) {
+				providerName))) {
 		
 			while (rs.next()) {
 				String instanceType = rs.getString(1);

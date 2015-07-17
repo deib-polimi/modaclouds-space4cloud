@@ -146,7 +146,7 @@ public class DataHandler {
 		}
 		
 		Configuration.BENCHMARK = Benchmark.DaCapo;
-		for (String s : handler.getCloudElementSizes("Amazon", "Elastic Compute Cloud (EC2)", Configuration.BENCHMARK.toString())) {
+		for (String s : handler.getCloudElementSizes("Microsoft", "Virtual Machines", Configuration.BENCHMARK.toString())) {
 			logger.info(">>> {}", s);
 		}
 
