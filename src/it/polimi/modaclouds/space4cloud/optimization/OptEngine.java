@@ -1029,7 +1029,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements PropertyChange
 						resourceSize = dataHandler
 								.getCloudElementSizes(actualProvider,/*
 								 * cloudProvider,
-								 */serviceName)
+								 */serviceName, Configuration.BENCHMARK.toString())
 								 .iterator().next();
 					}
 					logger.trace("default size"+resourceSize);

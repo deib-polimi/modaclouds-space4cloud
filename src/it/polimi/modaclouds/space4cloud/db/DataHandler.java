@@ -48,6 +48,8 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS.PaaSType
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SQL;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.TableDatastore;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Benchmark;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -141,6 +143,11 @@ public class DataHandler {
 		}
 		for (String s : handler.getSimilarResourcesWithBenchmarkValue(res, "DaCapo")) {
 			logger.info("DaCapo: {}", s);
+		}
+		
+		Configuration.BENCHMARK = Benchmark.DaCapo;
+		for (String s : handler.getCloudElementSizes("Amazon", "Elastic Compute Cloud (EC2)", Configuration.BENCHMARK.toString())) {
+			logger.info(">>> {}", s);
 		}
 
 		logger.info("End");
@@ -337,12 +344,29 @@ public class DataHandler {
 	
 	public List<String> getCloudElementSizes(String provider,
 			String serviceName) {
+		return getCloudElementSizes(provider, serviceName, null);
+	}
+	
+	public List<String> getCloudElementSizes(String provider,
+			String serviceName, String tool) {
+		Configuration.Benchmark actualTool = null;
+		if (tool != null)
+			actualTool = Configuration.Benchmark.valueOf(tool);
+		
 		List<String> res = getCloudResourceSizesInternal(provider, serviceName);
-		if (res != null)
-			return res;
+		if (res != null) {
+			if (actualTool != null)
+				return filterWithSelectedBenchmark(provider, res, actualTool);
+			else
+				return res;
+		}
 		res = getCloudPlatformSizes(provider, serviceName);
-		if (res != null)
-			return res;
+		if (res != null) {
+			if (actualTool != null)
+				return filterWithSelectedBenchmark(provider, res, actualTool);
+			else
+				return res;
+		}
 		
 		return new ArrayList<String>();
 	}
@@ -1069,13 +1093,33 @@ public class DataHandler {
 	}
 	
 	public Set<String> getSimilarResourcesWithBenchmarkValue(CloudService service, String tool) {
+		return getSimilarResourcesWithBenchmarkValue(service.getProvider(), service.getServiceName(), tool);
+	}
+	
+	public Set<String> getSimilarResourcesWithBenchmarkValue(String provider, String serviceName, String tool) {
 		Set<String> res = new HashSet<String>();
-		List<String> sizes = getCloudElementSizes(service.getProvider(), service.getServiceName());
+		List<String> sizes = getCloudElementSizes(provider, serviceName, tool);
 		for (String size : sizes) {
-			if (getBenchmarkValue(service.getProvider(), size, tool) > 0)
-				res.add(size);
+			res.add(size);
 		}
 		return res;
 	}
 	
+	private List<String> filterWithSelectedBenchmark(String provider, List<String> resList, Configuration.Benchmark tool) {
+		if (tool != null && tool != Configuration.Benchmark.None && resList.size() > 0) {
+			List<String> res = new ArrayList<String>();
+			for (String s : resList) {
+				if (getBenchmarkValue(provider, s, tool.toString()) > 0)
+					res.add(s);
+			}
+			
+			if (res.size() == 0) {
+				logger.warn("No resource has a valid benchmark value for the benchmark {}.", tool.toString());
+			} else {
+				return res;
+			}
+		}
+		
+		return resList;
+	}
 }
