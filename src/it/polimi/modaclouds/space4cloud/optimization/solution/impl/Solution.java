@@ -816,8 +816,19 @@ public class Solution implements Cloneable, Serializable {
 
 		if (isFeasible() && sol.isFeasible()) {
 			/* if both are feasible */
-			return getCost() < sol.getCost();
-
+			if (getCost() >= 0) {
+				if (sol.getCost() >= 0) {
+					return getCost() < sol.getCost();
+				} else {
+					return true;
+				}
+			} else {
+				if (sol.getCost() >= 0) {
+					return false;
+				} else {
+					return (getNumberOfViolatedConstraints() <= sol.getNumberOfViolatedConstraints());
+				}
+			}
 		} else if (!isFeasible() && !sol.isFeasible()) {
 
 			/*
