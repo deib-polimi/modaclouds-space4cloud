@@ -45,6 +45,8 @@ import javax.xml.bind.JAXBException;
 
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.osgi.framework.FrameworkUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,6 +54,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class RobustnessProgressWindow extends WindowAdapter implements PropertyChangeListener {
+	
+	private static final Logger logger=LoggerFactory.getLogger(RobustnessProgressWindow.class);
 
 	public static enum Size {
 
@@ -123,7 +127,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 						.replaceAll("-", "")
 						.replaceAll(" ", "").replaceAll("/", ""));
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Error while parsing the size.", e);
 				s = Size.zero;
 			}
 			return s;
@@ -191,7 +195,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 						rpw.add(umes[i], solutions[j++]);
 					} catch (MalformedURLException | JAXBException
 							| SAXException e) {
-						e.printStackTrace();
+						logger.error("Error while considering a new solution.", e);
 					}
 					rpw.setValue(rpw.getValue() + 1);
 				}
@@ -201,7 +205,7 @@ public class RobustnessProgressWindow extends WindowAdapter implements PropertyC
 			try {
 				rpw.save2png(basePath);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error("Error while saving the PNG of the graphs.", e);
 			}
 		}
 

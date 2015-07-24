@@ -22,6 +22,9 @@ import java.io.File;
 
 import javax.swing.UIManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Main class of the CSPACE tool.<br/>
  * Workflow:
@@ -60,6 +63,8 @@ import javax.swing.UIManager;
 
 public class Main {
 	
+	private static final Logger logger=LoggerFactory.getLogger(Main.class);
+	
 	public static void perform(String... args) {
 		String configuration = null;
 		if (args != null && args.length > 0)
@@ -78,7 +83,7 @@ public class Main {
 //            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error while setting the system look and feel.", e);
         }
 		
 		perform(args);

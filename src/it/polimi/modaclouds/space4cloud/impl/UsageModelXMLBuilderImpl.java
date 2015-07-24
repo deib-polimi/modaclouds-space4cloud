@@ -33,6 +33,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -43,6 +45,8 @@ import org.w3c.dom.NodeList;
  * The Class UsageModelXMLBuilderImpl.
  */
 public class UsageModelXMLBuilderImpl implements UsageModelXMLBuilder {
+	
+	private static final Logger logger=LoggerFactory.getLogger(UsageModelXMLBuilderImpl.class);
 
 	/**
 	 * The main method.
@@ -188,7 +192,7 @@ public class UsageModelXMLBuilderImpl implements UsageModelXMLBuilder {
 			root = usmodel.getDocumentElement();
 			return true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while loading the model.", e);
 			return false;
 		}
 	}
@@ -228,7 +232,7 @@ public class UsageModelXMLBuilderImpl implements UsageModelXMLBuilder {
 			transformer.transform(source, result);
 			return outFile;
 		} catch (Exception exc) {
-			exc.printStackTrace();
+			logger.error("Error while saving the model.", exc);
 			return null;
 		}
 	}

@@ -160,7 +160,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			createIaasSets();
 			return iaasMap;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the map of the IaaS services.", e);
 			return null;
 		}
 
@@ -207,7 +207,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			createPaasSets();
 			return paasList;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the PaaS services.", e);
 			return null;
 		}
 	}
@@ -250,7 +250,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			createPaasSets();
 			return paasMap;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the map of the PaaS services.", e);
 			return null;
 		}
 	}
@@ -395,7 +395,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 
 			return list;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the cloud platforms.", e);
 			return new ArrayList<CloudPlatform>();
 		}
 	}
@@ -468,7 +468,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			return cp;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the cost profile.", e);
 			return null;
 		}
 	}
@@ -530,7 +530,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			rs.close();
 			return list;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the cost.", e);
 			return null;
 		}
 	}
@@ -588,7 +588,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			rs.close();
 			return lvhr;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the Virtual Hardware Resource.", e);
 			return null;
 		}
 	}
@@ -639,7 +639,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			rs.close();
 			return v;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the Virtual Hardware Resource.", e);
 			return null;
 		}
 	}
@@ -772,7 +772,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			rs.close();
 			return list;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the cloud resource.", e);
 			return new ArrayList<CloudResource>();
 		}
 	}
@@ -925,20 +925,6 @@ public class ProviderDBConnector implements GenericDBConnector {
 	}
 	
 	private void defineBenchmarkValues(String tool) throws SQLException {
-		String query = "";
-		if (tool.equalsIgnoreCase("DaCapo")) {
-			query = "SELECT InstanceType, 100000/AVG(PerformanceTime_ms) FROM DaCapo " +
-					"WHERE CloudProvider=\"%s\" AND Workload=\"tomcat\" " +
-					"GROUP BY InstanceType";
-		} else if (tool.equalsIgnoreCase("FileBench")) {
-			query = "SELECT InstanceType, 100/AVG(Latency) FROM Filebench " +
-					"WHERE Ops!=0 AND OpsPerSecond!=0 AND ReadWrite!=0 AND MbPerSecond!=0 AND CpuOperations!=0 AND Latency!=0 " +
-					"AND CloudProvider=\"%s\" AND Workload=\"fileserver\" AND InstanceType!=\"t1.micro\" " +
-					"GROUP BY InstanceType";
-		} else {
-			throw new RuntimeException("Tool " + tool + " not recognized!");
-		}
-		
 		String providerName = provider.getName().toLowerCase();
 		String base = null;
 		switch (providerName) {
@@ -955,9 +941,25 @@ public class ProviderDBConnector implements GenericDBConnector {
 			base = "1Gb-1CPU";
 			break;
 		}
+		default:
+			return;
 		}
 		if (providerName.equals("microsoft"))
 			providerName = "azure";
+		
+		String query = "";
+		if (tool.equalsIgnoreCase("DaCapo")) {
+			query = "SELECT InstanceType, 100000/AVG(PerformanceTime_ms) FROM DaCapo " +
+					"WHERE CloudProvider=\"%s\" AND Workload=\"tomcat\" " +
+					"GROUP BY InstanceType";
+		} else if (tool.equalsIgnoreCase("FileBench")) {
+			query = "SELECT InstanceType, 100/AVG(Latency) FROM Filebench " +
+					"WHERE Ops!=0 AND OpsPerSecond!=0 AND ReadWrite!=0 AND MbPerSecond!=0 AND CpuOperations!=0 AND Latency!=0 " +
+					"AND CloudProvider=\"%s\" AND Workload=\"fileserver\" AND InstanceType!=\"t1.micro\" " +
+					"GROUP BY InstanceType";
+		} else {
+			throw new RuntimeException("Tool " + tool + " not recognized!");
+		}
 		
 		try (ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(String.format(
 				query,

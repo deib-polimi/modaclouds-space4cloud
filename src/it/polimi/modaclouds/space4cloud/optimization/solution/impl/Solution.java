@@ -284,6 +284,7 @@ public class Solution implements Cloneable, Serializable {
 	/**
 	 * Export the solution in the format of the extension used as input for space4cloud
 	 */
+	@SuppressWarnings("deprecation")
 	public void exportAsExtension(Path fileName){
 		ResourceModelExtension extension = getAsExtension();
 		final String schemaLocation = "http://www.modaclouds.eu/xsd/2013/6/resource-model-extension https://raw.githubusercontent.com/deib-polimi/modaclouds-qos-models/master/metamodels/s4cextension/resource_model_extension.xsd";
@@ -442,6 +443,7 @@ public class Solution implements Cloneable, Serializable {
 
 	}
 
+	@SuppressWarnings("deprecation")
 	public void exportPerformancesAsExtension(Path fileName){
 		Performance performances = getPerformancesAsExtension();
 		//serialize them
@@ -855,12 +857,20 @@ public class Solution implements Cloneable, Serializable {
 	}
 
 	public boolean hasAtLeastOneReplicaInOneHour() {
+		Instance i = hourApplication.get(0);
+		for (Tier t : i.getTiers()) {
+			if (hasAtLeastOneReplicaInOneHour(t.getId()))
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean hasAtLeastOneReplicaInOneHour(String tierId) {
 		for (Instance i : hourApplication) {
-			for (Tier t : i.getTiers()) {
-				int replicas = getReplicas(t);
-				if (replicas > 0)
-					return true;
-			}
+			Tier t = i.getTierById(tierId);
+			int replicas = getReplicas(t);
+			if (replicas > 0)
+				return true;
 		}
 		return false;
 	}

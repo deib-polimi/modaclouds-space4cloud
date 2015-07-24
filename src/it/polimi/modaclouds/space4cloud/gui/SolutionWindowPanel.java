@@ -30,10 +30,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
 
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SolutionWindowPanel extends JTabbedPane{
 
     private static final long serialVersionUID = 4205611616209241366L;
+    
+    private static final Logger logger=LoggerFactory.getLogger(SolutionWindowPanel.class);
 
     private SolutionMulti solutionMulti;
 
@@ -236,7 +240,7 @@ public class SolutionWindowPanel extends JTabbedPane{
                     return;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error while setting the population file.", e);
         }
     }
 
