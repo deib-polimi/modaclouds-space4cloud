@@ -491,7 +491,10 @@ public class Solution implements Cloneable, Serializable {
 			ResourceContainer container = factory.createResourceContainer(); 
 			container.setId(t.getId());
 			containersByID.put(t.getId(), container);
-			container.setName(t.getName());
+			if(t.getName()!=null)
+				container.setName(t.getName());
+			else
+				container.setName("aName");
 			
 			//take out the selected service
 			CloudService service = t.getCloudService();
