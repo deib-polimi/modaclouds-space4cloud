@@ -160,7 +160,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			createIaasSets();
 			return iaasMap;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the map of the IaaS services.", e);
 			return null;
 		}
 
@@ -207,7 +207,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			createPaasSets();
 			return paasList;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the PaaS services.", e);
 			return null;
 		}
 	}
@@ -250,7 +250,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			createPaasSets();
 			return paasMap;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the map of the PaaS services.", e);
 			return null;
 		}
 	}
@@ -395,7 +395,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 
 			return list;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the cloud platforms.", e);
 			return new ArrayList<CloudPlatform>();
 		}
 	}
@@ -468,7 +468,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			return cp;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the cost profile.", e);
 			return null;
 		}
 	}
@@ -530,7 +530,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			rs.close();
 			return list;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the cost.", e);
 			return null;
 		}
 	}
@@ -588,7 +588,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			rs.close();
 			return lvhr;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the Virtual Hardware Resource.", e);
 			return null;
 		}
 	}
@@ -639,7 +639,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			rs.close();
 			return v;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the Virtual Hardware Resource.", e);
 			return null;
 		}
 	}
@@ -772,7 +772,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 			rs.close();
 			return list;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while getting the cloud resource.", e);
 			return new ArrayList<CloudResource>();
 		}
 	}
@@ -925,6 +925,28 @@ public class ProviderDBConnector implements GenericDBConnector {
 	}
 	
 	private void defineBenchmarkValues(String tool) throws SQLException {
+		String providerName = provider.getName().toLowerCase();
+		String base = null;
+		switch (providerName) {
+		case "microsoft": {
+			providerName = "azure";
+			base = "A1";
+			break;
+		}
+		case "amazon": {
+			base = "m1.small";
+			break;
+		}
+		case "flexiant": {
+			base = "1Gb-1CPU";
+			break;
+		}
+		default:
+			return;
+		}
+		if (providerName.equals("microsoft"))
+			providerName = "azure";
+		
 		String query = "";
 		if (tool.equalsIgnoreCase("DaCapo")) {
 			query = "SELECT InstanceType, 100000/AVG(PerformanceTime_ms) FROM DaCapo " +
@@ -941,7 +963,7 @@ public class ProviderDBConnector implements GenericDBConnector {
 		
 		try (ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(String.format(
 				query,
-				provider.getName().toLowerCase()))) {
+				providerName))) {
 		
 			while (rs.next()) {
 				String instanceType = rs.getString(1);
@@ -954,6 +976,15 @@ public class ProviderDBConnector implements GenericDBConnector {
 				}
 				newInstance.put(tool, value);
 			}
+		}
+		
+		double baseValue = benchmarksMap.get(base).get(tool);
+		for (String instanceType : benchmarksMap.keySet()) {
+			Map<String, Double> instance = benchmarksMap.get(instanceType);
+			if (instance == null || !instance.containsKey(tool))
+				continue;
+			double value = instance.get(tool);
+			benchmarksMap.get(instanceType).put(tool, value / baseValue);
 		}
 	}
 

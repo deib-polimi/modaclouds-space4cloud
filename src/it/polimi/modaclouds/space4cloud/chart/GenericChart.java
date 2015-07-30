@@ -42,9 +42,13 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.TextAnchor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GenericChart<E> extends JPanel {
 	private static final long serialVersionUID = -7208222758877437049L;
+	
+	private static final Logger logger=LoggerFactory.getLogger(GenericChart.class);
 	
 	private JFreeChart graph;
 	private JLabel label;
@@ -137,7 +141,7 @@ public class GenericChart<E> extends JPanel {
 			initDataset(DefaultCategoryDataset.class);
 //			validLabel=false;
 		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
+			logger.error("Error while initializing the dataset.", e);
 		}
 	}
 	

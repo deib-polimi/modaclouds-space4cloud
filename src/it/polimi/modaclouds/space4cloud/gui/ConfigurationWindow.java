@@ -69,7 +69,7 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 					ConfigurationWindow window = new ConfigurationWindow();
 					window.setVisible(true);
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("Error while initializing the GUI.", e);
 				}
 			}
 		});

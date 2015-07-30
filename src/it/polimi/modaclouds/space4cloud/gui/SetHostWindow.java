@@ -22,10 +22,15 @@ import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
 
 import org.osgi.framework.FrameworkUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SetHostWindow {
 	
 	private static final String FRAME_NAME = "Details about the Host";
+	
+	private static final Logger logger=LoggerFactory.getLogger(SetHostWindow.class);
+	
 	private JFrame frame;
 	
 	private Host host;
@@ -298,7 +303,7 @@ public class SetHostWindow {
 				try {
 					new SetHostWindow(null);
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("Error while drawing the GUI.", e);
 				}
 			}
 		});

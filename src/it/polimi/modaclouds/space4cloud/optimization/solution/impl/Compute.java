@@ -15,6 +15,10 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
+import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.slf4j.Logger;
@@ -165,6 +169,13 @@ public class Compute extends IaaS {
 	 * @return the speed factor
 	 */
 	public double getSpeedFactor() {
+		try {
+			DataHandler handler = DataHandlerFactory.getHandler();
+			double value = handler.getBenchmarkValue(this, Configuration.BENCHMARK.toString());
+			if (value > 0)
+				return value;
+		} catch (Exception e) { }
+		
 		return getSpeed() / StandardSpeed;
 	}
 

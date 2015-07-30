@@ -48,6 +48,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS.PaaSType
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SQL;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.TableDatastore;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -90,57 +91,24 @@ public class DataHandler {
 		} catch (DatabaseConnectionFailureExteption | SQLException | IOException e) {
 			logger.error("Error while connecting to the database.", e);
 		}
-
-		String provider="Amazon";
-//		Set<String> providers = handler.getCloudProviders();
-//		for(String provider:providers){
-			logger.info("Provider: "+provider);
-			
-			String[] servicesTypes = new String[] {
-					"Compute",
-//					"Frontend",
-//					"Backend",
-//					"Middleware",
-//					"Queue",
-//					"Cache",
-//					"NoSQL_DB",
-//					"RelationalDB",
-//					"Storage"
-				};
-			
-			for (String s : servicesTypes) {
-				List<String> services = handler.getServices(provider, s);
-				for(String service:services){
-//					logger.info("> "+service + " (" + s +")");
-					
-					List<String> sizes = handler.getCloudElementSizes(provider, service);
-					for(String size:sizes){
-//						logger.info("> > "+size);
-						
-						for (String tool : handler.getBenchmarkMethods(provider, size))
-							logger.info("{}, tool: {}, benchmark: {}", size, tool, handler.getBenchmarkValue(provider, size, tool));
-						
-//						CloudElement ce = handler.getCloudElement(provider, service, size);
-//						if (ce != null) {
-//							logger.info("> > > " + ce.toString());
-//							if (ce instanceof CloudPlatform) {
-//								EList<CloudResource> resources = handler.getCloudPlatformRunOnResources(provider, service, size);
-//								
-//								for(CloudResource cr:resources)
-//									logger.info("> > > > "+cr.toString());
-//							}
-//						}
+		
+		String[] providers = new String[] { "Amazon", "Microsoft" };
+		String[] serviceTypes = new String[] { "Compute", "Compute" };
+		String[] serviceNames = new String[] { "Elastic Compute Cloud (EC2)", "Virtual Machines" };
+		
+		for (int i = 0; i < providers.length; ++i) {
+			for (Configuration.Benchmark tool : Configuration.Benchmark.values()) {
+				if (tool == Configuration.Benchmark.None)
+					continue;
+				Configuration.BENCHMARK = tool;
+				for (String s : handler.getCloudElementSizes(providers[i], serviceNames[i], tool.toString())) {
+					CloudService cs = handler.getCloudService(providers[i], serviceTypes[i], serviceNames[i], s, 1);
+					if (cs instanceof Compute) {
+						Compute compute = (Compute)cs;
+						logger.info("{}: {}, {}, {}, {}", tool.toString(), s, handler.getBenchmarkValue(providers[i], s, tool.toString()), compute.getSpeed(), compute.getSpeedFactor());
 					}
 				}
 			}
-//		}
-			
-		CloudService res = handler.getCloudService("Amazon", "Compute", "Elastic Compute Cloud (EC2)", "m1.medium", 1);
-		for (String s : handler.getSimilarResourcesWithBenchmarkValue(res, "Filebench")) {
-			logger.info("Filebench: {}", s);
-		}
-		for (String s : handler.getSimilarResourcesWithBenchmarkValue(res, "DaCapo")) {
-			logger.info("DaCapo: {}", s);
 		}
 
 		logger.info("End");
@@ -337,12 +305,29 @@ public class DataHandler {
 	
 	public List<String> getCloudElementSizes(String provider,
 			String serviceName) {
+		return getCloudElementSizes(provider, serviceName, null);
+	}
+	
+	public List<String> getCloudElementSizes(String provider,
+			String serviceName, String tool) {
+		Configuration.Benchmark actualTool = null;
+		if (tool != null)
+			actualTool = Configuration.Benchmark.valueOf(tool);
+		
 		List<String> res = getCloudResourceSizesInternal(provider, serviceName);
-		if (res != null)
-			return res;
+		if (res != null) {
+			if (actualTool != null)
+				return filterWithSelectedBenchmark(provider, res, actualTool);
+			else
+				return res;
+		}
 		res = getCloudPlatformSizes(provider, serviceName);
-		if (res != null)
-			return res;
+		if (res != null) {
+			if (actualTool != null)
+				return filterWithSelectedBenchmark(provider, res, actualTool);
+			else
+				return res;
+		}
 		
 		return new ArrayList<String>();
 	}
@@ -1069,13 +1054,33 @@ public class DataHandler {
 	}
 	
 	public Set<String> getSimilarResourcesWithBenchmarkValue(CloudService service, String tool) {
+		return getSimilarResourcesWithBenchmarkValue(service.getProvider(), service.getServiceName(), tool);
+	}
+	
+	public Set<String> getSimilarResourcesWithBenchmarkValue(String provider, String serviceName, String tool) {
 		Set<String> res = new HashSet<String>();
-		List<String> sizes = getCloudElementSizes(service.getProvider(), service.getServiceName());
+		List<String> sizes = getCloudElementSizes(provider, serviceName, tool);
 		for (String size : sizes) {
-			if (getBenchmarkValue(service.getProvider(), size, tool) > 0)
-				res.add(size);
+			res.add(size);
 		}
 		return res;
 	}
 	
+	private List<String> filterWithSelectedBenchmark(String provider, List<String> resList, Configuration.Benchmark tool) {
+		if (tool != null && tool != Configuration.Benchmark.None && resList.size() > 0) {
+			List<String> res = new ArrayList<String>();
+			for (String s : resList) {
+				if (getBenchmarkValue(provider, s, tool.toString()) > 0)
+					res.add(s);
+			}
+			
+			if (res.size() == 0) {
+				logger.warn("No resource has a valid benchmark value for the benchmark {}.", tool.toString());
+			} else {
+				return res;
+			}
+		}
+		
+		return resList;
+	}
 }
