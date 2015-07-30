@@ -3,6 +3,8 @@
 -- Host: 127.0.0.1    Database: cloud
 -- ------------------------------------------------------
 -- Server version	5.6.25
+CREATE DATABASE  IF NOT EXISTS `cloud` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `cloud`;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
