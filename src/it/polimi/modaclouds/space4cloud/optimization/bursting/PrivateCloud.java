@@ -1,19 +1,5 @@
 package it.polimi.modaclouds.space4cloud.optimization.bursting;
 
-import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
-import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
-import it.polimi.modaclouds.space4cloud.db.DataHandler;
-import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.optimization.MoveChangeWorkload;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -40,6 +26,20 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+
+import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
+import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.optimization.MoveChangeWorkload;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 public class PrivateCloud implements CloudProvider {
 	

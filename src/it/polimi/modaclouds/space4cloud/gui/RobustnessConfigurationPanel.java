@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -12,6 +10,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 public class RobustnessConfigurationPanel extends JPanel {
 	

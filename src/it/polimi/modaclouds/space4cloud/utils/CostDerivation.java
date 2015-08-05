@@ -18,17 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
-import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
-import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
-import it.polimi.modaclouds.resourcemodel.cloud.Cost;
-import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
-import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
-import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
-import it.polimi.modaclouds.space4cloud.types.palladio.AllocationProfile;
-import it.polimi.modaclouds.space4cloud.types.palladio.AllocationSpecification;
-import it.polimi.modaclouds.space4cloud.types.palladio.ExtendedResourceContainer;
-
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +33,17 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
+import it.polimi.modaclouds.resourcemodel.cloud.Cost;
+import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
+import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
+import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
+import it.polimi.modaclouds.space4cloud.types.palladio.AllocationProfile;
+import it.polimi.modaclouds.space4cloud.types.palladio.AllocationSpecification;
+import it.polimi.modaclouds.space4cloud.types.palladio.ExtendedResourceContainer;
 
 // TODO: Auto-generated Javadoc
 /**

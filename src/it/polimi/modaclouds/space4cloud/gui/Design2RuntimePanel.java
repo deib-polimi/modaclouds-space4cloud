@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,6 +11,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 public class Design2RuntimePanel extends JPanel implements ActionListener {
 

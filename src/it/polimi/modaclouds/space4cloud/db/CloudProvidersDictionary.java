@@ -18,15 +18,15 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
-import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
-import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
-import it.polimi.modaclouds.space4cloud.utils.EMF;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
+import it.polimi.modaclouds.space4cloud.utils.EMF;
 
 /**
  * @author Michele Ciavotta This class loads the providers from the database and

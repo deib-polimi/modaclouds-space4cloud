@@ -1,9 +1,5 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +8,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
+
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 public class MoveChangeWorkload extends AbsMove {
 

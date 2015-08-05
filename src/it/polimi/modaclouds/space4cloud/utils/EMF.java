@@ -18,8 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
-
 import java.util.Collections;
 import java.util.Map;
 
@@ -29,6 +27,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+
+import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
 
 // TODO: Auto-generated Javadoc
 /**

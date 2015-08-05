@@ -18,6 +18,10 @@
  */
 package it.polimi.modaclouds.space4cloud.iterfaces;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import it.polimi.modaclouds.resourcemodel.cloud.Backend;
 import it.polimi.modaclouds.resourcemodel.cloud.BlobStorage;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
@@ -30,10 +34,6 @@ import it.polimi.modaclouds.resourcemodel.cloud.Frontend;
 import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.Middleware;
 import it.polimi.modaclouds.resourcemodel.cloud.PaaS_Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 // TODO: Auto-generated Javadoc
 /**

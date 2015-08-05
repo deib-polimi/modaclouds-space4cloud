@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.space4cloud.milp.Solver;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import it.polimi.modaclouds.space4cloud.milp.Solver;
 
 public class MILPEvaluator {
 

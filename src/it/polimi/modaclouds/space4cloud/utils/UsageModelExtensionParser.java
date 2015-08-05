@@ -1,11 +1,5 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
-import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
-import it.polimi.modaclouds.qos_models.schema.UsageModelExtension;
-import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
-import it.polimi.modaclouds.qos_models.util.XMLHelper;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,6 +9,12 @@ import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
+
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.UsageModelExtension;
+import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
 
 public class UsageModelExtensionParser {
 

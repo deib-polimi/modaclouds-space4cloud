@@ -18,9 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.impl;
 
-import it.polimi.modaclouds.space4cloud.iterfaces.UsageModelXMLBuilder;
-import it.polimi.modaclouds.space4cloud.types.WorkloadT;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +36,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import it.polimi.modaclouds.space4cloud.iterfaces.UsageModelXMLBuilder;
+import it.polimi.modaclouds.space4cloud.types.WorkloadT;
 
 // TODO: Auto-generated Javadoc
 /**

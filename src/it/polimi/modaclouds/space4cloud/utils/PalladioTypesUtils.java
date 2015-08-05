@@ -18,10 +18,10 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
+import org.w3c.dom.Element;
+
 import it.polimi.modaclouds.space4cloud.types.ProcessingResourceT;
 import it.polimi.modaclouds.space4cloud.types.SchedulingT;
-
-import org.w3c.dom.Element;
 
 // TODO: Auto-generated Javadoc
 /**

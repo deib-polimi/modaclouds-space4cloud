@@ -18,6 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
+import java.util.List;
+
 import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.V_CPU;
@@ -27,8 +29,6 @@ import it.polimi.modaclouds.space4cloud.types.ProcessingResourceT;
 import it.polimi.modaclouds.space4cloud.types.SchedulingT;
 import it.polimi.modaclouds.space4cloud.types.palladio.ProcessingResource;
 import it.polimi.modaclouds.space4cloud.types.palladio.ResourceContainer;
-
-import java.util.List;
 
 // TODO: Auto-generated Javadoc
 /**

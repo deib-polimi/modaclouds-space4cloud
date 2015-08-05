@@ -15,6 +15,12 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
@@ -24,12 +30,6 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PartialEvaluationOptimizationEngine extends OptEngine {
 

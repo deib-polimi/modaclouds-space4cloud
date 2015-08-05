@@ -15,8 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.chart.GenericChart;
-
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -45,6 +43,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 
 public class OptimizationProgressWindow extends WindowAdapter implements PropertyChangeListener, ActionListener {
 

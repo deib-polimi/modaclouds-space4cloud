@@ -18,8 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -36,13 +34,14 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.palladiosimulator.solver.runconfig.MessageStrings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -122,7 +121,7 @@ public class RunConfigurationsHandler {
 			else if (x.getAttribute("key").equals(
 					MessageStrings.LQNS_OUTPUT_DIR)
 					|| x.getAttribute("key").equals(
-							MessageStrings.PERF_ENG_OUT_DIR))
+							MessageStrings.LINE_OUT_DIR))
 				//TODO:check patch versions
 				e_out = x;
 			else if (x.getAttribute("key").equals("perfEngPropFile"))

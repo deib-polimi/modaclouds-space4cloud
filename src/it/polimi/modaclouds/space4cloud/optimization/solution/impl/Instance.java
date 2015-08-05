@@ -15,18 +15,18 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnHandler;
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
-import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-import it.polimi.modaclouds.space4cloud.utils.ReflectionUtility;
-
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import it.polimi.modaclouds.space4cloud.lqn.LqnHandler;
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.utils.ReflectionUtility;
 
 /**
  * @author Michele Ciavotta

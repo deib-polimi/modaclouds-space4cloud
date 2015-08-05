@@ -18,6 +18,18 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.polimi.modaclouds.resourcemodel.cloud.Backend;
 import it.polimi.modaclouds.resourcemodel.cloud.BlobStorage;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
@@ -52,18 +64,6 @@ import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
 import it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector;
 import it.polimi.modaclouds.space4cloud.utils.EMF;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 // TODO: Auto-generated Javadoc
 /**

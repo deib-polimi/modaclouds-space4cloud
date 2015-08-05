@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.awt.Image;
 import java.io.File;
 
@@ -11,6 +9,8 @@ import javax.swing.JFrame;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.osgi.framework.FrameworkUtil;
+
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 public class FileLoader {
 

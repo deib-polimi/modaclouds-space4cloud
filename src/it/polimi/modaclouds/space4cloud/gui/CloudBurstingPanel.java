@@ -1,8 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.optimization.bursting.Host;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -29,6 +26,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+
+import it.polimi.modaclouds.space4cloud.optimization.bursting.Host;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 public class CloudBurstingPanel extends JPanel implements ActionListener, MouseListener {
 	

@@ -15,9 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +26,9 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 public class LineServerHandler {
 	/** LINE connection handlers **/

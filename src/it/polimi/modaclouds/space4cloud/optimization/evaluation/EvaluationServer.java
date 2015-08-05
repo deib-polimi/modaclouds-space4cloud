@@ -16,22 +16,6 @@
 
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.space4cloud.chart.GenericChart;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
-import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
-import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-import it.polimi.modaclouds.space4cloud.utils.Cache;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
-import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -49,6 +33,22 @@ import org.apache.commons.lang.time.StopWatch;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Cache;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
+import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 
 /**
  * @author Michele Ciavotta

@@ -1,8 +1,8 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-
 import java.util.ArrayList;
+
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 
 public class MoveChangeWorkloadHour extends AbsMoveHour {
 

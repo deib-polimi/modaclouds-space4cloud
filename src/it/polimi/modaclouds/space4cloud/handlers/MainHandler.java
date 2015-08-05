@@ -18,11 +18,11 @@
  */
 package it.polimi.modaclouds.space4cloud.handlers;
 
-import it.polimi.modaclouds.space4cloud.mainProgram.Main;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+
+import it.polimi.modaclouds.space4cloud.mainProgram.Main;
 
 // TODO: Auto-generated Javadoc
 /**

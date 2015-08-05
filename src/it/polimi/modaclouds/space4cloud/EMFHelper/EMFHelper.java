@@ -31,25 +31,25 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.palladiosimulator.pcm.allocation.Allocation;
+import org.palladiosimulator.pcm.allocation.AllocationContext;
+import org.palladiosimulator.pcm.allocation.AllocationPackage;
+import org.palladiosimulator.pcm.core.composition.AssemblyContext;
+import org.palladiosimulator.pcm.core.entity.ComposedProvidingRequiringEntity;
+import org.palladiosimulator.pcm.core.entity.Entity;
+import org.palladiosimulator.pcm.parameter.ParameterPackage;
+import org.palladiosimulator.pcm.repository.BasicComponent;
+import org.palladiosimulator.pcm.repository.PassiveResource;
+import org.palladiosimulator.pcm.repository.Repository;
+import org.palladiosimulator.pcm.repository.RepositoryComponent;
+import org.palladiosimulator.pcm.repository.RepositoryPackage;
+import org.palladiosimulator.pcm.resourceenvironment.ResourceenvironmentPackage;
+import org.palladiosimulator.pcm.resourcetype.ResourcetypePackage;
+import org.palladiosimulator.pcm.seff.SeffPackage;
+import org.palladiosimulator.pcm.system.SystemPackage;
+import org.palladiosimulator.pcm.usagemodel.UsagemodelPackage;
 
 import de.uka.ipd.sdq.identifier.Identifier;
-import de.uka.ipd.sdq.pcm.allocation.Allocation;
-import de.uka.ipd.sdq.pcm.allocation.AllocationContext;
-import de.uka.ipd.sdq.pcm.allocation.AllocationPackage;
-import de.uka.ipd.sdq.pcm.core.composition.AssemblyContext;
-import de.uka.ipd.sdq.pcm.core.entity.ComposedProvidingRequiringEntity;
-import de.uka.ipd.sdq.pcm.core.entity.Entity;
-import de.uka.ipd.sdq.pcm.parameter.ParameterPackage;
-import de.uka.ipd.sdq.pcm.repository.BasicComponent;
-import de.uka.ipd.sdq.pcm.repository.PassiveResource;
-import de.uka.ipd.sdq.pcm.repository.Repository;
-import de.uka.ipd.sdq.pcm.repository.RepositoryComponent;
-import de.uka.ipd.sdq.pcm.repository.RepositoryPackage;
-import de.uka.ipd.sdq.pcm.resourceenvironment.ResourceenvironmentPackage;
-import de.uka.ipd.sdq.pcm.resourcetype.ResourcetypePackage;
-import de.uka.ipd.sdq.pcm.seff.SeffPackage;
-import de.uka.ipd.sdq.pcm.system.SystemPackage;
-import de.uka.ipd.sdq.pcm.usagemodel.UsagemodelPackage;
 
 /**
  * Also see {@link EcoreUtil} for more helper functions like
@@ -161,7 +161,7 @@ public class EMFHelper {
 	}
 
 	/**
-	 * Copied From de.uka.ipd.sdq.pcmsolver.models.PCMInstance.
+	 * Copied From org.palladiosimulator.pcmsolver.models.PCMInstance.
 	 * 
 	 * @param fileName
 	 *            the filename specifying the file to load from
@@ -203,7 +203,7 @@ public class EMFHelper {
 	}
 
 	/**
-	 * Copied From de.uka.ipd.sdq.pcmsolver.models.PCMInstance.
+	 * Copied From org.palladiosimulator.pcmsolver.models.PCMInstance.
 	 * 
 	 * @param resourceSet
 	 *            The resource set to register all contained model packages

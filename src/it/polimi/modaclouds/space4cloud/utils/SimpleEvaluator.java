@@ -15,19 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.space4cloud.chart.GenericChart;
-import it.polimi.modaclouds.space4cloud.db.DataHandler;
-import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
-import it.polimi.modaclouds.space4cloud.lqn.LQNSResultParser;
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -40,6 +27,19 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
+import it.polimi.modaclouds.space4cloud.lqn.LQNSResultParser;
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
 public class SimpleEvaluator {
 

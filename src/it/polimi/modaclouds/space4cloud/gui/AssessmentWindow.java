@@ -15,20 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.chart.GenericChart;
-import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.AvgRTConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -73,6 +59,20 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.AvgRTConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 public class AssessmentWindow extends WindowAdapter implements
         PropertyChangeListener, ActionListener, ComponentListener {

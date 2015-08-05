@@ -1,8 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.resourcemodel.cloud.Cost;
-import it.polimi.modaclouds.space4cloud.optimization.bursting.Host;
-
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -24,6 +21,9 @@ import javax.swing.table.AbstractTableModel;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.resourcemodel.cloud.Cost;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.Host;
 
 public class SetHostWindow {
 	

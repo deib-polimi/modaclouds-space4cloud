@@ -15,12 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.qos_models.schema.CloudService;
-import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
-import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
-import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
-import it.polimi.modaclouds.qos_models.util.XMLHelper;
-
 import java.net.MalformedURLException;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -30,6 +24,12 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 
 import org.xml.sax.SAXException;
+
+import it.polimi.modaclouds.qos_models.schema.CloudService;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
 
 public class ResourceEnvironmentExtensionParser {	
 	protected Map<String, String> serviceTypes = new HashMap<>();

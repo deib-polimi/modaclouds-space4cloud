@@ -1,27 +1,5 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.qos_models.schema.ClosedWorkload;
-import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
-import it.polimi.modaclouds.qos_models.schema.CloudService;
-import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
-import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
-import it.polimi.modaclouds.qos_models.schema.Replica;
-import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
-import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
-import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
-import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
-import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.contractor4cloud.Contractor;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
-import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult;
-import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult.Problem;
-import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult.Result;
-import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult.Result.WorstRealization;
-import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult.Result.X;
-import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.Instance;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -55,6 +33,28 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkload;
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.CloudService;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.Replica;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.contractor4cloud.Contractor;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
+import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult;
+import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult.Problem;
+import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult.Result;
+import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult.Result.WorstRealization;
+import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.EvaluationResult.Result.X;
+import it.polimi.modaclouds.space4cloud.schemas.evaluationresult.Instance;
 
 public class DataExporter {
 	

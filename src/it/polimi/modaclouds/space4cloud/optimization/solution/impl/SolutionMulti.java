@@ -1,25 +1,5 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.qos_models.schema.CostType;
-import it.polimi.modaclouds.qos_models.schema.Costs;
-import it.polimi.modaclouds.qos_models.schema.Costs.Providers;
-import it.polimi.modaclouds.qos_models.schema.HourPriceType;
-import it.polimi.modaclouds.qos_models.schema.MultiCloudExtension;
-import it.polimi.modaclouds.qos_models.schema.MultiCloudExtensions;
-import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
-import it.polimi.modaclouds.qos_models.schema.Provider;
-import it.polimi.modaclouds.qos_models.schema.Replica;
-import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
-import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
-import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
-import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
-import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.contractor4cloud.Contractor;
-import it.polimi.modaclouds.space4cloud.db.DataHandler;
-import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
-import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -57,6 +37,26 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import it.polimi.modaclouds.qos_models.schema.CostType;
+import it.polimi.modaclouds.qos_models.schema.Costs;
+import it.polimi.modaclouds.qos_models.schema.Costs.Providers;
+import it.polimi.modaclouds.qos_models.schema.HourPriceType;
+import it.polimi.modaclouds.qos_models.schema.MultiCloudExtension;
+import it.polimi.modaclouds.qos_models.schema.MultiCloudExtensions;
+import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
+import it.polimi.modaclouds.qos_models.schema.Provider;
+import it.polimi.modaclouds.qos_models.schema.Replica;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.schema.WorkloadPartition;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.contractor4cloud.Contractor;
+import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 /**
  * This class should handle a multi-provider solution, or also, in the

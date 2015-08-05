@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.chart;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -44,6 +42,8 @@ import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.TextAnchor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 public class GenericChart<E> extends JPanel {
 	private static final long serialVersionUID = -7208222758877437049L;

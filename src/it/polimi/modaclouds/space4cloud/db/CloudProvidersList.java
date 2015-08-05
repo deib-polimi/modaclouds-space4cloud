@@ -18,15 +18,15 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
-import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
-import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
-import it.polimi.modaclouds.space4cloud.utils.EMF;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
+import it.polimi.modaclouds.space4cloud.utils.EMF;
 
 // TODO: Auto-generated Javadoc
 /**

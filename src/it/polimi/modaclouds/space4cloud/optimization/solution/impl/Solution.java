@@ -18,21 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.qos_models.schema.HourValueType;
-import it.polimi.modaclouds.qos_models.schema.Location;
-import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
-import it.polimi.modaclouds.qos_models.schema.Performance;
-import it.polimi.modaclouds.qos_models.schema.Performance.Seffs;
-import it.polimi.modaclouds.qos_models.schema.Performance.Seffs.Seff;
-import it.polimi.modaclouds.qos_models.schema.Performance.Tiers;
-import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
-import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
-import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
-import it.polimi.modaclouds.qos_models.schema.SeffType.Percentiles;
-import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -63,6 +48,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import it.polimi.modaclouds.qos_models.schema.HourValueType;
+import it.polimi.modaclouds.qos_models.schema.Location;
+import it.polimi.modaclouds.qos_models.schema.ObjectFactory;
+import it.polimi.modaclouds.qos_models.schema.Performance;
+import it.polimi.modaclouds.qos_models.schema.Performance.Seffs;
+import it.polimi.modaclouds.qos_models.schema.Performance.Seffs.Seff;
+import it.polimi.modaclouds.qos_models.schema.Performance.Tiers;
+import it.polimi.modaclouds.qos_models.schema.ReplicaElement;
+import it.polimi.modaclouds.qos_models.schema.ResourceContainer;
+import it.polimi.modaclouds.qos_models.schema.ResourceModelExtension;
+import it.polimi.modaclouds.qos_models.schema.SeffType.Percentiles;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 // TODO: Auto-generated Javadoc
 /**

@@ -15,17 +15,17 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 
 /*
  * This class define a proxy object able to verify if a application has been already evaluated

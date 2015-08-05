@@ -1,19 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.qos_models.schema.ClosedWorkload;
-import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
-import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
-import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
-import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
-import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.chart.GenericChart;
-import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
@@ -32,6 +18,20 @@ import javax.swing.border.TitledBorder;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkload;
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.mainProgram.Space4Cloud;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
 
 public class SolutionWindowPanel extends JTabbedPane{
 
