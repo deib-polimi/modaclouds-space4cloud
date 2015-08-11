@@ -78,6 +78,7 @@ import org.palladiosimulator.pcm.usagemodel.Loop;
 import org.palladiosimulator.pcm.usagemodel.ScenarioBehaviour;
 import org.palladiosimulator.pcm.usagemodel.UsageScenario;
 import org.palladiosimulator.solver.models.PCMInstance;
+import org.palladiosimulator.solver.transformations.pcm2lqn.Pcm2LqnStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -903,8 +904,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 						.toFile().listFiles(new FilenameFilter() {
 							@Override
 							public boolean accept(File dir, String name) {
-								return name.endsWith(".xml")
-										&& !name.contains("line");
+								return name.endsWith("in."+Pcm2LqnStrategy.LQN_FILE_EXTENSION);
 							}
 						});
 				// suppose there is just 1 model

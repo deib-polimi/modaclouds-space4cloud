@@ -23,6 +23,8 @@ import org.eclipse.emf.ecore.EOperation;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.palladiosimulator.solver.models.PCMInstance;
+import org.palladiosimulator.solver.transformations.pcm2lqn.Pcm2LqnStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -296,7 +298,7 @@ public class PrivateCloud implements CloudProvider {
                                 .listFiles(new FilenameFilter() {
                                     @Override
                                     public boolean accept(File dir, String name) {
-                                        return name.endsWith(".xml");
+                                        return name.endsWith("in."+Pcm2LqnStrategy.LQN_FILE_EXTENSION);
                                     }
                                 });
                 // suppose there is just 1 model

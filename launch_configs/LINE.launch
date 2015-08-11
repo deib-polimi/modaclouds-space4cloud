@@ -23,10 +23,10 @@
 <stringAttribute key="samplingDist" value="1.0"/>
 <booleanAttribute key="simulateAccuracy" value="false"/>
 <stringAttribute key="solver" value="LINE"/>
-<booleanAttribute key="PerfEngineDebug" value="false"/>
-<stringAttribute key="perfengOutputDir" value="C:\"/>
+<booleanAttribute key="LINEDebug" value="false"/>
+<stringAttribute key="LINEOutputDir" value="C:\"/>
 <stringAttribute key="underCoeff" value="0.5"/>
 <stringAttribute key="usageFile" value="platform:/resource/SpecWebPalladio/default.usagemodel"/>
-<stringAttribute key="perfEngPropFile" value="platform:/resource/SpecWebPalladio/LINE.properties"/>
+<stringAttribute key="LINEPropFile" value="platform:/resource/SpecWebPalladio/LINE.properties"/>
 <booleanAttribute key="showHtmlResult" value="true"/>
 </launchConfiguration>

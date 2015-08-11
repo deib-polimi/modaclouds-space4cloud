@@ -75,7 +75,7 @@ public class RunConfigurationsHandler {
 		if (Configuration.SOLVER == Solver.LQNS)
 			template = getClass().getResource("/launch_configs/LQNS.launch");
 		else if (Configuration.SOLVER == Solver.LINE)
-			template = getClass().getResource("/launch_configs/PerformanceEngine.launch");
+			template = getClass().getResource("/launch_configs/LINE.launch");
 		else			
 			logger.error("Wrong Solver Selection");
 		
@@ -124,7 +124,7 @@ public class RunConfigurationsHandler {
 							MessageStrings.LINE_OUT_DIR))
 				//TODO:check patch versions
 				e_out = x;
-			else if (x.getAttribute("key").equals("perfEngPropFile"))
+			else if (x.getAttribute("key").equals("LINEPropFile"))
 				e_line_prop = x;
 		}
 		e_repo.setAttribute("value", Configuration.PALLADIO_REPOSITORY_MODEL);

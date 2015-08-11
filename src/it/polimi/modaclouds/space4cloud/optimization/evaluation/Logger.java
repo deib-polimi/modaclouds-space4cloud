@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.time.StopWatch;
+import org.palladiosimulator.solver.transformations.pcm2lqn.Pcm2LqnStrategy;
 import org.slf4j.LoggerFactory;
 
 public class Logger implements Runnable {
@@ -30,10 +31,14 @@ public class Logger implements Runnable {
 	private boolean running = false;
 	private boolean connected = false;
 	private Map<String, String> evaluations = new HashMap<String, String>();
-	private Map<String, StopWatch> timers = new HashMap<String, StopWatch>();
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Logger.class);
-	private static final Object SUBMITTED = "SUBMITTED";
-	private static final Object SOLVED = "SOLVED";
+	private static final String SOLVED = "SOLVED";
+	private static final String READY = "LINE READY";
+	private static final String LISTENING = "Listening on port";
+	private static final String STOP = "LINE STOP";
+	private static final String ERROR = "ERROR";
+	private static final String MODEL = "MODEL";
+	private static final String SUBMITTED = "SUBMITTED";
 
 	String prefix = "";
 
@@ -53,8 +58,7 @@ public class Logger implements Runnable {
 
 	public synchronized boolean isModelEvaluated(String modelPath) {
 		modelPath = Paths.get(modelPath).toString();
-		return evaluations.containsKey(modelPath)
-				&& evaluations.get(modelPath).equals("SOLVED");
+		return evaluations.containsKey(modelPath) && evaluations.get(modelPath).equals(SOLVED);
 		// TODO clear the model form the map?
 	}
 
@@ -67,30 +71,29 @@ public class Logger implements Runnable {
 	}
 
 	private void logTime(String modelName, long time) {
-		logger.info(modelName + ", " + evaluations.get(modelName) + ", "
-				+ time);
+		logger.info(modelName + ", " + evaluations.get(modelName) + ", " + time);
 	}
 
 	@Override
 	public void run() {
 		while (isRead())
 			try {
-				if(!in.ready())
+				if (!in.ready())
 					Thread.sleep(100);
 				if (in.ready()) {
 					String line = in.readLine();
 					logger.debug("LINE " + prefix + ": " + line);
 
 					// set the starting
-					if (line.contains("Listening on port"))
+					if (line.contains(LISTENING))
 						setRunning(true);
-					if (line.contains("LINE READY"))
+					if (line.contains(READY))
 						setConnected(true);
-					if (line.contains("LINE STOP"))
+					if (line.contains(STOP))
 						setRunning(false);
-					if (line.contains("ERROR"))
+					if (line.contains(ERROR))
 						manageError(line);
-					else if (line.contains("MODEL"))
+					else if (line.contains(MODEL))
 						updateModelEvaluation(line);
 
 				}
@@ -99,14 +102,14 @@ public class Logger implements Runnable {
 				if (e.getMessage().equals("Stream closed"))
 					logger.debug("LINE " + prefix + ": " + e.getMessage());
 				else
-					logger.error("Error in reading from LINE output",e);
+					logger.error("Error in reading from LINE output", e);
 			} catch (InterruptedException e) {
-				logger.error("Error in reading from LINE output",e);
+				logger.error("Error in reading from LINE output", e);
 			}
 	}
 
 	private void manageError(String line) {
-		logger.error("LINE error:",line);		
+		logger.error("LINE error:", line);
 	}
 
 	private synchronized void setConnected(boolean connected) {
@@ -120,17 +123,18 @@ public class Logger implements Runnable {
 	private synchronized void updateModelEvaluation(String message) {
 		message = message.trim().replaceAll(" +", " ");
 		String[] tokens = message.split(" ");
-		
+
 		int offset = 0;
-		
+
 		String modelName = tokens[1];
-		
-		while (modelName.indexOf("xml") == -1) {
-			modelName += " " + tokens[2 + offset];
+
+		while (modelName.indexOf(Pcm2LqnStrategy.LQN_FILE_EXTENSION) == -1) {
+			modelName = " " + tokens[2 + offset];
 			offset++;
 		}
-		
-		modelName = modelName.replace("_line.xml", ".xml");
+
+		modelName = modelName.replace("_line." + Pcm2LqnStrategy.LQN_FILE_EXTENSION,
+				"." + Pcm2LqnStrategy.LQN_FILE_EXTENSION);
 		modelName = Paths.get(modelName).toString();
 		String status = null;
 		if (tokens.length == (4 + offset))
@@ -139,35 +143,16 @@ public class Logger implements Runnable {
 			status = tokens[2 + offset];
 		evaluations.put(modelName, status);
 
-		if (status.equals(SUBMITTED)) {
-			StopWatch timer = new StopWatch();
-			timer.start();
-			timers.put(modelName, timer);
-		} else if (status.equals(SOLVED)) {
-			long time = -1;
-			try {
-				if(timers.containsKey(modelName)){
-					timers.get(modelName).stop();
-					time = timers.get(modelName).getTime();
-				}
-			} catch (IllegalStateException e) {
-				logger.error("Error in taking the time, will put -1",e);				
-			} finally
-			{
-				logTime(modelName,time);
-			}
-
-		}
-
 	}
 
 	/**
-	 * Removes the specified model from the list of model waiting from an evaluation
+	 * Removes the specified model from the list of model waiting from an
+	 * evaluation
+	 * 
 	 * @param modelFilePath
 	 */
 	public synchronized void reset(String modelFilePath) {
 		evaluations.remove(modelFilePath);
-		timers.remove(modelFilePath);
 
 	}
 
@@ -176,7 +161,6 @@ public class Logger implements Runnable {
 	 */
 	public void clear() {
 		evaluations.clear();
-		timers.clear();
 
 	}
 

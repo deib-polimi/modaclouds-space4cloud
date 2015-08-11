@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.palladiosimulator.solver.transformations.pcm2lqn.Pcm2LqnStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -285,9 +286,9 @@ public class SimpleEvaluator {
 		final String resultFileIdentifier;
 		LqnResultParser parser;
 		if (Configuration.SOLVER == Solver.LQNS)
-			resultFileIdentifier = ".lqxo";
+			resultFileIdentifier = "out."+Pcm2LqnStrategy.LQN_FILE_EXTENSION;
 		else
-			resultFileIdentifier = "_line.xml";
+			resultFileIdentifier = "_line."+Pcm2LqnStrategy.LQN_FILE_EXTENSION;
 
 		// fill the lists and plot the data
 		for (File f : subFolder)

@@ -38,6 +38,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.palladiosimulator.solver.transformations.pcm2lqn.Pcm2LqnStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -142,7 +143,7 @@ public class LqnHandler implements Cloneable, Serializable {
 	private File cloneLqnFile() {
 		String from = lqnFilePath.toString();
 		String fromName = lqnFilePath.getFileName().toString();
-		String toName = UUID.randomUUID().toString() + ".xml";
+		String toName = UUID.randomUUID().toString() +"."+ Pcm2LqnStrategy.LQN_FILE_EXTENSION;
 		String to = from.replace(fromName, toName);
 		Path pathTo = null;
 		try {

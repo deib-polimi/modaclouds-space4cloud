@@ -44,6 +44,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.palladiosimulator.solver.transformations.pcm2lqn.Pcm2LqnStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -173,13 +174,13 @@ public class Solution implements Cloneable, Serializable {
 		File[] modelFiles = resultDirPath.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.endsWith(".xml") && !name.contains("_line");
+				return name.endsWith(Pcm2LqnStrategy.LQN_FILE_EXTENSION) && !name.contains("_line");
 			}
 		});
 		File[] resultFiles = resultDirPath.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.endsWith("_line.xml") || name.endsWith(".lqxo");
+				return name.endsWith("_line."+Pcm2LqnStrategy.LQN_FILE_EXTENSION) || name.endsWith("out."+Pcm2LqnStrategy.LQN_FILE_EXTENSION);
 			}
 		});
 

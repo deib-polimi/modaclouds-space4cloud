@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.palladiosimulator.solver.runconfig.MessageStrings;
+import org.palladiosimulator.solver.transformations.pcm2lqn.Pcm2LqnStrategy;
 import org.slf4j.LoggerFactory;
 
 import it.polimi.modaclouds.space4cloud.exceptions.AnalysisFailureException;
@@ -87,7 +88,7 @@ public class SolutionEvaluator implements Runnable {
 	public void parseResults() throws AnalysisFailureException {
 		if (Configuration.SOLVER == Solver.LQNS) {
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
-					+ ".lqxo";
+					+ "."+Pcm2LqnStrategy.LQN_FILE_EXTENSION;
 			//use temporary file if lqns did produce it but crashed after finish. Results here might be inaccurate
 			if(!Paths.get(resultfilePath).toFile().exists())
 				resultfilePath = resultfilePath+"~";
@@ -99,7 +100,7 @@ public class SolutionEvaluator implements Runnable {
 			if (Configuration.RANDOM_ENV_FILE != null && !Configuration.RANDOM_ENV_FILE.equals(""))
 				randomEnvironmentName="+"+Paths.get(Configuration.RANDOM_ENV_FILE).getFileName().toString().replace(".xml","");
 			resultfilePath = filePath.substring(0, filePath.lastIndexOf('.'))
-					+randomEnvironmentName+Configuration.LINE_SOLUTION_TAG+".xml";
+					+randomEnvironmentName+Configuration.LINE_SOLUTION_TAG+"."+Pcm2LqnStrategy.LQN_FILE_EXTENSION;
 			resultParser = new LINEResultParser(Paths.get(resultfilePath));
 		}
 
