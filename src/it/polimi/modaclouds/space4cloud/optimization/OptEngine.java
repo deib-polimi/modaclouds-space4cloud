@@ -158,13 +158,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 
 	private static final int MAX_SCRAMBLE_NO_CHANGE = 10;
 
-	protected int MAX_SCRUMBLE_ITERS = 20; /*
-											 * 40 Now it is a constant in the
-											 * future it might become a
-											 * parameter
-											 */
+	protected int MAX_SCRUMBLE_ITERS = 20;
 
-	protected int MAXFEASIBILITYITERATIONS = 10; // 20
+	protected int MAXFEASIBILITYITERATIONS = 10;
 
 	/**
 	 * Tabu list containing the representation of the solutions recently
@@ -1329,11 +1325,18 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 					logger.error("Error while evaluating the solution.", e);
 				}
 
-			logger.info("\tFeasibility iteration: "
-					+ numberOfFeasibilityIterations);
 
-			double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
+
+			
+			 // This line makes the factor decrease linearly for high nintial impact
+//			  double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
+//					* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
+//			
+			//this line makes the factor increase linearly for more smooth initial impact (overall sems to be a better strategy since the growth is still exponential)
+			double factor = MIN_FACTOR + (MAX_FACTOR - MIN_FACTOR)
 					* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
+			logger.info("\tFeasibility iteration: "
+					+ numberOfFeasibilityIterations+ "factor: "+factor);
 			for (int i = 0; i < 24; i++) {
 
 				if (sol.getHourApplication().get(i).isFeasible())
@@ -1378,7 +1381,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		}
 		// optimLogger.trace(sol.showStatus());
 		if (sol.isFeasible())
-			logger.info("Solution made feasible");
+			logger.info("Solution is feasible");
 		else
 			logger.info("Max number of feasibility iterations reached");
 	}
