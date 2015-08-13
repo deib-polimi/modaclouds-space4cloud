@@ -1331,8 +1331,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			 // This line makes the factor decrease linearly for high nintial impact
 //			  double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
 //					* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
-//			
-			//this line makes the factor increase linearly for more smooth initial impact (overall sems to be a better strategy since the growth is still exponential)
+			
+			//this line makes the factor increase linearly for more smooth initial impact (overall seems to be a better strategy since the growth is still exponential)
 			double factor = MIN_FACTOR + (MAX_FACTOR - MIN_FACTOR)
 					* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
 			logger.info("\tFeasibility iteration: "

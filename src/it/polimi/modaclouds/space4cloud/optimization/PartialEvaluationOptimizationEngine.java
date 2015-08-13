@@ -34,9 +34,11 @@ import org.slf4j.LoggerFactory;
 public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 	private static double DEFAULT_SCALE_IN_FACTOR = 2;
+	private static double IMPROVEMENT_FRACTION = 1/0.75;
 	private static int MAX_SCALE_IN_ITERATIONS = 25;
 	private static int MAX_SCALE_IN_CONV_ITERATIONS = 7;
 	private static final Logger logger = LoggerFactory
+		
 			.getLogger(PartialEvaluationOptimizationEngine.class);
 
 	public PartialEvaluationOptimizationEngine(ConstraintHandler handler) throws DatabaseConnectionFailureExteption {	
@@ -133,6 +135,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 
 				// if there are tiers that can be scaled then chose one
 				// randomly
+				//TODO: better policy then random?
 				tier = vettResTot.get(hour).get(random.nextInt(vettResTot.get(hour).size()));
 
 				// scale the resource by the factor
@@ -148,6 +151,18 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 				continue;
 			}
 
+			//Experimental:
+			//get the cost of the new solution before evaluating it
+			double oldCost = previousSol.getCost();
+			double newCost = evalServer.deriveCosts(sol);
+			double bestCost = localBestSolution.getCost();
+			//if we are not improving the best solution and the improvement over the old solution is not significant then we are probably considering the wrong tier. 
+			if((newCost > bestCost) && ((newCost - bestCost) > (oldCost - bestCost)/IMPROVEMENT_FRACTION)){
+				//mark it as non improving, we will iterate it a couple of times and then exit
+				logger.info("Skipping reduction of VM numbers");
+				return false;
+			}
+			logger.info("Reducing VM numbers");
 			// evaluate the solution
 			try {
 				evalServer.EvaluateSolution(sol);
@@ -155,7 +170,7 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 				throw new OptimizationException("","scaleIn",e);
 			}	
 
-			// if an application has become feasible, revert it and try again
+			// if an application has become unfeasible, revert it and try again
 			// with a smaller factor
 			for (int i = 0; i < 24; i++) {
 				if (!sol.getApplication(i).isFeasible()) {
@@ -173,7 +188,9 @@ public class PartialEvaluationOptimizationEngine extends OptEngine {
 			} catch (EvaluationException e) {
 				throw new OptimizationException("","scaleIn",e);
 			}
-			boolean improvement = updateBestSolution(sol);
+
+			boolean improvement = updateLocalBestSolution(sol);
+			updateBestSolution(sol);
 			if(!improvement){
 				numIterNoImprov++;				
 			}
