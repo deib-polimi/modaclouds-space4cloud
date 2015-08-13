@@ -131,42 +131,46 @@ import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
 /**
  * @author Michele Ciavotta Class defining the optimization engine.
  */
-public class OptEngine extends SwingWorker<Void, Void> implements
+public class OptimizationEngine extends SwingWorker<Void, Void> implements
 		PropertyChangeListener {
 
-	protected SolutionMulti initialSolution = null;
+	private SolutionMulti initialSolution = null;
 
-	protected SolutionMulti bestSolution = null;
+	private SolutionMulti bestSolution = null;
 
-	protected SolutionMulti currentSolution = null;
+	private SolutionMulti currentSolution = null;
 
-	protected SolutionMulti localBestSolution = null;
+	private SolutionMulti localBestSolution = null;
 
 	private List<SolutionMulti> bestSolutions = new ArrayList<SolutionMulti>();
 
-	protected ConstraintHandler constraintHandler;
+	private ConstraintHandler constraintHandler;
 
-	protected DataHandler dataHandler;
+	private DataHandler dataHandler;
 
-	protected int numberOfIterations;
+	private int scrambleIteration;
 
-	protected int numberOfFeasibilityIterations;
+	private int numberOfFeasibilityIterations;
 
-	protected Policy SELECTION_POLICY;
+	private Policy SELECTION_POLICY;
 
-	protected int MAXMEMORYSIZE = 10;
+	private int MAXMEMORYSIZE = 10;
 
 	private static final int MAX_SCRAMBLE_NO_CHANGE = 10;
 
-	protected int MAX_SCRUMBLE_ITERS = 20;
+	private int MAX_SCRUMBLE_ITERS = 20;
 
-	protected int MAXFEASIBILITYITERATIONS = 10;
+	private int MAXFEASIBILITYITERATIONS = 10;
+
+	private double DEFAULT_SCALE_IN_FACTOR = 2;
+	private int MAX_OUT_OF_BOUND_ITERATIONS = 5;
+	private int MAX_SCALE_IN_CONV_ITERATIONS = 3;
 
 	/**
 	 * Tabu list containing the representation of the solutions recently
 	 * evaluated, used for the tabu search (scramble phase).
 	 */
-	protected Cache<String, String> tabuSolutionList;
+	private Cache<String, String> tabuSolutionList;
 
 	/**
 	 * This is the long term memory of the tabu search used in the scramble
@@ -175,29 +179,26 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 * after the full exploration of a local optimum by building a solution out
 	 * of components with low frequency
 	 */
-	protected Map<String, Cache<String, Integer>> longTermFrequencyMemory;
+	private Map<String, Cache<String, Integer>> longTermFrequencyMemory;
 
-	protected Random random;
-	protected int numIterNoImprov = 0;
+	private Random random;
 
-	protected StopWatch timer = new StopWatch();
+	private StopWatch timer = new StopWatch();
 
-	protected EvaluationServer evalServer;
+	private EvaluationServer evalServer;
 
-	protected Logger logger = LoggerFactory.getLogger(OptEngine.class);
-	protected Logger optimLogger = LoggerFactory.getLogger("optimLogger");
-	protected Logger scrambleLogger = LoggerFactory.getLogger("scrambleLogger");
+	private Logger logger = LoggerFactory.getLogger(OptimizationEngine.class);
 
-	protected GenericChart<XYSeriesCollection> costLogImage;
-	protected GenericChart<XYSeriesCollection> logVm;
-	protected GenericChart<XYSeriesCollection> logConstraints;
+	private GenericChart<XYSeriesCollection> costLogImage;
+	private GenericChart<XYSeriesCollection> logVm;
+	private GenericChart<XYSeriesCollection> logConstraints;
 
-	protected String bestSolutionSerieHandler;
-	protected String localBestSolutionSerieHandler;
+	private String bestSolutionSerieHandler;
+	private String localBestSolutionSerieHandler;
 
 	private boolean batch = false;
 
-	public OptEngine(ConstraintHandler handler)
+	public OptimizationEngine(ConstraintHandler handler)
 			throws DatabaseConnectionFailureExteption {
 		this(handler, false);
 	}
@@ -209,7 +210,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 *            : the constraint handler
 	 * @throws DatabaseConnectionFailureExteption
 	 */
-	public OptEngine(ConstraintHandler handler, boolean batch)
+	public OptimizationEngine(ConstraintHandler handler, boolean batch)
 			throws DatabaseConnectionFailureExteption {
 
 		loadConfiguration();
@@ -222,7 +223,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			logger.error("Unable to create chart loggers", e);
 		}
 
-		optimLogger.debug("Random seed: " + Configuration.RANDOM_SEED);
+		logger.debug("Random seed: " + Configuration.RANDOM_SEED);
 		random = new Random(Configuration.RANDOM_SEED);
 
 		// batch mode
@@ -249,13 +250,17 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		this.batch = batch;
 	}
 
-	protected void showConfiguration() {
-		optimLogger.info("Running the optimization with parameters:");
-		optimLogger.info("Max Memory Size: " + MAXMEMORYSIZE);
-		optimLogger.info("Max Scrumble Iterations: " + MAX_SCRUMBLE_ITERS);
-		optimLogger.info("Max Feasibility Iterations: "
-				+ MAXFEASIBILITYITERATIONS);
-		optimLogger.info("Selection Policy: " + SELECTION_POLICY);
+	private void showConfiguration() {
+		logger.info("Running the optimization with parameters:");
+		logger.info("Max Memory Size: " + MAXMEMORYSIZE);
+		logger.info("Max Scrumble Iterations: " + MAX_SCRUMBLE_ITERS);
+		logger.info("Max Feasibility Iterations: " + MAXFEASIBILITYITERATIONS);
+		logger.info("Selection Policy: " + SELECTION_POLICY);
+		logger.info("Default Scale in Factor: " + DEFAULT_SCALE_IN_FACTOR);
+		logger.info("Max Scale In Out of Bound Iterations: "
+				+ MAX_OUT_OF_BOUND_ITERATIONS);
+		logger.info("Max Scale In Convergence Iterations: "
+				+ MAX_SCALE_IN_CONV_ITERATIONS);
 	}
 
 	/**
@@ -268,7 +273,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 *            the rates by which we'll multiply the actual workload, taken
 	 *            from the usage model extension file.
 	 */
-	protected void changeWorkload(Solution sol, double[] rates) {
+	private void changeWorkload(Solution sol, double[] rates) {
 
 		logger.debug("The hourly values of the workload are:");
 		String tmp = "";
@@ -313,7 +318,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 *            the rate by which we'll multiply the actual workload, taken
 	 *            from the usage model extension file.
 	 */
-	protected void changeWorkload(Solution sol, int hour, double rate) {
+	private void changeWorkload(Solution sol, int hour, double rate) {
 
 		logger.debug("The hourly values of the workload are:");
 		String tmp = "";
@@ -356,7 +361,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		return null;
 	}
 
-	protected Tier findResource(Instance application, String id) {
+	private Tier findResource(Instance application, String id) {
 		return findResource(application, id, SELECTION_POLICY);
 	}
 
@@ -367,7 +372,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 *            of the resource in the constraint
 	 * @return a IaaS resource on which to perform a scale operation.
 	 */
-	protected Tier findResource(Instance application, String id, Policy policy) {
+	private Tier findResource(Instance application, String id, Policy policy) {
 
 		Tier resource = null;
 		IConstrainable constrainedResource = application
@@ -434,7 +439,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 
 	}
 
-	protected void findSeffsInScenarioBehavior(
+	private void findSeffsInScenarioBehavior(
 			ScenarioBehaviour scenarioBehaviour, Map<String, String> calls) {
 
 		for (AbstractUserAction action : scenarioBehaviour
@@ -464,7 +469,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 * @param sol
 	 * @return
 	 */
-	protected MoveOnVM[] generateArrayMoveOnVM(Solution sol) {
+	private MoveOnVM[] generateArrayMoveOnVM(Solution sol) {
 		MoveOnVM moveArray[] = new MoveOnVM[24];
 		for (int i = 0; i < 24; i++) {
 			moveArray[i] = new MoveOnVM(sol, i);
@@ -479,7 +484,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 * @param sol
 	 * @return
 	 */
-	protected List<ArrayList<Tier>> generateVettResTot(Solution sol) {
+	private List<ArrayList<Tier>> generateVettResTot(Solution sol) {
 		List<ArrayList<Tier>> vettResTot = new ArrayList<ArrayList<Tier>>(24);
 		// list of lists of Iass
 
@@ -540,7 +545,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 * 
 	 * @throws OptimizationException
 	 */
-	protected void InternalOptimization(Solution sol)
+	private void InternalOptimization(Solution sol)
 			throws OptimizationException {
 
 		/*
@@ -570,33 +575,33 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		// if the solution is unfeasible there is a first phase in which the
 		// solution is forced to became feasible
 
-		optimLogger.trace("feasibility phase");
+		logger.debug("Executing: Make Feasible");
 		makeFeasible(sol);
-		// optimLogger.trace("feasible solution: "+sol.showStatus());
+		// logger.trace("feasible solution: "+sol.showStatus());
 		// If the current solution is better than the best one it becomes the
 		// new best solution.
 
 		updateBestSolution(sol);
 		updateLocalBestSolution(sol);
 
-		optimLogger.info("costReduction phase");
+		logger.info("Executing Scale In");
 		if (sol.isFeasible()) {
-			IteratedRandomScaleInLS(sol);
+			ScaleLS(sol);
 		} else {
 			logger.info("Solution not feasible, skipping scale in");
 		}
-		// optimLogger.trace("optimized solution"+sol.showStatus());
+		// logger.trace("optimized solution"+sol.showStatus());
 
 	}
 
-	protected void InternalOptimization(SolutionMulti sol)
+	private void InternalOptimization(SolutionMulti sol)
 			throws OptimizationException {
 
 		for (Solution s : sol.getAll())
 			InternalOptimization(s);
 	}
 
-	protected boolean isMaxNumberOfFesibilityIterations() {
+	private boolean isMaxNumberOfFesibilityIterations() {
 
 		if (numberOfFeasibilityIterations <= MAXFEASIBILITYITERATIONS) {
 			return false;
@@ -604,105 +609,166 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		return true;
 	}
 
-	protected boolean isMaxNumberOfIterations() {
+	private boolean isMaxNumberOfIterations() {
 
-		if (numberOfIterations <= MAX_SCRUMBLE_ITERS) {
+		if (scrambleIteration <= MAX_SCRUMBLE_ITERS) {
 			return false;
 		}
 		return true;
 	}
 
-	protected void IteratedRandomScaleInLS(Solution sol)
-			throws OptimizationException {
+	private void ScaleLS(Solution sol) throws OptimizationException {
 		for (Constraint constraint : sol.getViolatedConstraints()) {
 			if (constraint instanceof RamConstraint) {
-				logger.info("Wron type of VM selected, make feasible will not be executed");
+				logger.info("Wrong type of VM selected, scale in will not be executed");
 				return;
 			}
 		}
-		MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
+		logger.info("initializing scale in phase");
 
-		List<ArrayList<Tier>> vettResTot = generateVettResTot(sol);
-		/* first phase: overall descent optimization */
-		// logger.warn("Descent Optimization first phase - start");
-		// logger.warn(sol.isFeasible()+","+sol.numberOfUnfeasibleHours());
-		// for(Instance i:sol.getApplications())
-		// if(!i.isFeasible())
-		// logger.warn("\thour: "+sol.getApplications().indexOf(i)+" violated constraints: "+i.getNumerOfViolatedConstraints());
-		boolean done = false;
-		logger.info("\t Descent Optimization second phase");
-		resetNoImprovementCounter();
-		Solution restartSol = sol.clone();
-		Tier tier;
-		Tier tierArray[] = new Tier[24];
-		while (this.numIterNoImprov < 5) {
-			done = false;
-			while (!done) {
-				tier = null;
-				boolean noScaleIn = true;
-				for (int i = 0; i < 24; i++) {
+		// initialize the factors (one for each hour) to the default value
+		// we should use a factor for each hour and for each tier but if the
+		// number
+		// of tiers is significantly smaller than the number of iterations then
+		// it
+		// is likely that each tier will be scaled using just 1 factor for each
+		// hour
+		double[] scaleInFactors = new double[24];
+		int[] unfeasibleCounters = new int[24];
+		for (int i = 0; i < 24; i++){
+			scaleInFactors[i] = DEFAULT_SCALE_IN_FACTOR;
+			unfeasibleCounters[i]=0;
+		}
+		// This counter measure how much iterations we spend far from the
+		// optimal solution, if this grows then probably we want to stop this
+		// process since it is not likely to generate a solution better than the
+		// optimal one
+		int outOfBoundIterations = 0;
 
-					for (int j = 0; j < vettResTot.get(i).size(); j++)
-						if ((vettResTot.get(i).get(j).getCloudService() instanceof IaaS && vettResTot
-								.get(i).get(j).getCloudService().getReplicas() == 1)
-								|| (vettResTot.get(i).get(j).getCloudService() instanceof PaaS
-										&& ((PaaS) vettResTot.get(i).get(j)
-												.getCloudService())
-												.areReplicasChangeable() && vettResTot
-										.get(i).get(j).getCloudService()
-										.getReplicas() == 1))
-							vettResTot.get(i).remove(j);
+		// This counter measure how many scale in operations we try to perform
+		// but we get an unfeasible solution. If this grows then probably we are
+		// very close to the optimal number of machines
+		int numIterNoImprov = 0;
 
-					if (vettResTot.get(i).size() > 0) {
-						tier = vettResTot.get(i).get(
-								random.nextInt(vettResTot.get(i).size()));
-						moveArray[i].scaleIn(tier);
-						tierArray[i] = tier;
-						noScaleIn = false;
-					} else
-						tierArray[i] = null;
+		double boundFactor = 2.0;
+		int iteration = 0;
 
-				}
+		int numberOfTiers = sol.getHourApplication().get(0).getTiers().size();
 
-				// without any scaleIn the solution is stuck
-				if (noScaleIn) {
-					numIterNoImprov++;
-					break;
+		while (numIterNoImprov < MAX_SCALE_IN_CONV_ITERATIONS * numberOfTiers
+				&& outOfBoundIterations < MAX_OUT_OF_BOUND_ITERATIONS) {
 
-				}
+			iteration++;
+			// Log some statistics
+			String scalingFactors = "";
+			for (int i = 0; i < 24; i++)
+				scalingFactors += " h: " + i + " val: " + scaleInFactors[i];
+			logger.debug("Scale In iteration: " + iteration
+					+ " Out of bound iterations: " + outOfBoundIterations
+					+ " No improvement iterations: " + numIterNoImprov
+					+ " local optimal cost: " + localBestSolution.getCost()
+					+ " Bound Factor: " + boundFactor + " Bound: "
+					+ boundFactor * localBestSolution.getCost());
+			logger.debug("Scaling factors: " + scalingFactors);
 
-				try {
-					evalServer.EvaluateSolution(sol);
-				} catch (EvaluationException e) {
-					throw new OptimizationException("", "scaleIn", e);
-				}
-				updateBestSolution(sol);
+			// Select the tiers to scale and apply the scaling action
+			boolean noScaleIn = true;
+			Solution previousSol = sol.clone();
+			List<ArrayList<Tier>> vettResTot = generateVettResTot(sol);
+			MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
+			// scale in each hour
+			for (int hour = 0; hour < 24; hour++) {
+				Tier tier = null;
+				// remove resources with minimum number of replicas
+				vettResTot = constraintHandler.filterResourcesForScaleDown(
+						vettResTot, hour);
 
-				if (!sol.isFeasible()) {
-					int totSize = 0;
+				// if no resource can be scaled in in this hour then jump to the
+				// next one
+				if (vettResTot.get(hour).size() == 0)
+					continue;
 
-					for (int i = 0; i < 24; i++) {
-						if (!sol.getApplication(i).isFeasible()) {
-							moveArray[i].scaleOut(tierArray[i]);
-							vettResTot.get(i).remove(tierArray[i]);
-						}
-						totSize += vettResTot.get(i).size();
-					}
+				// if there are tiers that can be scaled then chose one
+				// randomly
+				// TODO: better policy then random?
+				tier = vettResTot.get(hour).get(
+						random.nextInt(vettResTot.get(hour).size()));
 
-					if (totSize == 0)
-						done = true;
+				// scale the resource by the factor
+				moveArray[hour].scaleIn(tier, scaleInFactors[hour]);
+				noScaleIn = false;
+			}
+
+			// evaluate the solution
+			try {
+				evalServer.EvaluateSolution(sol);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("", "scaleIn", e);
+			}
+
+			// if an application has become infeasible, revert it and try again
+			// with a smaller factor
+			for (int i = 0; i < 24; i++) {
+				if (!sol.getApplication(i).isFeasible()) {
+					sol.copyApplication(previousSol.getApplication(i), i);
+					unfeasibleCounters[i]++;
+					scaleInFactors[i] = 1 + (DEFAULT_SCALE_IN_FACTOR-1)/(double)unfeasibleCounters[i];
 				}
 			}
 
-			// here we have to implement the restart
+			// re-evaluate the solution (every solution here should already be
+			// cached) this just re-establish the evaluation, the feasibility
+			// and the cost in the solution
+			try {
+				evalServer.EvaluateSolution(sol);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("", "scaleIn", e);
+			}
+			
+			logger.debug("Current Solution Cost:" + sol.getCost());
 
-			// the clone could be avoided if we save the original state of the
-			// tiers
-			sol = restartSol.clone();
-			moveArray = generateArrayMoveOnVM(sol);
-			vettResTot = generateVettResTot(sol);
 
-		}// while
+			// If we couldn't perform the scale in action or if we performed it
+			// but the cost of the new solution is not smaller than the cost of
+			// the previous solutions then increase the number of iterations
+			// without an improvement
+			if (noScaleIn || previousSol.getCost() <= sol.getCost()) {
+				logger.debug("No improvement. Scaled " + !noScaleIn
+						+ " Previous Cost: " + previousSol.getCost()
+						+ " Current Cost: " + sol.getCost());
+				numIterNoImprov++;
+			}
+			
+
+			updateLocalBestSolution(sol);
+			updateBestSolution(sol);
+
+			// if the cost of the current solution is far from the best one this
+			// iteration is considered "out of bound"
+			if (sol.getCost() - localBestSolution.getCost() > boundFactor * localBestSolution.getCost()) {
+				logger.debug("Out of Bound. Scaled " + !noScaleIn
+						+ " Previous Cost: " + previousSol.getCost()
+						+ " Current Cost: " + sol.getCost() + " Bound: "
+						+ boundFactor * localBestSolution.getCost()
+						+ " Bound factor: " + boundFactor);
+				outOfBoundIterations++;
+			}
+			// if the solution is close to the optimal one then reduce the bound
+			// linearly with the amount of iterations in which we were within
+			// the bounds.
+			else {
+				boundFactor /= (double) (iteration - outOfBoundIterations);
+			}
+
+		}
+
+		logger.debug("Scale In finished");
+		if (numIterNoImprov >= MAX_SCALE_IN_CONV_ITERATIONS * numberOfTiers)
+			logger.debug("The optimal number of replicas has been found. Iterations without any further improvement: "
+					+ numIterNoImprov);
+		if (outOfBoundIterations >= MAX_OUT_OF_BOUND_ITERATIONS)
+			logger.debug("The solution is too far from the optimal one. Iterations out of bounr: "
+					+ outOfBoundIterations + " Bound Factor: " + boundFactor);
 
 	}
 
@@ -718,7 +784,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 					"Execution exception occurred in the optimization engine",
 					e);
 		} catch (CancellationException e) {
-			logger.debug("Execution was cancelled");
+			logger.info("Execution was cancelled");
 		}
 
 	}
@@ -1036,9 +1102,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 						logger.trace("Defaulting on resource Size");
 						resourceSize = dataHandler
 								.getCloudElementSizes(actualProvider,/*
-								 * cloudProvider,
-								 */serviceName, Configuration.BENCHMARK.toString())
-								 .iterator().next();
+																	 * cloudProvider
+																	 * ,
+																	 */
+								serviceName, Configuration.BENCHMARK.toString())
+								.iterator().next();
 					}
 					logger.trace("default size" + resourceSize);
 
@@ -1248,7 +1316,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		logger.info("Deserialized: " + initialSolution);
 	}
 
-	protected void makeFeasible(SolutionMulti sol) throws OptimizationException {
+	private void makeFeasible(SolutionMulti sol) throws OptimizationException {
 		for (Solution s : sol.getAll())
 			makeFeasible(s);
 	}
@@ -1259,7 +1327,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 * @param sol
 	 * @throws OptimizationException
 	 */
-	protected void makeFeasible(Solution sol) throws OptimizationException {
+	private void makeFeasible(Solution sol) throws OptimizationException {
 
 		final double MAX_FACTOR = 5;
 		final double MIN_FACTOR = 1.2;
@@ -1325,18 +1393,18 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 					logger.error("Error while evaluating the solution.", e);
 				}
 
+			// This line makes the factor decrease linearly for high nintial
+			// impact
+			// double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
+			// * numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
 
-
-			
-			 // This line makes the factor decrease linearly for high nintial impact
-//			  double factor = MAX_FACTOR - (MAX_FACTOR - MIN_FACTOR)
-//					* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
-			
-			//this line makes the factor increase linearly for more smooth initial impact (overall seems to be a better strategy since the growth is still exponential)
+			// this line makes the factor increase linearly for more smooth
+			// initial impact (overall seems to be a better strategy since the
+			// growth is still exponential)
 			double factor = MIN_FACTOR + (MAX_FACTOR - MIN_FACTOR)
 					* numberOfFeasibilityIterations / MAXFEASIBILITYITERATIONS;
 			logger.info("\tFeasibility iteration: "
-					+ numberOfFeasibilityIterations+ "factor: "+factor);
+					+ numberOfFeasibilityIterations + "factor: " + factor);
 			for (int i = 0; i < 24; i++) {
 
 				if (sol.getHourApplication().get(i).isFeasible())
@@ -1379,7 +1447,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 
 			numberOfFeasibilityIterations += 1;
 		}
-		// optimLogger.trace(sol.showStatus());
+		// logger.trace(sol.showStatus());
 		if (sol.isFeasible())
 			logger.info("Solution is feasible");
 		else
@@ -1411,7 +1479,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
 			return -1;
-		optimLogger.trace("starting the optimization");
+		logger.info("starting the optimization");
 		// start the timer
 		timer.start();
 		try {
@@ -1437,11 +1505,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		costLogImage.add(bestSolutionSerieHandler,
 				TimeUnit.MILLISECONDS.toSeconds(timer.getSplitTime()),
 				bestSolution.getCost());
-		logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
-				+ bestSolution.isFeasible());
+		// logger.warn("" + bestSolution.getCost() + ", 1 " + ", "
+		// + bestSolution.isFeasible());
 		timer.unsplit();
 
-		numberOfIterations = 1;
+		scrambleIteration = 1;
 		currentSolution = initialSolution.clone(); // the best solution is the
 
 		// evalSvr.EvaluateSolution(currentSolution);
@@ -1451,15 +1519,16 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		boolean solutionChanged = true;
 
 		if (Configuration.RELAXED_INITIAL_SOLUTION) {
+
+			logger.info("Assessing Feasibility of relaxed solution");
 			// make feasible:
 			makeFeasible(currentSolution);
-
-			optimLogger.info("Updating best solutions");
 
 			bestSolution = currentSolution.clone();
 			localBestSolution = currentSolution.clone();
 
 			// scale in:
+			logger.info("Optimizing relaxed initial solution");
 			InternalOptimization(currentSolution);
 			updateLocalBestSolution(currentSolution, true);
 			updateBestSolution(currentSolution, true);
@@ -1489,8 +1558,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 
 		while (!isMaxNumberOfIterations()) {
 
-			optimLogger.info("Iteration: " + numberOfIterations);
-			// optimLogger.trace( currentSolution.showStatus());
+			logger.info("Scramble Iteration: " + scrambleIteration);
+			// logger.trace( currentSolution.showStatus());
 
 			// 2: Internal Optimization process
 
@@ -1500,24 +1569,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			// //////////////////
 			if (bestSolutionUpdated && Configuration.REDISTRIBUTE_WORKLOAD) {
 
-				optimLogger
-						.info("The best solution did change, so let's redistribuite the workload...");
+				logger.debug("The best solution did change, so let's redistribuite the workload...");
 
 				currentSolution = bestSolution.clone();
 
-				optimLogger.trace(currentSolution.showWorkloadPercentages());
+				logger.trace(currentSolution.showWorkloadPercentages());
 				setWorkloadPercentagesFromMILP(currentSolution);
-				optimLogger.trace("MILP:\n"
+				logger.trace("MILP:\n"
 						+ currentSolution.showWorkloadPercentages());
 
-				optimLogger.debug(currentSolution.showWorkloadPercentages());
+				logger.debug(currentSolution.showWorkloadPercentages());
 				maximizeWorkloadPercentagesForLeastUsedTier(currentSolution);
-				optimLogger.debug(currentSolution.showWorkloadPercentages());
+				logger.debug(currentSolution.showWorkloadPercentages());
 
-				optimLogger.debug("My method:\n"
+				logger.debug("My method:\n"
 						+ currentSolution.showWorkloadPercentages());
 
-				optimLogger.info("Updating best solutions");
+				logger.info("Updating best solutions");
 
 				// both sohuld be feasible
 				bestSolution = currentSolution.clone();
@@ -1535,7 +1603,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			// 3: check whether the best solution has changed
 			// If the current solution is better than the best one it becomes
 			// the new best solution.
-			optimLogger.info("Updating best solutions");
+			logger.info("Updating best solutions");
 			updateLocalBestSolution(currentSolution);
 			updateBestSolution(currentSolution);
 
@@ -1545,8 +1613,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			// restrittivo.
 
 			// 4 Scrambling the current solution.
-			optimLogger.info("Scramble");
-			optimLogger.info("Tabu List Size: " + tabuSolutionList.size());
+			logger.info("Executing: Scramble");
+			logger.info("Tabu List Size: " + tabuSolutionList.size());
 
 			if (Configuration.isPaused())
 				waitForResume();
@@ -1556,24 +1624,23 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			// found we need to perform some diversification (using the
 			// long-ferm memory)
 			if (!solutionChanged) {
-				optimLogger
-						.info("Stuck in a local optimum, using long term memory");
+				logger.info("Stuck in a local optimum, using long term memory");
 				currentSolution = longTermMemoryRestart(currentSolution);
-				optimLogger.info("Long term memory statistics:");
+				logger.info("Long term memory statistics:");
 				for (Tier t : currentSolution.get(0).getApplication(0)
 						.getTiers()) {
-					optimLogger.info("\tTier: " + t.getPcmName() + " Size: "
+					logger.info("\tTier: " + t.getPcmName() + " Size: "
 							+ longTermFrequencyMemory.get(t.getId()).size());
 				}
 				localBestSolution = currentSolution.clone();
 
 			}
 
-			setProgress((numberOfIterations * 100 / MAX_SCRUMBLE_ITERS));
+			setProgress((scrambleIteration * 100 / MAX_SCRUMBLE_ITERS));
 			// increment the number of iterations
-			numberOfIterations += 1;
-			firePropertyChange("iteration", numberOfIterations - 1,
-					numberOfIterations);
+			scrambleIteration += 1;
+			firePropertyChange("iteration", scrambleIteration - 1,
+					scrambleIteration);
 
 		}
 
@@ -1600,9 +1667,9 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		}
 
 		// dump memory
-		scrambleLogger.debug("MemoryDump");
+		logger.debug("MemoryDump");
 		for (String s : tabuSolutionList.keySet()) {
-			scrambleLogger.debug(s);
+			logger.debug(s);
 		}
 
 		try {
@@ -1904,16 +1971,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		return currentSolution;
 	}
 
-	protected void resetNoImprovementCounter() {
-
-		this.numIterNoImprov = 0;
-	}
-
-	protected boolean scramble(Solution sol, Tier selectedTier, int iterations)
+	private boolean scramble(Solution sol, Tier selectedTier, int iterations)
 			throws OptimizationException {
 		MoveTypeVM moveVM = new MoveTypeVM(sol);
 
-		scrambleLogger.debug("Selected Tier:" + selectedTier.getPcmName());
+		logger.debug("Selected Tier:" + selectedTier.getPcmName());
 		// Phase2: Retrieve resources that can be exchanged with the current
 		// one
 		CloudService origRes = selectedTier.getCloudService();
@@ -1931,9 +1993,8 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		// if no resource can substitute the current one increase the number
 		// of iterations without a change and try again
 		if (resList.size() == 0) {
-			scrambleLogger
-					.warn("No resource found for scramble after constraint check, iteration: "
-							+ iterations);
+			logger.warn("No resource found for scramble after constraint check, iteration: "
+					+ iterations);
 			return false;
 		}
 
@@ -1941,13 +2002,12 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		// if no resource can substitute the current one increase the number
 		// of iterations without a change and try again
 		if (resList.size() == 0) {
-			scrambleLogger.debug("MemoryDump");
+			logger.debug("MemoryDump");
 			for (String s : tabuSolutionList.keySet()) {
-				scrambleLogger.debug(s);
+				logger.debug(s);
 			}
-			scrambleLogger
-					.warn("No resource found for scramble after memory check, iteration: "
-							+ iterations);
+			logger.warn("No resource found for scramble after memory check, iteration: "
+					+ iterations);
 			return false;
 		}
 
@@ -1974,19 +2034,19 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		CloudService newRes = resList.get(index);
 
 		// debugging
-		// scrambleLogger.debug("Sorted Resources");
+		// logger.debug("Sorted Resources");
 		// for (IaaS res : resList) {
 		// if (newRes.equals(res))
-		// scrambleLogger.debug("Index: " + resList.indexOf(res)
+		// logger.debug("Index: " + resList.indexOf(res)
 		// + " res: " + res.getResourceName() + " value: "
 		// + getEfficiency(res, sol.getRegion())
 		// + " <--- SELECTED");
 		// else
-		// scrambleLogger.debug("Index: " + resList.indexOf(res)
+		// logger.debug("Index: " + resList.indexOf(res)
 		// + " res:" + res.getResourceName() + " value: "
 		// + getEfficiency(res, sol.getRegion()));
 		// }
-		// scrambleLogger.debug("Selected index:" + resList.indexOf(newRes));
+		// logger.debug("Selected index:" + resList.indexOf(newRes));
 
 		// Phase4: performs the change and evaluate the solution
 		// add the new configuration in the memory
@@ -1998,7 +2058,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		}
 
 		tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol), null);
-		scrambleLogger.debug("Memory size " + tabuSolutionList.size());
+		logger.debug("Memory size " + tabuSolutionList.size());
 		return true;
 	}
 
@@ -2017,7 +2077,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 * @throws OptimizationException
 	 * @throws ConstraintEvaluationException
 	 */
-	protected boolean scramble(Solution sol) throws OptimizationException {
+	private boolean scramble(Solution sol) throws OptimizationException {
 		/**
 		 * 
 		 * 1) Choose the candidate tier for the VM change (possible strategies:
@@ -2036,7 +2096,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 		boolean done = false; // tells if something has changed
 		int iterations = 0; // number of iterations without a change in the
 		// solution
-		scrambleLogger.debug("iteration: " + numberOfIterations);
+		logger.debug("iteration: " + scrambleIteration);
 
 		// try to performe the change until something has actually changed or we
 		// give up
@@ -2046,7 +2106,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 
 			List<Tier> tierList = sol.getApplication(0).getTiers();
 			Tier selectedTier = tierList.get(random.nextInt(tierList.size()));
-			// scrambleLogger.debug("Selected Tier:" + selectedTier.getName());
+			// logger.debug("Selected Tier:" + selectedTier.getName());
 			// // Phase2: Retrieve resources that can be exchanged with the
 			// current
 			// // one
@@ -2066,7 +2126,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			// number
 			// // of iterations without a change and try again
 			// if (resList.size() == 0) {
-			// scrambleLogger
+			// logger
 			// .warn("No resource found for scramble after constraint check, iteration: "
 			// + iterations);
 			// iterations++;
@@ -2078,11 +2138,11 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			// number
 			// // of iterations without a change and try again
 			// if (resList.size() == 0) {
-			// scrambleLogger.debug("MemoryDump");
+			// logger.debug("MemoryDump");
 			// for (String s : tabuSolutionList.keySet()) {
-			// scrambleLogger.debug(s);
+			// logger.debug(s);
 			// }
-			// scrambleLogger
+			// logger
 			// .warn("No resource found for scramble after memory check, iteration: "
 			// + iterations);
 			// iterations++;
@@ -2114,19 +2174,19 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			// CloudService newRes = resList.get(index);
 			//
 			// // debugging
-			// // scrambleLogger.debug("Sorted Resources");
+			// // logger.debug("Sorted Resources");
 			// // for (IaaS res : resList) {
 			// // if (newRes.equals(res))
-			// // scrambleLogger.debug("Index: " + resList.indexOf(res)
+			// // logger.debug("Index: " + resList.indexOf(res)
 			// // + " res: " + res.getResourceName() + " value: "
 			// // + getEfficiency(res, sol.getRegion())
 			// // + " <--- SELECTED");
 			// // else
-			// // scrambleLogger.debug("Index: " + resList.indexOf(res)
+			// // logger.debug("Index: " + resList.indexOf(res)
 			// // + " res:" + res.getResourceName() + " value: "
 			// // + getEfficiency(res, sol.getRegion()));
 			// // }
-			// // scrambleLogger.debug("Selected index:" +
+			// // logger.debug("Selected index:" +
 			// resList.indexOf(newRes));
 			//
 			//
@@ -2141,7 +2201,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			//
 			// tabuSolutionList.put(SolutionHelper.buildSolutionTypeID(sol),
 			// null);
-			// scrambleLogger.debug("Memory size " + tabuSolutionList.size());
+			// logger.debug("Memory size " + tabuSolutionList.size());
 			// done = true;
 
 			done = scramble(sol, selectedTier, iterations);
@@ -2231,7 +2291,7 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 
 	}
 
-	protected boolean scramble(SolutionMulti sol) throws OptimizationException {
+	private boolean scramble(SolutionMulti sol) throws OptimizationException {
 
 		boolean change = false;
 		for (Solution s : sol.getAll())
@@ -2283,14 +2343,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	 *            new solution
 	 * @return true if sol has become the new best solution
 	 */
-	protected boolean checkBestSolution(Solution sol, boolean force) {
+	private boolean checkBestSolution(Solution sol, boolean force) {
 		if (force || sol.greaterThan(bestSolution)) {
 			Solution clone = sol.clone();
 			bestSolution.add(clone);
 			timer.split();
-			clone.setGenerationIteration(numberOfIterations);
+			clone.setGenerationIteration(scrambleIteration);
 			clone.setGenerationTime(timer.getSplitTime());
-			bestSolution.setGenerationIteration(numberOfIterations);
+			bestSolution.setGenerationIteration(scrambleIteration);
 			bestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
 
@@ -2302,28 +2362,28 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 				// "BSEAddedValue", false, true));
 			}
 
-			optimLogger.info("updated best solution");
+			logger.info("updated best solution");
 			return true;
 		}
 		return false;
 	}
 
-	protected boolean updateBestSolution(Solution sol) {
+	private boolean updateBestSolution(Solution sol) {
 		return updateBestSolution(sol, false);
 	}
 
-	protected boolean updateBestSolution(Solution sol, boolean force) {
+	private boolean updateBestSolution(Solution sol, boolean force) {
 		boolean result = checkBestSolution(sol, force);
 		if (result)
 			updateCostLogImage(bestSolution, bestSolutionSerieHandler);
 		return result;
 	}
 
-	protected void updateBestSolution(SolutionMulti sol) {
+	private void updateBestSolution(SolutionMulti sol) {
 		updateBestSolution(sol, false);
 	}
 
-	protected void updateBestSolution(SolutionMulti sol, boolean force) {
+	private void updateBestSolution(SolutionMulti sol, boolean force) {
 		boolean updated = false;
 		for (Solution s : sol.getAll())
 			updated = updated || checkBestSolution(s, force);
@@ -2332,15 +2392,15 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 	}
 
 	private void updateCostLogImage(SolutionMulti solution, String seriesHandler) {
-		logger.warn("" + solution.getCost() + ", "
-				+ TimeUnit.MILLISECONDS.toSeconds(solution.getGenerationTime())
-				+ ", " + solution.isFeasible());
+		// logger.warn("" + solution.getCost() + ", "
+		// + TimeUnit.MILLISECONDS.toSeconds(solution.getGenerationTime())
+		// + ", " + solution.isFeasible());
 		costLogImage.add(seriesHandler,
 				TimeUnit.MILLISECONDS.toSeconds(solution.getGenerationTime()),
 				solution.getCost());
 	}
 
-	protected boolean checkLocalBestSolution(Solution sol, boolean force) {
+	private boolean checkLocalBestSolution(Solution sol, boolean force) {
 		if (force || sol.greaterThan(localBestSolution)) {
 
 			// updating the best solution
@@ -2348,33 +2408,32 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			// String filename = bestTmpSol + bestTmpSolIndex+".xml";
 			// sol.exportLight(filename);
 			localBestSolution.add(sol.clone());
-			this.numIterNoImprov = 0;
 			timer.split();
-			localBestSolution.setGenerationIteration(numberOfIterations);
+			localBestSolution.setGenerationIteration(scrambleIteration);
 			localBestSolution.setGenerationTime(timer.getSplitTime());
 			timer.unsplit();
-			optimLogger.info("updated local best solution");
+			logger.info("updated local best solution");
 			return true;
 		}
 		return false;
 	}
 
-	protected boolean updateLocalBestSolution(Solution sol, boolean force) {
+	private boolean updateLocalBestSolution(Solution sol, boolean force) {
 		boolean result = checkLocalBestSolution(sol, force);
 		if (result)
 			updateCostLogImage(localBestSolution, localBestSolutionSerieHandler);
 		return result;
 	}
 
-	protected boolean updateLocalBestSolution(Solution sol) {
+	private boolean updateLocalBestSolution(Solution sol) {
 		return updateLocalBestSolution(sol, false);
 	}
 
-	protected void updateLocalBestSolution(SolutionMulti sol) {
+	private void updateLocalBestSolution(SolutionMulti sol) {
 		updateLocalBestSolution(sol, false);
 	}
 
-	protected void updateLocalBestSolution(SolutionMulti sol, boolean force) {
+	private void updateLocalBestSolution(SolutionMulti sol, boolean force) {
 		boolean updated = false;
 		for (Solution s : sol.getAll())
 			updated = updated || checkLocalBestSolution(s, force);
@@ -2382,11 +2441,14 @@ public class OptEngine extends SwingWorker<Void, Void> implements
 			updateCostLogImage(localBestSolution, localBestSolutionSerieHandler);
 	}
 
-	protected void loadConfiguration() {
+	private void loadConfiguration() {
 		MAXFEASIBILITYITERATIONS = Configuration.FEASIBILITY_ITERS;
 		MAX_SCRUMBLE_ITERS = Configuration.SCRUMBLE_ITERS;
 		MAXMEMORYSIZE = Configuration.TABU_MEMORY_SIZE;
 		SELECTION_POLICY = Configuration.SELECTION_POLICY;
+		DEFAULT_SCALE_IN_FACTOR = Configuration.SCALE_IN_FACTOR;
+		MAX_OUT_OF_BOUND_ITERATIONS = Configuration.SCALE_IN_ITERS;
+		MAX_SCALE_IN_CONV_ITERATIONS = Configuration.SCALE_IN_CONV_ITERS;
 	}
 
 	@Override

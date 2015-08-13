@@ -40,6 +40,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -97,10 +99,6 @@ public class Solution implements Cloneable, Serializable {
 	/** The Region. */
 	private String region;
 
-//	/** The Cost. */
-//	private double cost = 0;
-	
-//	private double hourlyCosts[] = new double[24];
 	
 	/** The evaluation. */
 	private List<HashMap<Constraint, Boolean>> evaluation;
@@ -568,7 +566,10 @@ public class Solution implements Cloneable, Serializable {
 		totalCost = cost;
 		costsUpdated = false;
 		
-		return cost;
+		//rounf the cost to 2 decimals
+		totalCost = new BigDecimal(totalCost).setScale(2, RoundingMode.HALF_UP).doubleValue();
+		
+		return totalCost;
 	}
 	
 	/**
@@ -901,17 +902,6 @@ public class Solution implements Cloneable, Serializable {
 		return feasible;
 	}
 	
-	/**
-	 * Sets the cost.
-	 * 
-	 * @param totalCost
-	 *            the new cost
-	 */
-//	public void setCost(int h, double totalCost) {
-////		this.cost = totalCost;
-//		hourlyCosts[h] = totalCost;
-//
-//	}
 	
 	@SuppressWarnings("unused")
 	private boolean isTierIdValid(String tierId) {
@@ -933,6 +923,8 @@ public class Solution implements Cloneable, Serializable {
 //		if (!isTierIdValid(tierId))
 //			return;
 		
+		double cost = new BigDecimal(totalCost).setScale(2, RoundingMode.HALF_UP).doubleValue();
+		
 		Double[] hourlyCosts = hourlyCostsByTier.get(tierId);
 		if (hourlyCosts == null) {
 			hourlyCosts = new Double[24];
@@ -941,10 +933,10 @@ public class Solution implements Cloneable, Serializable {
 			hourlyCostsByTier.put(tierId, hourlyCosts);
 		}
 		
-		if (hourlyCosts[h].doubleValue() != totalCost)
+		if (hourlyCosts[h].doubleValue() != cost)
 			costsUpdated = true;
 		
-		hourlyCosts[h] = totalCost;
+		hourlyCosts[h] = cost;
 	}
 
 

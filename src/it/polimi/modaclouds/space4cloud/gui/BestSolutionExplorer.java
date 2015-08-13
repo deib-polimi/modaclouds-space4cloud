@@ -1,6 +1,6 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
+import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -31,13 +31,13 @@ public class BestSolutionExplorer extends WindowAdapter implements ActionListene
 	private JButton btnNext;
 	private GridBagConstraints gbc_solutionPanel;
 	
-	private OptEngine engine = null;
+	private OptimizationEngine engine = null;
 	
 
 	/**
 	 * Create the application.
 	 */
-	private BestSolutionExplorer(OptEngine engine) {
+	private BestSolutionExplorer(OptimizationEngine engine) {
 		this.engine = engine;
 		addPropertyChangeListener(engine);
 		engine.addPropertyChangeListener(this);
@@ -111,7 +111,7 @@ public class BestSolutionExplorer extends WindowAdapter implements ActionListene
 	 * Shows the window with the set of solutions specified. If the window has already shown it updates  the window according to the specified solutions
 	 * @param solutions
 	 */
-	public static void show(OptEngine engine){
+	public static void show(OptimizationEngine engine){
 		prepare(engine);
 		
 		show();
@@ -122,7 +122,7 @@ public class BestSolutionExplorer extends WindowAdapter implements ActionListene
 	 * Create the window with the set of solutions specified without showing it.
 	 * @param solutions
 	 */
-	public static void prepare(OptEngine engine){
+	public static void prepare(OptimizationEngine engine){
 		if (!prepared)
 			new BestSolutionExplorer(engine);
 	}

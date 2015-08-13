@@ -32,8 +32,7 @@ import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
 import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
-import it.polimi.modaclouds.space4cloud.optimization.OptEngine;
-import it.polimi.modaclouds.space4cloud.optimization.PartialEvaluationOptimizationEngine;
+import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintLoadingException;
@@ -94,7 +93,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 	private static AssessmentWindow assesmentWindow;
 	private static RobustnessProgressWindow robustnessWindow;
-	private OptEngine engine = null;	
+	private OptimizationEngine engine = null;	
 	private static final Logger logger = LoggerFactory.getLogger(Space4Cloud.class);
 	public static final Logger consoleLogger = LoggerFactory.getLogger("ConsoleLogger");
 	private boolean batch;
@@ -387,7 +386,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 
 		try {
-			engine = new PartialEvaluationOptimizationEngine(
+			engine = new OptimizationEngine(
 					constraintHandler, true);
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new AssesmentException("",e);			
@@ -511,7 +510,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		logger.info("Loading the optimization engine and perparing the solver");
 
 		try {
-			engine = new PartialEvaluationOptimizationEngine(constraintHandler, batch);
+			engine = new OptimizationEngine(constraintHandler, batch);
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new OptimizationException("Optinization error. ",e);		
 		}
