@@ -15,39 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.mainProgram;
 
-import it.polimi.modaclouds.qos_models.schema.ClosedWorkload;
-import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
-import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
-import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
-import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
-import it.polimi.modaclouds.qos_models.util.XMLHelper;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
-import it.polimi.modaclouds.space4cloud.exceptions.AssesmentException;
-import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
-import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
-import it.polimi.modaclouds.space4cloud.exceptions.RobustnessException;
-import it.polimi.modaclouds.space4cloud.gui.AssessmentWindow;
-import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
-import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
-import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
-import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
-import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandlerFactory;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintLoadingException;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandler;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandlerFactory;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
-import it.polimi.modaclouds.space4cloud.utils.DataExporter;
-import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
-import it.polimi.modaclouds.space4cloud.utils.PalladioRunException;
-import it.polimi.modaclouds.space4cloud.utils.PluginConsoleAppender;
-import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -87,7 +54,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkload;
+import it.polimi.modaclouds.qos_models.schema.ClosedWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkload;
+import it.polimi.modaclouds.qos_models.schema.OpenWorkloadElement;
+import it.polimi.modaclouds.qos_models.schema.UsageModelExtensions;
+import it.polimi.modaclouds.qos_models.util.XMLHelper;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
+import it.polimi.modaclouds.space4cloud.exceptions.AssesmentException;
+import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
+import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
+import it.polimi.modaclouds.space4cloud.exceptions.RobustnessException;
+import it.polimi.modaclouds.space4cloud.gui.AssessmentWindow;
+import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
+import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
+import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
+import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
+import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandlerFactory;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintLoadingException;
+import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandler;
+import it.polimi.modaclouds.space4cloud.optimization.evaluation.LineServerHandlerFactory;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
+import it.polimi.modaclouds.space4cloud.utils.DataExporter;
+import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
+import it.polimi.modaclouds.space4cloud.utils.PalladioRunException;
+import it.polimi.modaclouds.space4cloud.utils.PluginConsoleAppender;
+import it.polimi.modaclouds.space4cloud.utils.RunConfigurationsHandler;
+
 public class Space4Cloud extends Thread implements PropertyChangeListener{
+
+
+
 
 	private static OptimizationProgressWindow progressWindow;
 
@@ -101,6 +104,20 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 	private File initialSolution = null, initialMce = null;
 	private String batchConfigurationFile;
 	private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+	
+	
+	//Properties fired 
+	public static final String INITIALIZATION_COMPLEATED="Inizialied";
+	public static final String TRANSFORMATION_COMPLEATED="PCM2LQNCompleated";
+	public static final String RELAXED_SOLUTION_GENERATED = "RelaxedSolutionGenerated";
+	public static final String SOLUTION_INITIALIZED="Solution Initialized";
+	public static final String OPTIMIZATION_ENDED="optimizationEnded";
+	public static final String ROBUSTNESS_CLOSED = "robustnessClosed";
+	public static final String ASSESSMENT_ENDED = "assessmentEnded";
+	public static final String ASSESSMENT_CLOSED = "assessmentClosed";
+	public static final String ROBUSTNESS_ENDED = "robustnessEnded";
+	
+	
 
 
 
@@ -242,8 +259,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		RunConfigurationsHandler runConfigHandler = new RunConfigurationsHandler();
 
 		refreshProject();
+
+
+		pcs.firePropertyChange(INITIALIZATION_COMPLEATED, false, true);
 		// launch it
 		consoleLogger.info("Launching Palladio transformation.");
+
+		
 		try {
 			runConfigHandler.launch();
 		} catch (PalladioRunException e) {
@@ -259,6 +281,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				ConsolePlugin.getDefault().getConsoleManager().showConsoleView(c);				
 		}
 		consoleLogger.info("Transformation terminated");
+		pcs.firePropertyChange(TRANSFORMATION_COMPLEATED, false, true);
+		
 
 
 		// Build the folder structure to host results and copy the LQN model in
@@ -303,6 +327,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 
 		if (Configuration.RELAXED_INITIAL_SOLUTION && Configuration.FUNCTIONALITY == Operation.Optimization) {
 			performGenerateInitialSolution();
+			pcs.firePropertyChange(RELAXED_SOLUTION_GENERATED, false, true);
 		}
 
 		processEnded = false;
@@ -405,7 +430,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			throw new AssesmentException("",e);			
 		}
 
-
+		pcs.firePropertyChange(SOLUTION_INITIALIZED, false, true);
+		
 
 		SolutionMulti providedSolution = engine.getInitialSolution();
 
@@ -555,6 +581,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 //		}
 
 		// start the optimization
+		pcs.firePropertyChange(SOLUTION_INITIALIZED, false, true);
+		
 		logger.info("Starting the optimization");
 		engine.execute();
 	}
@@ -1296,7 +1324,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		if(evt.getSource().equals(engine) && evt.getPropertyName().equals("state") && evt.getNewValue()== StateValue.DONE && !engine.isCancelled()){
 			consoleLogger.info("Optimization ended");		
 			processEnded = true;
-			pcs.firePropertyChange("optimizationEnded", false, true);
+			pcs.firePropertyChange(OPTIMIZATION_ENDED, false, true);
 			
 			if(!batch)
 				progressWindow.signalCompletion();
@@ -1314,7 +1342,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 				engine.cancel(true);
 			}
 			consoleLogger.info("Optimization Process cancelled by the user");
-			pcs.firePropertyChange("optimizationEnded", false, true);
+			pcs.firePropertyChange(OPTIMIZATION_ENDED, false, true);
 			cleanResources();
 		}else if (evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("InspectSolution")){
 			if(engine!=null)
@@ -1323,7 +1351,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 			//stop the optimization process if the user closes the window	
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed") && !processEnded){
 			consoleLogger.info("Robustness Process cancelled by the user");
-			pcs.firePropertyChange("robustnessClosed", false, true);
+			pcs.firePropertyChange(ROBUSTNESS_CLOSED, false, true);
 			try {
 				executor.shutdownNow();
 			} catch (Exception e) { }
@@ -1331,18 +1359,18 @@ public class Space4Cloud extends Thread implements PropertyChangeListener{
 		} else if(evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")){
 			consoleLogger.info("Robustness ended");
 			processEnded = true;
-			pcs.firePropertyChange("robustnessEnded", false, true);
+			pcs.firePropertyChange(ROBUSTNESS_ENDED, false, true);
 			if(!batch)
 				robustnessWindow.signalCompletion();
 			cleanResources();
 		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("WindowClosed") && !processEnded){
 			consoleLogger.info("Assessment window closed");
-			pcs.firePropertyChange("assessmentClosed", false, true);
+			pcs.firePropertyChange(ASSESSMENT_CLOSED, false, true);
 			cleanResources();
 		} else if(evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("AssessmentEnded")){
 			consoleLogger.info("Assessment ended");
 			processEnded = true;
-			pcs.firePropertyChange("assessmentEnded", false, true);
+			pcs.firePropertyChange(ASSESSMENT_ENDED, false, true);
 			cleanResources();
 		} else if (progressWindow != null && (evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED) || evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_ADDED_VALUE))) {
 			progressWindow.propertyChange(evt);
