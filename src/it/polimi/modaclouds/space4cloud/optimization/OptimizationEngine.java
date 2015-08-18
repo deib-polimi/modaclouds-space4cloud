@@ -391,7 +391,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements
 			Functionality selectedFun = null;
 			// with random policy
 			if (policy == Policy.Random)
-				selectedFun = functionalityChain.get(new Random()
+				selectedFun = functionalityChain.get(random
 						.nextInt(functionalityChain.size()));
 
 			// just the first of the list
