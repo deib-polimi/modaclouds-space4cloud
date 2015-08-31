@@ -1,8 +1,8 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
-
 import java.util.Map;
+
+import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
 
 public interface IPercentileRTConstrainable extends IResponseTimeConstrainable {
 	

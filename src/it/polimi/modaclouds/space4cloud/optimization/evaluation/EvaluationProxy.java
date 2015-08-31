@@ -15,17 +15,18 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 
 /*
  * This class define a proxy object able to verify if a application has been already evaluated
@@ -53,11 +54,15 @@ public class EvaluationProxy extends EvaluationServer {
 	}
 
 	@Override
-	public void EvaluateSolution(Solution sol) throws EvaluationException {
+	public void EvaluateSolution(SolutionMulti solution) throws EvaluationException {
 		logger.debug("Entering Proxy");
-		this.ProxyIn(sol);
-		super.EvaluateSolution(sol);
-		this.ProxyOut(sol);
+		for (Solution sol : solution.getAll())
+			this.ProxyIn(sol);
+
+		super.EvaluateSolution(solution);
+
+		for (Solution sol : solution.getAll())
+			this.ProxyOut(sol);
 	}
 
 	public int getHit() {
@@ -65,7 +70,7 @@ public class EvaluationProxy extends EvaluationServer {
 	}
 
 	public void ProxyIn(Solution sol) {
-		
+
 		int missedEvaluations = 0;
 		if (!enabled)
 			return;
@@ -78,25 +83,25 @@ public class EvaluationProxy extends EvaluationServer {
 					LqnResultParser results = map.get(str);
 					instance.updateResults(results);
 					instance.setEvaluated(true);
-				}
-				else
+				} else
 					missedEvaluations++;
 			}
 		}
-		profileLogger.info(requestedEvaluations+","+missedEvaluations);
-		
+		sol.updateEvaluation();
+		profileLogger.info(requestedEvaluations + "," + missedEvaluations);
+
 	}
 
-	public Solution ProxyOut(Solution sol) {
+	public void ProxyOut(Solution sol) {
 		if (!enabled)
-			return sol;
+			return ;
 
 		for (Instance instance : sol.getApplications()) {
 			miss++;
-			String hashStr = instance.getHashString();			
+			String hashStr = instance.getHashString();
 			map.put(hashStr, instance.getResultParser());
 		}
-		return sol;
+		return ;
 	}
 
 	public void setEnabled(boolean enabled) {
@@ -107,9 +112,9 @@ public class EvaluationProxy extends EvaluationServer {
 	public void showStatistics() {
 		super.showStatistics();
 		logger.debug("Proxy statistics:");
-		logger.debug("Hit count: "+getHit());
-		logger.debug("Miss count: "+getMiss());
-		
+		logger.debug("Hit count: " + getHit());
+		logger.debug("Miss count: " + getMiss());
+
 	}
 
 }

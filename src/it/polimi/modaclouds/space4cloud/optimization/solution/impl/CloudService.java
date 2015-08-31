@@ -15,11 +15,11 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 
 /**
  * @author MODAClouds The abstract class CloudService define the general Cloud

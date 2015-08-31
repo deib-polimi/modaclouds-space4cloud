@@ -1,8 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -34,6 +31,9 @@ import javax.swing.event.ChangeListener;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Operation;
 
 public class ConfigurationWindow extends JFrame implements WindowListener, ActionListener, PropertyChangeListener, ChangeListener {
 

@@ -15,14 +15,14 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.constraints;
 
+import java.util.UUID;
+
 import it.polimi.modaclouds.qos_models.schema.Constraint;
 import it.polimi.modaclouds.qos_models.schema.QosMetricAggregation;
 import it.polimi.modaclouds.qos_models.schema.Range;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
-
-import java.util.UUID;
 
 public class UsageConstraint extends QoSConstraint {
 

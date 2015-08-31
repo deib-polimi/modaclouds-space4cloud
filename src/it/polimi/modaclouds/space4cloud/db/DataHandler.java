@@ -18,6 +18,17 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.emf.common.util.EList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
@@ -49,17 +60,6 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SQL;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.TableDatastore;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
-
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.eclipse.emf.common.util.EList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Michele Ciavotta the aim of this class is to provide an object able

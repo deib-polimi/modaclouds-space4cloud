@@ -15,15 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.lqn;
 
-import it.polimi.modaclouds.space4cloud.schemas.line.CmcqnModel;
-import it.polimi.modaclouds.space4cloud.schemas.line.Percentile;
-import it.polimi.modaclouds.space4cloud.schemas.line.Processor;
-import it.polimi.modaclouds.space4cloud.schemas.line.ResponseTimeDistribution;
-import it.polimi.modaclouds.space4cloud.schemas.line.SEFF;
-import it.polimi.modaclouds.space4cloud.schemas.line.Station;
-import it.polimi.modaclouds.space4cloud.schemas.line.Workload;
-import it.polimi.modaclouds.space4cloud.utils.XMLHelper;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -55,6 +46,15 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+
+import it.polimi.modaclouds.space4cloud.schemas.line.CmcqnModel;
+import it.polimi.modaclouds.space4cloud.schemas.line.Percentile;
+import it.polimi.modaclouds.space4cloud.schemas.line.Processor;
+import it.polimi.modaclouds.space4cloud.schemas.line.ResponseTimeDistribution;
+import it.polimi.modaclouds.space4cloud.schemas.line.SEFF;
+import it.polimi.modaclouds.space4cloud.schemas.line.Station;
+import it.polimi.modaclouds.space4cloud.schemas.line.Workload;
+import it.polimi.modaclouds.space4cloud.utils.XMLHelper;
 
 public class LINEResultParser extends LqnResultParser implements Serializable {
 

@@ -16,22 +16,6 @@
 
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.space4cloud.chart.GenericChart;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
-import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
-import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-import it.polimi.modaclouds.space4cloud.utils.Cache;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
-import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -49,6 +33,22 @@ import org.apache.commons.lang.time.StopWatch;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Cache;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
+import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
 
 /**
  * @author Michele Ciavotta
@@ -76,7 +76,7 @@ public class EvaluationServer implements ActionListener {
 	protected GenericChart<XYSeriesCollection> logVm;
 	protected GenericChart<XYSeriesCollection> logConstraint;
 
-	protected StopWatch timer = new StopWatch();
+	protected StopWatch timer;
 	protected long costEvaluationTime = 0;
 	protected int costEvaluations = 0;
 	protected long evaluationTime = 0;
@@ -100,7 +100,6 @@ public class EvaluationServer implements ActionListener {
 			lineHandler = LineServerHandlerFactory.getHandler();
 			lineHandler.connectToLINEServer();
 		}
-		timer.start();
 
 	}
 
@@ -307,20 +306,19 @@ public class EvaluationServer implements ActionListener {
 
 
 
-	/**
-	 * Evaluates a single cloud solution and updates the image loggers
-	 * @param sol
-	 * @throws EvaluationException
-	 */
-	public void EvaluateSolution(Solution sol) throws EvaluationException{
-		try{
-			runEvaluation(sol);
-		}catch(EvaluationException e){
-			throw e;
-		}
-		updateLogImage(sol);
-		timer.unsplit();
-	}
+//	/**
+//	 * Evaluates a single cloud solution and updates the image loggers
+//	 * @param sol
+//	 * @throws EvaluationException
+//	 */
+//	public void EvaluateSolution(Solution sol) throws EvaluationException{
+//		try{
+//			runEvaluation(sol);
+//		}catch(EvaluationException e){
+//			throw e;
+//		}		
+//		updateLogImage(sol);		
+//	}
 
 
 	/**
@@ -333,7 +331,6 @@ public class EvaluationServer implements ActionListener {
 			runEvaluation(s);	
 		sol.updateEvaluation();
 		updateLogImage(sol);
-		timer.unsplit();
 	}
 
 	/**
@@ -465,13 +462,7 @@ public class EvaluationServer implements ActionListener {
 	 * @throws EvaluationException
 	 */
 	private void runEmptyEvaluation(Solution sol) throws EvaluationException {
-
-		if (sol.hasAtLeastOneReplicaInOneHour()) {
-			EvaluateSolution(sol);
-			logger.error("Evaluating a not empty solution with the wrong function, this should never happen!");
-			return;
-		}
-
+		
 		error = false;
 		if (!sol.isEvaluated()) {
 			ArrayList<Instance> instanceList = sol.getHourApplication();
@@ -803,21 +794,6 @@ public class EvaluationServer implements ActionListener {
 		}
 	}
 
-	public void StartTimer() {
-		try{
-			timer.start();
-		}catch(IllegalStateException e) {
-			logger.warn("Starting a timer that was already started");
-		}
-	}
 
-	public void StopTimer() {
-		try{
-			timer.stop();
-			timer.reset();
-		}catch(IllegalStateException e) {
-			logger.warn("Stopping a timer that was not running");
-		}
-	}
 
 }

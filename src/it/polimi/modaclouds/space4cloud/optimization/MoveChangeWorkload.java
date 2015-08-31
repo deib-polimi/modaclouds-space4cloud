@@ -1,9 +1,5 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +8,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
+
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Rounder;
+import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 public class MoveChangeWorkload extends AbsMove {
 
@@ -66,12 +67,12 @@ public class MoveChangeWorkload extends AbsMove {
 			return this;
 
 		for (int i = 0; i < 24; ++i) {
-			if (rates[i] < 0.0)
-				rates[i] = 0.0;
-			else if (rates[i] > 1.0)
-				rates[i] = 1.0;
+			if (rates[i] < 0)
+				rates[i] = 0;
+			else if (rates[i] > 1)
+				rates[i] = 1;
 			
-			hourly.get(i).modifyWorkload(populations[i], rates[i]);
+			hourly.get(i).modifyWorkload(populations[i], Rounder.round(rates[i]));
 		}
 
 		apply();
@@ -96,10 +97,10 @@ public class MoveChangeWorkload extends AbsMove {
 		else if (hour > 23)
 			hour = 23;
 		
-		if (rate < 0.0)
-			rate = 0.0;
-		else if (rate > 1.0)
-			rate = 1.0;
+		if (rate < 0)
+			rate = 0;
+		else if (rate > 1)
+			rate = 1;
 		
 		
 		UsageModelExtensionParser usageModelParser = new UsageModelExtensionParser(

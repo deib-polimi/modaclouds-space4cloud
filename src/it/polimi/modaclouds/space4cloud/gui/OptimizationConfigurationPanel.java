@@ -1,9 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Benchmark;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
-
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -17,6 +13,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Benchmark;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
 
 public class OptimizationConfigurationPanel extends JPanel implements ActionListener {
 

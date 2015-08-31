@@ -18,13 +18,13 @@
  */
 package it.polimi.modaclouds.space4cloud.types.palladio;
 
-import it.polimi.modaclouds.space4cloud.utils.DOM;
-
 import java.io.File;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import it.polimi.modaclouds.space4cloud.utils.DOM;
 
 // TODO: Auto-generated Javadoc
 /**

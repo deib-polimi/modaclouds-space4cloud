@@ -18,6 +18,8 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import java.util.ArrayList;
+
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache;
@@ -35,8 +37,6 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SQL;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-
-import java.util.ArrayList;
 
 /**
  * @author Michele Ciavotta This move changes the type of VM

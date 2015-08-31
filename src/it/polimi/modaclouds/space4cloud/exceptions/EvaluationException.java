@@ -1,9 +1,9 @@
 package it.polimi.modaclouds.space4cloud.exceptions;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
-
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
+
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
 public class EvaluationException extends ExecutionException {
 	

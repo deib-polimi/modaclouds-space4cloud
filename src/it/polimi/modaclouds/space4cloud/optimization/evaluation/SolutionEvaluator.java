@@ -15,16 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.evaluation;
 
-import it.polimi.modaclouds.space4cloud.exceptions.AnalysisFailureException;
-import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
-import it.polimi.modaclouds.space4cloud.lqn.LQNSResultParser;
-import it.polimi.modaclouds.space4cloud.lqn.LqnHandler;
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -37,6 +27,15 @@ import java.util.ArrayList;
 import org.slf4j.LoggerFactory;
 
 import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
+import it.polimi.modaclouds.space4cloud.exceptions.AnalysisFailureException;
+import it.polimi.modaclouds.space4cloud.lqn.LINEResultParser;
+import it.polimi.modaclouds.space4cloud.lqn.LQNSResultParser;
+import it.polimi.modaclouds.space4cloud.lqn.LqnHandler;
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
 public class SolutionEvaluator implements Runnable {
 

@@ -18,9 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.types.palladio;
 
-import it.polimi.modaclouds.space4cloud.utils.DOM;
-import it.polimi.modaclouds.space4cloud.utils.IdHandler;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +25,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import it.polimi.modaclouds.space4cloud.utils.DOM;
+import it.polimi.modaclouds.space4cloud.utils.IdHandler;
 
 // TODO: Auto-generated Javadoc
 /**

@@ -18,8 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -43,6 +41,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import de.uka.ipd.sdq.pcmsolver.runconfig.MessageStrings;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
 // TODO: Auto-generated Javadoc
 /**

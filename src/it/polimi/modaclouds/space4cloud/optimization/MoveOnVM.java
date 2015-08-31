@@ -18,6 +18,9 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
@@ -26,9 +29,6 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Michele Ciavotta

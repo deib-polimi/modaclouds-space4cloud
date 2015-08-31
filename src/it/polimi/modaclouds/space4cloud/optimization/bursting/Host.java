@@ -1,12 +1,5 @@
 package it.polimi.modaclouds.space4cloud.optimization.bursting;
 
-import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
-import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
-import it.polimi.modaclouds.resourcemodel.cloud.Cost;
-import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
-import it.polimi.modaclouds.resourcemodel.cloud.CostUnitType;
-import it.polimi.modaclouds.space4cloud.utils.EMF;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,6 +7,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
+import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
+import it.polimi.modaclouds.resourcemodel.cloud.Cost;
+import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
+import it.polimi.modaclouds.resourcemodel.cloud.CostUnitType;
+import it.polimi.modaclouds.space4cloud.utils.EMF;
 
 public class Host {
 	public final static double DEFAULT_HOURLY_COST = 10.0;

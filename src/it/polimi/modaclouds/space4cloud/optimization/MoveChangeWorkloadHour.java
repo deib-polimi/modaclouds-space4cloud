@@ -1,8 +1,9 @@
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-
 import java.util.ArrayList;
+
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.utils.Rounder;
 
 public class MoveChangeWorkloadHour extends AbsMoveHour {
 
@@ -40,11 +41,11 @@ public class MoveChangeWorkloadHour extends AbsMoveHour {
 		propertyNames.clear();
 		propertyValues.clear();
 		propertyNames.add("workload");
-		int newPopulation = (int) Math.ceil(population * rate);
+		int newPopulation = (int) Math.ceil(population * Rounder.round(rate));
 //		if (newPopulation == 0)
 //			newPopulation=1;
 		propertyValues.add(newPopulation);
-		this.rate = rate;
+		this.rate = Rounder.round(rate);
 		changed = true;
 		return this;
 	}

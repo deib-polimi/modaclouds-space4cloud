@@ -15,11 +15,6 @@
  ******************************************************************************/
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
-import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +23,11 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IResponseTimeConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IUtilizationConstrainable;
 
 public class Tier implements Cloneable, IResponseTimeConstrainable, IUtilizationConstrainable,
 		Serializable {

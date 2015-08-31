@@ -1,7 +1,5 @@
 package it.polimi.modaclouds.space4cloud.gui;
 
-import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
-
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -21,6 +19,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.osgi.framework.FrameworkUtil;
+
+import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
 
 public class BestSolutionExplorer extends WindowAdapter implements ActionListener, PropertyChangeListener {
 

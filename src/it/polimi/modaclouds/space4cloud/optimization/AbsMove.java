@@ -18,12 +18,12 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-
 import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 
 /**
  * @author Michele Ciavotta
