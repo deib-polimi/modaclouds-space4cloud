@@ -57,7 +57,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.ui.internal.services.CurrentSelectionSourceProvider;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,8 +168,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 
 	public static final String BEST_SOLUTION_UPDATED = "bestSolutionUpdated";
 
-	private static final double BASE_WL_INCREMENT = 0.1;
-	private static final double REDUCED_WL_INCREMENT = 0.05;
+	private static final double WL_INCREMENT = 0.01;
 
 	/**
 	 * Tabu list containing the representation of the solutions recently
@@ -1749,7 +1747,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 
 		// initialize variables
 		for (int i = 0; i < 24; i++) {
-			increments[i] = Rounder.round(BASE_WL_INCREMENT);
+			increments[i] = Rounder.round(WL_INCREMENT);
 			keepGoing[i] = true;
 		}
 
@@ -1824,10 +1822,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 				double remainder = 0.0;
 				if (diff < rate) {
 					rate = diff;
-					if (increments[hour] == Rounder.round(BASE_WL_INCREMENT))
-						increments[hour] = Rounder.round(REDUCED_WL_INCREMENT);
-					else
-						keepGoing[hour] = false;
+					keepGoing[hour] = false;
 				}
 
 				changeWorkload(leastUsedProvider, hour, wpStar + rate);
@@ -1866,11 +1861,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 					// System.out.println(currentSolution.showWorkloadPercentages());
 					changeWorkload(leastUsedProvider, hour, Rounder.round(wpStar - remainder));
 					// System.out.println(currentSolution.showWorkloadPercentages());
-
-					if (increments[hour] == Rounder.round(BASE_WL_INCREMENT))
-						increments[hour] = Rounder.round(REDUCED_WL_INCREMENT);
-					else
-						keepGoing[hour] = false;
+					keepGoing[hour] = false;
 				}
 
 			}
