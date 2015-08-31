@@ -102,6 +102,7 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.MachineTypeCons
 import it.polimi.modaclouds.space4cloud.optimization.constraints.NumberProvidersConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
@@ -1374,8 +1375,9 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 	 * 
 	 * @return the integer -1 an error has happened.
 	 * @throws OptimizationException
+	 * @throws ConstraintEvaluationException
 	 */
-	public Integer optimize() throws OptimizationException {
+	public Integer optimize() throws OptimizationException, ConstraintEvaluationException {
 
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
@@ -1723,7 +1725,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 	}
 
 	private SolutionMulti maximizeWorkloadPercentagesForLeastUsedTier(SolutionMulti currentSolution)
-			throws OptimizationException {
+			throws OptimizationException, ConstraintEvaluationException {
 		double wpMin = 0.0; // the minimum workload balance constraint
 		List<Constraint> constraints = constraintHandler.getConstraintByResourceId(Configuration.APPLICATION_ID);
 		for (Constraint c : constraints)
@@ -1751,6 +1753,42 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 			keepGoing[i] = true;
 		}
 
+		// chose which provider receives the new workload for each hour
+		List<Solution> leastUsedProviders = new ArrayList<Solution>(24);
+		for (int hour = 0; hour < 24; hour++) {
+			// retrieve the least used provider
+			Map<Solution, Tier> mostUsedTiers = new HashMap<Solution, Tier>(currentSolution.getAll().size());
+			// retrieve the most used tier for all the solutions
+			for (Solution sol : currentSolution.getAll()) {
+				for (Tier t : sol.getApplication(hour).getTiers()) {
+					// base case
+					if (!mostUsedTiers.containsKey(sol)) {
+						mostUsedTiers.put(sol, t);
+					} else {
+						if (t.getUtilization() > mostUsedTiers.get(sol).getUtilization()) {
+							mostUsedTiers.put(sol, t);
+						}
+					}
+				}
+			}
+
+			// the least used provider (According to the maximum used tiers
+			// only)
+			Solution leastUsedProvider = null;
+
+			// get the less used provider (looking only at the most used
+			// tier)
+			double distance = 1;
+			for (Solution sol : mostUsedTiers.keySet()) {
+				double tmpDistance = getTierUtilizaionDistance(mostUsedTiers.get(sol));
+				if (tmpDistance < distance) {
+					distance = tmpDistance;
+					leastUsedProvider = sol;
+				}
+			}
+			leastUsedProviders.add(leastUsedProvider);
+		}
+
 		do {
 			// ave the current solution in the memory (should always be
 			// feasible)
@@ -1760,45 +1798,26 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 				if (!keepGoing[hour])
 					continue;
 
-				// retrieve the least used provider
-				Map<Solution, Tier> mostUsedTiers = new HashMap<Solution, Tier>(currentSolution.getAll().size());
-				// retrieve the most used tier for all the solutions
-				for (Solution sol : currentSolution.getAll()) {
-					for (Tier t : sol.getApplication(hour).getTiers()) {
-						// base case
-						if (!mostUsedTiers.containsKey(sol)) {
-							mostUsedTiers.put(sol, t);
-						} else {
-							if (t.getUtilization() > mostUsedTiers.get(sol).getUtilization()) {
-								mostUsedTiers.put(sol, t);
-							}
-						}
+				Solution leastUsedProvider = leastUsedProviders.get(hour);
+				double distance = 1;
+
+				for (Tier t : leastUsedProvider.getApplication(hour).getTiers()) {
+					double tmpDistance = getTierUtilizaionDistance(t);
+					if (tmpDistance < distance) {
+						distance = tmpDistance;
 					}
 				}
 
-				// the least used provider (According to the maximum used tiers
-				// only)
-				Solution leastUsedProvider = null;
-
-				// get the less used provider (looking only at the most used
-				// tier)
-				for (Solution sol : mostUsedTiers.keySet()) {
-					// base case
-					if (leastUsedProvider == null) {
-						leastUsedProvider = sol;
-					} else {
-						if (mostUsedTiers.get(sol).getUtilization() < mostUsedTiers.get(leastUsedProvider)
-								.getUtilization()) {
-							leastUsedProvider = sol;
-						}
-					}
+				if (distance < 0.1) {
+					keepGoing[hour] = false;
+					continue;
 				}
 
 				// calculate the increment of workload for the minimum used
 				// provider
 				double wpStar = leastUsedProvider.getPercentageWorkload(hour);
 				double diff = Rounder.round(1 - wpStar);
-				
+
 				double rate = increments[hour];
 				// keep the remainder of the difference to split it on other
 				// providers if needed
@@ -1845,7 +1864,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 
 				if (remainder != 0.0) {
 					// System.out.println(currentSolution.showWorkloadPercentages());
-					changeWorkload(leastUsedProvider, hour,Rounder.round(wpStar - remainder));
+					changeWorkload(leastUsedProvider, hour, Rounder.round(wpStar - remainder));
 					// System.out.println(currentSolution.showWorkloadPercentages());
 
 					if (increments[hour] == Rounder.round(BASE_WL_INCREMENT))
@@ -1877,6 +1896,23 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 			currentSolution = lastSolution.clone();
 
 		return currentSolution;
+	}
+
+	private double getTierUtilizaionDistance(Tier tier) throws ConstraintEvaluationException {
+
+		List<Constraint> utilizationConstraints = constraintHandler.getConstraintByResourceId(tier.getId(),
+				UsageConstraint.class);
+		double distance = 100;
+		for (Constraint c : utilizationConstraints) {
+			double constraintDistance = ((UsageConstraint) c).checkConstraintDistance(tier);
+			if (constraintDistance < distance)
+				distance = constraintDistance;
+		}
+
+		if (distance > 0)
+			distance = tier.getUtilization() - 1;
+
+		return Rounder.round(-distance);
 	}
 
 	private boolean tsMoveInternal(SolutionMulti solution, String provider, Tier selectedTier, int iterations)
