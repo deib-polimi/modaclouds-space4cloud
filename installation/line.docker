@@ -1,0 +1,50 @@
+FROM ubuntu:14.04
+MAINTAINER Riccardo B. Desantis <riccardobenito.desantis@polimi.it>
+
+# Setting the environment
+ENV JAVA_HOME /usr/lib/jvm/default-java
+ENV USERHOME  /root
+ENV DEBIAN_FRONTEND noninteractive
+
+# Update the repos and install all the used packages
+RUN apt-get update && apt-get install -y \
+    unzip \
+    default-jre \
+    curl
+
+# Installing MCR
+WORKDIR /tmp
+RUN curl -L http://it.mathworks.com/supportfiles/MCR_Runtime/R2013a/MCR_R2013a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2013a_glnxa64_installer.zip
+WORKDIR MCR
+RUN unzip -q MCR_R2013a_glnxa64_installer.zip
+RUN ./install -mode silent -agreeToLicense yes
+RUN rm -rf /tmp/MCR
+RUN rm -rf /usr/local/MATLAB/MATLAB_Compiler_Runtime/v81/sys/java/jre/glnxa64/jre
+RUN ln -s /usr/lib/jvm/default-java/jre /usr/local/MATLAB/MATLAB_Compiler_Runtime/v81/sys/java/jre/glnxa64/jre
+RUN curl -L http://central.maven.org/maven2/org/apache/httpcomponents/httpcore/4.4.1/httpcore-4.4.1.jar -o /usr/local/MATLAB/MATLAB_Compiler_Runtime/v81/java/jarext/axis2/httpcore.jar
+
+# Installing LINE
+WORKDIR /opt
+RUN curl -OL http://svn.code.sf.net/p/line-solver/code/trunk/releases/v071/bin/linux/LINE_071_linux.zip
+RUN unzip -q LINE_071_linux.zip
+RUN mv LINE_071_linux/bin LINE
+RUN rm -rf LINE_071_linux*
+WORKDIR LINE
+
+# Fix the files
+RUN echo "port=5463\nmaxIter=100\nmaxJobSize=6\nverbose=0\nparallel=PARFOR\ntimeoutConnection=3600\nrespTimePerc=SEFF\nrespTimePercMin=0.85\nrespTimePercStep=0.05\nrespTimePercMax=0.90\ndirectory=/opt/LINE\nsolver=FLUID" > LINE.properties
+RUN sed 's|<value>[0-9]*.0</value>|<value>4.0</value>|' <lineClusterProfile.settings >lineClusterProfile-new.settings
+RUN mv lineClusterProfile-new.settings lineClusterProfile.settings
+RUN mv LINE LINE-orig
+RUN echo "#\!/usr/bin/env sh\n\nMCRROOT=\"/usr/local/MATLAB/MATLAB_Compiler_Runtime/v81\"\nLINEROOT=\"/opt/LINE\"\n\ncd \${LINEROOT} && sh run_LINE.sh \${MCRROOT} \"\$@\"" > LINE
+RUN sed 's|LINE|LINE-orig|' <run_LINE.sh >run_LINE-new.sh
+RUN mv run_LINE-new.sh run_LINE.sh
+RUN chmod +x run_LINE.sh
+RUN chmod +x LINE
+
+RUN touch /root/fake.txt
+
+## Starts LINE
+EXPOSE 5463
+#CMD /opt/LINE/LINE /opt/LINE/LINE.properties
+CMD tail -f /root/fake.txt

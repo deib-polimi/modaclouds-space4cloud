@@ -1,0 +1,30 @@
+FROM ubuntu:14.04
+MAINTAINER Riccardo B. Desantis <riccardobenito.desantis@polimi.it>
+
+# Setting the environment
+ENV USERHOME  /root
+ENV DEBIAN_FRONTEND noninteractive
+ENV USER root
+
+# Update the repos and install all the used packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    lxde-core \
+    tightvncserver \
+    unzip
+
+# Install eclipse
+WORKDIR ${USERHOME}
+#RUN curl -OL ""
+#RUN unzip -q eclipse-palladio.zip
+
+
+# Set the VNC server
+WORKDIR ${USERHOME}
+RUN echo "password" > password.txt
+RUN cat password.txt password.txt | vncpasswd && \
+    rm password.txt
+
+# Starts the VNC server
+EXPOSE 5901
+CMD vncserver :1 -geometry 1440x900 -depth 24 && tail -F /root/.vnc/*.log

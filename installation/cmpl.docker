@@ -1,0 +1,33 @@
+FROM ubuntu:14.04
+MAINTAINER Riccardo B. Desantis <riccardobenito.desantis@polimi.it>
+
+# Setting the environment
+ENV USERHOME  /root
+ENV DEBIAN_FRONTEND noninteractive
+
+# Update the repos and install all the used packages
+RUN apt-get update && apt-get install -y \
+    curl \
+    libglib2.0-0 \
+    openssh-server
+
+# Installing and setting the SSH server
+RUN mkdir $USERHOME/.ssh
+COPY id_rsa $USERHOME/.ssh/id_rsa
+COPY id_rsa.pub $USERHOME/.ssh/id_rsa.pub
+RUN cat $USERHOME/.ssh/id_rsa.pub > $USERHOME/.ssh/authorized_keys
+RUN chmod go-rwx $USERHOME/.ssh/id_rsa $USERHOME/.ssh/id_rsa.pub
+RUN mkdir /var/run/sshd
+
+# Installing CMPL
+WORKDIR /tmp
+RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz
+RUN tar zxf Cmpl-1-10-0-linux64.tar.gz
+WORKDIR Cmpl
+RUN bash install
+WORKDIR ..
+RUN rm -rf Cmpl*
+
+# Starts the SSH server
+EXPOSE 22
+CMD /usr/sbin/sshd -D
