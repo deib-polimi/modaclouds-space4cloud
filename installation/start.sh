@@ -11,6 +11,7 @@ PARAMS="$@"
 if [ "$(uname)" == "Darwin" ]; then
     # Mac OS X
     eval "$(docker-machine env s4c)"
+    docker-machine start s4c
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     # Windows
     echo "Windows not supported yet."
