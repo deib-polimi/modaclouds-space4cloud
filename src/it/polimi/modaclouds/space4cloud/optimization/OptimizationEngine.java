@@ -2309,16 +2309,21 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 			logger.info("Calling the DesignToRuntimeConnector project...");
 			AdaptationModelBuilder amb = new AdaptationModelBuilder(
 					Paths.get(Configuration.DB_CONNECTION_FILE).toString());
-			for (Solution s : bestSolution.getAll())
-				amb.createAdaptationModelAndRules(basePath,
-						Paths.get(basePath,
-								Configuration.SOLUTION_FILE_NAME + s.getProvider()
-										+ Configuration.SOLUTION_FILE_EXTENSION)
-								.toString(),
-						Paths.get(Configuration.FUNCTIONALITY_TO_TIER_FILE).toString(),
-						Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION)
-								.toString(),
-						Configuration.OPTIMIZATION_WINDOW_LENGTH, Configuration.TIMESTEP_DURATION, s.getProvider());
+			for (Solution s : bestSolution.getAll()) {
+				try {
+					amb.createAdaptationModelAndRules(basePath,
+							Paths.get(basePath,
+									Configuration.SOLUTION_FILE_NAME + s.getProvider()
+											+ Configuration.SOLUTION_FILE_EXTENSION)
+									.toString(),
+							Paths.get(Configuration.FUNCTIONALITY_TO_TIER_FILE).toString(),
+							Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION)
+									.toString(),
+							Configuration.OPTIMIZATION_WINDOW_LENGTH, Configuration.TIMESTEP_DURATION, s.getProvider());
+				} catch (Exception e) {
+					logger.error("Error while exporting the runtime files for " + s.getProvider() + ".", e);
+				}
+			}
 		}
 	}
 
