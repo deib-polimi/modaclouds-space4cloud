@@ -47,8 +47,8 @@ Bundle-ClassPath: .,
  target/dependency/milp-0.2.0.jar,
  target/dependency/contractor4cloud-0.1.9.jar,
  target/dependency/privatecloud-0.1.5.jar,
- target/dependency/rules-0.2.1.jar,
  target/dependency/commons-lang-2.6.jar,
+ target/dependency/rules-0.3.1.jar,
  target/dependency/adaptationDesignTime4Cloud-2.0.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.EMFHelper;
