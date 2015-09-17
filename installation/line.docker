@@ -32,19 +32,21 @@ RUN rm -rf LINE_071_linux*
 WORKDIR LINE
 
 # Fix the files
-RUN echo "port=5463\nmaxIter=100\nmaxJobSize=6\nverbose=0\nparallel=PARFOR\ntimeoutConnection=3600\nrespTimePerc=SEFF\nrespTimePercMin=0.85\nrespTimePercStep=0.05\nrespTimePercMax=0.90\ndirectory=/opt/LINE\nsolver=FLUID" > LINE.properties
+RUN echo "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PARFOR\ntimeoutConnection=3600\nrespTimePerc=SEFF\nrespTimePercMin=0.85\nrespTimePercStep=0.05\nrespTimePercMax=0.90\ndirectory=/opt/LINE\nsolver=FLUID" > LINE.properties
 RUN sed 's|<value>[0-9]*.0</value>|<value>4.0</value>|' <lineClusterProfile.settings >lineClusterProfile-new.settings
 RUN mv lineClusterProfile-new.settings lineClusterProfile.settings
 RUN mv LINE LINE-orig
 RUN echo "#\!/usr/bin/env sh\n\nMCRROOT=\"/usr/local/MATLAB/MATLAB_Compiler_Runtime/v81\"\nLINEROOT=\"/opt/LINE\"\n\ncd \${LINEROOT} && sh run_LINE.sh \${MCRROOT} \"\$@\"" > LINE
 RUN sed 's|LINE|LINE-orig|' <run_LINE.sh >run_LINE-new.sh
 RUN mv run_LINE-new.sh run_LINE.sh
+RUN echo "#\!/bin/sh\n\nwhile true\ndo\n\t/opt/LINE/LINE /opt/LINE/LINE.properties\n\tsleep 2\ndone" > run_LINE_loop.sh
 RUN chmod +x run_LINE.sh
 RUN chmod +x LINE
+RUN chmod +x run_LINE_loop.sh
 
 RUN touch /root/fake.txt
 
 ## Starts LINE
 EXPOSE 5463
-#CMD /opt/LINE/LINE /opt/LINE/LINE.properties
+#CMD /opt/LINE/run_LINE_loop.sh
 CMD tail -f /root/fake.txt
