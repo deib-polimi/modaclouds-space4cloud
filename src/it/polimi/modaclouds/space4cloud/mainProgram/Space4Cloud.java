@@ -129,8 +129,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	 *            the path to the file containing the configuration
 	 */
 	public Space4Cloud(String batchConfFile) {
-		batchConfigurationFile = batchConfFile;
-		batch = true;
+		this(batchConfFile, null);
 	}
 	
 	/**
@@ -410,7 +409,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	private void performAssessment() throws AssesmentException {
 
 		try {
-			engine = new OptimizationEngine(constraintHandler, true);
+			engine = new OptimizationEngine(constraintHandler, true, duration);
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new AssesmentException("", e);
 		}

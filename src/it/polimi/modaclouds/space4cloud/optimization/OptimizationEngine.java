@@ -18,6 +18,53 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import it.polimi.modaclouds.adaptationDesignTime4Cloud.Main.AdaptationModelBuilder;
+import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.db.DataHandler;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
+import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
+import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
+import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
+import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
+import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.MachineTypeConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.NumberProvidersConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
+import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
+import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.utils.Cache;
+import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
+import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
+import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
+import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentLoadingException;
+import it.polimi.modaclouds.space4cloud.utils.Rounder;
+import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
+import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -82,52 +129,6 @@ import de.uka.ipd.sdq.pcm.usagemodel.Loop;
 import de.uka.ipd.sdq.pcm.usagemodel.ScenarioBehaviour;
 import de.uka.ipd.sdq.pcm.usagemodel.UsageScenario;
 import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
-import it.polimi.modaclouds.adaptationDesignTime4Cloud.Main.AdaptationModelBuilder;
-import it.polimi.modaclouds.space4cloud.chart.GenericChart;
-import it.polimi.modaclouds.space4cloud.db.DataHandler;
-import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
-import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
-import it.polimi.modaclouds.space4cloud.exceptions.InitializationException;
-import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
-import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
-import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
-import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
-import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.MachineTypeConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.NumberProvidersConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
-import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
-import it.polimi.modaclouds.space4cloud.utils.Cache;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
-import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
-import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
-import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentLoadingException;
-import it.polimi.modaclouds.space4cloud.utils.Rounder;
-import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
-import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
 
 /**
  * @author Michele Ciavotta Class defining the optimization engine.
@@ -203,22 +204,6 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 	private boolean batch = false;
 
 	private boolean providedtimer = false;
-
-	public OptimizationEngine(ConstraintHandler handler) throws DatabaseConnectionFailureExteption {
-		this(handler, false);
-	}
-
-	/**
-	 * Instantiates a new opt engine.
-	 * 
-	 * @param handler
-	 *            : the constraint handler
-	 * @throws DatabaseConnectionFailureExteption
-	 */
-	public OptimizationEngine(ConstraintHandler handler, boolean batch) throws DatabaseConnectionFailureExteption {
-
-		init(handler, batch);
-	}
 
 	/**
 	 * Instantiates a new opt engine using as timer the provided one. the
