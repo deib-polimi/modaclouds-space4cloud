@@ -10,7 +10,7 @@
 	<classpathentry exported="true" kind="lib" path="target/dependency/jcommon-1.0.23.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/jfreechart-1.0.19.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/jsch-0.1.53.jar"/>
-	<classpathentry exported="true" kind="lib" path="target/dependency/qos-models-3.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="target/dependency/qos-models-3.0.1.jar" sourcepath="/Users/ft/Development/workspace-s4c/modaclouds-qos-models"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/mysql-connector-java-5.1.36.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/contractor4cloud-0.1.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="target/dependency/privatecloud-0.1.5.jar"/>

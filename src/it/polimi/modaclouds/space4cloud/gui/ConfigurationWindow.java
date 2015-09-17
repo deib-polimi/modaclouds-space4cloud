@@ -349,6 +349,7 @@ public class ConfigurationWindow extends JFrame implements WindowListener, Actio
 				setPanelVisibility(optimizationConfigurationPane, false);
 				setPanelVisibility(robustnessConfigurationPane, false);
 			}
+			extensionSelectionPane.updateMceVisibility();
 		} else if(evt.getPropertyName().equals(FunctionalityPanel.privateCloudProperty)) {
 			boolean visibility = Configuration.USE_PRIVATE_CLOUD;
 			setPanelVisibility(cloudBurstingPanel, visibility);
