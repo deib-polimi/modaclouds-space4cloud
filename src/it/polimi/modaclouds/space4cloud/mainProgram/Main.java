@@ -78,13 +78,19 @@ public class Main {
 		instance.start();
 	}
 	
+	private static String OS = System.getProperty("os.name").toLowerCase();
+	public static boolean isUnix() {
+        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0 );
+    }
+	
 	public static void main(String[] args) {
-		try {
-//            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            logger.error("Error while setting the system look and feel.", e);
-        }
+		if (!isUnix())
+			try {
+	//            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+	            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+	        } catch (Exception e) {
+	            logger.error("Error while setting the system look and feel.", e);
+	        }
 		
 		perform(args);
 	}
