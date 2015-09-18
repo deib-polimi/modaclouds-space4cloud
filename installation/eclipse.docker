@@ -15,16 +15,16 @@ RUN apt-get update && apt-get install -y \
 
 # Install eclipse
 WORKDIR ${USERHOME}
-RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz"
-RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
+RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz" && \
+    tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
 WORKDIR Desktop
 RUN echo "#\!/usr/bin/env xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Eclipse_Palladio.desktop
 WORKDIR ${USERHOME}
 
 # Set the VNC server
 WORKDIR ${USERHOME}
-RUN echo "modaclouds" > password.txt
-RUN cat password.txt password.txt | vncpasswd && \
+RUN echo "modaclouds" > password.txt && \
+    cat password.txt password.txt | vncpasswd && \
     rm password.txt
 
 # Starts the VNC server

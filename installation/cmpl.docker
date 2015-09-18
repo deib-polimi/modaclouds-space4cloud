@@ -15,14 +15,14 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir $USERHOME/.ssh
 COPY id_rsa $USERHOME/.ssh/id_rsa
 COPY id_rsa.pub $USERHOME/.ssh/id_rsa.pub
-RUN cat $USERHOME/.ssh/id_rsa.pub > $USERHOME/.ssh/authorized_keys
-RUN chmod go-rwx $USERHOME/.ssh/id_rsa $USERHOME/.ssh/id_rsa.pub
-RUN mkdir /var/run/sshd
+RUN cat $USERHOME/.ssh/id_rsa.pub > $USERHOME/.ssh/authorized_keys && \
+    chmod go-rwx $USERHOME/.ssh/id_rsa $USERHOME/.ssh/id_rsa.pub && \
+    mkdir /var/run/sshd
 
 # Installing CMPL
 WORKDIR /tmp
-RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz
-RUN tar zxf Cmpl-1-10-0-linux64.tar.gz
+RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz && \
+    tar zxf Cmpl-1-10-0-linux64.tar.gz
 WORKDIR Cmpl
 RUN bash install
 WORKDIR ..
