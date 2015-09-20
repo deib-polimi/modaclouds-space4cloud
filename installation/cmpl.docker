@@ -7,9 +7,9 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Update the repos and install all the used packages
 RUN apt-get update && apt-get install -y \
-    curl \
     libglib2.0-0 \
-    openssh-server
+    openssh-server \
+    curl
 
 # Installing and setting the SSH server
 RUN mkdir $USERHOME/.ssh
@@ -27,6 +27,7 @@ WORKDIR Cmpl
 RUN bash install
 WORKDIR ..
 RUN rm -rf Cmpl*
+WORKDIR $USERHOME
 
 # Starts the SSH server
 EXPOSE 22

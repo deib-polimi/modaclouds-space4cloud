@@ -8,10 +8,10 @@ ENV USER root
 
 # Update the repos and install all the used packages
 RUN apt-get update && apt-get install -y \
-    curl \
     lxde-core \
     tightvncserver \
-    default-jdk
+    default-jdk \
+    curl
 
 # Install eclipse
 WORKDIR ${USERHOME}

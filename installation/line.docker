@@ -5,39 +5,30 @@ MAINTAINER Riccardo B. Desantis <riccardobenito.desantis@polimi.it>
 ENV JAVA_HOME /usr/lib/jvm/default-java
 ENV USERHOME  /root
 ENV DEBIAN_FRONTEND noninteractive
-ENV MCRHOME /usr/local/MATLAB/MATLAB_Compiler_Runtime/v81
 ENV USER root
 
 # Update the repos and install all the used packages
 RUN apt-get update && apt-get install -y --force-yes \
     unzip \
-    curl \
-    default-jre
+    xorg \
+    curl
 
 # Installing MCR
 WORKDIR /tmp
-RUN curl -L http://it.mathworks.com/supportfiles/MCR_Runtime/R2013a/MCR_R2013a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2013a_glnxa64_installer.zip
+RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
+#COPY MCR_R2015a_glnxa64_installer.zip MCR/
 WORKDIR MCR
-RUN unzip -q MCR_R2013a_glnxa64_installer.zip && \
+RUN unzip -q MCR_R2015a_glnxa64_installer.zip && \
     ./install -mode silent -agreeToLicense yes && \
     rm -rf /tmp/MCR
-WORKDIR ${MCRHOME}
-RUN rm -rf sys/java/jre/glnxa64/jre && \
-    ln -s ${JAVA_HOME}/jre ${MCRHOME}/sys/java/jre/glnxa64/jre && \
-    curl -L http://central.maven.org/maven2/org/apache/httpcomponents/httpcore/4.4.1/httpcore-4.4.1.jar -o ${MCRHOME}/java/jarext/axis2/httpcore.jar && \
-    curl -OL ftp://ftp.modaclouds.eu/public/space4cloud/attachment_919688_12b_13a_2013-03-08.zip && \
-    unzip -o -q attachment_919688_12b_13a_2013-03-08.zip
 
 # Installing LINE
 WORKDIR /opt
-#RUN curl -OL http://svn.code.sf.net/p/line-solver/code/trunk/releases/v071/bin/linux/LINE_071_linux.zip && \
-#    unzip -q LINE_071_linux.zip && \
-#    mv LINE_071_linux/bin LINE && \
-#    rm -rf LINE_071_linux*
-RUN curl -OL http://svn.code.sf.net/p/line-solver/code/branches/unstable/v071b/bin/linux/LINE_071b_linux.zip && \
-    unzip -q LINE_071b_linux.zip && \
-    mv LINE_071_linux/bin LINE && \
-    rm -rf LINE_071_linux* LINE_071b_linux*
+RUN curl -OL http://svn.code.sf.net/p/line-solver/code/branches/unstable/v072/bin/linux/LINE_072_linux.zip
+#COPY LINE_072_linux.zip ./
+RUN unzip -q LINE_072_linux.zip && \
+    mv LINE_072_linux/bin LINE && \
+    rm -rf LINE_072_linux*
 WORKDIR LINE
 
 # Fix the files
@@ -45,7 +36,7 @@ RUN echo "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PARFOR\ntime
     sed 's|<value>[0-9]*.0</value>|<value>4.0</value>|' <lineClusterProfile.settings >lineClusterProfile-new.settings && \
     mv lineClusterProfile-new.settings lineClusterProfile.settings && \
     mv LINE LINE-orig && \
-    echo "#\!/usr/bin/env sh\n\nMCRROOT=\"/usr/local/MATLAB/MATLAB_Compiler_Runtime/v81\"\nLINEROOT=\"/opt/LINE\"\n\ncd \${LINEROOT} && sh run_LINE.sh \${MCRROOT} \"\$@\"" > LINE && \
+    echo "#\!/usr/bin/env sh\n\nMCRROOT=\"/usr/local/MATLAB/MATLAB_Runtime/v85\"\nLINEROOT=\"/opt/LINE\"\n\ncd \${LINEROOT} && sh run_LINE.sh \${MCRROOT} \"\$@\"" > LINE && \
     sed 's|LINE|LINE-orig|' <run_LINE.sh >run_LINE-new.sh && \
     mv run_LINE-new.sh run_LINE.sh && \
     echo "#\!/bin/sh\n\nwhile true\ndo\n\t/opt/LINE/LINE /opt/LINE/LINE.properties\n\tsleep 2\ndone" > run_LINE_loop.sh && \
@@ -53,7 +44,7 @@ RUN echo "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PARFOR\ntime
 
 ## Starts LINE
 EXPOSE 5463
-#CMD /opt/LINE/run_LINE_loop.sh
+CMD /opt/LINE/run_LINE_loop.sh
 
-RUN touch /root/fake.txt
-CMD tail -f /root/fake.txt
+#RUN touch /root/fake.txt
+#CMD tail -f /root/fake.txt
