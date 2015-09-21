@@ -8,6 +8,8 @@ shift
 shift
 PARAMS="$@"
 
+cd $IMAGE
+
 if [ "$(uname)" == "Darwin" ]; then
     # Mac OS X
     eval "$(docker-machine env s4c)"

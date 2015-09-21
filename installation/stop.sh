@@ -3,6 +3,8 @@
 IMAGE="$1"
 VERSION="$2"
 
+cd $IMAGE
+
 if [ "$(uname)" == "Darwin" ]; then
     # Mac OS X
     eval "$(docker-machine env s4c)"
