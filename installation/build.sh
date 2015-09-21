@@ -16,4 +16,4 @@ elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     exit -1
 fi
 
-docker build -f $IMAGE.docker -t $IMAGE$VERSION .
+docker build -f Dockerfile -t $IMAGE$VERSION .

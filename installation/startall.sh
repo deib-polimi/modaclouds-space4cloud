@@ -10,6 +10,6 @@ elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     exit -1
 fi
 
-bash start.sh line 1 -p 22022:22
-bash start.sh cmpl 1 -p 22122:22
+bash start.sh line 1 -p 5463:5463
+bash start.sh cmpl 1 -p 2200:22
 bash start-db.sh
