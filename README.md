@@ -41,3 +41,9 @@ In order to retrieve information about cloud resources SPACE4CLOUD interacts wit
 An example project can be found here: ftp://home.dei.polimi.it/outgoing/Giovanni.Paolo.Gibilisco/space4cloudExample. The example cam be imported in the new instance of Eclipse, evaluated using LINE or LQNS or used for the optimization performed by SPACE4CLOUD. 
 
 The example model also contains some examples of constraints and extension that are used to drive the solution generation. 
+
+##License##
+
+Licensed under the [Apache License, Version 2.0][1]
+
+[1]: http://www.apache.org/licenses/LICENSE-2.0
