@@ -18,7 +18,7 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.adaptationDesignTime4Cloud.Main.AdaptationModelBuilder;
+import it.polimi.modaclouds.adaptationDesignTime4Cloud.AdaptationModelBuilder;
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
