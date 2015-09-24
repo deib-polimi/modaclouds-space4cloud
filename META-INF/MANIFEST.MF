@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.emf.ecore;bundle-version="2.9.2",
  org.junit,
  org.eclipse.ui.console;bundle-version="3.5.200",
- de.uka.ipd.sdq.pcmsolver;bundle-version="3.0.0"
+ de.uka.ipd.sdq.pcmsolver;bundle-version="3.0.0",
+ de.uka.ipd.sdq.pcm
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Import-Package: de.uka.ipd.sdq.identifier,
@@ -49,7 +50,7 @@ Bundle-ClassPath: .,
  target/dependency/privatecloud-0.1.5.jar,
  target/dependency/commons-lang-2.6.jar,
  target/dependency/rules-0.3.1.jar,
- target/dependency/adaptationDesignTime4Cloud-2.1.jar
+ target/dependency/adaptationDesignTime4Cloud-2.2.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.EMFHelper;
   uses:="org.eclipse.emf.ecore,

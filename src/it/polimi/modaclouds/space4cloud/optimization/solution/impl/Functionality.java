@@ -42,6 +42,8 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	private Component container;
 	private HashMap<String,Functionality> externalCalls = new HashMap<String,Functionality>();
 	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Functionality.class);
+	
+	private double demand;
 
 	private void setExternalCalls(HashMap<String, Functionality> externalCalls) {
 		this.externalCalls = externalCalls;
@@ -53,7 +55,7 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			f = new Functionality(name, id, entryLevelCallID);
+			f = new Functionality(name, id, entryLevelCallID, demand);
 		}
 		f.setContainer(null);
 		
@@ -62,7 +64,7 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 			f.addExternalCall(s, externalCalls.get(s));		
 		return f;
 	}
-	public Functionality(String name, String id,String entryLevelCallID){
+	public Functionality(String name, String id,String entryLevelCallID, String uuu){
 		this.name = name;
 		this.id = id;
 		this.entryLevelCallID = entryLevelCallID;
@@ -174,5 +176,14 @@ public class Functionality implements Cloneable, IPercentileRTConstrainable, Ser
 	
 	public int getRequests() {
 		return (int)Math.round(throughput * 60 * 60);
+	}
+	
+	public double getDemand() {
+		return demand;
+	}
+	
+	public Functionality(String name, String id,String entryLevelCallID, double demand){
+		this(name, id, entryLevelCallID, "aaa");
+		this.demand = demand;
 	}
 }

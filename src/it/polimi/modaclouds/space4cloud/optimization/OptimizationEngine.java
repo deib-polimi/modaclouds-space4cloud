@@ -117,6 +117,7 @@ import de.uka.ipd.sdq.pcm.repository.RepositoryComponent;
 import de.uka.ipd.sdq.pcm.resourceenvironment.ResourceContainer;
 import de.uka.ipd.sdq.pcm.seff.AbstractAction;
 import de.uka.ipd.sdq.pcm.seff.ExternalCallAction;
+import de.uka.ipd.sdq.pcm.seff.InternalAction;
 import de.uka.ipd.sdq.pcm.seff.ResourceDemandingSEFF;
 import de.uka.ipd.sdq.pcm.seff.ServiceEffectSpecification;
 import de.uka.ipd.sdq.pcm.seff.StartAction;
@@ -1112,9 +1113,11 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 					EList<ServiceEffectSpecification> seffs = ((BasicComponent) repositoryComp)
 							.getServiceEffectSpecifications__BasicComponent();
 					for (ServiceEffectSpecification s : seffs) {
+						double demand = getDemandFromSeff(((ResourceDemandingSEFF) s));// TODO .getSteps_Behaviour());
+						
 						String signatureID = s.getDescribedService__SEFF().getId();
 						Functionality function = new Functionality(s.getDescribedService__SEFF().getEntityName(),
-								((ResourceDemandingSEFF) s).getId(), systemCalls2Signatures.get(signatureID));
+								((ResourceDemandingSEFF) s).getId(), systemCalls2Signatures.get(signatureID), demand);
 						EList<AbstractAction> actions = ((ResourceDemandingSEFF) s).getSteps_Behaviour();
 						for (AbstractAction a : actions) {
 							if (a instanceof ExternalCallAction) {
@@ -1188,6 +1191,32 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 
 		bestSolutions.add(initialSolution);
 		firePropertyChange(OptimizationProgressWindow.FIRST_SOLUTION_AVAILABLE, false, true);
+	}
+	
+	private double getDemandFromSeff(ResourceDemandingSEFF s) {
+		double demand = 0.0;
+		
+		EList<AbstractAction> actions = s.getSteps_Behaviour();
+		
+		for (int i = 0; i < actions.size(); ++i) {
+			AbstractAction a = actions.get(i);
+			
+			if (a instanceof InternalAction) {
+				InternalAction ia = ((InternalAction) a);
+				
+				for (de.uka.ipd.sdq.pcm.seff.seff_performance.ParametricResourceDemand d : ia.getResourceDemand_Action()) {
+					try {
+						demand += Double.parseDouble(d.getSpecification_ParametericResourceDemand().getSpecification());
+					} catch (Exception e) { }
+				}
+			} else if (a instanceof ExternalCallAction) {
+				ExternalCallAction ea = ((ExternalCallAction) a);
+				
+				actions.addAll(ea.getResourceDemandingBehaviour_AbstractAction().getSteps_Behaviour());
+			}
+		}
+		
+		return demand;
 	}
 
 	/**
@@ -2291,25 +2320,53 @@ public class OptimizationEngine extends SwingWorker<Void, Void>implements Proper
 					Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION));
 
 		if (Configuration.GENERATE_DESIGN_TO_RUNTIME_FILES) {
-			logger.info("Calling the DesignToRuntimeConnector project...");
-			AdaptationModelBuilder amb = new AdaptationModelBuilder(
-					Paths.get(Configuration.DB_CONNECTION_FILE).toString());
-			for (Solution s : bestSolution.getAll()) {
-				try {
-					amb.createAdaptationModelAndRules(basePath,
-							Paths.get(basePath,
-									Configuration.SOLUTION_FILE_NAME + s.getProvider()
-											+ Configuration.SOLUTION_FILE_EXTENSION)
-									.toString(),
-							Paths.get(Configuration.FUNCTIONALITY_TO_TIER_FILE).toString(),
-							Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION)
-									.toString(),
-							Configuration.OPTIMIZATION_WINDOW_LENGTH, Configuration.TIMESTEP_DURATION, s.getProvider());
-				} catch (Exception e) {
-					logger.error("Error while exporting the runtime files for " + s.getProvider() + ".", e);
+			for (File f : generateDesignToRuntimeFiles())
+				logger.debug("Generated {}", f.toString());
+		}
+	}
+	
+	private List<File> generateDesignToRuntimeFiles() {
+		logger.info("Calling the DesignToRuntimeConnector project...");
+		
+		String basePath = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY).toString();
+		
+		List<File> res = new ArrayList<>();
+		
+		AdaptationModelBuilder amb = new AdaptationModelBuilder(
+				Paths.get(Configuration.DB_CONNECTION_FILE).toString());
+		for (Solution s : bestSolution.getAll()) {
+			try {
+				res.addAll(amb.createAdaptationModelAndRules(basePath,
+						Paths.get(basePath,
+								Configuration.SOLUTION_FILE_NAME + s.getProvider()
+										+ Configuration.SOLUTION_FILE_EXTENSION)
+								.toString(),
+						Paths.get(Configuration.FUNCTIONALITY_TO_TIER_FILE).toString(),
+						Paths.get(basePath, "performance" + s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION)
+								.toString(),
+						Configuration.OPTIMIZATION_WINDOW_LENGTH, Configuration.TIMESTEP_DURATION, s.getProvider(),
+						getDemandMap()));
+			} catch (Exception e) {
+				logger.error("Error while exporting the runtime files for " + s.getProvider() + ".", e);
+			}
+		}
+		
+		return res;
+	}
+	
+	private Map<String, Double> getDemandMap() {
+		Map<String, Double> res = new HashMap<>();
+		
+		for (Solution s : bestSolution) {
+			Instance app = s.getApplication(0);
+			for (Tier t : app.getTiers()) {
+				for (Functionality f : t.getFunctionalities()) {
+					res.put(f.getId(), f.getDemand());
 				}
 			}
 		}
+		
+		return res;
 	}
 
 	public void inspect() {
