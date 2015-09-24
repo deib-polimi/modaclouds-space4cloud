@@ -12,4 +12,4 @@ fi
 
 bash start.sh line 1 -p 5463:5463
 bash start.sh cmpl 1 -p 2200:22
-bash start-db.sh
+bash start.sh db 1 -p 3306:3306

@@ -18,3 +18,4 @@ fi
 
 bash build.sh line 1
 bash build.sh cmpl 1
+bash build.sh db 1
