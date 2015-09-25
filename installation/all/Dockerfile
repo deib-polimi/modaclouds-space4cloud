@@ -106,4 +106,4 @@ EXPOSE 5463
 EXPOSE 5901
 EXPOSE 3306
 EXPOSE 22
-CMD sshd && vncserver :1 -geometry 1440x900 -depth 24 && /opt/LINE/run_LINE_loop.sh
+CMD /usr/sbin/sshd && vncserver :1 -geometry 1440x900 -depth 24 && /opt/LINE/run_LINE_loop.sh
