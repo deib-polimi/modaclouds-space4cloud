@@ -9,6 +9,7 @@ cd $IMAGE
 
 if [ "$(uname)" == "Darwin" ]; then
     # Mac OS X
+    docker-machine start s4c
     eval "$(docker-machine env s4c)"
 elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
     # Windows
