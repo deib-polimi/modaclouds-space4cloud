@@ -6,6 +6,7 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 ENV USERHOME  /root
 ENV DEBIAN_FRONTEND noninteractive
 ENV USER root
+ENV GEOMETRY 1440x900
 
 WORKDIR /tmp
 # Update the repos and install all the used packages
@@ -13,6 +14,10 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     unzip \
     xorg \
     lxde-core \
+    lxterminal \
+    lxde-icon-theme \
+    gtk2-engines \
+    dmz-cursor-theme \
     tightvncserver \
     default-jdk \
     libglib2.0-0 \
@@ -20,7 +25,10 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     apt-get update && apt-get install -y --no-install-recommends mysql-server && \
-    rm mysql-apt-config_0.3.7-1ubuntu14.04_all.deb
+    rm mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
+    apt-get autoclean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
 
 # Installing MCR
 RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
@@ -55,7 +63,8 @@ WORKDIR ${USERHOME}
 RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz" && \
     tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
 WORKDIR Desktop
-RUN echo "#\!/usr/bin/env xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Eclipse_Palladio.desktop
+RUN echo "#\!/usr/bin/env xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Eclipse_Palladio.desktop && \
+    ln -s /opt/models models
 WORKDIR ${USERHOME}
 
 # Set the VNC server
@@ -89,4 +98,4 @@ WORKDIR $USERHOME
 
 # Starts MySQL, LINE and the VNC server
 EXPOSE 5901
-CMD service mysql start && vncserver :1 -geometry 1440x900 -depth 24 && /opt/LINE/run_LINE_loop.sh
+CMD service mysql start && vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && /opt/LINE/run_LINE_loop.sh

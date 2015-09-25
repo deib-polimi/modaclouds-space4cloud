@@ -7,10 +7,13 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV NOTVISIBLE "in users profile"
 
 # Update the repos and install all the used packages
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     openssh-server \
-    curl
+    curl && \
+    apt-get autoclean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
 
 # Installing and setting the SSH server
 RUN mkdir $USERHOME/.ssh

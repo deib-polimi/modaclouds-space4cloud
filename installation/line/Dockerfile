@@ -8,10 +8,13 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV USER root
 
 # Update the repos and install all the used packages
-RUN apt-get update && apt-get install -y --force-yes \
+RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     unzip \
     xorg \
-    curl
+    curl && \
+    apt-get autoclean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
 
 # Installing MCR
 WORKDIR /tmp
@@ -45,6 +48,3 @@ RUN echo "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PARFOR\ntime
 ## Starts LINE
 EXPOSE 5463
 CMD /opt/LINE/run_LINE_loop.sh
-
-#RUN touch /root/fake.txt
-#CMD tail -f /root/fake.txt
