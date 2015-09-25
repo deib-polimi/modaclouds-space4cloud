@@ -7,7 +7,9 @@ ENV DEBIAN_FRONTEND noninteractive
 
 WORKDIR /tmp
 # Update the repos and install all the used packages
-RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates && \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     apt-get update && apt-get install -y --no-install-recommends mysql-server && \
