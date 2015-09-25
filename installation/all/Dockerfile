@@ -6,27 +6,25 @@ ENV JAVA_HOME /usr/lib/jvm/default-java
 ENV USERHOME  /root
 ENV DEBIAN_FRONTEND noninteractive
 ENV USER root
-ENV NOTVISIBLE "in users profile"
 
 WORKDIR /tmp
 # Update the repos and install all the used packages
-RUN apt-get update && apt-get install -y --force-yes \
+RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     unzip \
     xorg \
     lxde-core \
     tightvncserver \
     default-jdk \
     libglib2.0-0 \
-    openssh-server \
     curl && \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
-    apt-get update && apt-get install -y mysql-server && \
+    apt-get update && apt-get install -y --no-install-recommends mysql-server && \
     rm mysql-apt-config_0.3.7-1ubuntu14.04_all.deb
 
 # Installing MCR
-RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
-#COPY MCR_R2015a_glnxa64_installer.zip MCR/
+#RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
+COPY MCR_R2015a_glnxa64_installer.zip MCR/
 WORKDIR MCR
 RUN unzip -q MCR_R2015a_glnxa64_installer.zip && \
     ./install -mode silent -agreeToLicense yes && \
@@ -34,8 +32,8 @@ RUN unzip -q MCR_R2015a_glnxa64_installer.zip && \
 
 # Installing LINE
 WORKDIR /opt
-RUN curl -OL http://svn.code.sf.net/p/line-solver/code/branches/unstable/v072/bin/linux/LINE_072_linux.zip
-#COPY LINE_072_linux.zip ./
+#RUN curl -OL http://svn.code.sf.net/p/line-solver/code/branches/unstable/v072/bin/linux/LINE_072_linux.zip
+COPY LINE_072_linux.zip ./
 RUN unzip -q LINE_072_linux.zip && \
     mv LINE_072_linux/bin LINE && \
     rm -rf LINE_072_linux*
@@ -79,18 +77,6 @@ RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4clou
 #    service mysql stop && \
 WORKDIR ${USERHOME}
 
-# Installing and setting the SSH server
-RUN mkdir $USERHOME/.ssh
-COPY id_rsa $USERHOME/.ssh/id_rsa
-COPY id_rsa.pub $USERHOME/.ssh/id_rsa.pub
-RUN cat $USERHOME/.ssh/id_rsa.pub > $USERHOME/.ssh/authorized_keys && \
-    chmod go-rwx $USERHOME/.ssh/id_rsa $USERHOME/.ssh/id_rsa.pub && \
-    mkdir /var/run/sshd && \
-    echo 'root:modaclouds' | chpasswd && \
-    sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
-    echo "export VISIBLE=now" >> /etc/profile
-
 # Installing CMPL
 WORKDIR /tmp
 RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz && \
@@ -101,9 +87,6 @@ WORKDIR ..
 RUN rm -rf Cmpl*
 WORKDIR $USERHOME
 
-# Starts SSH, LINE and the VNC server
-EXPOSE 5463
+# Starts MySQL, LINE and the VNC server
 EXPOSE 5901
-EXPOSE 3306
-EXPOSE 22
-CMD /usr/sbin/sshd && vncserver :1 -geometry 1440x900 -depth 24 && /opt/LINE/run_LINE_loop.sh
+CMD service mysql start && vncserver :1 -geometry 1440x900 -depth 24 && /opt/LINE/run_LINE_loop.sh
