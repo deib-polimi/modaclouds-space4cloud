@@ -23,8 +23,8 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     rm mysql-apt-config_0.3.7-1ubuntu14.04_all.deb
 
 # Installing MCR
-#RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
-COPY MCR_R2015a_glnxa64_installer.zip MCR/
+RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
+#COPY MCR_R2015a_glnxa64_installer.zip MCR/
 WORKDIR MCR
 RUN unzip -q MCR_R2015a_glnxa64_installer.zip && \
     ./install -mode silent -agreeToLicense yes && \
@@ -32,8 +32,8 @@ RUN unzip -q MCR_R2015a_glnxa64_installer.zip && \
 
 # Installing LINE
 WORKDIR /opt
-#RUN curl -OL http://svn.code.sf.net/p/line-solver/code/branches/unstable/v072/bin/linux/LINE_072_linux.zip
-COPY LINE_072_linux.zip ./
+RUN curl -OL http://svn.code.sf.net/p/line-solver/code/branches/unstable/v072/bin/linux/LINE_072_linux.zip
+#COPY LINE_072_linux.zip ./
 RUN unzip -q LINE_072_linux.zip && \
     mv LINE_072_linux/bin LINE && \
     rm -rf LINE_072_linux*
