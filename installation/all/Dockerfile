@@ -21,7 +21,8 @@ RUN apt-get update && apt-get install -y --force-yes \
     curl && \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
-    apt-get update && apt-get install -y mysql-server
+    apt-get update && apt-get install -y mysql-server && \
+    rm mysql-apt-config_0.3.7-1ubuntu14.04_all.deb
 
 # Installing MCR
 RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
@@ -73,9 +74,9 @@ RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4clou
     mysqladmin -u root password 'modaclouds' && \
     mysql -u root --password=modaclouds < createModa.sql && \
     mysql -u root --password=modaclouds < Dump.sql && \
-    rm Dump.sql createModa.sql && \
+    rm Dump.sql createModa.sql
+#     && \
 #    service mysql stop && \
-    rm mysql-apt-config_0.3.7-1ubuntu14.04_all.deb
 WORKDIR ${USERHOME}
 
 # Installing and setting the SSH server
