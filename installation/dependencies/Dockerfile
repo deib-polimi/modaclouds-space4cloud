@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     xorg \
     libglib2.0-0 \
     openssh-server \
+    ca-certificates \
     curl && \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
