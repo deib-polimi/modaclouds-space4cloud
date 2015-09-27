@@ -31,8 +31,8 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Installing MCR
-RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
-#COPY MCR_R2015a_glnxa64_installer.zip MCR/
+#RUN curl -L http://it.mathworks.com/supportfiles/downloads/R2015a/deployment_files/R2015a/installers/glnxa64/MCR_R2015a_glnxa64_installer.zip --create-dirs -o MCR/MCR_R2015a_glnxa64_installer.zip
+COPY MCR_R2015a_glnxa64_installer.zip MCR/
 WORKDIR MCR
 RUN unzip -q MCR_R2015a_glnxa64_installer.zip && \
     ./install -mode silent -agreeToLicense yes && \
@@ -40,8 +40,8 @@ RUN unzip -q MCR_R2015a_glnxa64_installer.zip && \
 
 # Installing LINE
 WORKDIR /opt
-RUN curl -OL http://svn.code.sf.net/p/line-solver/code/branches/unstable/v072/bin/linux/LINE_072_linux.zip
-#COPY LINE_072_linux.zip ./
+#RUN curl -OL http://svn.code.sf.net/p/line-solver/code/branches/unstable/v072/bin/linux/LINE_072_linux.zip
+COPY LINE_072_linux.zip ./
 RUN unzip -q LINE_072_linux.zip && \
     mv LINE_072_linux/bin LINE && \
     rm -rf LINE_072_linux*
@@ -60,8 +60,9 @@ RUN echo "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PARFOR\ntime
 
 # Install eclipse
 WORKDIR ${USERHOME}
-RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz" && \
-    tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
+#RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz"
+COPY eclipse_palladio.tar.gz ./
+RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
 WORKDIR Desktop
 RUN echo "#\!/usr/bin/env xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Eclipse_Palladio.desktop && \
     ln -s /opt/models models
@@ -95,6 +96,8 @@ RUN bash install
 WORKDIR ..
 RUN rm -rf Cmpl*
 WORKDIR $USERHOME
+
+RUN echo "#\!/bin/sh\n\nservice mysql start\n/root/eclipse_palladio/eclipse -data /root/workspace &\n/opt/LINE/run_LINE_loop.sh" > /usr/bin/s4c
 
 # Starts MySQL, LINE and the VNC server
 EXPOSE 5901

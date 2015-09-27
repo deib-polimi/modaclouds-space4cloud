@@ -37,6 +37,8 @@ RUN echo "modaclouds" > password.txt && \
     cat password.txt password.txt | vncpasswd && \
     rm password.txt
 
+RUN echo "#\!/bin/sh\n\nservice mysql start\n/root/eclipse_palladio/eclipse -data /root/workspace &\n/opt/LINE/run_LINE_loop.sh" > /usr/bin/s4c
+
 # Starts the VNC server
 EXPOSE 5901
 CMD vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && tail -F /root/.vnc/*.log
