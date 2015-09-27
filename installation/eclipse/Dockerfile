@@ -27,7 +27,7 @@ WORKDIR ${USERHOME}
 RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz" && \
     tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
 WORKDIR Desktop
-RUN echo "#\!/usr/bin/env xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Eclipse_Palladio.desktop && \
+RUN printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Eclipse_Palladio.desktop && \
     ln -s /opt/models models
 WORKDIR ${USERHOME}
 
@@ -37,7 +37,8 @@ RUN echo "modaclouds" > password.txt && \
     cat password.txt password.txt | vncpasswd && \
     rm password.txt
 
-RUN echo "#\!/bin/sh\n\nservice mysql start\n/root/eclipse_palladio/eclipse -data /root/workspace &\n/opt/LINE/run_LINE_loop.sh" > /usr/bin/s4c
+RUN printf "%b\n" '#!'"`which sh`\n\n/root/eclipse_palladio/eclipse -data /root/workspace" > /usr/bin/s4c && \
+    chmod +x /usr/bin/s4c
 
 # Starts the VNC server
 EXPOSE 5901
