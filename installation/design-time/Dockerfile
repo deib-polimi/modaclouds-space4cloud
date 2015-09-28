@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     tightvncserver \
     default-jdk \
     libglib2.0-0 \
+    xrdp \
     curl && \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
@@ -58,21 +59,37 @@ RUN printf "%b\n" "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PAR
     printf "%b\n" '#!'"`which sh`\n\nwhile true\ndo\n\t/opt/LINE/LINE /opt/LINE/LINE.properties\n\tsleep 2\ndone" > run_LINE_loop.sh && \
     chmod +x run_LINE.sh LINE run_LINE_loop.sh LINE-orig
 
-# Install eclipse
+# Install Space 4Clouds
 WORKDIR ${USERHOME}
 RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz"
 #COPY eclipse_palladio.tar.gz ./
 RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
 WORKDIR Desktop
 RUN printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Space\ 4Clouds.desktop && \
-    ln -s /opt/models models
+    ln -s /opt/space4clouds Space\ 4Clouds\ Projects
+
+# Install Modelio Creator 4Clouds
 WORKDIR ${USERHOME}
+RUN curl -L "http://downloads.sourceforge.net/project/modeliouml/3.1.2/modelio-open-201405191231-linux.gtk.x86_64.tar.gz?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fmodeliouml%2Ffiles%2F3.1.2%2F&ts=1443436610&use_mirror=heanet" -o modelio.tar.gz
+#COPY modelio.tar.gz ./
+RUN tar zxf modelio.tar.gz && rm modelio.tar.gz
+WORKDIR Desktop
+RUN printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/Modelio 3.1/modelio -consoleLog\nIcon=/root/Modelio 3.1/icon.xpm\nTerminal=false\nType=Application\nPath=/root/Modelio 3.1/" > Modelio\ Creator\ 4Clouds.desktop && \
+    ln -s /opt/modelio Modelio\ Projects && \
+    curl -OL "http://forge.modelio.org/attachments/download/14583/CloudResources_2.0.0.ramc" && \
+    curl -L "https://www.dropbox.com/s/rl26ldbxuxtpr17/Creator4Clouds_1.0.813.jmdac?dl=1" -o Creator4Clouds_1.0.813.jmdac && \
+    mkdir Creator4clouds\ support\ material && \
+    mv *.ramc Creator4clouds\ support\ material && \
+    mv *.jmdac Creator4clouds\ support\ material
 
 # Set the VNC server
 WORKDIR ${USERHOME}
 RUN echo "modaclouds" > password.txt && \
     cat password.txt password.txt | vncpasswd && \
     rm password.txt
+
+# Set the RDP server
+RUN printf "%b\n" "\n[xrdp1000]\nname=VNC-Session\nlib=libvnc.so\nip=localhost\nport=5901\nusername=na\npassword=ask" >> /etc/xrdp/xrdp.ini
 
 # Install the DB and load the dump
 RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4cloud/master/db/Dump.sql && \
@@ -98,6 +115,7 @@ WORKDIR $USERHOME
 RUN printf "%b\n" '#!'"`which sh`\n\nservice mysql start\n/root/eclipse_palladio/eclipse -data /root/workspace &\n/opt/LINE/run_LINE_loop.sh" > /usr/bin/s4c && \
     chmod +x /usr/bin/s4c
 
-# Starts MySQL, LINE and the VNC server
+# Starts MySQL, LINE, the RDP and the VNC server
 EXPOSE 5901
-CMD service mysql start && vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && /opt/LINE/run_LINE_loop.sh
+EXPOSE 3389
+CMD service mysql start && service xrdp start && vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && /opt/LINE/run_LINE_loop.sh
