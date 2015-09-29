@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dmz-cursor-theme \
     tightvncserver \
     default-jdk \
+    xrdp \
     curl && \
     apt-get autoclean && \
     apt-get autoremove && \
@@ -37,9 +38,14 @@ RUN echo "modaclouds" > password.txt && \
     cat password.txt password.txt | vncpasswd && \
     rm password.txt
 
+# Set the RDP server
+RUN sed 's|\[xrdp1\]|\[xrdp1000\]\nname=VNC-Session\nlib=libvnc.so\nip=localhost\nport=5901\nusername=na\npassword=ask\n\n\[xrdp1\]|' </etc/xrdp/xrdp.ini >/etc/xrdp/xrdp-new.ini && \
+    mv /etc/xrdp/xrdp-new.ini /etc/xrdp/xrdp.ini
+
 RUN printf "%b\n" '#!'"`which sh`\n\n/root/eclipse_palladio/eclipse -data /root/workspace" > /usr/bin/s4c && \
     chmod +x /usr/bin/s4c
 
 # Starts the VNC server
 EXPOSE 5901
-CMD vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && tail -F /root/.vnc/*.log
+EXPOSE 3389
+CMD service xrdp start && vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && tail -F /root/.vnc/*.log

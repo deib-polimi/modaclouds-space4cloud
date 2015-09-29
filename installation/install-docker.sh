@@ -21,5 +21,5 @@ elif [ "$(uname)" == "Linux" && "$(which docker)" == "docker not found" ]; then
     sudo apt-get install curl
     curl -sSL https://get.docker.com/ | sh
     sudo usermod -aG docker `whoami`
-    sudo newgrp docker
+    newgrp docker
 fi

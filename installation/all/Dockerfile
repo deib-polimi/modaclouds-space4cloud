@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     tightvncserver \
     default-jdk \
     libglib2.0-0 \
+    xrdp \
     curl && \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
@@ -74,6 +75,10 @@ RUN echo "modaclouds" > password.txt && \
     cat password.txt password.txt | vncpasswd && \
     rm password.txt
 
+# Set the RDP server
+RUN sed 's|\[xrdp1\]|\[xrdp1000\]\nname=VNC-Session\nlib=libvnc.so\nip=localhost\nport=5901\nusername=na\npassword=ask\n\n\[xrdp1\]|' </etc/xrdp/xrdp.ini >/etc/xrdp/xrdp-new.ini && \
+    mv /etc/xrdp/xrdp-new.ini /etc/xrdp/xrdp.ini
+
 # Install the DB and load the dump
 RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4cloud/master/db/Dump.sql && \
     printf "%b\n" "CREATE USER 'moda'@'%' IDENTIFIED BY 'modaclouds';\nGRANT ALL PRIVILEGES ON *.* TO 'moda'@'%' WITH GRANT OPTION;" > createModa.sql && \
@@ -98,6 +103,7 @@ WORKDIR $USERHOME
 RUN printf "%b\n" '#!'"`which sh`\n\nservice mysql start\n/root/eclipse_palladio/eclipse -data /root/workspace &\n/opt/LINE/run_LINE_loop.sh" > /usr/bin/s4c && \
     chmod +x /usr/bin/s4c
 
-# Starts MySQL, LINE and the VNC server
+# Starts MySQL, LINE, the RDP and the VNC server
 EXPOSE 5901
-CMD service mysql start && vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && /opt/LINE/run_LINE_loop.sh
+EXPOSE 3389
+CMD service mysql start && service xrdp start && vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && /opt/LINE/run_LINE_loop.sh

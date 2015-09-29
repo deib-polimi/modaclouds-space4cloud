@@ -74,7 +74,7 @@ RUN curl -L "http://downloads.sourceforge.net/project/modeliouml/3.1.2/modelio-o
 #COPY modelio.tar.gz ./
 RUN tar zxf modelio.tar.gz && rm modelio.tar.gz
 WORKDIR Desktop
-RUN printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/Modelio 3.1/modelio -consoleLog\nIcon=/root/Modelio 3.1/icon.xpm\nTerminal=false\nType=Application\nPath=/root/Modelio 3.1/" > Modelio\ Creator\ 4Clouds.desktop && \
+RUN printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/Modelio\ 3.1/modelio -consoleLog\nIcon=/root/Modelio 3.1/icon.xpm\nTerminal=false\nType=Application\nPath=/root/Modelio 3.1/" > Modelio\ Creator\ 4Clouds.desktop && \
     ln -s /opt/modelio Modelio\ Projects && \
     curl -OL "http://forge.modelio.org/attachments/download/14583/CloudResources_2.0.0.ramc" && \
     curl -L "https://www.dropbox.com/s/rl26ldbxuxtpr17/Creator4Clouds_1.0.813.jmdac?dl=1" -o Creator4Clouds_1.0.813.jmdac && \
@@ -89,7 +89,8 @@ RUN echo "modaclouds" > password.txt && \
     rm password.txt
 
 # Set the RDP server
-RUN printf "%b\n" "\n[xrdp1000]\nname=VNC-Session\nlib=libvnc.so\nip=localhost\nport=5901\nusername=na\npassword=ask" >> /etc/xrdp/xrdp.ini
+RUN sed 's|\[xrdp1\]|\[xrdp1000\]\nname=VNC-Session\nlib=libvnc.so\nip=localhost\nport=5901\nusername=na\npassword=ask\n\n\[xrdp1\]|' </etc/xrdp/xrdp.ini >/etc/xrdp/xrdp-new.ini && \
+    mv /etc/xrdp/xrdp-new.ini /etc/xrdp/xrdp.ini
 
 # Install the DB and load the dump
 RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4cloud/master/db/Dump.sql && \
@@ -114,6 +115,9 @@ WORKDIR $USERHOME
 
 RUN printf "%b\n" '#!'"`which sh`\n\nservice mysql start\n/root/eclipse_palladio/eclipse -data /root/workspace &\n/opt/LINE/run_LINE_loop.sh" > /usr/bin/s4c && \
     chmod +x /usr/bin/s4c
+
+RUN printf "%b\n" '#!'"`which sh`\n\n/root/Modelio\ 3.1/modelio -consoleLog" > /usr/bin/modelio && \
+    chmod +x /usr/bin/modelio
 
 # Starts MySQL, LINE, the RDP and the VNC server
 EXPOSE 5901
