@@ -18,7 +18,7 @@ elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
 elif [ "$(uname)" == "Linux" && "$(which docker)" == "docker not found" ]; then
     # Linux
     sudo apt-get update
-    sudo apt-get install curl
+    sudo apt-get install -y curl
     curl -sSL https://get.docker.com/ | sh
     sudo usermod -aG docker `whoami`
     newgrp docker
