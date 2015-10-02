@@ -50,7 +50,7 @@ Bundle-ClassPath: .,
  target/dependency/privatecloud-0.1.5.jar,
  target/dependency/commons-lang-2.6.jar,
  target/dependency/rules-0.3.1.jar,
- target/dependency/adaptationDesignTime4Cloud-2.2.jar
+ target/dependency/adaptationDesignTime4Cloud-2.3.jar
 Export-Package: icons,
  it.polimi.modaclouds.space4cloud.EMFHelper;
   uses:="org.eclipse.emf.ecore,
