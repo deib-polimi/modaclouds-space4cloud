@@ -18,18 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.polimi.modaclouds.resourcemodel.cloud.Backend;
 import it.polimi.modaclouds.resourcemodel.cloud.BlobStorage;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
@@ -48,8 +36,6 @@ import it.polimi.modaclouds.resourcemodel.cloud.Compute;
 import it.polimi.modaclouds.resourcemodel.cloud.Cost;
 import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
 import it.polimi.modaclouds.resourcemodel.cloud.CostUnitType;
-import it.polimi.modaclouds.resourcemodel.cloud.Database;
-import it.polimi.modaclouds.resourcemodel.cloud.DatabaseType;
 import it.polimi.modaclouds.resourcemodel.cloud.FilesystemStorage;
 import it.polimi.modaclouds.resourcemodel.cloud.Frontend;
 import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
@@ -64,6 +50,18 @@ import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
 import it.polimi.modaclouds.space4cloud.iterfaces.GenericDBConnector;
 import it.polimi.modaclouds.space4cloud.utils.EMF;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -280,25 +278,11 @@ public class ProviderDBConnector implements GenericDBConnector {
 				case FRONTEND:
 					i = cf.createFrontend();
 					break;
-				case DATABASE:
-					DatabaseType dbType = DatabaseType.getByName(rs
-							.getString(6));
-					switch (dbType) {
-					case NOSQL:
-						NoSQL_DB n = cf.createNoSQL_DB();
-						n.setDBType(dbType);
-						i = n;
-						break;
-					case RELATIONAL:
-						RelationalDB r = cf.createRelationalDB();
-						r.setDBType(dbType);
-						i = r;
-						break;
-					default:
-						String tmp = rs.getString(6);
-						rs.close();
-						throw new Exception("Undefined Database Type (" + tmp + ").");
-					}
+				case NOSQL:
+					i = cf.createNoSQL_DB();
+					break;
+				case RELATIONAL:
+					i = cf.createRelationalDB();
 					break;
 				case CACHE:
 					i = cf.createCache();
@@ -318,10 +302,10 @@ public class ProviderDBConnector implements GenericDBConnector {
 				i.setPlatformType(type);
 				i.setId(rs.getInt(3));
 				i.setName(rs.getString(4));
-				i.setLanguage(rs.getString(7));
-				i.setTechnology(rs.getString(8));
-				if (rs.getObject(9) != null)
-					i.setHasCostProfile(getCostProfile(i, rs.getInt(9)));
+				i.setLanguage(rs.getString(6));
+				i.setTechnology(rs.getString(7));
+				if (rs.getObject(8) != null)
+					i.setHasCostProfile(getCostProfile(i, rs.getInt(8)));
 				defineCosts(i);
 				ResultSet rs1 = DatabaseConnector.getConnection().createStatement().executeQuery(
 						"select * from runon R, cloudresource CR where R.CloudPlatform_id="
@@ -698,11 +682,23 @@ public class ProviderDBConnector implements GenericDBConnector {
 	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getDatabaseCloudPlatforms(cloud.PaaS_Service)
 	 */
 	@Override
-	public List<Database> getDatabaseCloudPlatforms(PaaS_Service paas) {
-		List<Database> ld = new ArrayList<Database>();
+	public List<RelationalDB> getRelationalDatabaseCloudPlatforms(PaaS_Service paas) {
+		List<RelationalDB> ld = new ArrayList<RelationalDB>();
 		for (CloudPlatform cp : paas.getComposedOf())
-			if (cp instanceof Database)
-				ld.add((Database) cp);
+			if (cp instanceof RelationalDB)
+				ld.add((RelationalDB) cp);
+		return ld;
+	}
+	
+	/* (non-Javadoc)
+	 * @see it.polimi.franceschelli.space4cloud.iterfaces.GenericDBConnector#getDatabaseCloudPlatforms(cloud.PaaS_Service)
+	 */
+	@Override
+	public List<NoSQL_DB> getNoSQLDatabaseCloudPlatforms(PaaS_Service paas) {
+		List<NoSQL_DB> ld = new ArrayList<NoSQL_DB>();
+		for (CloudPlatform cp : paas.getComposedOf())
+			if (cp instanceof NoSQL_DB)
+				ld.add((NoSQL_DB) cp);
 		return ld;
 	}
 

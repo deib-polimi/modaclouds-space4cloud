@@ -18,18 +18,18 @@
  */
 package it.polimi.modaclouds.space4cloud.utils;
 
-import java.util.List;
-
 import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudStorage;
 import it.polimi.modaclouds.resourcemodel.cloud.Cost;
 import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
-import it.polimi.modaclouds.resourcemodel.cloud.Database;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Storage;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResource;
 import it.polimi.modaclouds.resourcemodel.cloud.VirtualHWResourceType;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
+
+import java.util.List;
 
 // TODO: Auto-generated Javadoc
 /**

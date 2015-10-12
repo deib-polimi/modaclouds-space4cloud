@@ -18,17 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.db;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.eclipse.emf.common.util.EList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudFactory;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
@@ -37,7 +26,6 @@ import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatformPropertyName;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResourceType;
 import it.polimi.modaclouds.resourcemodel.cloud.Cost;
-import it.polimi.modaclouds.resourcemodel.cloud.Database;
 import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.PaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.V_Memory;
@@ -50,7 +38,6 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.BlobDatastore
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Cache;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database.DatabaseType;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Frontend;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.NOSQL.DatabaseTechnology;
@@ -60,6 +47,17 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SQL;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.TableDatastore;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.eclipse.emf.common.util.EList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michele Ciavotta the aim of this class is to provide an object able
@@ -92,9 +90,9 @@ public class DataHandler {
 			logger.error("Error while connecting to the database.", e);
 		}
 		
-		String[] providers = new String[] { "Amazon", "Microsoft" };
-		String[] serviceTypes = new String[] { "Compute", "Compute" };
-		String[] serviceNames = new String[] { "Elastic Compute Cloud (EC2)", "Virtual Machines" };
+		String[] providers = new String[] { "Amazon" }; //, "Microsoft" };
+		String[] serviceTypes = new String[] { "RelationalDB" }; // "Compute", "Compute" };
+		String[] serviceNames = new String[] { "DynamoDB" }; // "Elastic Compute Cloud (EC2)", "Virtual Machines" };
 		
 		for (int i = 0; i < providers.length; ++i) {
 			for (Configuration.Benchmark tool : Configuration.Benchmark.values()) {
@@ -878,61 +876,54 @@ public class DataHandler {
 					storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, Cache.DEFAULT_STORAGE),
 					c);
 			break;
-		case DataBase:
-			DatabaseType dbt = DatabaseType.getByName(((Database)cp).getDBType().getLiteral());
-			
-			switch (dbt) {
-			case Relational:
-				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, SQL.DEFAULT_DATA_REPLICAS);
+		case Relational:
+			dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, SQL.DEFAULT_DATA_REPLICAS);
+			c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+					cr.getName() /*resourceName*/, replicas, cr);
+			p = new SQL(provider, serviceType, serviceName,
+					resourceName, cp.getTechnology(),
+					getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, SQL.DEFAULT_SSD_OPTIMIZED),
+					storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, SQL.DEFAULT_STORAGE),
+					getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, SQL.DEFAULT_MAX_CONNECTIONS),
+					getPropertyValue(cp, CloudPlatformPropertyName.MAX_ROLLBACK_HOURS, SQL.DEFAULT_MAX_ROLLBACK_HOURS),
+					dataReplicas,
+					getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, SQL.DEFAULT_MULTI_AZ_REPLICAS),
+					c);
+			break;
+		case NoSQL:
+			DatabaseTechnology dbtech = DatabaseTechnology.getByName(cp.getTechnology());
+			switch (dbtech) {
+			case TableDatastore:
+				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, TableDatastore.DEFAULT_DATA_REPLICAS);
 				c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
 						cr.getName() /*resourceName*/, replicas, cr);
-				p = new SQL(provider, serviceType, serviceName,
-						resourceName, cp.getTechnology(),
-						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, SQL.DEFAULT_SSD_OPTIMIZED),
-						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, SQL.DEFAULT_STORAGE),
-						getPropertyValue(cp, CloudPlatformPropertyName.MAX_CONNECTIONS, SQL.DEFAULT_MAX_CONNECTIONS),
-						getPropertyValue(cp, CloudPlatformPropertyName.MAX_ROLLBACK_HOURS, SQL.DEFAULT_MAX_ROLLBACK_HOURS),
+				p = new TableDatastore(provider, serviceType, serviceName,
+						resourceName,
+						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, TableDatastore.DEFAULT_SSD_OPTIMIZED),
+						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, TableDatastore.DEFAULT_STORAGE),
 						dataReplicas,
-						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, SQL.DEFAULT_MULTI_AZ_REPLICAS),
+						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, TableDatastore.DEFAULT_MULTI_AZ_REPLICAS),
+						getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, TableDatastore.DEFAULT_MAX_ENTRY_SIZE),
 						c);
 				break;
-			case NoSQL:
-				DatabaseTechnology dbtech = DatabaseTechnology.getByName(((Database)cp).getTechnology());
-				switch (dbtech) {
-				case TableDatastore:
-					dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, TableDatastore.DEFAULT_DATA_REPLICAS);
-					c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
-							cr.getName() /*resourceName*/, replicas, cr);
-					p = new TableDatastore(provider, serviceType, serviceName,
-							resourceName,
-							getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, TableDatastore.DEFAULT_SSD_OPTIMIZED),
-							storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, TableDatastore.DEFAULT_STORAGE),
-							dataReplicas,
-							getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, TableDatastore.DEFAULT_MULTI_AZ_REPLICAS),
-							getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, TableDatastore.DEFAULT_MAX_ENTRY_SIZE),
-							c);
-					break;
-				case BlobDatastore:
-					dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, BlobDatastore.DEFAULT_DATA_REPLICAS);
-					c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
-							cr.getName() /*resourceName*/, replicas, cr);
-					p = new BlobDatastore(provider, serviceType, serviceName,
-							resourceName,
-							getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, BlobDatastore.DEFAULT_SSD_OPTIMIZED),
-							storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, BlobDatastore.DEFAULT_STORAGE),
-							dataReplicas,
-							getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, BlobDatastore.DEFAULT_MULTI_AZ_REPLICAS),
-							getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, BlobDatastore.DEFAULT_MAX_ENTRY_SIZE),
-							c);
-					break;
-				default:
-					return null;
-				}
+			case BlobDatastore:
+				dataReplicas = getPropertyValue(cp, CloudPlatformPropertyName.DATA_REPLICAS, BlobDatastore.DEFAULT_DATA_REPLICAS);
+				c = (Compute)getIaaSfromCloudResource(provider, cr.getResourceType().getLiteral() /*serviceType*/,  serviceName,
+						cr.getName() /*resourceName*/, replicas, cr);
+				p = new BlobDatastore(provider, serviceType, serviceName,
+						resourceName,
+						getPropertyValue(cp, CloudPlatformPropertyName.SSD_OPTIMIZED, BlobDatastore.DEFAULT_SSD_OPTIMIZED),
+						storage > -1 ? storage : getPropertyValue(cp, CloudPlatformPropertyName.STORAGE, BlobDatastore.DEFAULT_STORAGE),
+						dataReplicas,
+						getPropertyValue(cp, CloudPlatformPropertyName.MULTI_AZ_REPLICAS, BlobDatastore.DEFAULT_MULTI_AZ_REPLICAS),
+						getPropertyValue(cp, CloudPlatformPropertyName.MAX_ENTRY_SIZE, BlobDatastore.DEFAULT_MAX_ENTRY_SIZE),
+						c);
 				break;
+			default:
+				return null;
 			}
 			break;
 		default:
-			logger.debug("Case not considered at the moment.");
 			return null;
 		}
 		

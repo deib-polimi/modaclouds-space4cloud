@@ -18,22 +18,23 @@
  */
 package it.polimi.modaclouds.space4cloud.iterfaces;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import it.polimi.modaclouds.resourcemodel.cloud.Backend;
 import it.polimi.modaclouds.resourcemodel.cloud.BlobStorage;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudStorage;
 import it.polimi.modaclouds.resourcemodel.cloud.Compute;
-import it.polimi.modaclouds.resourcemodel.cloud.Database;
 import it.polimi.modaclouds.resourcemodel.cloud.FilesystemStorage;
 import it.polimi.modaclouds.resourcemodel.cloud.Frontend;
 import it.polimi.modaclouds.resourcemodel.cloud.IaaS_Service;
 import it.polimi.modaclouds.resourcemodel.cloud.Middleware;
+import it.polimi.modaclouds.resourcemodel.cloud.NoSQL_DB;
 import it.polimi.modaclouds.resourcemodel.cloud.PaaS_Service;
+import it.polimi.modaclouds.resourcemodel.cloud.RelationalDB;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -117,16 +118,28 @@ public interface GenericDBConnector {
 	public List<Compute> getComputeCloudResources(IaaS_Service iaas);
 
 	/**
-	 * Retrieves the list of the Database Cloud Platforms provided by the
+	 * Retrieves the list of the Relational Database Cloud Platforms provided by the
 	 * specified PaaS Service.
 	 * 
 	 * @param paas
 	 *            is the specified PaaS_Service element.
-	 * @return a List of Database elements.
+	 * @return a List of RelationalDB elements.
 	 * @see PaaS_Service
-	 * @see Database
+	 * @see RelationalDB
 	 */
-	public List<Database> getDatabaseCloudPlatforms(PaaS_Service paas);
+	public List<RelationalDB> getRelationalDatabaseCloudPlatforms(PaaS_Service paas);
+	
+	/**
+	 * Retrieves the list of the NoSQL Database Cloud Platforms provided by the
+	 * specified PaaS Service.
+	 * 
+	 * @param paas
+	 *            is the specified PaaS_Service element.
+	 * @return a List of NoSQL_DB elements.
+	 * @see PaaS_Service
+	 * @see NoSQL_DB
+	 */
+	public List<NoSQL_DB> getNoSQLDatabaseCloudPlatforms(PaaS_Service paas);
 
 	/**
 	 * Retrieves the list of the Filesystem Storage Cloud Resources provided by

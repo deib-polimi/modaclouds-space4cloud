@@ -101,7 +101,7 @@ public abstract class PaaS extends CloudService {
 	}
 
 	public static enum PaaSType {
-		Frontend("frontend"), Middleware("middleware"), Backend("backend"), DataBase("database"), Storage("storage"), Queue("queue"), Cache("cache");
+		Frontend("frontend"), Middleware("middleware"), Backend("backend"), Storage("storage"), Queue("queue"), Cache("cache"), NoSQL("nosql"), Relational("relational");
 		
 		private String name;
 		
