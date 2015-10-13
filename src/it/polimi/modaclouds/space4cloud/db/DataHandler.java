@@ -708,7 +708,9 @@ public class DataHandler {
 	}
 	
 	private Integer getStorage(CloudPlatform cp) {
-		CloudResource cr = runOn(cp, CloudResourceType.CLOUDSTORAGE);
+		CloudResource cr = runOn(cp, CloudResourceType.BLOBSTORAGE);
+		if (cr == null)
+			cr = runOn(cp, CloudResourceType.FILESYSTEMSTORAGE);
 		return getStorage(cr);
 	}
 	
@@ -800,7 +802,9 @@ public class DataHandler {
 		}
 		
 		CloudResource cr = runOn(cp, CloudResourceType.COMPUTE);
-		CloudResource st = runOn(cp, CloudResourceType.CLOUDSTORAGE);
+		CloudResource st = runOn(cp, CloudResourceType.BLOBSTORAGE);
+		if (st == null)
+			st = runOn(cp, CloudResourceType.FILESYSTEMSTORAGE);
 		
 		if (cr == null)
 			return p;

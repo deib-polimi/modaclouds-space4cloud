@@ -31,7 +31,6 @@ import it.polimi.modaclouds.resourcemodel.cloud.CloudProvider;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudResourceType;
 import it.polimi.modaclouds.resourcemodel.cloud.CloudStorage;
-import it.polimi.modaclouds.resourcemodel.cloud.CloudStorageType;
 import it.polimi.modaclouds.resourcemodel.cloud.Compute;
 import it.polimi.modaclouds.resourcemodel.cloud.Cost;
 import it.polimi.modaclouds.resourcemodel.cloud.CostProfile;
@@ -318,28 +317,16 @@ public class ProviderDBConnector implements GenericDBConnector {
 					switch (crtype) {
 					case COMPUTE:
 						Compute c = cf.createCompute();
-						c.setOS(OSType.getByName(rs1.getString(7)));
+						c.setOS(OSType.getByName(rs1.getString(6)));
 						cr = c;
 						break;
-					case CLOUDSTORAGE:
-						CloudStorageType storageType = CloudStorageType
-						.getByName(rs1.getString(6));
-						switch (storageType) {
-						case BLOBSTORAGE:
-							BlobStorage bs = cf.createBlobStorage();
-							bs.setStorageType(storageType);
-							cr = bs;
-							break;
-						case FILESYSTEM:
-							FilesystemStorage fs = cf.createFilesystemStorage();
-							fs.setStorageType(storageType);
-							cr = fs;
-							break;
-						default:
-							rs1.close();
-							rs.close();
-							throw new Exception("Undefined Cloud Storage Type.");
-						}
+					case BLOBSTORAGE:
+						BlobStorage bs = cf.createBlobStorage();
+						cr = bs;
+						break;
+					case FILESYSTEMSTORAGE:
+						FilesystemStorage fs = cf.createFilesystemStorage();
+						cr = fs;
 						break;
 					default:
 						rs1.close();
@@ -354,8 +341,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 					if (lvhr != null)
 						for (VirtualHWResource v : lvhr)
 							cr.getComposedOf().add(v);
-					if (rs1.getObject(8) != null)
-						cr.setHasCostProfile(getCostProfile(cr, rs1.getInt(8)));
+					if (rs1.getObject(7) != null)
+						cr.setHasCostProfile(getCostProfile(cr, rs1.getInt(7)));
 					defineCosts(cr);
 					i.getRunsOnCloudResource().add(cr);
 				}
@@ -724,27 +711,16 @@ public class ProviderDBConnector implements GenericDBConnector {
 				switch (type) {
 				case COMPUTE:
 					Compute c = cf.createCompute();
-					c.setOS(OSType.getByName(rs.getString(7)));
+					c.setOS(OSType.getByName(rs.getString(6)));
 					i = c;
 					break;
-				case CLOUDSTORAGE:
-					CloudStorageType storageType = CloudStorageType
-					.getByName(rs.getString(6));
-					switch (storageType) {
-					case BLOBSTORAGE:
-						BlobStorage bs = cf.createBlobStorage();
-						bs.setStorageType(storageType);
-						i = bs;
-						break;
-					case FILESYSTEM:
-						FilesystemStorage fs = cf.createFilesystemStorage();
-						fs.setStorageType(storageType);
-						i = fs;
-						break;
-					default:
-						rs.close();
-						throw new Exception("Undefined Cloud Storage Type.");
-					}
+				case BLOBSTORAGE:
+					BlobStorage bs = cf.createBlobStorage();
+					i = bs;
+					break;
+				case FILESYSTEMSTORAGE:
+					FilesystemStorage fs = cf.createFilesystemStorage();
+					i = fs;
 					break;
 				default:
 					rs.close();
@@ -759,8 +735,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 					for (VirtualHWResource v : lvhr)
 						i.getComposedOf().add(v);
 
-				if (rs.getObject(8) != null)
-					i.setHasCostProfile(getCostProfile(i, rs.getInt(8)));
+				if (rs.getObject(7) != null)
+					i.setHasCostProfile(getCostProfile(i, rs.getInt(7)));
 
 				defineCosts(i);
 				list.add(i);

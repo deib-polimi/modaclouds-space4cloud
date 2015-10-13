@@ -16,11 +16,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Installing and setting the SSH server
-RUN mkdir $USERHOME/.ssh
-COPY id_rsa $USERHOME/.ssh/id_rsa
-COPY id_rsa.pub $USERHOME/.ssh/id_rsa.pub
-RUN cat $USERHOME/.ssh/id_rsa.pub > $USERHOME/.ssh/authorized_keys && \
-    chmod go-rwx $USERHOME/.ssh/id_rsa $USERHOME/.ssh/id_rsa.pub && \
+WORKDIR $USERHOME
+RUN mkdir .ssh
+COPY id_rsa .ssh/id_rsa
+COPY id_rsa.pub .ssh/id_rsa.pub
+RUN cat .ssh/id_rsa.pub > .ssh/authorized_keys && \
+    chmod go-rwx .ssh/id_rsa .ssh/id_rsa.pub && \
     mkdir /var/run/sshd && \
     echo 'root:modaclouds' | chpasswd && \
     sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
@@ -29,8 +30,8 @@ RUN cat $USERHOME/.ssh/id_rsa.pub > $USERHOME/.ssh/authorized_keys && \
 
 # Installing CMPL
 WORKDIR /tmp
-RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz && \
-    tar zxf Cmpl-1-10-0-linux64.tar.gz
+RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz
+RUN tar zxf Cmpl-1-10-0-linux64.tar.gz
 WORKDIR Cmpl
 RUN bash install
 WORKDIR ..

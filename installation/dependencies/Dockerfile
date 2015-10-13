@@ -17,8 +17,8 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     curl && \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
-    apt-get update && apt-get install -y --no-install-recommends mysql-server && \
     rm mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
+    apt-get update && apt-get install -y --no-install-recommends mysql-server && \
     apt-get autoclean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
@@ -52,8 +52,8 @@ RUN printf "%b\n" "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PAR
     chmod +x run_LINE.sh LINE run_LINE_loop.sh LINE-orig
 
 # Install the DB and load the dump
-RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4cloud/master/db/Dump.sql && \
-    printf "%b\n" "CREATE USER 'moda'@'%' IDENTIFIED BY 'modaclouds';\nGRANT ALL PRIVILEGES ON *.* TO 'moda'@'%' WITH GRANT OPTION;" > createModa.sql && \
+RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4cloud/master/db/Dump.sql
+RUN printf "%b\n" "CREATE USER 'moda'@'%' IDENTIFIED BY 'modaclouds';\nGRANT ALL PRIVILEGES ON *.* TO 'moda'@'%' WITH GRANT OPTION;" > createModa.sql && \
     mysql_install_db && \
     service mysql start && \
     mysqladmin -u root password 'modaclouds' && \
@@ -62,14 +62,14 @@ RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4clou
     rm Dump.sql createModa.sql
 #     && \
 #    service mysql stop && \
-WORKDIR ${USERHOME}
 
 # Installing and setting the SSH server
-RUN mkdir $USERHOME/.ssh
-COPY id_rsa $USERHOME/.ssh/id_rsa
-COPY id_rsa.pub $USERHOME/.ssh/id_rsa.pub
-RUN cat $USERHOME/.ssh/id_rsa.pub > $USERHOME/.ssh/authorized_keys && \
-    chmod go-rwx $USERHOME/.ssh/id_rsa $USERHOME/.ssh/id_rsa.pub && \
+WORKDIR ${USERHOME}
+RUN mkdir .ssh
+COPY id_rsa .ssh/id_rsa
+COPY id_rsa.pub .ssh/id_rsa.pub
+RUN cat .ssh/id_rsa.pub > .ssh/authorized_keys && \
+    chmod go-rwx .ssh/id_rsa .ssh/id_rsa.pub && \
     mkdir /var/run/sshd && \
     echo 'root:modaclouds' | chpasswd && \
     sed -i 's/PermitRootLogin without-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
@@ -78,8 +78,8 @@ RUN cat $USERHOME/.ssh/id_rsa.pub > $USERHOME/.ssh/authorized_keys && \
 
 # Installing CMPL
 WORKDIR /tmp
-RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz && \
-    tar zxf Cmpl-1-10-0-linux64.tar.gz
+RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz
+RUN tar zxf Cmpl-1-10-0-linux64.tar.gz
 WORKDIR Cmpl
 RUN bash install
 WORKDIR ..

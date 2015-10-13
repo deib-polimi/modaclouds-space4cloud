@@ -25,8 +25,8 @@ RUN apt-get update && apt-get install -y --force-yes --no-install-recommends \
     curl && \
     curl -OL http://dev.mysql.com/get/mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
     dpkg -i mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
-    apt-get update && apt-get install -y --no-install-recommends mysql-server && \
     rm mysql-apt-config_0.3.7-1ubuntu14.04_all.deb && \
+    apt-get update && apt-get install -y --no-install-recommends mysql-server && \
     apt-get autoclean && \
     apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
@@ -63,14 +63,11 @@ RUN printf "%b\n" "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PAR
 WORKDIR ${USERHOME}
 RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz"
 #COPY eclipse_palladio.tar.gz ./
-RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
-WORKDIR Desktop
-RUN printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Space\ 4Clouds.desktop && \
-    ln -s /opt/models models
-WORKDIR ${USERHOME}
+RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz && \
+    printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Desktop/Space\ 4Clouds.desktop && \
+    ln -s /opt/models Desktop/models
 
 # Set the VNC server
-WORKDIR ${USERHOME}
 RUN echo "modaclouds" > password.txt && \
     cat password.txt password.txt | vncpasswd && \
     rm password.txt
@@ -80,20 +77,19 @@ RUN sed 's|\[xrdp1\]|\[xrdp1000\]\nname=VNC-Session\nlib=libvnc.so\nip=localhost
     mv /etc/xrdp/xrdp-new.ini /etc/xrdp/xrdp.ini
 
 # Install the DB and load the dump
-RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4cloud/master/db/Dump.sql && \
-    printf "%b\n" "CREATE USER 'moda'@'%' IDENTIFIED BY 'modaclouds';\nGRANT ALL PRIVILEGES ON *.* TO 'moda'@'%' WITH GRANT OPTION;" > createModa.sql && \
+RUN curl -OL https://raw.githubusercontent.com/deib-polimi/modaclouds-space4cloud/master/db/Dump.sql
+RUN printf "%b\n" "CREATE USER 'moda'@'%' IDENTIFIED BY 'modaclouds';\nGRANT ALL PRIVILEGES ON *.* TO 'moda'@'%' WITH GRANT OPTION;" > createModa.sql && \
     mysql_install_db && \
     service mysql start && \
     mysqladmin -u root password 'modaclouds' && \
     mysql -u root --password=modaclouds < createModa.sql && \
     mysql -u root --password=modaclouds < Dump.sql && \
     rm Dump.sql createModa.sql
-WORKDIR ${USERHOME}
 
 # Installing CMPL
 WORKDIR /tmp
-RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz && \
-    tar zxf Cmpl-1-10-0-linux64.tar.gz
+RUN curl -OL http://www.coliop.org/_download/Cmpl-1-10-0-linux64.tar.gz
+RUN tar zxf Cmpl-1-10-0-linux64.tar.gz
 WORKDIR Cmpl
 RUN bash install
 WORKDIR ..

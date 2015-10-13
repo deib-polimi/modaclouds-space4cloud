@@ -25,15 +25,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install eclipse
 WORKDIR ${USERHOME}
-RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz" && \
-    tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz
-WORKDIR Desktop
-RUN printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Space\ 4Clouds.desktop && \
-    ln -s /opt/models models
-WORKDIR ${USERHOME}
+RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz"
+RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz && \
+    printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Desktop/Space\ 4Clouds.desktop && \
+    ln -s /opt/models Desktop/models
 
 # Set the VNC server
-WORKDIR ${USERHOME}
 RUN echo "modaclouds" > password.txt && \
     cat password.txt password.txt | vncpasswd && \
     rm password.txt
