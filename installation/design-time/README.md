@@ -2,7 +2,13 @@
 
 Docker container for the whole design time in MODAClouds, which means Space 4Clouds and everything it needs, and Modelio Creator 4Clouds.
 
-## Components and licenses
+## Disclaimer of warranty
+
+Licensor provides the Work (and each Contributor provides its Contributions) on an "**AS IS**" *BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND*, either express or implied, including, without limitation, any warranties or conditions of *TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE*. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.
+
+More details on the disclaimer at [Apache 2.0]. Following more details on the components and licenses.
+
+### Components and licenses
 
 The components developed directly by the [MODAClouds group](http://www.modaclouds.eu) are the following:
 * Space 4Clouds, license: [Apache 2.0]
