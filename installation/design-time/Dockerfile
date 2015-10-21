@@ -56,7 +56,7 @@ RUN printf "%b\n" "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PAR
     printf "%b\n" '#!'"`which env` sh\n\nMCRROOT=\"/usr/local/MATLAB/MATLAB_Runtime/v85\"\nLINEROOT=\"/opt/LINE\"\n\ncd \${LINEROOT} && sh run_LINE.sh \${MCRROOT} \"\$@\"" > LINE && \
     sed 's|LINE|LINE-orig|' <run_LINE.sh >run_LINE-new.sh && \
     mv run_LINE-new.sh run_LINE.sh && \
-    printf "%b\n" '#!'"`which sh`\n\nwhile true\ndo\n\t/opt/LINE/LINE /opt/LINE/LINE.properties\n\tsleep 2\ndone" > run_LINE_loop.sh && \
+    printf "%b\n" '#!'"`which sh`\n/opt/LINE/LINE /opt/LINE/LINE.properties\n" > run_LINE_loop.sh && \
     chmod +x run_LINE.sh LINE run_LINE_loop.sh LINE-orig
 
 # Install Space 4Clouds
