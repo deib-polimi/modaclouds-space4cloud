@@ -61,7 +61,7 @@ RUN printf "%b\n" "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PAR
 
 # Install Space 4Clouds
 WORKDIR ${USERHOME}
-RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/unstable/eclipse_palladio.tar.gz"
+RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz"
 #COPY eclipse_palladio.tar.gz ./
 RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz && \
     mkdir Desktop && \
