@@ -56,12 +56,12 @@ RUN printf "%b\n" "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PAR
     printf "%b\n" '#!'"`which env` sh\n\nMCRROOT=\"/usr/local/MATLAB/MATLAB_Runtime/v85\"\nLINEROOT=\"/opt/LINE\"\n\ncd \${LINEROOT} && sh run_LINE.sh \${MCRROOT} \"\$@\"" > LINE && \
     sed 's|LINE|LINE-orig|' <run_LINE.sh >run_LINE-new.sh && \
     mv run_LINE-new.sh run_LINE.sh && \
-    printf "%b\n" '#!'"`which sh`\n\nwhile true\ndo\n\t/opt/LINE/LINE /opt/LINE/LINE.properties\n\tsleep 2\ndone" > run_LINE_loop.sh && \
+    printf "%b\n" '#!'"`which sh`\n/opt/LINE/LINE /opt/LINE/LINE.properties > /opt/LINE/LINE.log &" > run_LINE_loop.sh && \
     chmod +x run_LINE.sh LINE run_LINE_loop.sh LINE-orig
 
 # Install Space 4Clouds
 WORKDIR ${USERHOME}
-RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz"
+RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/unstable/eclipse_palladio.tar.gz"
 #COPY eclipse_palladio.tar.gz ./
 RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz && \
     mkdir Desktop && \
@@ -118,4 +118,4 @@ RUN printf "%b\n" '#!'"`which sh`\n\n/root/Modelio\ 3.1/modelio -consoleLog" > /
 # Starts MySQL, LINE, the RDP and the VNC server
 EXPOSE 5901
 EXPOSE 3389
-CMD service mysql start && service xrdp start && vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && /opt/LINE/run_LINE_loop.sh
+CMD service mysql start && service xrdp start && vncserver :1 -desktop S4C -geometry $GEOMETRY -depth 24 -dpi 100 && /opt/LINE/run_LINE_loop.sh && while true; do echo hello world; sleep 10; done
