@@ -342,6 +342,23 @@ public class SolutionMulti implements Cloneable, Serializable, Iterable<Solution
 			logger.error("Error while exporting the data via CSV.", e);
 		}
 	}
+	
+	
+	public void exportStatisticCSV(Path filePath) {
+		String text = "Generation Time, Cost, Feasibility\n";
+		text += getGenerationTime() + ",";
+		text += costFormatter.format(getCost()) + ",";
+		text += isFeasible()+"\n";
+
+
+		try {
+			PrintWriter outFile = new PrintWriter(filePath.toFile());
+			outFile.println(text);
+			outFile.close();
+		} catch (FileNotFoundException e) {
+			logger.error("Error while exporting the data via CSV.", e);
+		}
+	}
 
 	public void exportLight(Path filePath) {
 		if (!isEvaluated()) {

@@ -450,18 +450,18 @@ public class Configuration {
 		if (FUNCTIONALITY == Operation.Optimization
 				|| FUNCTIONALITY == Operation.Robustness) {
 
-			if (TABU_MEMORY_SIZE < 1)
-				errors.add("The tabu memory size must be a positive number");
-			if (SCRUMBLE_ITERS < 1)
-				errors.add("The number of scrumble iterations must be positive");
-			if (FEASIBILITY_ITERS < 1)
-				errors.add("The number of feasibility iterations must be positive");
-			if (SCALE_IN_FACTOR < 1)
-				errors.add("The scale in factor must be positive");
-			if (SCALE_IN_ITERS < 1)
-				errors.add("The number of scale in iterations must be positive");
-			if (SCALE_IN_CONV_ITERS < 1)
-				errors.add("The number of scale in convergence iterations must be positive");
+//			if (TABU_MEMORY_SIZE < 1)
+//				errors.add("The tabu memory size must be a positive number");
+//			if (SCRUMBLE_ITERS < 1)
+//				errors.add("The number of scrumble iterations must be positive");
+//			if (FEASIBILITY_ITERS < 1)
+//				errors.add("The number of feasibility iterations must be positive");
+//			if (SCALE_IN_FACTOR < 1)
+//				errors.add("The scale in factor must be positive");
+//			if (SCALE_IN_ITERS < 1)
+//				errors.add("The number of scale in iterations must be positive");
+//			if (SCALE_IN_CONV_ITERS < 1)
+//				errors.add("The number of scale in convergence iterations must be positive");
 
 			// check the initial solution generation
 			if ((RELAXED_INITIAL_SOLUTION || REDISTRIBUTE_WORKLOAD
