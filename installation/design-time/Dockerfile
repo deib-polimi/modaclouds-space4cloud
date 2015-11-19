@@ -61,11 +61,17 @@ RUN printf "%b\n" "port=5463\nmaxIter=500\nmaxJobSize=6\nverbose=0\nparallel=PAR
 
 # Install Space 4Clouds
 WORKDIR ${USERHOME}
+#Download images for customization
+RUN curl -OL ftp://ftp.modaclouds.eu/public/space4cloud/c4c-icon.png
+RUN curl -OL ftp://ftp.modaclouds.eu/public/space4cloud/background.png
+RUN curl -OL ftp://ftp.modaclouds.eu/public/space4cloud/sd4c-icon.png
+RUN mv background.png /usr/share/lxde/wallpapers/lxde_blue.jpg
+
 RUN curl -OL "ftp://ftp.modaclouds.eu/public/space4cloud/distribution/eclipse_palladio.tar.gz"
 #COPY eclipse_palladio.tar.gz ./
 RUN tar zxf eclipse_palladio.tar.gz && rm eclipse_palladio.tar.gz && \
     mkdir Desktop && \
-    printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/eclipse_palladio/icon.xpm\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Desktop/Space\ 4Clouds.desktop && \
+    printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/eclipse_palladio/eclipse -data /root/workspace\nIcon=/root/sd4c-icon.png\nTerminal=false\nType=Application\nPath=/root/eclipse_palladio/" > Desktop/Space\ 4Clouds.desktop && \
     ln -s /opt/space4clouds Desktop/Space\ 4Clouds\ Projects
 
 # Install Modelio Creator 4Clouds
@@ -74,7 +80,7 @@ RUN curl -OL "http://forge.modelio.org/attachments/download/14583/CloudResources
 RUN curl -L "https://www.dropbox.com/s/rl26ldbxuxtpr17/Creator4Clouds_1.0.813.jmdac?dl=1" -o Creator4Clouds_1.0.813.jmdac
 #COPY modelio.tar.gz ./
 RUN tar zxf modelio.tar.gz && rm modelio.tar.gz && \
-    printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/Modelio\ 3.1/modelio -consoleLog\nIcon=/root/Modelio 3.1/icon.xpm\nTerminal=false\nType=Application\nPath=/root/Modelio 3.1/" > Desktop/Modelio\ Creator\ 4Clouds.desktop && \
+    printf "%b\n" '#!'"`which env` xdg-open\n\n[Desktop Entry]\nExec=/root/Modelio\ 3.1/modelio -consoleLog\nIcon=/root/c4c-icon.png\nTerminal=false\nType=Application\nPath=/root/Modelio 3.1/" > Desktop/Modelio\ Creator\ 4Clouds.desktop && \
     ln -s /opt/modelio Desktop/Modelio\ Projects && \
     mkdir Desktop/Creator4clouds\ support\ material && \
     mv *.ramc Desktop/Creator4clouds\ support\ material && \
@@ -114,6 +120,8 @@ RUN printf "%b\n" '#!'"`which sh`\n\nservice mysql start\n/root/eclipse_palladio
 
 RUN printf "%b\n" '#!'"`which sh`\n\n/root/Modelio\ 3.1/modelio -consoleLog" > /usr/bin/modelio && \
     chmod +x /usr/bin/modelio
+
+
 
 # Starts MySQL, LINE, the RDP and the VNC server
 EXPOSE 5901
