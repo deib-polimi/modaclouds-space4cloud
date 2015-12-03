@@ -38,6 +38,11 @@ public class DataHandlerFactory {
 		return instance;
 	}
 
+	
+	public static void resetHandler(){
+		instance = null;
+	}
+	
 	// hides the public constructor
 	private DataHandlerFactory() {
 

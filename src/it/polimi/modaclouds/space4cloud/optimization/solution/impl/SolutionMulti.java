@@ -347,7 +347,8 @@ public class SolutionMulti implements Cloneable, Serializable, Iterable<Solution
 	public void exportStatisticCSV(Path filePath) {
 		String text = "Generation Time, Cost, Feasibility\n";
 		text += getGenerationTime() + ",";
-		text += costFormatter.format(getCost()) + ",";
+		logger.info("Cost>"+getCost());		
+		text += getCost() + ",";
 		text += isFeasible()+"\n";
 
 

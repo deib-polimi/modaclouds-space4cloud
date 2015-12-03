@@ -397,7 +397,9 @@ public class ProviderDBConnector implements GenericDBConnector {
 					"select * from " + s + "_costprofile CP where CP.id=" + id);
 			CloudFactory cf = emf.getCloudFactory();
 			CostProfile cp = cf.createCostProfile();
+			boolean empty=true;
 			while (rs.next()) {
+				empty=false;
 				ResultSet rs1 = DatabaseConnector.getConnection()
 						.createStatement()
 						.executeQuery(
@@ -436,6 +438,8 @@ public class ProviderDBConnector implements GenericDBConnector {
 				rs1.close();
 			}
 			rs.close();
+			if(empty)
+				return null;
 			return cp;
 
 		} catch (Exception e) {
@@ -467,12 +471,12 @@ public class ProviderDBConnector implements GenericDBConnector {
 				s1 = "CloudPlatform";
 			} else
 				throw new Exception("Udefined Cloud Element.");
-			List<Cost> list = new ArrayList<Cost>();
+			List<Cost> list = new ArrayList<Cost>();		
 			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from cost C, " + s + "_cost X where X." + s1
 					+ "_id=" + ce.getId() + " and X.Cost_id=C.id");
 			CloudFactory cf = emf.getCloudFactory();
-			while (rs.next()) {
+			while (rs.next()) {				
 				Cost cost = cf.createCost();
 				cost.setAssociatedToCloudElement(ce);
 				cost.setId(rs.getInt(1));
@@ -499,6 +503,12 @@ public class ProviderDBConnector implements GenericDBConnector {
 				list.add(cost);				
 			}
 			rs.close();
+			
+			if(list.size() == 0){
+				//logger.warn("No direct cost for: "+ce.getId()+" type: "+s1);
+				return null;
+			}
+			
 			return list;
 		} catch (Exception e) {
 			logger.error("Error while getting the cost.", e);
@@ -696,11 +706,10 @@ public class ProviderDBConnector implements GenericDBConnector {
 	public List<CloudResource> getCloudResources(IaaS_Service iaas) {
 		try {
 
-			/*TODO: Non capisco questo codice, perch� accedere di nuovo al db? abbiamo gi� caricato le 
-			 * risorse cloud quando abbiamo caricato i servizi anche se effettivamente non ne abbiamo definito il tipo*/
+			
 			ResultSet rs = DatabaseConnector.getConnection().createStatement().executeQuery(
 					"select * from iaas_service_composedof I, cloudresource CR where I.IaaS_id="
-							+ iaas.getId() + " and I.CloudResource_id=CR.id order by name");
+							+ iaas.getId() + " and I.CloudResource_id=CR.id and CR.operatingSystem != \"windows\" order by name");
 
 			CloudFactory cf = emf.getCloudFactory();
 			List<CloudResource> list = new ArrayList<CloudResource>();
@@ -739,6 +748,10 @@ public class ProviderDBConnector implements GenericDBConnector {
 					i.setHasCostProfile(getCostProfile(i, rs.getInt(7)));
 
 				defineCosts(i);
+				
+				if((i.getHasCost()== null || i.getHasCost().size() == 0) && i.getHasCostProfile() == null)
+					logger.error("Error getting costs for resource: "+i.getId()+" of type: "+i.getType());
+								
 				list.add(i);
 			}
 			rs.close();

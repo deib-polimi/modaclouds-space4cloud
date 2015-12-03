@@ -39,6 +39,7 @@ import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.evaluation.CostEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
@@ -69,6 +70,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -1532,9 +1534,10 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements
 	 * @return the integer -1 an error has happened.
 	 * @throws OptimizationException
 	 * @throws ConstraintEvaluationException
+	 * @throws IOException 
 	 */
 	public Integer optimize() throws OptimizationException,
-			ConstraintEvaluationException {
+			ConstraintEvaluationException, IOException {
 
 		// 1: check if an initial solution has been set
 		if (this.initialSolution == null)
@@ -1734,16 +1737,17 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements
 
 	}
 
-	private void exportBestSolutionsTrace() {
+	private void exportBestSolutionsTrace() throws IOException {
 
+		Path base = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+				Configuration.WORKING_DIRECTORY, "Solutions");
+		String basePath = base.toString();
+
+		Files.createDirectories(base);
 		for (SolutionMulti multisol : bestSolutions) {
-			String basePath = Paths.get(Configuration.PROJECT_BASE_FOLDER,
-					Configuration.WORKING_DIRECTORY, "Solutions").toString();
-
+			
 			for (Solution sol : multisol.getAll())
-				sol.exportAsExtension(Paths.get(
-						Configuration.PROJECT_BASE_FOLDER,
-						Configuration.WORKING_DIRECTORY,
+				sol.exportAsExtension(Paths.get(basePath,
 						Configuration.SOLUTION_FILE_NAME
 								+ bestSolutions.indexOf(multisol)
 								+ sol.getProvider()
@@ -1771,6 +1775,30 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements
 						Configuration.SOLUTION_FILE_EXTENSION
 								+ bestSolutions.indexOf(multisol)
 								+ "performance" + s.getProvider()));
+			
+			
+		}
+		
+		exportCostsStatisticCSV(Paths.get(basePath,"optimizationTrace.csv" ),bestSolutions);
+	}
+	
+	private void exportCostsStatisticCSV(Path filePath, List<SolutionMulti> solutions) {
+		String text = "Generation Iteration,Generation Time, Cost, Feasibility\n";
+		
+		for(SolutionMulti sol:solutions){
+			text += sol.getGenerationIteration()+ ",";
+			text  += sol.getGenerationTime()+ ",";
+			text += sol.getCost() + ",";
+			text += sol.isFeasible()+"\n";
+		}
+		
+		
+		try {
+			PrintWriter outFile = new PrintWriter(filePath.toFile());
+			outFile.println(text);
+			outFile.close();
+		} catch (FileNotFoundException e) {
+			logger.error("Error while exporting the data via CSV.", e);
 		}
 	}
 
@@ -2178,10 +2206,15 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements
 		// Phase3: choose the new resource. Policy: roulette selection
 		// 3.1Calculate the cumulative fitness
 		double[] cumulativeFitnesses = new double[resList.size()];
-		cumulativeFitnesses[0] = getEfficiency(resList.get(0), sol.getRegion());
+		try {
+			cumulativeFitnesses[0] = getEfficiency(resList.get(0), sol.getRegion());		
 		for (int i = 1; i < resList.size(); i++) {
 			double fitness = getEfficiency(resList.get(i), sol.getRegion());
 			cumulativeFitnesses[i] = cumulativeFitnesses[i - 1] + fitness;
+		}
+		
+		} catch (CostEvaluationException e) {
+			throw new OptimizationException("Error calculating fitness",e);
 		}
 		// get a random number weighted by the highest cumulative fitness
 		// value
@@ -2288,8 +2321,9 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements
 	 * @param resource
 	 * @param region
 	 * @return
+	 * @throws CostEvaluationException 
 	 */
-	private double getEfficiency(CloudService resource, String region) {
+	private double getEfficiency(CloudService resource, String region) throws CostEvaluationException {
 		if (Configuration.BENCHMARK != Configuration.Benchmark.None) {
 			return dataHandler.getBenchmarkValue(resource,
 					Configuration.BENCHMARK.toString());

@@ -34,6 +34,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.polimi.modaclouds.resourcemodel.cloud.CloudElement;
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
@@ -128,16 +129,28 @@ public class EvaluationServer implements ActionListener {
 		pcs.addPropertyChangeListener(listener);
 	}
 
-	public double deriveCosts(Solution sol) {
+	public double deriveCosts(Solution sol) throws EvaluationException {
 		long startTime = System.nanoTime();
 		// costs
         double totalCost = 0;
         for (int h = 0; h < 24; ++h) {
             Instance i = sol.getApplication(h);
-            double cost = costEvaulator.deriveCosts(i, h);
+            double cost;
+			try {
+				cost = costEvaulator.deriveCosts(i, h);
+			} catch (CostEvaluationException | EmptyCostException e) {
+				String resourceMessage="";
+				if(e instanceof CostEvaluationException )
+					resourceMessage = " on resource with id: "+((CostEvaluationException) e).getElement().getId()+" Name: "+((CostEvaluationException) e).getElement().getName()+" Type: "+((CostEvaluationException) e).getElement().getType();
+				logger.error("Cost Evaluation Exception"+resourceMessage,e);
+				throw new EvaluationException("Cost Evaluation Exception"+resourceMessage, e);
+			}
             totalCost += cost;
 //            sol.setCost(h, cost);
         }
+        if(totalCost > 50)
+			System.out.println("Stop");
+		logger.info("Cost>"+totalCost);		
         long stopTime = System.nanoTime();
 
 		costEvaluationTime += (stopTime - startTime);

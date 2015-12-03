@@ -231,11 +231,17 @@ public class DataHandler {
 		List<CloudResource> cloudResourceList = service.getComposedOf();
 
 		// TODO: Controllare questa cosa :(
+		List<CloudResource> noCostList = new ArrayList<CloudResource>();
+		List<CloudResource> withCostList = new ArrayList<CloudResource>();
 		for (CloudResource cr : cloudResourceList) {
 			if (cr.getName().equals(resourceName))
 				if (!firstWithValidCost || (cr.getHasCost() != null && cr.getHasCost().size() > 0) || cr.getHasCostProfile() != null )
-					return cr;
+					withCostList.add(cr);
+				else
+					noCostList.add(cr);
 		}
+		if(withCostList.size() > 0)
+			return withCostList.get(0);
 		
 		return null;
 	}

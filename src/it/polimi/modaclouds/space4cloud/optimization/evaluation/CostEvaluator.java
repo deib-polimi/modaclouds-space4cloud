@@ -42,7 +42,7 @@ import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
 import it.polimi.modaclouds.space4cloud.types.palladio.AllocationProfile;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * Provides utility methods to derive system costs.
  * 
@@ -99,16 +99,17 @@ public class CostEvaluator {
 //		return cost;
 //	}
 	
-	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource, String region, int replicas, int requests, double gbConsumed, double gbOut, int hour) {
+	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource, String region, int replicas, int requests, double gbConsumed, double gbOut, int hour) throws CostEvaluationException {
 		if (cloudResource == null) {
-			logger.error("ERROR: The found resource is null!");
-			// TODO: rimettere a 1
-			return 100;
+			throw new CostEvaluationException(cloudResource);
 		}
 		
 		double cost = 0;
 		
-		List<Cost> lc = cloudResource.getHasCost();
+		CostProfile cp = cloudResource.getHasCostProfile();
+		List<Cost> lc = cloudResource.getHasCost();		
+		if(cp == null && (lc==null || lc.size()==0))
+			logger.error("Resource with no costs!");
 		List<Cost> onDemandLc = new ArrayList<Cost>();
 
 		// filter only on-demand
@@ -124,17 +125,19 @@ public class CostEvaluator {
 			|| c.getRegion().equals(region))
 				lc.add(c);
 		
-		CostProfile cp = cloudResource.getHasCostProfile();
-		cost = deriveCosts(lc, cp, replicas, requests, gbConsumed, gbOut, hour);
+		
+		try {
+			cost = deriveCosts(lc, cp, replicas, requests, gbConsumed, gbOut, hour);
+		} catch (EmptyCostException e) {
+			throw new CostEvaluationException(e, cloudResource);
+		}
 		
 		return cost;
 	}
 	
-	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform, String region, int replicas, int requests, double gbConsumed, double gbOut, int hour) {
+	private double deriveCosts(it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform, String region, int replicas, int requests, double gbConsumed, double gbOut, int hour) throws CostEvaluationException {
 		if (cloudPlatform == null) {
-			logger.error("ERROR: The found platform is null!");
-			// TODO: rimettere a 1
-			return 100;
+			throw new CostEvaluationException(cloudPlatform);
 		}
 		
 		double cost = 0;
@@ -157,7 +160,11 @@ public class CostEvaluator {
 		
 		CostProfile cp = cloudPlatform.getHasCostProfile();
 		if (lc.size() > 0 || cp != null)
-			cost += deriveCosts(lc, cp, replicas, requests, gbConsumed, gbOut, hour);
+			try {
+				cost += deriveCosts(lc, cp, replicas, requests, gbConsumed, gbOut, hour);
+			} catch (EmptyCostException e) {
+				throw new CostEvaluationException(e, cloudPlatform);
+			}
 		
 		List<it.polimi.modaclouds.resourcemodel.cloud.CloudResource> resources = cloudPlatform.getRunsOnCloudResource();
 		for (it.polimi.modaclouds.resourcemodel.cloud.CloudResource cr : resources)
@@ -166,7 +173,7 @@ public class CostEvaluator {
 		return cost;
 	}
 	
-	public double deriveCosts(Instance application, int hour) {
+	public double deriveCosts(Instance application, int hour) throws CostEvaluationException, EmptyCostException {
 		if (application.getFather().getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1) {
 			return derivePrivateCosts(application, hour);
 		}
@@ -188,6 +195,7 @@ public class CostEvaluator {
 			int requests = 0;
 			
 			if (service instanceof IaaS) {
+				//TODO:Missing operating system in Compute!
 				IaaS iaasResource = (IaaS) service;
 				it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler
 						.getCloudResource(iaasResource.getProvider(),
@@ -218,7 +226,7 @@ public class CostEvaluator {
 		return cost;
 	}
 	
-	public double derivePrivateCosts(Instance application, int hour) {
+	public double derivePrivateCosts(Instance application, int hour) throws CostEvaluationException, EmptyCostException {
 		if (application.getFather().getProvider().indexOf(PrivateCloud.BASE_PROVIDER_NAME) == -1) {
 			return deriveCosts(application, hour);
 		}
@@ -236,20 +244,24 @@ public class CostEvaluator {
 		return cost;
 	}
 
-	public double getResourceAverageCost(IaaS iaasResource, String region){
+	public double getResourceAverageCost(IaaS iaasResource, String region) throws CostEvaluationException{
 		it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource = dataHandler
 				.getCloudResource(iaasResource.getProvider(),
 						iaasResource.getServiceName(),
 						iaasResource.getResourceName());
 
 		if (cloudResource == null) {
-			logger.error("ERROR: The found resource is null!");
+			throw new CostEvaluationException(cloudResource);
 		}
 
-		return getResourceAverageCost(cloudResource, region);
+		try {
+			return getResourceAverageCost(cloudResource, region);
+		} catch (EmptyCostException e) {
+			throw new CostEvaluationException(e, cloudResource);
+		}
 	}
 	
-	private double getResourceAverageCost(it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource, String region){
+	private double getResourceAverageCost(it.polimi.modaclouds.resourcemodel.cloud.CloudResource cloudResource, String region) throws EmptyCostException{
 		if (cloudResource == null)
 			return 0;
 		
@@ -277,7 +289,7 @@ public class CostEvaluator {
 		return cost;
 	}
 	
-	public double getPlatformAverageCost(PaaS paasResource, String region){
+	public double getPlatformAverageCost(PaaS paasResource, String region) throws EmptyCostException{
 		double cost = 0;
 		it.polimi.modaclouds.resourcemodel.cloud.CloudPlatform cloudPlatform = dataHandler
 				.getCloudPlatform(paasResource.getProvider(),
@@ -391,16 +403,18 @@ public class CostEvaluator {
 	 * @param as
 	 *            is the AllocationProfile object.
 	 * @return the total cost derived from the input parameters.
+	 * @throws EmptyCostException 
 	 * @see Cost
 	 * @see CostProfile
 	 * @see AllocationProfile
 	 */
 	private double deriveCosts(List<Cost> lc, CostProfile cp, int replicas, int requests, double gbConsumed, double gbOut,
-			int hour) {
+			int hour) throws EmptyCostException {
 		double cost = 0.0, temp;
 		
-		if ((lc == null || lc.size() == 0) && cp == null)
-			return 100.0;
+		if ((lc == null || lc.size() == 0) && cp == null){
+			throw new EmptyCostException(); 
+		}
 
 		// Consider the costs which do not belong to a cost profile.
 		if (lc != null && lc.size() > 0 && cp == null)
