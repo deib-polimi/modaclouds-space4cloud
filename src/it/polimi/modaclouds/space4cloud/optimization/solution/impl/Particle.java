@@ -5,6 +5,7 @@ import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class Particle implements Cloneable, Serializable {
 
@@ -113,4 +114,55 @@ public class Particle implements Cloneable, Serializable {
         this.resMapPerSolutionPerTier = resMapPerSolutionPerTier;
 
     }
+
+    public void randomizeVelocity(Random random) {
+        if (velocity != null) velocity.randomize(random);
+    }
+
+    public void updateVelocity(Particle bestParticle) {
+
+    }
+
+    public ParticleVelocity difference(Particle p1, Particle p2) throws OptimizationException {
+        /**
+         * velocity between p1 and p2 (p1 - p2)
+         *
+         */
+        ParticleVelocity particleDiff = new ParticleVelocity(p1.clone());
+
+        for (Solution sol : p1.getSolutionMulti().getAll()) {
+            Instance application = sol.getApplication(0);
+
+            Instance otherApplication = p2.getSolutionMulti().get(sol.getProvider()).getApplication(0);
+
+            for (Tier tier : application.getTiers()) {
+                Tier otherTier = otherApplication.getTierById(tier.getId());
+                if (otherTier == null)
+                    throw new OptimizationException("Error trying to calculate the velocity between two particles");
+                List<CloudService> resList = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
+                int pos1 = resList.indexOf(tier.getCloudService());
+                int pos2 = resList.indexOf(otherTier.getCloudService());
+                if (pos1 == -1 || pos2 == -1)
+                    throw new OptimizationException("Error trying to calculate the distance between two particles: resource not found");
+                particleDiff.updateVelocityTierComponent(sol.getProvider(), tier.getId(), (double) (pos1 - pos2));
+            }
+
+            for (int i = 0; i < 24; i++) {
+                Instance appl = sol.getApplication(i);
+                Instance otherAppl = p2.getSolutionMulti().get(sol.getProvider()).getApplication(i);
+                for (Tier tier : appl.getTiers()) {
+                    Tier otherTier = otherAppl.getTierById(tier.getId());
+                    int r1 = tier.getCloudService().getReplicas();
+                    int r2 = otherTier.getCloudService().getReplicas();
+                    particleDiff.updateVelocityReplicaComponent(sol.getProvider(), tier.getId(), i, (double) (r1 - r2));
+                }
+            }
+
+
+        }
+
+
+    }
+
+
 }

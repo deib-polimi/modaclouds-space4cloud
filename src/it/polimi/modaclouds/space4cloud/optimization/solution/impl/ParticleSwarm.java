@@ -72,4 +72,9 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
     }
 
 
+    public void updateVelocity() {
+        for (Particle particle : swarm) particle.updateVelocity(bestParticle);
+    }
+
+
 }

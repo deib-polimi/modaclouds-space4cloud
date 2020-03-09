@@ -1,9 +1,6 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class that represent the velocity of a certain particle
@@ -17,7 +14,7 @@ public class ParticleVelocity {
     private Particle particle;
 
     private Map<String, Map<String, Double>> tierComponent = new HashMap<>();
-    private Map<String, Map<String, List<Double>>> HourComponent = new HashMap<>();
+    private Map<String, Map<String, List<Double>>> hourComponent = new HashMap<>();
 
     public ParticleVelocity(Particle particle) {
 
@@ -39,8 +36,36 @@ public class ParticleVelocity {
                 }
                 hourVelocity.put(tier.getId(), velocityList);
             }
-            HourComponent.put(provider, hourVelocity);
+            hourComponent.put(provider, hourVelocity);
         }
+    }
+
+
+    public void randomize(Random random) {
+        for (String provider : tierComponent.keySet()) {
+            Map<String, Double> mapTiers = tierComponent.get(provider);
+            for (String tierID : mapTiers.keySet()) mapTiers.put(tierID, random.nextDouble() * 2.0 - 1);
+        }
+
+        for (String provider : hourComponent.keySet()) {
+            Map<String, List<Double>> mapTiers = hourComponent.get(provider);
+            for (String tierID : mapTiers.keySet()) {
+                List<Double> replicaList = mapTiers.get(tierID);
+                for (int i = 0; i < 24; i++) {
+                    replicaList.add(i, random.nextDouble() * 2.0 - 1);
+                }
+
+            }
+        }
+    }
+
+    public void updateVelocityTierComponent(String provider, String tierID, Double value) {
+        tierComponent.get(provider).put(tierID, value);
+    }
+
+    public void updateVelocityReplicaComponent(String provider, String tierID, int hour, Double value) {
+        List<Double> velocityValues = hourComponent.get(provider).get(tierID);
+        velocityValues.add(hour, value);
     }
 
 }

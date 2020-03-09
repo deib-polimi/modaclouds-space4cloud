@@ -18,6 +18,16 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
+import de.uka.ipd.sdq.pcm.allocation.AllocationContext;
+import de.uka.ipd.sdq.pcm.core.entity.Entity;
+import de.uka.ipd.sdq.pcm.repository.BasicComponent;
+import de.uka.ipd.sdq.pcm.repository.OperationSignature;
+import de.uka.ipd.sdq.pcm.repository.RepositoryComponent;
+import de.uka.ipd.sdq.pcm.resourceenvironment.ResourceContainer;
+import de.uka.ipd.sdq.pcm.seff.AbstractAction;
+import de.uka.ipd.sdq.pcm.seff.*;
+import de.uka.ipd.sdq.pcm.usagemodel.*;
+import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
 import it.polimi.modaclouds.adaptationDesignTime4Cloud.AdaptationModelBuilder;
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
@@ -31,73 +41,16 @@ import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.lqn.LqnResultParser;
 import it.polimi.modaclouds.space4cloud.optimization.bursting.PrivateCloud;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.MachineTypeConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.NumberProvidersConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.UsageConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.constraints.WorkloadPercentageConstraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.*;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.CostEvaluationException;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationProxy;
 import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.IConstrainable;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Component;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Compute;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Database;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Functionality;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Instance;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Platform;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Queue;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.*;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
-import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.*;
 import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
-import it.polimi.modaclouds.space4cloud.utils.MILPEvaluator;
-import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentExtensionParser;
-import it.polimi.modaclouds.space4cloud.utils.ResourceEnvironmentLoadingException;
-import it.polimi.modaclouds.space4cloud.utils.Rounder;
-import it.polimi.modaclouds.space4cloud.utils.SolutionHelper;
-import it.polimi.modaclouds.space4cloud.utils.UsageModelExtensionParser;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.SwingWorker;
-import javax.xml.bind.JAXBException;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.lang.time.StopWatch;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IWorkspace;
@@ -111,27 +64,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import de.uka.ipd.sdq.pcm.allocation.AllocationContext;
-import de.uka.ipd.sdq.pcm.core.entity.Entity;
-import de.uka.ipd.sdq.pcm.repository.BasicComponent;
-import de.uka.ipd.sdq.pcm.repository.OperationSignature;
-import de.uka.ipd.sdq.pcm.repository.RepositoryComponent;
-import de.uka.ipd.sdq.pcm.resourceenvironment.ResourceContainer;
-import de.uka.ipd.sdq.pcm.seff.AbstractAction;
-import de.uka.ipd.sdq.pcm.seff.ExternalCallAction;
-import de.uka.ipd.sdq.pcm.seff.InternalAction;
-import de.uka.ipd.sdq.pcm.seff.ResourceDemandingSEFF;
-import de.uka.ipd.sdq.pcm.seff.ServiceEffectSpecification;
-import de.uka.ipd.sdq.pcm.seff.StartAction;
-import de.uka.ipd.sdq.pcm.usagemodel.AbstractUserAction;
-import de.uka.ipd.sdq.pcm.usagemodel.Branch;
-import de.uka.ipd.sdq.pcm.usagemodel.BranchTransition;
-import de.uka.ipd.sdq.pcm.usagemodel.ClosedWorkload;
-import de.uka.ipd.sdq.pcm.usagemodel.EntryLevelSystemCall;
-import de.uka.ipd.sdq.pcm.usagemodel.Loop;
-import de.uka.ipd.sdq.pcm.usagemodel.ScenarioBehaviour;
-import de.uka.ipd.sdq.pcm.usagemodel.UsageScenario;
-import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
+import javax.swing.*;
+import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Michele Ciavotta Class defining the optimization engine.
@@ -189,7 +134,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 	 */
 	private Map<String, Cache<String, Integer>> longTermFrequencyMemory;
 
-	private Random random;
+	protected Random random;
 
 	private StopWatch timer = new StopWatch();
 
@@ -498,328 +443,6 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 	}
 
 	/**
-	 * @param sol
-	 * @return
-	 */
-	private MoveOnVM[] generateArrayMoveOnVM(Solution sol) {
-		MoveOnVM moveArray[] = new MoveOnVM[24];
-		for (int i = 0; i < 24; i++) {
-			moveArray[i] = new MoveOnVM(sol, i);
-		}
-		return moveArray;
-	}
-
-	/**
-	 * Generates a list for each hour containing all the resources that can be
-	 * scaled in
-	 * 
-	 * @param sol
-	 * @return
-	 */
-	private List<ArrayList<Tier>> generateVettResTot(Solution sol) {
-		List<ArrayList<Tier>> vettResTot = new ArrayList<ArrayList<Tier>>(24);
-		// list of lists of Iass
-
-		for (Instance i : sol.getApplications()) {
-			ArrayList<Tier> resMemory = new ArrayList<>();
-			for (Tier t : i.getTiers())
-				// if the cloud service hosting the application tier is a IaaS
-				if ((t.getCloudService() instanceof IaaS &&
-				// and it has more than one replica
-						(t.getCloudService().getReplicas() > 1) || (t
-						.getCloudService() instanceof PaaS
-						&& ((PaaS) t.getCloudService()).areReplicasChangeable() && (t
-						.getCloudService().getReplicas() > 1))))
-					// add it to the list of resources that can be scaled in
-					resMemory.add(t);
-
-			vettResTot.add(resMemory);
-		}
-		return vettResTot;
-	}
-
-	public ConstraintHandler getConstraintHandler() {
-		return constraintHandler;
-	}
-
-	public GenericChart<XYSeriesCollection> getConstraintsLogger() {
-		return logConstraints;
-	}
-
-	public GenericChart<XYSeriesCollection> getCostLogger() {
-		return costLogImage;
-	}
-
-	public EvaluationServer getEvalServer() {
-		return evalServer;
-	}
-
-	public SolutionMulti getInitialSolution() {
-		return initialSolution;
-	}
-
-	public int getMaxIterations() {
-		return MAX_SCRUMBLE_ITERS;
-	}
-
-	public GenericChart<XYSeriesCollection> getVMLogger() {
-		return logVm;
-	}
-
-	/**
-	 * Internal optimization. The aim of this method is to locally optimize the
-	 * current solution by increasing or decreasing the number of replicas of
-	 * certain cloud resources taking into account the total cost and the
-	 * constraints.
-	 * 
-	 * @param sol
-	 *            is the current solution
-	 * 
-	 * @throws OptimizationException
-	 */
-	private void internalOptimizationScaleIn(SolutionMulti solution, String provider)
-			throws OptimizationException {
-
-		// if the solution is unfeasible there is a first phase in which the
-		// solution is forced to became feasible
-		logger.debug("Executing: Make Feasible");
-		makeFeasible(solution, provider);
-		// logger.trace("feasible solution: "+sol.showStatus());
-		// If the current solution is better than the best one it becomes the
-		// new best solution.
-
-		updateBestSolution(solution);
-		updateLocalBestSolution(solution);
-
-		logger.info("Executing Scale In");
-		if (solution.isFeasible()) {
-			ScaleLS(solution, provider);
-		} else {
-			logger.info("Solution not feasible, skipping scale in");
-		}
-		// logger.trace("optimized solution"+sol.showStatus());
-
-	}
-
-	/** It applies the ScaleIn approach to the current solution, provider by provider
-	 *
-	 * @param sol
-	 * @throws OptimizationException
-	 */
-	protected void internalOptimizationScaleIn(SolutionMulti sol)
-			throws OptimizationException {
-
-		for (Solution s : sol.getAll())
-			internalOptimizationScaleIn(sol, s.getProvider());
-	}
-
-	private boolean isMaxNumberOfFesibilityIterations() {
-
-		if (numberOfFeasibilityIterations <= MAXFEASIBILITYITERATIONS) {
-			return false;
-		}
-		return true;
-	}
-
-	private boolean isMaxNumberOfIterations() {
-
-		if (scrambleIteration <= MAX_SCRUMBLE_ITERS) {
-			return false;
-		}
-		return true;
-	}
-
-	private void ScaleLS(SolutionMulti solution, String provider) throws OptimizationException {
-
-		// Select the provider we are working on
-		Solution sol = solution.get(provider);
-
-		for (Constraint constraint : sol.getViolatedConstraints()) {
-			if (constraint instanceof RamConstraint) {
-				logger.info("Wrong type of VM selected, scale in will not be executed");
-				return;
-			}
-		}
-		logger.info("initializing scale in phase");
-
-		// initialize the factors (one for each hour) to the default value
-		// we should use a factor for each hour and for each tier but if the
-		// number
-		// of tiers is significantly smaller than the number of iterations then
-		// it
-		// is likely that each tier will be scaled using just 1 factor for each
-		// hour
-		double[] scaleInFactors = new double[24];
-		int[] unfeasibleCounters = new int[24];
-		for (int i = 0; i < 24; i++) {
-			scaleInFactors[i] = DEFAULT_SCALE_IN_FACTOR;
-			unfeasibleCounters[i] = 0;
-		}
-		// This counter measure how much iterations we spend far from the
-		// optimal solution, if this grows then probably we want to stop this
-		// process since it is not likely to generate a solution better than the
-		// optimal one
-		int outOfBoundIterations = 0;
-
-		// This counter measure how many scale in operations we try to perform
-		// but we get an unfeasible solution. If this grows then probably we are
-		// very close to the optimal number of machines
-		int numIterNoImprov = 0;
-
-		double boundFactor = 2.0;
-		int iteration = 0;
-
-		int numberOfTiers = sol.getHourApplication().get(0).getTiers().size();
-
-		while (numIterNoImprov < MAX_SCALE_IN_CONV_ITERATIONS * numberOfTiers
-				&& outOfBoundIterations < MAX_OUT_OF_BOUND_ITERATIONS) {
-
-			iteration++;
-			// Log some statistics
-			String scalingFactors = "";
-			for (int i = 0; i < 24; i++)
-				scalingFactors += " h: " + i + " val: " + scaleInFactors[i];
-			logger.debug("Scale In iteration: " + iteration
-					+ " Out of bound iterations: " + outOfBoundIterations
-					+ " No improvement iterations: " + numIterNoImprov
-					+ " local optimal cost: " + localBestSolution.getCost()
-					+ " Bound Factor: " + boundFactor + " Bound: "
-					+ boundFactor * localBestSolution.getCost());
-			logger.debug("Scaling factors: " + scalingFactors);
-
-			// Select the tiers to scale and apply the scaling action
-			boolean noScaleIn = true;
-			Solution previousSol = sol.clone();
-			List<ArrayList<Tier>> vettResTot = generateVettResTot(sol);
-			MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
-
-			// scale in each hour
-			for (int hour = 0; hour < 24; hour++) {
-				Tier tier = null;
-				// remove resources with minimum number of replicas
-				vettResTot = constraintHandler.filterResourcesForScaleDown(vettResTot, hour);
-
-				// if no resource can be scaled in in this hour then jump to the
-				// next one
-				if (vettResTot.get(hour).size() == 0)
-					continue;
-
-				// if there are tiers that can be scaled then chose one
-				// randomly
-				// TODO: better policy then random?
-				tier = vettResTot.get(hour).get(random.nextInt(vettResTot.get(hour).size()));
-
-				// scale the resource by the factor
-				moveArray[hour].scaleIn(tier, scaleInFactors[hour]);
-				noScaleIn = false;
-			}
-
-			// evaluate the solution
-			try {
-				evalServer.EvaluateSolution(solution);
-			} catch (EvaluationException e) {
-				throw new OptimizationException("", "scaleIn", e);
-			}
-
-			// if an application has become infeasible, revert it and try again
-			// with a smaller factor
-			for (int i = 0; i < 24; i++) {
-				if (!sol.getApplication(i).isFeasible()) {
-					sol.copyApplication(previousSol.getApplication(i), i);
-					unfeasibleCounters[i]++;
-					scaleInFactors[i] = 1 + (DEFAULT_SCALE_IN_FACTOR - 1)
-							/ (double) unfeasibleCounters[i];
-				}
-			}
-
-			// re-evaluate the solution (every solution here should already be
-			// cached) this just re-establish the evaluation, the feasibility
-			// and the cost in the solution
-			try {
-				evalServer.EvaluateSolution(solution);
-			} catch (EvaluationException e) {
-				throw new OptimizationException("", "scaleIn", e);
-			}
-
-			logger.debug("Current Solution Cost:" + sol.getCost());
-
-			// If we couldn't perform the scale in action or if we performed it
-			// but the cost of the new solution is not smaller than the cost of
-			// the previous solutions then increase the number of iterations
-			// without an improvement
-			if (noScaleIn || previousSol.getCost() <= sol.getCost()) {
-				logger.debug("No improvement. Scaled " + !noScaleIn
-						+ " Previous Cost: " + previousSol.getCost()
-						+ " Current Cost: " + sol.getCost());
-				numIterNoImprov++;
-			}
-
-			updateLocalBestSolution(solution);
-			updateBestSolution(solution);
-
-			// if the cost of the current solution is far from the best one this
-			// iteration is considered "out of bound"
-			if (sol.getCost() - localBestSolution.getCost() > boundFactor
-					* localBestSolution.getCost()) {
-				logger.debug("Out of Bound. Scaled " + !noScaleIn
-						+ " Previous Cost: " + previousSol.getCost()
-						+ " Current Cost: " + sol.getCost() + " Bound: "
-						+ boundFactor * localBestSolution.getCost()
-						+ " Bound factor: " + boundFactor);
-				outOfBoundIterations++;
-			}
-			// if the solution is close to the optimal one then reduce the bound
-			// linearly with the amount of iterations in which we were within
-			// the bounds.
-			else {
-				boundFactor /= (double) (iteration - outOfBoundIterations);
-			}
-
-		}
-
-		logger.debug("Scale In finished");
-		if (numIterNoImprov >= MAX_SCALE_IN_CONV_ITERATIONS * numberOfTiers)
-			logger.debug("The optimal number of replicas has been found. Iterations without any further improvement: "
-					+ numIterNoImprov);
-		if (outOfBoundIterations >= MAX_OUT_OF_BOUND_ITERATIONS)
-			logger.debug("The solution is too far from the optimal one. Iterations out of bounr: "
-					+ outOfBoundIterations + " Bound Factor: " + boundFactor);
-
-	}
-
-	@Override
-	protected void done() {
-		evalServer.terminateServer();
-		try {
-			get();
-		} catch (InterruptedException e) {
-			logger.error("Interrupted ending of optimization engine", e);
-		} catch (ExecutionException e) {
-			logger.error(
-					"Execution exception occurred in the optimization engine",
-					e);
-		} catch (CancellationException e) {
-			logger.info("Execution was cancelled");
-		}
-
-	}
-
-	/**
-	 * Load initial solution. The aim of this method is to load the initial
-	 * solution from file.
-	 * 
-	 * @param resourceEnvExtension
-	 *            the extension file
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws JAXBException
-	 */
-	public void loadInitialSolution() throws InitializationException {
-		loadInitialSolution(null, null);
-	}
-
-	/**
 	 * Load the initial solution. The aim of this method is to load the initial
 	 * solution from the palladio model files contained in the configuration.
 	 * This method evaluates such initial solution and stores it
@@ -880,10 +503,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 		}
 
 		// check if the workload is closed or not
-		if (scenarios.get(0).getWorkload_UsageScenario() instanceof ClosedWorkload)
-			closedWorkload = true;
-		else
-			closedWorkload = false;
+		closedWorkload = scenarios.get(0).getWorkload_UsageScenario() instanceof ClosedWorkload;
 
 		if (!closedWorkload) throw new InitializationException("No usage scenario have been defined in the PCM");
 
@@ -1332,6 +952,320 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 		for (Solution s : initialSolution.getAll())
 			s.exportPerformancesAsExtension(Paths.get(basePath, "performance"
 					+ s.getProvider() + Configuration.SOLUTION_FILE_EXTENSION));
+	}
+
+	/**
+	 * Generates a list for each hour containing all the resources that can be
+	 * scaled in
+	 *
+	 * @param sol
+	 * @return
+	 */
+	private List<ArrayList<Tier>> generateVettResTot(Solution sol) {
+		List<ArrayList<Tier>> vettResTot = new ArrayList<ArrayList<Tier>>(24);
+		// list of lists of Iass
+
+		for (Instance i : sol.getApplications()) {
+			ArrayList<Tier> resMemory = new ArrayList<>();
+			for (Tier t : i.getTiers())
+				// if the cloud service hosting the application tier is a IaaS
+				if ((t.getCloudService() instanceof IaaS &&
+						// and it has more than one replica
+						(t.getCloudService().getReplicas() > 1) || (t
+						.getCloudService() instanceof PaaS
+						&& ((PaaS) t.getCloudService()).areReplicasChangeable() && (t
+						.getCloudService().getReplicas() > 1))))
+					// add it to the list of resources that can be scaled in
+					resMemory.add(t);
+
+			vettResTot.add(resMemory);
+		}
+		return vettResTot;
+	}
+
+	public ConstraintHandler getConstraintHandler() {
+		return constraintHandler;
+	}
+
+	public GenericChart<XYSeriesCollection> getConstraintsLogger() {
+		return logConstraints;
+	}
+
+	public GenericChart<XYSeriesCollection> getCostLogger() {
+		return costLogImage;
+	}
+
+	public EvaluationServer getEvalServer() {
+		return evalServer;
+	}
+
+	public SolutionMulti getInitialSolution() {
+		return initialSolution;
+	}
+
+	public int getMaxIterations() {
+		return MAX_SCRUMBLE_ITERS;
+	}
+
+	public GenericChart<XYSeriesCollection> getVMLogger() {
+		return logVm;
+	}
+
+	/**
+	 * Internal optimization. The aim of this method is to locally optimize the
+	 * current solution by increasing or decreasing the number of replicas of
+	 * certain cloud resources taking into account the total cost and the
+	 * constraints.
+	 *
+	 * @param sol is the current solution
+	 * @throws OptimizationException
+	 */
+	private void internalOptimizationScaleIn(SolutionMulti solution, String provider)
+			throws OptimizationException {
+
+		// if the solution is unfeasible there is a first phase in which the
+		// solution is forced to became feasible
+		logger.debug("Executing: Make Feasible");
+		makeFeasible(solution, provider);
+		// logger.trace("feasible solution: "+sol.showStatus());
+		// If the current solution is better than the best one it becomes the
+		// new best solution.
+
+		updateBestSolution(solution);
+		updateLocalBestSolution(solution);
+
+		logger.info("Executing Scale In");
+		if (solution.isFeasible()) {
+			ScaleLS(solution, provider);
+		} else {
+			logger.info("Solution not feasible, skipping scale in");
+		}
+		// logger.trace("optimized solution"+sol.showStatus());
+
+	}
+
+	/**
+	 * It applies the ScaleIn approach to the current solution, provider by provider
+	 *
+	 * @param sol
+	 * @throws OptimizationException
+	 */
+	protected void internalOptimizationScaleIn(SolutionMulti sol)
+			throws OptimizationException {
+
+		for (Solution s : sol.getAll())
+			internalOptimizationScaleIn(sol, s.getProvider());
+	}
+
+	/**
+	 * @param sol
+	 * @return
+	 */
+	private MoveOnVM[] generateArrayMoveOnVM(Solution sol) {
+		MoveOnVM[] moveArray = new MoveOnVM[24];
+		for (int i = 0; i < 24; i++) {
+			moveArray[i] = new MoveOnVM(sol, i);
+		}
+		return moveArray;
+	}
+
+	private boolean isMaxNumberOfFesibilityIterations() {
+
+		return numberOfFeasibilityIterations > MAXFEASIBILITYITERATIONS;
+	}
+
+	private boolean isMaxNumberOfIterations() {
+
+		return scrambleIteration > MAX_SCRUMBLE_ITERS;
+	}
+
+	@Override
+	protected void done() {
+		evalServer.terminateServer();
+		try {
+			get();
+		} catch (InterruptedException e) {
+			logger.error("Interrupted ending of optimization engine", e);
+		} catch (ExecutionException e) {
+			logger.error(
+					"Execution exception occurred in the optimization engine",
+					e);
+		} catch (CancellationException e) {
+			logger.info("Execution was cancelled");
+		}
+
+	}
+
+	/**
+	 * Load initial solution. The aim of this method is to load the initial
+	 * solution from file.
+	 *
+	 * @param resourceEnvExtension the extension file
+	 * @throws IOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws JAXBException
+	 */
+	public void loadInitialSolution() throws InitializationException {
+		loadInitialSolution(null, null);
+	}
+
+	private void ScaleLS(SolutionMulti solution, String provider) throws OptimizationException {
+
+		// Select the provider we are working on
+		Solution sol = solution.get(provider);
+
+		for (Constraint constraint : sol.getViolatedConstraints()) {
+			if (constraint instanceof RamConstraint) {
+				logger.info("Wrong type of VM selected, scale in will not be executed");
+				return;
+			}
+		}
+		logger.info("initializing scale in phase");
+
+		// initialize the factors (one for each hour) to the default value
+		// we should use a factor for each hour and for each tier but if the
+		// number
+		// of tiers is significantly smaller than the number of iterations then
+		// it
+		// is likely that each tier will be scaled using just 1 factor for each
+		// hour
+		double[] scaleInFactors = new double[24];
+		int[] unfeasibleCounters = new int[24];
+		for (int i = 0; i < 24; i++) {
+			scaleInFactors[i] = DEFAULT_SCALE_IN_FACTOR;
+			unfeasibleCounters[i] = 0;
+		}
+		// This counter measure how much iterations we spend far from the
+		// optimal solution, if this grows then probably we want to stop this
+		// process since it is not likely to generate a solution better than the
+		// optimal one
+		int outOfBoundIterations = 0;
+
+		// This counter measure how many scale in operations we try to perform
+		// but we get an unfeasible solution. If this grows then probably we are
+		// very close to the optimal number of machines
+		int numIterNoImprov = 0;
+
+		double boundFactor = 2.0;
+		int iteration = 0;
+
+		int numberOfTiers = sol.getHourApplication().get(0).getTiers().size();
+
+		while (numIterNoImprov < MAX_SCALE_IN_CONV_ITERATIONS * numberOfTiers
+				&& outOfBoundIterations < MAX_OUT_OF_BOUND_ITERATIONS) {
+
+			iteration++;
+			// Log some statistics
+			String scalingFactors = "";
+			for (int i = 0; i < 24; i++)
+				scalingFactors += " h: " + i + " val: " + scaleInFactors[i];
+			logger.debug("Scale In iteration: " + iteration
+					+ " Out of bound iterations: " + outOfBoundIterations
+					+ " No improvement iterations: " + numIterNoImprov
+					+ " local optimal cost: " + localBestSolution.getCost()
+					+ " Bound Factor: " + boundFactor + " Bound: "
+					+ boundFactor * localBestSolution.getCost());
+			logger.debug("Scaling factors: " + scalingFactors);
+
+			// Select the tiers to scale and apply the scaling action
+			boolean noScaleIn = true;
+			Solution previousSol = sol.clone();
+			List<ArrayList<Tier>> vettResTot = generateVettResTot(sol);
+			MoveOnVM[] moveArray = generateArrayMoveOnVM(sol);
+
+			// scale in each hour
+			for (int hour = 0; hour < 24; hour++) {
+				Tier tier = null;
+				// remove resources with minimum number of replicas
+				vettResTot = constraintHandler.filterResourcesForScaleDown(vettResTot, hour);
+
+				// if no resource can be scaled in in this hour then jump to the
+				// next one
+				if (vettResTot.get(hour).size() == 0)
+					continue;
+
+				// if there are tiers that can be scaled then chose one
+				// randomly
+				// TODO: better policy then random?
+				tier = vettResTot.get(hour).get(random.nextInt(vettResTot.get(hour).size()));
+
+				// scale the resource by the factor
+				moveArray[hour].scaleIn(tier, scaleInFactors[hour]);
+				noScaleIn = false;
+			}
+
+			// evaluate the solution
+			try {
+				evalServer.EvaluateSolution(solution);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("", "scaleIn", e);
+			}
+
+			// if an application has become infeasible, revert it and try again
+			// with a smaller factor
+			for (int i = 0; i < 24; i++) {
+				if (!sol.getApplication(i).isFeasible()) {
+					sol.copyApplication(previousSol.getApplication(i), i);
+					unfeasibleCounters[i]++;
+					scaleInFactors[i] = 1 + (DEFAULT_SCALE_IN_FACTOR - 1)
+							/ (double) unfeasibleCounters[i];
+				}
+			}
+
+			// re-evaluate the solution (every solution here should already be
+			// cached) this just re-establish the evaluation, the feasibility
+			// and the cost in the solution
+			try {
+				evalServer.EvaluateSolution(solution);
+			} catch (EvaluationException e) {
+				throw new OptimizationException("", "scaleIn", e);
+			}
+
+			logger.debug("Current Solution Cost:" + sol.getCost());
+
+			// If we couldn't perform the scale in action or if we performed it
+			// but the cost of the new solution is not smaller than the cost of
+			// the previous solutions then increase the number of iterations
+			// without an improvement
+			if (noScaleIn || previousSol.getCost() <= sol.getCost()) {
+				logger.debug("No improvement. Scaled " + !noScaleIn
+						+ " Previous Cost: " + previousSol.getCost()
+						+ " Current Cost: " + sol.getCost());
+				numIterNoImprov++;
+			}
+
+			updateLocalBestSolution(solution);
+			updateBestSolution(solution);
+
+			// if the cost of the current solution is far from the best one this
+			// iteration is considered "out of bound"
+			if (sol.getCost() - localBestSolution.getCost() > boundFactor
+					* localBestSolution.getCost()) {
+				logger.debug("Out of Bound. Scaled " + !noScaleIn
+						+ " Previous Cost: " + previousSol.getCost()
+						+ " Current Cost: " + sol.getCost() + " Bound: "
+						+ boundFactor * localBestSolution.getCost()
+						+ " Bound factor: " + boundFactor);
+				outOfBoundIterations++;
+			}
+			// if the solution is close to the optimal one then reduce the bound
+			// linearly with the amount of iterations in which we were within
+			// the bounds.
+			else {
+				boundFactor /= iteration - outOfBoundIterations;
+			}
+
+		}
+
+		logger.debug("Scale In finished");
+		if (numIterNoImprov >= MAX_SCALE_IN_CONV_ITERATIONS * numberOfTiers)
+			logger.debug("The optimal number of replicas has been found. Iterations without any further improvement: "
+					+ numIterNoImprov);
+		if (outOfBoundIterations >= MAX_OUT_OF_BOUND_ITERATIONS)
+			logger.debug("The solution is too far from the optimal one. Iterations out of bounr: "
+					+ outOfBoundIterations + " Bound Factor: " + boundFactor);
+
 	}
 
 	private double getDemandFromSeff(ResourceDemandingSEFF s) {
@@ -2327,9 +2261,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 			iterations++;
 		}
 
-		if (iterations >= MAX_SCRAMBLE_NO_CHANGE) return false;
-
-		return true;
+		return iterations < MAX_SCRAMBLE_NO_CHANGE;
 	}
 
 	/**

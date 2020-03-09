@@ -18,7 +18,6 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.resourcemodel.cloud.CloudResource;
 import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
@@ -71,7 +70,6 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
      */
     private Map<String, Cache<String, Integer>> longTermFrequencyMemory;
 
-    private Random random;
 
     private StopWatch timer = new StopWatch();
 
@@ -239,11 +237,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
     private boolean isMaxNumberOfIterations() {
 
-        if (iteration <=
-        ) {
-            return false;
-        }
-        return true;
+        return iteration;
     }
 
     /**
@@ -340,6 +334,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         long time = timer.getSplitTime();
         randomFeasibleParticle.setGenerationTime(time);
         randomFeasibleParticle.setCloudResourceMap(resMapPerSolutionPerTier);
+        randomFeasibleParticle.randomizeVelocity(random);
         return randomFeasibleParticle;
     }
 
