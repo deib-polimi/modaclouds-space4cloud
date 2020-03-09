@@ -575,8 +575,7 @@ public class SolutionMulti implements Cloneable, Serializable, Iterable<Solution
 
 	public boolean greaterThan(SolutionMulti sol) {
 
-		if (sol == null)
-			return true;
+		if (sol == null) return true;
 		if (isFeasible() && sol.isFeasible()) {
 			/* if both are feasible */
 			if (getCost() >= 0) {
@@ -865,7 +864,8 @@ public class SolutionMulti implements Cloneable, Serializable, Iterable<Solution
 
 		if (initialMce != null) {
 			try {
-				MultiCloudExtensions mces = XMLHelper.deserialize(initialMce.toURI().toURL(),
+				MultiCloudExtensions mces = XMLHelper.deserialize(
+						initialMce.toURI().toURL(),
 						MultiCloudExtensions.class);
 
 				MultiCloudExtension mce = mces.getMultiCloudExtensions();

@@ -76,7 +76,7 @@ public class MoveOnVM extends AbsMoveHour {
 	/**
 	 * Modify the number of replicas of the specified resource
 	 * 
-	 * @param res
+	 * @param tier
 	 * @param numberOfReplicas
 	 */
 	public void scale(Tier tier, int numberOfReplicas) {
@@ -90,7 +90,7 @@ public class MoveOnVM extends AbsMoveHour {
 	/**
 	 * Reduces by 1 the number of replicas of the specified resources if this does not conflict with the constraints
 	 * 
-	 * @param res
+	 * @param tier
 	 */
 	public void scaleIn(Tier tier) {
 		CloudService cs = tier.getCloudService();
@@ -120,10 +120,11 @@ public class MoveOnVM extends AbsMoveHour {
 	 * resulting number of replicas is equal to the original one it falls back
 	 * to the scaleIn function that removes just 1 replica
 	 * 
-	 * @param res
+	 * @param tier
 	 * @param factor
 	 */
 	public void scaleIn(Tier tier, double factor) {
+
 		CloudService cs = tier.getCloudService();
 		
 		if(!(cs instanceof IaaS) && (cs instanceof PaaS && !((PaaS)cs).areReplicasChangeable() )) {

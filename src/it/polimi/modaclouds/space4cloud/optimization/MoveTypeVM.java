@@ -61,8 +61,7 @@ public class MoveTypeVM extends AbsMove {
 	@Override
 	public Solution apply() {
 
-		currentSolution.changeValues(resId, this.propertyNames,
-				this.propertyValues);
+		currentSolution.changeValues(resId, this.propertyNames, this.propertyValues);
 		return currentSolution;
 	}
 
@@ -86,7 +85,7 @@ public class MoveTypeVM extends AbsMove {
 	 * 
 	 * @param id
 	 *            the id
-	 * @param cr
+	 * @param vm
 	 *            the CloudService
 	 * @return the move itself
 	 */

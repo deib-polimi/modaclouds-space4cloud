@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2014 Giovanni Paolo Gibilisco
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 /**
- * 
+ *
  */
 package it.polimi.modaclouds.space4cloud.db;
 
@@ -71,7 +71,7 @@ public class DataHandler {
 
 	/**
 	 * Instantiates a new data handler. it also charges data from the database
-	 * 
+	 *
 	 * @param provider
 	 *            the provider
 	 * @throws SQLException
@@ -81,7 +81,7 @@ public class DataHandler {
 		cloudProviders = new CloudProvidersDictionary();
 	}
 	public static void main(String[] args) {
-		DataHandler handler = null; 
+		DataHandler handler = null;
 
 		try {
 			DatabaseConnector.initConnection(null);
@@ -89,11 +89,11 @@ public class DataHandler {
 		} catch (DatabaseConnectionFailureExteption | SQLException | IOException e) {
 			logger.error("Error while connecting to the database.", e);
 		}
-		
+
 		String[] providers = new String[] { "Amazon" }; //, "Microsoft" };
 		String[] serviceTypes = new String[] { "RelationalDB" }; // "Compute", "Compute" };
 		String[] serviceNames = new String[] { "DynamoDB" }; // "Elastic Compute Cloud (EC2)", "Virtual Machines" };
-		
+
 		for (int i = 0; i < providers.length; ++i) {
 			for (Configuration.Benchmark tool : Configuration.Benchmark.values()) {
 				if (tool == Configuration.Benchmark.None)
@@ -113,10 +113,10 @@ public class DataHandler {
 
 
 	}
-	
+
 	/**
 	 * Gets the amount of memory of the the cloud resource.
-	 * 
+	 *
 	 * @param provider
 	 *            the provider
 	 * @param serviceName
@@ -137,36 +137,36 @@ public class DataHandler {
 //		}
 //		/* In case of errors */
 //		return -1;
-		
+
 		CloudElement ce = getCloudElement(provider, serviceName, resourceName);
-		
+
 		if (ce != null)
 			if (ce instanceof CloudResource)
 				return getAmountMemory((CloudResource)ce);
 			else if (ce instanceof CloudPlatform)
 				return getAmountMemory((CloudPlatform)ce);
-		
+
 		/* In case of errors */
 		return -1;
 
 	}
-	
+
 	public Integer getStorage(String provider, String serviceName,
 			String resourceName) {
-		
+
 		CloudElement ce = getCloudElement(provider, serviceName, resourceName);
-		
+
 		if (ce != null)
 			if (ce instanceof CloudResource)
 				return getStorage((CloudResource)ce);
 			else if (ce instanceof CloudPlatform)
 				return getStorage((CloudPlatform)ce);
-		
+
 		/* In case of errors */
 		return -1;
 
 	}
-	
+
 	private Integer getAmountMemory(CloudResource cr) {
 		if (cr != null)
 			for (VirtualHWResource i : cr.getComposedOf()) {
@@ -182,13 +182,13 @@ public class DataHandler {
 	public Set<String> getCloudProviders() {
 		return cloudProviders.getProviderDBConnectors().keySet();
 	}
-	
+
 	public static final int MAX_ATTEMPTS = 2;
-	
+
 	public static final int MAX_TOTAL_RESETS = 10;
-	
+
 	private int resets = 0;
-	
+
 	private void resetDatabase() {
 		if (resets < MAX_TOTAL_RESETS) {
 			try {
@@ -200,34 +200,34 @@ public class DataHandler {
 			}
 		}
 	}
-	
+
 	public CloudResource getCloudResource(String provider, String serviceName,
 			String resourceName) {
-		
+
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
-			
+
 			CloudResource res = getCloudResourceInternal(provider, serviceName, resourceName, true);
 			if (res != null)
 				return res;
-		
+
 			resetDatabase();
 		}
-		
+
 		return null;
 	}
-	
+
 	private CloudResource getCloudResourceInternal(String provider, String serviceName,
 			String resourceName, boolean firstWithValidCost) {
-		
+
 		ProviderDBConnector pdb = cloudProviders
 				.getProviderDBConnectors().get(provider); // provider
-		
+
 		IaaS_Service service = pdb
 				.getIaaSServicesHashMap().get(serviceName); // service
-		
+
 		if (service == null)
 			return getCloudResourceFromPaaS(provider, serviceName, resourceName, firstWithValidCost);
-		
+
 		List<CloudResource> cloudResourceList = service.getComposedOf();
 
 		// TODO: Controllare questa cosa :(
@@ -242,22 +242,22 @@ public class DataHandler {
 		}
 		if(withCostList.size() > 0)
 			return withCostList.get(0);
-		
+
 		return null;
 	}
-	
+
 	private CloudResource getCloudResourceFromPaaS(String provider, String serviceName,
 			String resourceName, boolean firstWithValidCost) {
-		
+
 		ProviderDBConnector pdb = cloudProviders
 				.getProviderDBConnectors().get(provider); // provider
-		
+
 		PaaS_Service service = pdb
 				.getPaaSServicesHashMap().get(serviceName); // service
-		
+
 		if (service == null)
 			return null;
-		
+
 		List<CloudPlatform> cloudPlatformList = service.getComposedOf();
 
 		// TODO: Controllare questa cosa :(
@@ -269,35 +269,35 @@ public class DataHandler {
 						return cr;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public List<String> getCloudResourceSizes(String provider,
 			String serviceName) {
-		
+
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
-			
+
 			List<String> res = getCloudResourceSizesInternal(provider, serviceName);
 			if (res != null && res.size() > 0)
 				return res;
-		
+
 			resetDatabase();
 		}
-		
+
 		return new ArrayList<>();
 	}
 
 	private List<String> getCloudResourceSizesInternal(String provider,
 			String serviceName) {
-		
+
 		IaaS_Service service = cloudProviders
 				.getProviderDBConnectors().get(provider) // provider
 				.getIaaSServicesHashMap().get(serviceName); // service
-		
+
 		if (service == null)
 			return null;
-		
+
 		List<CloudResource> cloudResourceList = service.getComposedOf();
 
 		List<String> names = new ArrayList<String>(cloudResourceList.size());
@@ -306,18 +306,18 @@ public class DataHandler {
 		}
 		return names;
 	}
-	
+
 	public List<String> getCloudElementSizes(String provider,
 			String serviceName) {
 		return getCloudElementSizes(provider, serviceName, null);
 	}
-	
+
 	public List<String> getCloudElementSizes(String provider,
 			String serviceName, String tool) {
 		Configuration.Benchmark actualTool = null;
 		if (tool != null)
 			actualTool = Configuration.Benchmark.valueOf(tool);
-		
+
 		List<String> res = getCloudResourceSizesInternal(provider, serviceName);
 		if (res != null) {
 			if (actualTool != null)
@@ -332,13 +332,13 @@ public class DataHandler {
 			else
 				return res;
 		}
-		
+
 		return new ArrayList<String>();
 	}
 
 	/**
 	 * Gets the cost specification of the resource.
-	 * 
+	 *
 	 * @param provider
 	 *            the provider
 	 * @param serviceName
@@ -351,7 +351,7 @@ public class DataHandler {
 			String resourceName) {
 //		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 //		return cr.getHasCost();
-		
+
 		CloudElement ce = getCloudElement(provider, serviceName, resourceName);
 		return ce.getHasCost();
 	}
@@ -359,7 +359,7 @@ public class DataHandler {
 	/**
 	 * Build a IaaS resource from a cloud resource, currently supports only
 	 * Compute instances
-	 * 
+	 *
 	 * @param service
 	 * @param cr
 	 * @return IaaS representation of the cloud resource object
@@ -369,7 +369,7 @@ public class DataHandler {
 				service.getProvider(), service.getServiceType(), service.getServiceName(),
 				cr.getName(), service.getReplicas(), cr);
 	}
-	
+
 	public CloudService getCloudService(String provider, String serviceType, String serviceName, String resourceName, int replicas) {
 		CloudElement ce = getCloudElement(provider, serviceName, resourceName);
 		if (ce instanceof CloudResource)
@@ -378,7 +378,7 @@ public class DataHandler {
 			return getPaaSfromCloudPlatform(provider, serviceType, serviceName, resourceName, replicas, (CloudPlatform)ce);
 		return null;
 	}
-	
+
 	private IaaS getIaaSfromCloudResource(String provider, String serviceType, String serviceName, String resourceName, int replicas, CloudResource cr) {
 
 		double speed = 0;
@@ -399,10 +399,10 @@ public class DataHandler {
 				serviceName, cr.getName(),
 				replicas, numberOfCores, speed, ram);
 	}
-	
+
 	/**
 	 * Gets the number of replicas.
-	 * 
+	 *
 	 * @param provider
 	 *            the provider
 	 * @param iassServiceName
@@ -421,20 +421,20 @@ public class DataHandler {
 //		}
 //		/* In case of errors */
 //		return -1;
-		
+
 		CloudElement ce = getCloudElement(provider, serviceName, resourceName);
-		
+
 		if (ce != null)
 			if (ce instanceof CloudResource)
 				return getNumberOfReplicas((CloudResource)ce);
 			else if (ce instanceof CloudPlatform)
 				return getNumberOfReplicas((CloudPlatform)ce);
-		
+
 		/* In case of errors */
 		return -1;
 
 	}
-	
+
 	private Integer getNumberOfReplicas(CloudResource cr) {
 		if (cr != null)
 			for (VirtualHWResource i : cr.getComposedOf()) {
@@ -445,25 +445,25 @@ public class DataHandler {
 		/* In case of errors */
 		return -1;
 	}
-	
+
 	public Double getProcessingRate(String provider, String serviceName,
 			String resourceName) {
-		
+
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
-			
+
 			double res = getProcessingRateInternal(provider, serviceName, resourceName);
 			if (res > -1.0)
 				return res;
-		
+
 			resetDatabase();
 		}
-		
+
 		return -1.0;
 	}
-	
+
 	/**
 	 * Gets the processing rate of the cpus.
-	 * 
+	 *
 	 * @param provider
 	 *            the id provider
 	 * @param serviceName
@@ -474,13 +474,13 @@ public class DataHandler {
 	 */
 	private double getProcessingRateInternal(String provider, String serviceName,
 			String resourceName) {
-		
+
 		CloudPlatform cp = getCloudPlatform(provider, serviceName, resourceName);
 		if (cp != null)
 			return getProcessingRate(cp);
-		
+
 		CloudResource cr = getCloudResourceInternal(provider, serviceName, resourceName, false);
-		
+
 //		List<CloudResource> cloudResourceList = cloudProviders
 //				.getProviderDBConnectors().get(provider) // provider
 //				.getIaaSServicesHashMap().get(serviceName) // service
@@ -497,7 +497,7 @@ public class DataHandler {
 		return getProcessingRate(cr);
 
 	}
-	
+
 	private Double getProcessingRate(CloudResource cr) {
 		if (cr != null)
 			for (VirtualHWResource i : cr.getComposedOf()) {
@@ -507,7 +507,7 @@ public class DataHandler {
 			}
 		return -1.0;
 	}
-	
+
 	private Integer getStorage(CloudResource cr) {
 		if (cr != null)
 			for (VirtualHWResource i : cr.getComposedOf()) {
@@ -517,10 +517,10 @@ public class DataHandler {
 			}
 		return -1;
 	}
-	
+
 	public List<CloudService> getSameService(CloudService service, String region) {
 		List<CloudService> res = new ArrayList<CloudService>();
-		
+
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
 			if (service instanceof IaaS) {
 				res = getSameServiceInternal((IaaS)service, region);
@@ -533,14 +533,14 @@ public class DataHandler {
 			}
 			resetDatabase();
 		}
-		
+
 		return res;
 	}
 
 	/**
 	 * returns a list of IaaS services with the provider and sarvice name equals
 	 * to those of provided CloudService
-	 * 
+	 *
 	 * @param service
 	 *            - the original cloud service
 	 * @param region
@@ -558,27 +558,27 @@ public class DataHandler {
 			for (Cost cost : cr.getHasCost()) {
 				// if the iaas has not been already inserted AND (the region has
 				// not been specified OR it has the same region)
-				if (!resources.contains(iaas)
-						&& (region == null || cost.getRegion() == null || cost
-						.getRegion().equals(region))) {
+				if (!resources.contains(iaas) && (region == null
+						|| cost.getRegion() == null
+						|| cost.getRegion().equals(region))) {
 					resources.add(iaas);
 				}
 			}
 		}
 		return resources;
 	}
-	
+
 	public List<String> getServices(String provider, String serviceType) {
-		
+
 		for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
-			
+
 			List<String> res = getServicesInternal(provider, serviceType);
 			if (res != null && res.size() > 0)
 				return res;
-		
+
 			resetDatabase();
 		}
-		
+
 		return new ArrayList<>();
 	}
 
@@ -610,15 +610,15 @@ public class DataHandler {
 		default:
 			break;
 		}
-		
+
 		List<String> filteredServices = new ArrayList<String>();
-		
+
 		if (expectedResource instanceof CloudResource) {
 			List<IaaS_Service> iaasServices = cloudProviders
 					.getProviderDBConnectors().get(provider).getIaaSServices();
 			logger.trace("getting services of type "+serviceType+" from "+provider);
 			logger.trace("found "+iaasServices.size()+" services");
-			for (IaaS_Service service : iaasServices) 
+			for (IaaS_Service service : iaasServices)
 				logger.trace("service: "+service.getName()+" class: "+service.getClass());
 			for (IaaS_Service service : iaasServices) {
 				List<CloudResource> resources = service.getComposedOf();
@@ -645,7 +645,7 @@ public class DataHandler {
 					.getProviderDBConnectors().get(provider).getPaaSServices();
 			logger.trace("getting services of type "+serviceType+" from "+provider);
 			logger.trace("found "+paasServices.size()+" services");
-			for (PaaS_Service service : paasServices) 
+			for (PaaS_Service service : paasServices)
 				logger.trace("service: "+service.getName()+" class: "+service.getClass());
 			for (PaaS_Service service : paasServices) {
 				List<CloudPlatform> platforms = service.getComposedOf();
@@ -668,70 +668,70 @@ public class DataHandler {
 				}
 			}
 		}
-		
+
 		return filteredServices;
 	}
-	
+
 	public double getAvailability(String provider) {
 		if (provider.indexOf(PrivateCloud.BASE_PROVIDER_NAME) > -1)
 			return 0.95;
-		
+
 		ProviderDBConnector pdb = cloudProviders
 				.getProviderDBConnectors().get(provider); // provider
-		
+
 		return pdb.getAvailability();
 	}
-	
+
 	// Methods for PaaSs
-	
+
 	public CloudElement getCloudElement(String provider, String serviceName,
 			String resourceName) {
-		
+
 		CloudPlatform cp = getCloudPlatform(provider, serviceName, resourceName);
 		if (cp != null)
 			return cp;
-		
+
 		CloudResource cr = getCloudResource(provider, serviceName, resourceName);
 		if (cr != null)
 			return cr;
-		
+
 		return null;
 	}
-	
+
 	private Integer getAmountMemory(CloudPlatform cp) {
 		CloudResource cr = runOn(cp, CloudResourceType.COMPUTE);
 		return getAmountMemory(cr);
 	}
-	
+
 	private Integer getNumberOfReplicas(CloudPlatform cp) {
 		CloudResource cr = runOn(cp, CloudResourceType.COMPUTE);
 		return getNumberOfReplicas(cr);
 	}
-	
+
 	private Double getProcessingRate(CloudPlatform cp) {
 		CloudResource cr = runOn(cp, CloudResourceType.COMPUTE);
 		return getProcessingRate(cr);
 	}
-	
+
 	private Integer getStorage(CloudPlatform cp) {
 		CloudResource cr = runOn(cp, CloudResourceType.BLOBSTORAGE);
 		if (cr == null)
 			cr = runOn(cp, CloudResourceType.FILESYSTEMSTORAGE);
 		return getStorage(cr);
 	}
-	
+
 	public CloudPlatform getCloudPlatform(String provider, String serviceName,
 			String resourceName) {
-		
+
 		ProviderDBConnector pdb = cloudProviders
 				.getProviderDBConnectors().get(provider); // provider
-		
+
 		PaaS_Service service = pdb
 				.getPaaSServicesHashMap().get(serviceName); // service;
-		
+
 		if (service == null)
 			return null;
-		
+
 		List<CloudPlatform> cloudPlatformList = service.getComposedOf();
 
 		for (CloudPlatform cp : cloudPlatformList) {
@@ -739,31 +739,31 @@ public class DataHandler {
 				if ((cp.getHasCost() != null)
 						&& (cp.getHasCost().size() > 0))
 					return cp;
-				
+
 				EList<CloudResource> crs = cp.getRunsOnCloudResource();
-				
+
 				for (CloudResource cr : crs) {
 					if ((cr.getHasCost() != null)
 							&& (cr.getHasCost().size() > 0))
 						return cp;
 				}
 			}
-					
+
 		}
-		
+
 		return null;
 	}
-	
+
 	public List<String> getCloudPlatformSizes(String provider,
 			String serviceName) {
-		
+
 		PaaS_Service service = cloudProviders
 				.getProviderDBConnectors().get(provider) 	// provider
 				.getPaaSServicesHashMap().get(serviceName); // service
-		
+
 		if (service == null)
 			return null;
-		
+
 		List<CloudPlatform> cloudPlatformList = service.getComposedOf();
 
 		List<String> names = new ArrayList<String>(cloudPlatformList.size());
@@ -772,33 +772,33 @@ public class DataHandler {
 		}
 		return names;
 	}
-	
+
 	public EList<CloudResource> getCloudPlatformRunOnResources(String provider,
 			String serviceName, String resourceName) {
-		
+
 		CloudPlatform cp = getCloudPlatform(provider, serviceName, resourceName);
-		
+
 		return cp.getRunsOnCloudResource();
 	}
-	
+
 	private PaaS getPaaSfromCloudPlatform(CloudService service, CloudPlatform cp) {
 		return getPaaSfromCloudPlatform(
 				service.getProvider(), service.getServiceType(), service.getServiceName(),
 				cp.getName(), service.getReplicas(), cp);
 	}
-	
+
 	private PaaS getPaaSfromCloudPlatform(String provider, String serviceType, String serviceName, String resourceName, int serviceReplicas, CloudPlatform cp) {
 
 //		double speed = 0;
 //		int numberOfCores = 0;
 //		int ram = 0;
-		
+
 		PaaSType pt = PaaSType.getByName(cp.getPlatformType().getLiteral());
 		if (pt == null)
 			return null;
-		
+
 		PaaS p = null;
-		
+
 		ArrayList<String> languages = new ArrayList<String>();
 		{
 			String lang = cp.getLanguage();
@@ -806,22 +806,22 @@ public class DataHandler {
 				for (String s : lang.split(";"))
 					languages.add(s);
 		}
-		
+
 		CloudResource cr = runOn(cp, CloudResourceType.COMPUTE);
 		CloudResource st = runOn(cp, CloudResourceType.BLOBSTORAGE);
 		if (st == null)
 			st = runOn(cp, CloudResourceType.FILESYSTEMSTORAGE);
-		
+
 		if (cr == null)
 			return p;
-		
+
 		Compute c = null;
 		int replicas = serviceReplicas;
 		int dataReplicas = 1;
 		int storage = 0;
 		if (st != null)
 			storage = getStorage(st);
-		
+
 		switch (pt) {
 		case Frontend:
 			replicas *= getPropertyValue(cp, CloudPlatformPropertyName.REPLICAS, Frontend.DEFAULT_REPLICAS);
@@ -936,10 +936,10 @@ public class DataHandler {
 		default:
 			return null;
 		}
-		
+
 		return p;
 	}
-	
+
 	private double getPropertyValue(CloudPlatform cp, CloudPlatformPropertyName name, double defaultValue) {
 		double res = defaultValue;
 		try {
@@ -951,7 +951,7 @@ public class DataHandler {
 		}
 		return res;
 	}
-	
+
 	private int getPropertyValue(CloudPlatform cp, CloudPlatformPropertyName name, int defaultValue) {
 		int res = defaultValue;
 		try {
@@ -963,7 +963,7 @@ public class DataHandler {
 		}
 		return res;
 	}
-	
+
 	private boolean getPropertyValue(CloudPlatform cp, CloudPlatformPropertyName name, boolean defaultValue) {
 		String res = getPropertyValue(cp, name);
 		if (res == null)
@@ -971,34 +971,34 @@ public class DataHandler {
 		else
 			return Boolean.parseBoolean(res);
 	}
-	
+
 	private String getPropertyValue(CloudPlatform cp, CloudPlatformPropertyName name) {
 		if (cp == null || name == null)
 			return null;
-		
+
 		EList<CloudPlatformProperty> cpps = cp.getProperties();
-		
+
 		for (CloudPlatformProperty cpp : cpps)
 			if (cpp.getName() == name)
 				return cpp.getValue();
-		
+
 		return null;
 	}
-	
+
 	private CloudResource runOn(CloudPlatform cp, CloudResourceType resourceType) {
 		if (cp == null || resourceType == null)
 			return null;
-		
+
 		EList<CloudResource> crs = cp.getRunsOnCloudResource();
-		
+
 		for (CloudResource cr : crs) {
 			if (cr.getResourceType().equals(resourceType))
 				return cr;
 		}
-		
+
 		return null;
 	}
-	
+
 	private List<CloudService> getSameService(PaaS service, String region) {
 		List<CloudService> resources = new ArrayList<>();
 		for (CloudPlatform cp : cloudProviders.getProviderDBConnectors()
@@ -1009,7 +1009,7 @@ public class DataHandler {
 			PaaS paas = getPaaSfromCloudPlatform(service, cp);
 			if (paas == null)
 				continue;
-			
+
 			for (Cost cost : cp.getHasCost()) {
 				// if the paas has not been already inserted AND (the region has
 				// not been specified OR it has the same region)
@@ -1019,11 +1019,11 @@ public class DataHandler {
 					resources.add(paas);
 				}
 			}
-			
+
 			if (!resources.contains(paas)) {
 				List<CloudResource> runningOn = cp.getRunsOnCloudResource();
 				for (CloudResource cr : runningOn) {
-				
+
 					for (Cost cost : cr.getHasCost()) {
 						if (!resources.contains(paas)
 								&& (region == null || cost.getRegion() == null || cost
@@ -1031,33 +1031,33 @@ public class DataHandler {
 							resources.add(paas);
 						}
 					}
-				
+
 				}
 			}
 		}
 		return resources;
 	}
-	
+
 	public double getBenchmarkValue(CloudService service, String tool) {
 		return getBenchmarkValue(service.getProvider(), service.getResourceName(), tool);
 	}
-	
+
 	public double getBenchmarkValue(String provider, String resourceName, String tool) {
 		return cloudProviders.getProviderDBConnectors().get(provider).getBenchmarkValue(resourceName, tool);
 	}
-	
+
 	public Set<String> getBenchmarkMethods(CloudService service) {
 		return getBenchmarkMethods(service.getProvider(), service.getResourceName());
 	}
-	
+
 	public Set<String> getBenchmarkMethods(String provider, String resourceName) {
 		return cloudProviders.getProviderDBConnectors().get(provider).getBenchmarkMethods(resourceName);
 	}
-	
+
 	public Set<String> getSimilarResourcesWithBenchmarkValue(CloudService service, String tool) {
 		return getSimilarResourcesWithBenchmarkValue(service.getProvider(), service.getServiceName(), tool);
 	}
-	
+
 	public Set<String> getSimilarResourcesWithBenchmarkValue(String provider, String serviceName, String tool) {
 		Set<String> res = new HashSet<String>();
 		List<String> sizes = getCloudElementSizes(provider, serviceName, tool);
@@ -1066,7 +1066,7 @@ public class DataHandler {
 		}
 		return res;
 	}
-	
+
 	private List<String> filterWithSelectedBenchmark(String provider, List<String> resList, Configuration.Benchmark tool) {
 		if (tool != null && tool != Configuration.Benchmark.None && resList.size() > 0) {
 			List<String> res = new ArrayList<String>();
@@ -1074,14 +1074,14 @@ public class DataHandler {
 				if (getBenchmarkValue(provider, s, tool.toString()) > 0)
 					res.add(s);
 			}
-			
+
 			if (res.size() == 0) {
 				logger.warn("No resource has a valid benchmark value for the benchmark {}.", tool.toString());
 			} else {
 				return res;
 			}
 		}
-		
+
 		return resList;
 	}
 }
