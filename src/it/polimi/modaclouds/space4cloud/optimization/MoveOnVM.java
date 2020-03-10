@@ -18,17 +18,13 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ReplicasConstraint;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.CloudService;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.IaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.PaaS;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Tier;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Michele Ciavotta
@@ -138,8 +134,8 @@ public class MoveOnVM extends AbsMoveHour {
 		//avoid breaking constraints when scaling in 		
 		List<Constraint> constraints =  ConstraintHandlerFactory.getConstraintHandler().getConstraintByResourceId(tier.getId(), ReplicasConstraint.class);
 		for(Constraint c:constraints){
-			if(newReplicas < ((ReplicasConstraint)c).getMin()){
-				newReplicas = ((ReplicasConstraint)c).getMin();
+			if (newReplicas < ((ReplicasConstraint) c).getMin()) {
+				newReplicas = ((ReplicasConstraint) c).getMin();
 				break;
 			}
 		}
@@ -149,15 +145,40 @@ public class MoveOnVM extends AbsMoveHour {
 			scale(tier, newReplicas);
 	}
 
+
+	public void scaleDelta(Tier tier, int delta) {
+		CloudService cs = tier.getCloudService();
+
+		if (!(cs instanceof IaaS) && (cs instanceof PaaS && !((PaaS) cs).areReplicasChangeable())) {
+			logger.warn("Trying to scale a non scalable resource.");
+			return;
+		}
+
+		int replicas = cs.getReplicas();
+
+		int newReplicas = Math.max(1, replicas + delta);
+
+		//avoid breaking constraints when scaling in
+		List<Constraint> constraints = ConstraintHandlerFactory.getConstraintHandler().getConstraintByResourceId(tier.getId(), ReplicasConstraint.class);
+		for (Constraint c : constraints) {
+			if (newReplicas < ((ReplicasConstraint) c).getMin()) {
+				newReplicas = ((ReplicasConstraint) c).getMin();
+				break;
+			}
+		}
+		if (newReplicas != replicas)
+			scale(tier, newReplicas);
+	}
+
 	/**
 	 * Increases by 1 the number of replicas of the specified resource if this does not conflict with the onstraints
-	 * 
+	 *
 	 * @param res
 	 */
 	public void scaleOut(Tier tier) {
 		CloudService cs = tier.getCloudService();
-		
-		if(!(cs instanceof IaaS) && (cs instanceof PaaS && !((PaaS)cs).areReplicasChangeable() )) {
+
+		if (!(cs instanceof IaaS) && (cs instanceof PaaS && !((PaaS) cs).areReplicasChangeable())) {
 			logger.warn("Trying to scale a non scalable resource.");
 			return;
 		}

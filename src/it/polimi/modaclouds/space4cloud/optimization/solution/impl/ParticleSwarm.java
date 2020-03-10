@@ -1,6 +1,7 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
 import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -72,8 +73,13 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
     }
 
 
-    public void updateVelocity() {
-        for (Particle particle : swarm) particle.updateVelocity(bestParticle);
+    public void updateVelocity() throws OptimizationException {
+        for (Particle particle : swarm) particle.updateVelocity(bestParticle, 1.0, 1.0, 1.0);
+
+    }
+
+    public void updatePosition() {
+        for (Particle particle : swarm) particle.updatePosition();
     }
 
 

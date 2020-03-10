@@ -249,7 +249,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     private ParticleSwarm createRandomFeasibleSwarm() throws OptimizationException {
 
         Set<Particle> swarm = new HashSet<>(SWARM_SIZE);
-        for (int i = 0; i < SWARM_SIZE; i++) swarm.add(createRandomFeasibleSolutionMulti());
+        for (int i = 0; i < SWARM_SIZE; i++) swarm.add(createRandomFeasibleParticle());
 
         ParticleSwarm particleSwarm = new ParticleSwarm(swarm, this);
         particleSwarm.setCostLogImage(this.getCostLogger());
@@ -263,7 +263,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
      * @return
      * @throws OptimizationException
      */
-    private Particle createRandomFeasibleSolutionMulti() throws OptimizationException {
+    private Particle createRandomFeasibleParticle() throws OptimizationException {
 
         //todo: pay attention to the single directory where lqn files are saved
         SolutionMulti randomSolution = initialSolution.clone();
