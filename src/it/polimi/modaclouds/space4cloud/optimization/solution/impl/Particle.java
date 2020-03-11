@@ -9,28 +9,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class Particle implements Cloneable, Serializable {
+public class Particle implements Cloneable, Serializable, Comparable<Particle> {
 
     private long generationTime = 0;
     private int generationIteration = 0;
     private Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier;
-    private SolutionMulti solutionMulti = null;
-    private Particle bestParticle = null;
+    private SolutionMulti position = null;
+    private Particle localBestParticle = null;
 
     private ParticleVelocity velocity = null;
 
-    public Particle(SolutionMulti solutionMulti) {
-        this.solutionMulti = solutionMulti;
+    public Particle(SolutionMulti position) {
+        this.position = position;
         this.velocity = new ParticleVelocity(this);
-        this.bestParticle = this;
+        this.localBestParticle = this;
     }
 
     public boolean isFeasible() {
-        return solutionMulti.isFeasible();
+        return position.isFeasible();
     }
 
     public boolean isEvaluated() {
-        return solutionMulti.isEvaluated();
+        return position.isEvaluated();
+    }
+
+
+    public double getFitness() {
+        return position.getCost();
     }
 
     public long getGenerationTime() {
@@ -49,25 +54,25 @@ public class Particle implements Cloneable, Serializable {
         this.generationIteration = generationIteration;
     }
 
-    public SolutionMulti getSolutionMulti() {
-        return solutionMulti;
+    public SolutionMulti getPosition() {
+        return position;
     }
 
-    public void setSolutionMulti(SolutionMulti solutionMulti) {
-        this.solutionMulti = solutionMulti;
+    public void setPosition(SolutionMulti position) {
+        this.position = position;
     }
 
 
     public boolean greaterThan(Particle other) {
         if (other == null) return true;
-        if (solutionMulti == null) return false;
-        return solutionMulti.greaterThan(other.getSolutionMulti());
+        if (position == null) return false;
+        return position.greaterThan(other.getPosition());
 
     }
 
     public Particle clone() {
-        Particle clonedParticle = new Particle(solutionMulti.clone());
-        clonedParticle.bestParticle = bestParticle;
+        Particle clonedParticle = new Particle(position.clone());
+        clonedParticle.localBestParticle = localBestParticle;
         clonedParticle.setGenerationIteration(generationIteration);
         clonedParticle.setGenerationTime(generationTime);
         clonedParticle.velocity = this.velocity.clone();
@@ -84,10 +89,10 @@ public class Particle implements Cloneable, Serializable {
     public int distance(Particle otherParticle) throws OptimizationException {
 
         int dist = 0;
-        for (Solution sol : solutionMulti.getAll()) {
+        for (Solution sol : position.getAll()) {
             Instance application = sol.getApplication(0);
 
-            Instance otherApplication = otherParticle.getSolutionMulti().get(sol.getProvider()).getApplication(0);
+            Instance otherApplication = otherParticle.getPosition().get(sol.getProvider()).getApplication(0);
 
             for (Tier tier : application.getTiers()) {
                 Tier otherTier = otherApplication.getTierById(tier.getId());
@@ -103,7 +108,7 @@ public class Particle implements Cloneable, Serializable {
 
             for (int i = 0; i < 24; i++) {
                 Instance appl = sol.getApplication(i);
-                Instance otherAppl = otherParticle.getSolutionMulti().get(sol.getProvider()).getApplication(i);
+                Instance otherAppl = otherParticle.getPosition().get(sol.getProvider()).getApplication(i);
                 for (Tier tier : appl.getTiers()) {
                     Tier otherTier = otherAppl.getTierById(tier.getId());
                     dist += Math.abs(tier.getCloudService().getReplicas() - otherTier.getCloudService().getReplicas());
@@ -135,7 +140,7 @@ public class Particle implements Cloneable, Serializable {
      */
     public void updateVelocity(Particle pg, Double c1, Double c2, Double c3) throws OptimizationException {
 
-        Particle pi = bestParticle;
+        Particle pi = localBestParticle;
         this.velocity = this.velocity.scalarMultiplication(c1)
                 .sum(pi.difference(this)
                         .scalarMultiplication(c2))
@@ -147,7 +152,7 @@ public class Particle implements Cloneable, Serializable {
 
     public void updatePosition() {
 
-        for (Solution sol : solutionMulti.getAll()) {
+        for (Solution sol : position.getAll()) {
             MoveTypeVM moveVM = new MoveTypeVM(sol);
             Instance application = sol.getApplication(0);
             String provider = sol.getProvider();
@@ -187,10 +192,10 @@ public class Particle implements Cloneable, Serializable {
          */
         ParticleVelocity particleDiff = new ParticleVelocity(p1.clone());
 
-        for (Solution sol : p1.getSolutionMulti().getAll()) {
+        for (Solution sol : p1.getPosition().getAll()) {
             Instance application = sol.getApplication(0);
 
-            Instance otherApplication = p2.getSolutionMulti().get(sol.getProvider()).getApplication(0);
+            Instance otherApplication = p2.getPosition().get(sol.getProvider()).getApplication(0);
 
             for (Tier tier : application.getTiers()) {
                 Tier otherTier = otherApplication.getTierById(tier.getId());
@@ -206,7 +211,7 @@ public class Particle implements Cloneable, Serializable {
 
             for (int i = 0; i < 24; i++) {
                 Instance appl = sol.getApplication(i);
-                Instance otherAppl = p2.getSolutionMulti().get(sol.getProvider()).getApplication(i);
+                Instance otherAppl = p2.getPosition().get(sol.getProvider()).getApplication(i);
                 for (Tier tier : appl.getTiers()) {
                     Tier otherTier = otherAppl.getTierById(tier.getId());
                     int r1 = tier.getCloudService().getReplicas();
@@ -228,10 +233,10 @@ public class Particle implements Cloneable, Serializable {
          */
         ParticleVelocity particleDiff = new ParticleVelocity(this.clone());
 
-        for (Solution sol : this.getSolutionMulti().getAll()) {
+        for (Solution sol : this.getPosition().getAll()) {
             Instance application = sol.getApplication(0);
 
-            Instance otherApplication = otherParticle.getSolutionMulti().get(sol.getProvider()).getApplication(0);
+            Instance otherApplication = otherParticle.getPosition().get(sol.getProvider()).getApplication(0);
 
             for (Tier tier : application.getTiers()) {
                 Tier otherTier = otherApplication.getTierById(tier.getId());
@@ -247,7 +252,7 @@ public class Particle implements Cloneable, Serializable {
 
             for (int i = 0; i < 24; i++) {
                 Instance appl = sol.getApplication(i);
-                Instance otherAppl = otherParticle.getSolutionMulti().get(sol.getProvider()).getApplication(i);
+                Instance otherAppl = otherParticle.getPosition().get(sol.getProvider()).getApplication(i);
                 for (Tier tier : appl.getTiers()) {
                     Tier otherTier = otherAppl.getTierById(tier.getId());
                     int r1 = tier.getCloudService().getReplicas();
@@ -263,4 +268,17 @@ public class Particle implements Cloneable, Serializable {
     }
 
 
+    public void updateLocalBest() {
+        if (this.getFitness() <= localBestParticle.getFitness()) localBestParticle = this;
+    }
+
+    public void makePositionFeasible() {
+    }
+
+    @Override
+    public int compareTo(Particle o) {
+        if (Math.abs(this.getFitness() - o.getFitness()) < 0.001) return 0;
+        else if (this.getFitness() > o.getFitness()) return 1;
+        else return -1;
+    }
 }

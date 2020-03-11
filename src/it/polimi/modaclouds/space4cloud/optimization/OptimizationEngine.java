@@ -24,7 +24,6 @@ import de.uka.ipd.sdq.pcm.repository.BasicComponent;
 import de.uka.ipd.sdq.pcm.repository.OperationSignature;
 import de.uka.ipd.sdq.pcm.repository.RepositoryComponent;
 import de.uka.ipd.sdq.pcm.resourceenvironment.ResourceContainer;
-import de.uka.ipd.sdq.pcm.seff.AbstractAction;
 import de.uka.ipd.sdq.pcm.seff.*;
 import de.uka.ipd.sdq.pcm.usagemodel.*;
 import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
@@ -142,9 +141,9 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 
 	private Logger logger = LoggerFactory.getLogger(OptimizationEngine.class);
 
-	private GenericChart<XYSeriesCollection> costLogImage;
-	private GenericChart<XYSeriesCollection> logVm;
-	private GenericChart<XYSeriesCollection> logConstraints;
+	protected GenericChart<XYSeriesCollection> costLogImage;
+	protected GenericChart<XYSeriesCollection> logVm;
+	protected GenericChart<XYSeriesCollection> logConstraints;
 
 	private String bestSolutionSerieHandler;
 	private String localBestSolutionSerieHandler;
@@ -1325,14 +1324,14 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 		logger.info("Deserialized: " + initialSolution);
 	}
 
-	protected void makeFeasible(SolutionMulti sol) throws OptimizationException {
+	public void makeFeasible(SolutionMulti sol) throws OptimizationException {
 		for (Solution s : sol.getAll())
 			makeFeasible(sol, s.getProvider());
 	}
 
 	/**
 	 * Make the solution feasible by performing scale out operations
-	 * 
+	 *
 	 * @param solution
 	 * @throws OptimizationException
 	 */

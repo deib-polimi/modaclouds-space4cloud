@@ -54,7 +54,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     private ConstraintHandler constraintHandler;
     private DataHandler dataBaseHandler;
     private int iteration;
-    private int MAX_ITERATIONS;
+    private int MAX_ITERATIONS = 200;
     /**
      * This is the long term memory of the tabu search used in the scramble
      * process. Each Tier (key of the Map) has its own memory which uses the
@@ -73,14 +73,11 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
     private boolean batch = false;
 
-    private boolean providedTimer = false;
     /**
      * Indicates if the bestSolution did change or not.
      */
     private boolean bestSolutionUpdated = true;
-    private double inertia = 1.0;
-    private double wMax = 0.9;
-    private double wMin = 0.4;
+    private double inertia = 0.9;
     private ParticleSwarm swarm;
     private double temp;
 
@@ -110,6 +107,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
      * @throws ConstraintEvaluationException
      * @throws IOException
      */
+
     public Integer optimize() throws OptimizationException, ConstraintEvaluationException, IOException {
 
         // 1: check if an initial solution has been set
@@ -118,6 +116,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         logger.info("starting the optimization");
 
         // start the timer
+        boolean providedTimer = false;
         if (!providedTimer) timer.start();
 
         try {
@@ -129,6 +128,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
         swarm = createRandomFeasibleSwarm(); // all the elements of the swarm have been evaluated in creation
 
+        temp = setInitialTemperature();
 
         iteration = 1;
 
@@ -142,53 +142,23 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
             if (Configuration.isPaused()) waitForResume();
 
-            // //////////////////
-            if (bestSolutionUpdated && Configuration.REDISTRIBUTE_WORKLOAD) {
-                logger.debug("The best solution did change, so let's redistribuite the workload...");
-                logger.debug("TBD");
-            }
-            // //////////////////
-
             //1. swarm evolution
-            updateInertiaWeight();
-            swarm.updateSwarm(inertia, temp, iteration);
 
+            try {
+                swarm.evolve(inertia, temp, iteration);
+            } catch (EvaluationException e) {
+                throw new OptimizationException(e.getMessage());
+            }
 
-            // 2: Internal Optimization process
-            internalOptimizationScaleIn(currentSolution);
-
-            // 3: check whether the best solution has changed
-            // If the current solution is better than the best one it becomes the new best solution.
-            logger.info("Updating best solutions");
-            updateLocalBestSolution(currentSolution);
-            updateBestSolution(currentSolution);
-
-            // 3b: clone the best solution to start the scramble from it
-            currentSolution = localBestSolution.clone();
-
-            // 4 Scrambling the current solution: altering the VM type for each provider
-            logger.info("Executing: Scramble");
+            currentSolution = swarm.getBestParticle().getPosition();
 
             if (Configuration.isPaused()) waitForResume();
 
-            solutionChanged = tsMoveScramble(currentSolution);
-
-            // if a local optimum with respect to the type of machine has been
-            // found we need to perform some diversification (using the long-term memory)
-            if (!solutionChanged) {
-                logger.info("Stuck in a local optimum, using long term memory");
-                currentSolution = longTermMemoryRestart(currentSolution);
-                logger.info("Long term memory statistics:");
-
-                for (Tier t : currentSolution.get(0).getApplication(0).getTiers()) {
-                    logger.info("\tTier: " + t.getPcmName() + " Size: " + longTermFrequencyMemory.get(t.getId()).size());
-                }
-                resetLocalBestSolution(currentSolution);
-            }
-
-            setProgress((iteration * 100 / MAX_SCRUMBLE_ITERS));
+            setProgress((int) (Math.ceil((double) iteration / MAX_ITERATIONS * 100)));
 
             // increment the number of iterations
+            updateInertiaWeight();
+            updateTemperature();
             iteration += 1;
             firePropertyChange("iteration", iteration - 1, iteration);
 
@@ -210,12 +180,20 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         // if (!batch)
         // SolutionWindow.show(bestSolution);
 
-        if (Configuration.CONTRACTOR_TEST) bestSolution.generateOptimizedCosts();
-
         exportBestSolutionsTrace();
 
         return -1;
 
+    }
+
+    private double setInitialTemperature() {
+        double delta = Math.abs(swarm.getWorstFitness() - swarm.getBestFitness());
+        return delta * ((double) SWARM_SIZE / 2);
+    }
+
+    private void updateTemperature() {
+        double cr = 0.1;
+        temp = temp * cr;
     }
 
     private boolean isMaxConvergencePercentage() {
@@ -229,7 +207,9 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     }
 
     private void updateInertiaWeight() {
-        this.inertia = this.wMax - (this.wMax - this.wMin) * (double) (iteration / MAX_ITERATIONS);
+        double wMax = 0.9;
+        double wMin = 0.4;
+        this.inertia = wMax - (wMax - wMin) * (double) (iteration / MAX_ITERATIONS);
     }
 
 
@@ -244,7 +224,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         Set<Particle> swarm = new HashSet<>(SWARM_SIZE);
         for (int i = 0; i < SWARM_SIZE; i++) swarm.add(createRandomFeasibleParticle());
 
-        ParticleSwarm particleSwarm = new ParticleSwarm(swarm, this);
+        ParticleSwarm particleSwarm = new ParticleSwarm(swarm, this, random);
         particleSwarm.setCostLogImage(this.getCostLogger());
         particleSwarm.setCognitiveScale(COGNITIVE_SCALE);
         particleSwarm.setSocialScale(SOCIAL_SCALE);

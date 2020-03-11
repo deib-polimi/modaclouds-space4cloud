@@ -31,7 +31,7 @@ public class ParticleVelocity implements Cloneable {
 
         this.particle = particle;
 
-        for (Solution sol : particle.getSolutionMulti().getAll()) {
+        for (Solution sol : particle.getPosition().getAll()) {
             String provider = sol.getProvider();
             Map<String, Double> tierVelocity = new HashMap<>();
             for (Tier tier : sol.getApplication(0).getTiers()) {
