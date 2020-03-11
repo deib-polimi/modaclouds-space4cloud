@@ -28,7 +28,6 @@ import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.*;
 import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
-import it.polimi.modaclouds.space4cloud.utils.Configuration.Policy;
 import org.apache.commons.lang.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,15 +37,16 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * @author Michele Ciavotta Class defining the optimization engine.
+ * @author Michele Ciavotta
+ * Class defining the optimization engine.
  * This class implements a Discrete Particle Swarm Optimization Algorithm
  */
 public class OptimizationEngineDPSO extends OptimizationEngine implements PropertyChangeListener {
 
     public static final String BEST_SOLUTION_UPDATED = "bestSolutionUpdated";
     private static final int SWARM_SIZE = 100;
-    private static final int MAX_SCRAMBLE_NO_CHANGE = 10;
-    private static final double WL_INCREMENT = 0.01;
+    private static final double COGNITIVE_SCALE = 2.0;
+    private static final double SOCIAL_SCALE = 2.0;
     private SolutionMulti initialSolution = null;
     private SolutionMulti bestSolution = null;
     private SolutionMulti currentSolution = null;
@@ -54,13 +54,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     private ConstraintHandler constraintHandler;
     private DataHandler dataBaseHandler;
     private int iteration;
-    private int numberOfFeasibilityIterations;
-    private Policy SELECTION_POLICY;
-    private int MAXMEMORYSIZE = 10;
-    private int MAXFEASIBILITYITERATIONS = 10;
-    private double DEFAULT_SCALE_IN_FACTOR = 2;
-    private int MAX_OUT_OF_BOUND_ITERATIONS = 5;
-    private int MAX_SCALE_IN_CONV_ITERATIONS = 3;
+    private int MAX_ITERATIONS;
     /**
      * This is the long term memory of the tabu search used in the scramble
      * process. Each Tier (key of the Map) has its own memory which uses the
@@ -84,6 +78,11 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
      * Indicates if the bestSolution did change or not.
      */
     private boolean bestSolutionUpdated = true;
+    private double inertia = 1.0;
+    private double wMax = 0.9;
+    private double wMin = 0.4;
+    private ParticleSwarm swarm;
+    private double temp;
 
     /**
      * Instantiates a new opt engine using as timer the provided one. the
@@ -99,7 +98,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     }
 
     public int getMaxIterations() {
-        return MAX_SCRUMBLE_ITERS;
+        return MAX_ITERATIONS;
     }
 
     /**
@@ -128,16 +127,16 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         } // evaluate the current
 
 
+        swarm = createRandomFeasibleSwarm(); // all the elements of the swarm have been evaluated in creation
 
-        ParticleSwarm swarm = createRandomFeasibleSwarm();
 
         iteration = 1;
 
         boolean solutionChanged = true;
 
-        while (!isMaxNumberOfIterations()) {
+        while (!isMaxNumberOfIterations() && !isMaxConvergencePercentage()) {
 
-            logger.info("Scramble Iteration: " + iteration);
+            logger.info("PSO Iteration: " + iteration);
             // logger.trace( currentSolution.showStatus());
 
 
@@ -145,31 +144,15 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
             // //////////////////
             if (bestSolutionUpdated && Configuration.REDISTRIBUTE_WORKLOAD) {
-
                 logger.debug("The best solution did change, so let's redistribuite the workload...");
-
-                currentSolution = bestSolution.clone();
-
-                logger.trace(currentSolution.showWorkloadPercentages());
-                // setWorkloadPercentagesFromMILP(currentSolution);
-                logger.trace("MILP:\n" + currentSolution.showWorkloadPercentages());
-
-                logger.debug(currentSolution.showWorkloadPercentages());
-                currentSolution = maximizeWorkloadPercentagesForLeastUsedTier(currentSolution);
-                logger.debug(currentSolution.showWorkloadPercentages());
-
-                logger.debug("My method:\n" + currentSolution.showWorkloadPercentages());
-
-                logger.info("Updating best solutions");
-
-                // both should be feasible
-                resetBestSolution(currentSolution);
-                resetLocalBestSolution(currentSolution);
-
-                bestSolutionUpdated = false;
-
+                logger.debug("TBD");
             }
             // //////////////////
+
+            //1. swarm evolution
+            updateInertiaWeight();
+            swarm.updateSwarm(inertia, temp, iteration);
+
 
             // 2: Internal Optimization process
             internalOptimizationScaleIn(currentSolution);
@@ -235,10 +218,20 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
     }
 
+    private boolean isMaxConvergencePercentage() {
+        return swarm.getConvergencePercentage() > 0.95;
+
+    }
+
     private boolean isMaxNumberOfIterations() {
 
-        return iteration;
+        return iteration >= MAX_ITERATIONS;
     }
+
+    private void updateInertiaWeight() {
+        this.inertia = this.wMax - (this.wMax - this.wMin) * (double) (iteration / MAX_ITERATIONS);
+    }
+
 
     /**
      * Create a quasi-random swarm of feasible solutions
@@ -253,6 +246,10 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
         ParticleSwarm particleSwarm = new ParticleSwarm(swarm, this);
         particleSwarm.setCostLogImage(this.getCostLogger());
+        particleSwarm.setCognitiveScale(COGNITIVE_SCALE);
+        particleSwarm.setSocialScale(SOCIAL_SCALE);
+        particleSwarm.setTimer(timer);
+        particleSwarm.setEvaluationServer(evalServer);
         return particleSwarm;
     }
 

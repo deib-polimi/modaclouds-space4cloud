@@ -63,8 +63,7 @@ public class MoveOnVM extends AbsMoveHour {
 	 */
 	@Override
 	public Solution apply() {
-		application.changeValues(tier.getId(), this.propertyNames,
-				this.propertyValues);
+		application.changeValues(tier.getId(), this.propertyNames, this.propertyValues);
 
 		return this.currentSolution;
 	}

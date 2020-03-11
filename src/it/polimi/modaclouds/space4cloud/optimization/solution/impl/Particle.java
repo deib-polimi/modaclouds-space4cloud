@@ -15,16 +15,22 @@ public class Particle implements Cloneable, Serializable {
     private int generationIteration = 0;
     private Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier;
     private SolutionMulti solutionMulti = null;
-    private SolutionMulti bestSolution = null;
     private Particle bestParticle = null;
 
     private ParticleVelocity velocity = null;
 
     public Particle(SolutionMulti solutionMulti) {
         this.solutionMulti = solutionMulti;
-        this.bestSolution = solutionMulti.clone();
         this.velocity = new ParticleVelocity(this);
+        this.bestParticle = this;
+    }
 
+    public boolean isFeasible() {
+        return solutionMulti.isFeasible();
+    }
+
+    public boolean isEvaluated() {
+        return solutionMulti.isEvaluated();
     }
 
     public long getGenerationTime() {
@@ -51,13 +57,6 @@ public class Particle implements Cloneable, Serializable {
         this.solutionMulti = solutionMulti;
     }
 
-    public SolutionMulti getBestSolution() {
-        return bestSolution;
-    }
-
-    public void setBestSolution(SolutionMulti bestSolution) {
-        this.bestSolution = bestSolution;
-    }
 
     public boolean greaterThan(Particle other) {
         if (other == null) return true;
@@ -68,6 +67,7 @@ public class Particle implements Cloneable, Serializable {
 
     public Particle clone() {
         Particle clonedParticle = new Particle(solutionMulti.clone());
+        clonedParticle.bestParticle = bestParticle;
         clonedParticle.setGenerationIteration(generationIteration);
         clonedParticle.setGenerationTime(generationTime);
         clonedParticle.velocity = this.velocity.clone();
@@ -135,7 +135,7 @@ public class Particle implements Cloneable, Serializable {
      */
     public void updateVelocity(Particle pg, Double c1, Double c2, Double c3) throws OptimizationException {
 
-        Particle pi = new Particle(this.bestSolution);
+        Particle pi = bestParticle;
         this.velocity = this.velocity.scalarMultiplication(c1)
                 .sum(pi.difference(this)
                         .scalarMultiplication(c2))
