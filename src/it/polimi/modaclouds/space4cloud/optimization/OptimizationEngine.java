@@ -92,9 +92,9 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 
 	private List<SolutionMulti> bestSolutions = new ArrayList<SolutionMulti>();
 
-	private ConstraintHandler constraintHandler;
+	protected ConstraintHandler constraintHandler;
 
-	private DataHandler dataBaseHandler;
+	protected DataHandler dataBaseHandler;
 
 	private int scrambleIteration;
 
@@ -132,32 +132,32 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 	 * of components with low frequency
 	 */
 	private Map<String, Cache<String, Integer>> longTermFrequencyMemory;
+	protected EvaluationServer evalServer;
 
 	protected Random random;
 
 	private StopWatch timer = new StopWatch();
-
-	private EvaluationServer evalServer;
+	protected String bestSolutionSerieHandler;
 
 	private Logger logger = LoggerFactory.getLogger(OptimizationEngine.class);
 
 	protected GenericChart<XYSeriesCollection> costLogImage;
 	protected GenericChart<XYSeriesCollection> logVm;
 	protected GenericChart<XYSeriesCollection> logConstraints;
-
-	private String bestSolutionSerieHandler;
-	private String localBestSolutionSerieHandler;
+	protected String localBestSolutionSerieHandler;
+	protected boolean providedTimer = false;
 
 	private boolean batch = false;
 
-	private boolean providedTimer = false;
+	public Random getRandom() {
+		return random;
+	}
 
 	/**
 	 * Instantiates a new opt engine using as timer the provided one. the
 	 * provided timer should already be started
-	 * 
-	 * @param handler
-	 *            : the constraint handler
+	 *
+	 * @param handler : the constraint handler
 	 * @throws DatabaseConnectionFailureExteption
 	 */
 	public OptimizationEngine(ConstraintHandler handler, boolean batch,

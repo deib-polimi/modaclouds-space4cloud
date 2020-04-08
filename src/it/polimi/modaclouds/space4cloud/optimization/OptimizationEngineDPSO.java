@@ -18,15 +18,12 @@
  */
 package it.polimi.modaclouds.space4cloud.optimization;
 
-import it.polimi.modaclouds.space4cloud.db.DataHandler;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.*;
-import it.polimi.modaclouds.space4cloud.utils.Cache;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import org.apache.commons.lang.time.StopWatch;
 import org.slf4j.Logger;
@@ -43,43 +40,29 @@ import java.util.*;
  */
 public class OptimizationEngineDPSO extends OptimizationEngine implements PropertyChangeListener {
 
-    public static final String BEST_SOLUTION_UPDATED = "bestSolutionUpdated";
     private static final int SWARM_SIZE = 100;
     private static final double COGNITIVE_SCALE = 2.0;
     private static final double SOCIAL_SCALE = 2.0;
+    private static final double MAX_CONVERGENCE_PERCENTAGE = 0.95;
+    private static final double CR = 0.1;
+    private static final double INITIAL_INERTIA = 0.9;
     private SolutionMulti initialSolution = null;
     private SolutionMulti bestSolution = null;
     private SolutionMulti currentSolution = null;
     private List<SolutionMulti> bestSolutions = new ArrayList<SolutionMulti>();
-    private ConstraintHandler constraintHandler;
-    private DataHandler dataBaseHandler;
     private int iteration;
     private int MAX_ITERATIONS = 200;
-    /**
-     * This is the long term memory of the tabu search used in the scramble
-     * process. Each Tier (key of the Map) has its own memory which uses the
-     * resource name as ID. This memory is used to restart the search process
-     * after the full exploration of a local optimum by building a solution out
-     * of components with low frequency
-     */
-    private Map<String, Cache<String, Integer>> longTermFrequencyMemory;
-
-
     private StopWatch timer = new StopWatch();
-
-    private EvaluationServer evalServer;
-
     private Logger logger = LoggerFactory.getLogger(OptimizationEngineDPSO.class);
-
     private boolean batch = false;
-
     /**
      * Indicates if the bestSolution did change or not.
      */
     private boolean bestSolutionUpdated = true;
-    private double inertia = 0.9;
+    private double inertia;
     private ParticleSwarm swarm;
     private double temp;
+
 
     /**
      * Instantiates a new opt engine using as timer the provided one. the
@@ -92,6 +75,18 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
                                   boolean batch,
                                   StopWatch timer) throws DatabaseConnectionFailureExteption {
         super(handler, batch, timer);
+    }
+
+    public static double getCognitiveScale() {
+        return COGNITIVE_SCALE;
+    }
+
+    public static double getSocialScale() {
+        return SOCIAL_SCALE;
+    }
+
+    public StopWatch getTimer() {
+        return timer;
     }
 
     public int getMaxIterations() {
@@ -107,8 +102,11 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
      * @throws ConstraintEvaluationException
      * @throws IOException
      */
-
     public Integer optimize() throws OptimizationException, ConstraintEvaluationException, IOException {
+
+
+        bestSolutionSerieHandler = "Best Solution";
+        localBestSolutionSerieHandler = "Local Best Solution"; // bear in mind that in this setting local and best are the same
 
         // 1: check if an initial solution has been set
         if (this.initialSolution == null) return -1;
@@ -116,7 +114,6 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         logger.info("starting the optimization");
 
         // start the timer
-        boolean providedTimer = false;
         if (!providedTimer) timer.start();
 
         try {
@@ -125,15 +122,17 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
             throw new OptimizationException("", "initialEvaluation", e);
         } // evaluate the current
 
+        swarm = createRandomFeasibleSwarm(); // all the elements of the swarm are evaluated in creation
+        //todo: check if the best has changed
 
-        swarm = createRandomFeasibleSwarm(); // all the elements of the swarm have been evaluated in creation
-
+        // temperature, inertia and iteration define the evolution of the swarm
         temp = setInitialTemperature();
-
+        inertia = INITIAL_INERTIA;
         iteration = 1;
 
         boolean solutionChanged = true;
 
+        //if the total number of iteration has not been reached and so teh max coverage percentage
         while (!isMaxNumberOfIterations() && !isMaxConvergencePercentage()) {
 
             logger.info("PSO Iteration: " + iteration);
@@ -156,10 +155,11 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
             setProgress((int) (Math.ceil((double) iteration / MAX_ITERATIONS * 100)));
 
-            // increment the number of iterations
+            // increment the number of iterations, inertia and temperature
             updateInertiaWeight();
             updateTemperature();
-            iteration += 1;
+            updateIteration();
+
             firePropertyChange("iteration", iteration - 1, iteration);
 
         }
@@ -186,23 +186,32 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
     }
 
+    private void updateIteration() {
+        iteration += 1;
+    }
+
+    /**
+     * this function set the initial temperature for the simulated annealing.
+     * I found this approach somewhere, it does need parameter tweaking
+     *
+     * @return
+     */
     private double setInitialTemperature() {
         double delta = Math.abs(swarm.getWorstFitness() - swarm.getBestFitness());
         return delta * ((double) SWARM_SIZE / 2);
     }
 
     private void updateTemperature() {
-        double cr = 0.1;
-        temp = temp * cr;
+        temp = temp * CR;
     }
 
+
     private boolean isMaxConvergencePercentage() {
-        return swarm.getConvergencePercentage() > 0.95;
+        return swarm.getConvergencePercentage() > MAX_CONVERGENCE_PERCENTAGE;
 
     }
 
     private boolean isMaxNumberOfIterations() {
-
         return iteration >= MAX_ITERATIONS;
     }
 
@@ -216,7 +225,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     /**
      * Create a quasi-random swarm of feasible solutions
      *
-     * @return
+     * @return ParticleSwarm
      * @throws OptimizationException
      */
     private ParticleSwarm createRandomFeasibleSwarm() throws OptimizationException {
@@ -224,12 +233,8 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         Set<Particle> swarm = new HashSet<>(SWARM_SIZE);
         for (int i = 0; i < SWARM_SIZE; i++) swarm.add(createRandomFeasibleParticle());
 
-        ParticleSwarm particleSwarm = new ParticleSwarm(swarm, this, random);
-        particleSwarm.setCostLogImage(this.getCostLogger());
-        particleSwarm.setCognitiveScale(COGNITIVE_SCALE);
-        particleSwarm.setSocialScale(SOCIAL_SCALE);
-        particleSwarm.setTimer(timer);
-        particleSwarm.setEvaluationServer(evalServer);
+        ParticleSwarm particleSwarm = new ParticleSwarm(swarm, this);
+
         return particleSwarm;
     }
 
@@ -237,7 +242,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
      * This method create a solution for the swarm starting from the initial one and altering the resource type and
      * randomly preplicating the tiers. At the end the resulting solution is made feasible
      *
-     * @return
+     * @return Particle
      * @throws OptimizationException
      */
     private Particle createRandomFeasibleParticle() throws OptimizationException {

@@ -150,6 +150,10 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
 
     }
 
+    /**
+     * this method updates the particle's position based on its velocity
+     * remember that the velocity has two components. Both are used to update the position
+     */
     public void updatePosition() {
 
         for (Solution sol : position.getAll()) {
@@ -157,6 +161,7 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
             Instance application = sol.getApplication(0);
             String provider = sol.getProvider();
 
+            // component tier's resource
             for (Tier tier : application.getTiers()) {
                 List<CloudService> resList = resMapPerSolutionPerTier.get(provider).get(tier.getId());
                 int initialPos = resList.indexOf(tier.getCloudService());
@@ -172,6 +177,7 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
             }
 
 
+            //component tier's replica
             for (int i = 0; i < 24; i++) {
                 MoveOnVM moveOnVM = new MoveOnVM(sol, i);
                 for (Tier tier : sol.getApplication(i).getTiers()) {
