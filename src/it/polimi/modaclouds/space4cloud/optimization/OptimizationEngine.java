@@ -76,7 +76,6 @@ import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-
 /**
  * @author Michele Ciavotta Class defining the optimization engine.
  */

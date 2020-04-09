@@ -18,13 +18,14 @@ public class ParticleFactory {
     }
 
     public Particle buildParticle(SolutionMulti sol) throws ConstraintEvaluationException {
-        Particle randomFeasibleParticle = new Particle(sol);
+        Particle particle = new Particle(sol);
         engine.getTimer().split();
         long time = engine.getTimer().getSplitTime();
-        randomFeasibleParticle.setGenerationTime(time);
-        randomFeasibleParticle.setGenerationIteration(engine.getIteration());
-        randomFeasibleParticle.setCloudResourceMap(createResMapPerSolutionPerTier());
-        randomFeasibleParticle.randomizeVelocity(engine.getRandom());
+        particle.setGenerationTime(time);
+        particle.setGenerationIteration(engine.getIteration());
+        particle.setCloudResourceMap(createResMapPerSolutionPerTier());
+        particle.randomizeVelocity(engine.getRandom());
+        return particle;
     }
 
     /**
