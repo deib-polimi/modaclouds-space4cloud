@@ -14,15 +14,18 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
     private long generationTime = 0;
     private int generationIteration = 0;
     private Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier;
-    private SolutionMulti position = null;
-    private Particle localBestParticle = null;
-
-    private ParticleVelocity velocity = null;
+    private SolutionMulti position;
+    private Particle bestAntecedent;
+    private ParticleVelocity velocity;
 
     public Particle(SolutionMulti position) {
         this.position = position;
         this.velocity = new ParticleVelocity(this);
-        this.localBestParticle = this;
+        this.bestAntecedent = this;
+    }
+
+    public Particle getBestAntecedent() {
+        return bestAntecedent;
     }
 
     public boolean isFeasible() {
@@ -58,9 +61,6 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
         return position;
     }
 
-    public void setPosition(SolutionMulti position) {
-        this.position = position;
-    }
 
 
     public boolean greaterThan(Particle other) {
@@ -72,11 +72,10 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
 
     public Particle clone() {
         Particle clonedParticle = new Particle(position.clone());
-        clonedParticle.localBestParticle = localBestParticle;
+        clonedParticle.bestAntecedent = bestAntecedent; // no clone
         clonedParticle.setGenerationIteration(generationIteration);
         clonedParticle.setGenerationTime(generationTime);
         clonedParticle.velocity = this.velocity.clone();
-        clonedParticle.velocity.setParticle(clonedParticle);
         return clonedParticle;
     }
 
@@ -140,8 +139,9 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
      */
     public void updateVelocity(Particle pg, Double c1, Double c2, Double c3) throws OptimizationException {
 
-        Particle pi = localBestParticle;
-        this.velocity = this.velocity.scalarMultiplication(c1)
+        Particle pi = bestAntecedent;
+        this.velocity = this.velocity
+                .scalarMultiplication(c1)
                 .sum(pi.difference(this)
                         .scalarMultiplication(c2))
                 .sum(pg.difference(this)
@@ -274,12 +274,10 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
     }
 
 
-    public void updateLocalBest() {
-        if (this.getFitness() <= localBestParticle.getFitness()) localBestParticle = this;
+    public void updateBestAntecedent() {
+        if (this.getFitness() <= bestAntecedent.getFitness()) bestAntecedent = this;
     }
 
-    public void makePositionFeasible() {
-    }
 
     @Override
     public int compareTo(Particle o) {
@@ -287,4 +285,6 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
         else if (this.getFitness() > o.getFitness()) return 1;
         else return -1;
     }
+
+
 }

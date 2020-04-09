@@ -82,23 +82,23 @@ import java.util.concurrent.TimeUnit;
  */
 public class OptimizationEngine extends SwingWorker<Void, Void> implements PropertyChangeListener {
 
-	private SolutionMulti initialSolution = null;
+	protected SolutionMulti initialSolution = null;
 
-	private SolutionMulti bestSolution = null;
+	protected SolutionMulti bestSolution = null;
 
-	private SolutionMulti currentSolution = null;
+	protected SolutionMulti currentSolution = null;
 
-	private SolutionMulti localBestSolution = null;
+	protected SolutionMulti localBestSolution = null;
 
-	private List<SolutionMulti> bestSolutions = new ArrayList<SolutionMulti>();
+	protected List<SolutionMulti> bestSolutions = new ArrayList<SolutionMulti>();
 
 	protected ConstraintHandler constraintHandler;
+	protected int numberOfFeasibilityIterations;
 
 	protected DataHandler dataBaseHandler;
 
 	private int scrambleIteration;
-
-	private int numberOfFeasibilityIterations;
+	protected StopWatch timer = new StopWatch();
 
 	private Policy SELECTION_POLICY;
 
@@ -136,7 +136,14 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 
 	protected Random random;
 
-	private StopWatch timer = new StopWatch();
+	public DataHandler getDataBaseHandler() {
+		return dataBaseHandler;
+	}
+
+	public StopWatch getTimer() {
+		return timer;
+	}
+
 	protected String bestSolutionSerieHandler;
 
 	private Logger logger = LoggerFactory.getLogger(OptimizationEngine.class);
@@ -1335,7 +1342,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 	 * @param solution
 	 * @throws OptimizationException
 	 */
-	protected void makeFeasible(SolutionMulti solution, String provider)
+	public void makeFeasible(SolutionMulti solution, String provider)
 			throws OptimizationException {
 
 		Solution sol = solution.get(provider);
@@ -2448,14 +2455,12 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 			bestSolution.setGenerationTime(time);
 			bestSolution.setGenerationIteration(scrambleIteration);
 			updateCostLogImage(bestSolution, bestSolutionSerieHandler);
-			firePropertyChange(OptimizationEngine.BEST_SOLUTION_UPDATED, false,
-					true);
+			firePropertyChange(OptimizationEngine.BEST_SOLUTION_UPDATED, false, true);
 
 			// Add to the list of best solutions for logging
 			if (bestSolutions != null) {
 				bestSolutions.add(bestSolution.clone());
-				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE,
-						false, true);
+				firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
 			}
 			logger.info("updated best solution");
 		}

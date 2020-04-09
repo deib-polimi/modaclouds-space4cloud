@@ -1,14 +1,9 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
-import it.polimi.modaclouds.space4cloud.chart.GenericChart;
+import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
-import it.polimi.modaclouds.space4cloud.gui.BestSolutionExplorer;
-import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
 import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngineDPSO;
-import it.polimi.modaclouds.space4cloud.optimization.evaluation.EvaluationServer;
-import org.apache.commons.lang.time.StopWatch;
-import org.jfree.data.xy.XYSeriesCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,64 +13,70 @@ import java.util.concurrent.TimeUnit;
 
 public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle> {
 
+    private final OptimizationEngineDPSO engine;
     private Logger logger = LoggerFactory.getLogger(ParticleSwarm.class);
 
-    private Set<Particle> swarm = null;
+    private Set<Particle> particleSet;
 
-    private OptimizationEngineDPSO engine;
+    private Particle swarmBestParticle = null;
 
-    private Particle bestParticle = null;
-
-    private List<Particle> bestParticles = new ArrayList<>();
-    private GenericChart<XYSeriesCollection> costLogImage;
-    private double socialScale = 1.0
-    private Random rando
-    private StopWatch timer;
-    private EvaluationServer evaluationServer;
-    private double cognitiveScale = 1.0;
     private double temp;
-    Random random;
-    private double v;
     private Double inertia;
     private int iteration;
+    private Double cognitiveScale;
+    private Double socialScale;
+    private boolean bestParticleUpdated;
 
-    public ParticleSwarm(Set<Particle> swarm, OptimizationEngineDPSO engine) {
-        this.swarm = swarm;
+    private ParticleSwarm(Set<Particle> particleSet, OptimizationEngineDPSO engine) {
+        this.particleSet = particleSet;
         this.engine = engine;
-        this.random = engine.getRandom();
-        this.costLogImage = engine.getCostLogger();
-        this.cognitiveScale = OptimizationEngineDPSO.getCognitiveScale();
-        this.socialScale = OptimizationEngineDPSO.getSocialScale();
-        this.timer = engine.getTimer();
-        this.evaluationServer = engine.getEvalServer();
+        this.cognitiveScale = OptimizationEngineDPSO.COGNITIVE_SCALE;
+        this.socialScale = OptimizationEngineDPSO.SOCIAL_SCALE;
         updateBestParticle();
 
     }
 
+    /**
+     * Create a quasi-random swarm of feasible solutions. Every solution is checked for feasibility and
+     * in case it is not feasible it is made so using the makefeasible function
+     *
+     * @return ParticleSwarm
+     * @throws OptimizationException
+     */
+    public static ParticleSwarm createRandomFeasibleSwarm(OptimizationEngineDPSO engine) throws OptimizationException, ConstraintEvaluationException {
 
+        ParticleFactory factory = new ParticleFactory(engine); //engine is important because it has the makefeasible method
 
-    public Particle getBestParticle() {
-        return bestParticle;
+        Set<Particle> swarm = new HashSet<>(OptimizationEngineDPSO.SWARM_SIZE);
+        for (int i = 0; i < OptimizationEngineDPSO.SWARM_SIZE - 1; i++)
+            swarm.add(factory.buildRandomFeasibleParticle());
+
+        swarm.add(factory.buildParticle(engine.getInitialSolution()));
+
+        ParticleSwarm particleSwarm = new ParticleSwarm(swarm, engine);
+
+        return particleSwarm;
     }
 
+    public boolean isBestParticleUpdated() {
+        return bestParticleUpdated;
+    }
+
+    public Particle getSwarmBestParticle() {
+        return swarmBestParticle;
+    }
 
     @Override
     public Iterator<Particle> iterator() {
-        return swarm.iterator();
+        return particleSet.iterator();
     }
 
-
     public double getWorstFitness() {
-        return Collections.max(swarm).getFitness();
+        return Collections.max(particleSet).getFitness();
     }
 
     public double getBestFitness() {
-        return bestParticle.getFitness();
-    }
-
-    private void updateBestParticle() {
-        bestParticle = null;
-        for (Particle p : swarm) updateBestParticle(p);
+        return swarmBestParticle.getFitness();
     }
 
     /**
@@ -93,14 +94,21 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
         this.iteration = iteration;
         this.inertia = inertia;
         updateVelocity();
-        updatePositionAndEvaluate();
+        updatePositionEvaluateAccept();
         updateBestParticle();
 
     }
 
+    /**
+     * this method calculate the convergence rate of a certain swarm
+     * the convergence rate is the ratio between the maximum number of particles withe the same fitness and the total
+     * number of particles in the swarm
+     *
+     * @return
+     */
     public double getConvergencePercentage() {
-        List<PairFitness> fitnessList = new ArrayList<>(swarm.size());
-        for (Particle p : swarm) fitnessList.add(new PairFitness(1, p.getPosition().getCost());
+        List<PairFitness> fitnessList = new ArrayList<>(particleSet.size());
+        for (Particle p : particleSet) fitnessList.add(new PairFitness(1, p.getPosition().getCost()));
 
         Collections.sort(fitnessList);
         int i = 0;
@@ -121,29 +129,41 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
         int maxEquals = 0;
         for (PairFitness p : fitnessList) if (p.num > maxEquals) maxEquals = p.num;
 
-        return (double) maxEquals / swarm.size();
+        return (double) maxEquals / particleSet.size();
+    }
+
+    private void updateBestParticle() {
+
+        boolean res = false;
+        for (Particle p : particleSet) {
+            res = res || updateBestParticle(p);
+        }
+        this.bestParticleUpdated = res;
     }
 
     /**
      * @param particle
      */
-    private void updateBestParticle(Particle particle) {
-        if (particle.greaterThan(bestParticle)) {
-            bestParticle = particle.clone();
-
-            updateCostLogImage(bestParticle, "Best Solution");
-            engine.firePropertyChange(OptimizationEngine.BEST_SOLUTION_UPDATED, false, true);
+    private boolean updateBestParticle(Particle particle) {
+        boolean res = false;
+        if (particle.greaterThan(swarmBestParticle)) {
+            swarmBestParticle = particle.clone();
+            res = true;
+//
+//            updateCostLogImage(bestParticle, "Best Solution");
+//            engine.firePropertyChange(OptimizationEngine.BEST_SOLUTION_UPDATED, false, true);
 
             // Add to the list of best solutions for logging
 
-            bestParticles.add(bestParticle.clone());
-            engine.firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
+//            bestParticles.add(bestParticle.clone());
+//            engine.firePropertyChange(BestSolutionExplorer.PROPERTY_ADDED_VALUE, false, true);
         }
-        logger.info("updated best solution");
+        logger.info("updated best solution within the swarm");
+        return res;
     }
 
     private void updateCostLogImage(Particle particle, String seriesHandler) {
-        costLogImage.add(seriesHandler,
+        engine.getCostLogger().add(seriesHandler,
                 TimeUnit.MILLISECONDS.toSeconds(particle.getPosition().getGenerationTime()),
                 particle.getPosition().getCost());
     }
@@ -154,26 +174,27 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      * @throws OptimizationException
      */
     private void updateVelocity() throws OptimizationException {
-        for (Particle particle : swarm) particle.updateVelocity(bestParticle, inertia, cognitiveScale, socialScale);
+        for (Particle particle : particleSet)
+            particle.updateVelocity(swarmBestParticle, inertia, cognitiveScale, socialScale);
 
     }
 
-    private void updatePositionAndEvaluate() throws EvaluationException, OptimizationException {
-        for (Particle particle : swarm) {
-            Particle newParticle = particle.clone();
+    private void updatePositionEvaluateAccept() throws EvaluationException, OptimizationException {
+        for (Particle oldParticle : particleSet) {
+            Particle newParticle = oldParticle.clone();
             newParticle.updatePosition();
-            evaluationServer.EvaluateSolution(newParticle.getPosition());
+            engine.getEvalServer().EvaluateSolution(newParticle.getPosition());
 
             if (!newParticle.isFeasible()) engine.makeFeasible(newParticle.getPosition());
 
-            if (acceptMetropolis(newParticle)) {
-                swarm.remove(particle);
-                swarm.add(newParticle);
-                newParticle.updateLocalBest();
-                timer.split();
-                long time = timer.getSplitTime();
-                particle.setGenerationTime(time);
-                particle.setGenerationIteration(iteration);
+            if (acceptMetropolisLocal(oldParticle, newParticle)) {
+                particleSet.remove(oldParticle);
+                particleSet.add(newParticle);
+                newParticle.updateBestAntecedent();
+                engine.getTimer().split();
+                long time = engine.getTimer().getSplitTime();
+                oldParticle.setGenerationTime(time);
+                oldParticle.setGenerationIteration(iteration);
             }
         }
     }
@@ -182,14 +203,21 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      * @param newParticle
      * @return
      */
-    private boolean acceptMetropolis(Particle newParticle) {
-        double delta = newParticle.getFitness() - bestParticle.getFitness();
-        return delta <= 0 || random.nextDouble() <= Math.exp(-delta / this.temp);
+    private boolean acceptMetropolisGlobal(Particle newParticle) {
+        double delta = newParticle.getFitness() - swarmBestParticle.getFitness();
+        return delta <= 0 || engine.getRandom().nextDouble() <= Math.exp(-delta / this.temp);
     }
 
-    private int getSwarmSize() {
-        return swarm.size();
+    private boolean acceptMetropolisLocal(Particle oldParticle, Particle newParticle) {
+        double delta = newParticle.getFitness() - oldParticle.getFitness();
+        return delta <= 0 || engine.getRandom().nextDouble() <= Math.exp(-delta / this.temp);
     }
+
+
+    private int getSwarmSize() {
+        return particleSet.size();
+    }
+
 
 }
 

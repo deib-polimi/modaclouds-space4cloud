@@ -23,7 +23,7 @@ import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException
 import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
-import it.polimi.modaclouds.space4cloud.optimization.solution.impl.*;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.ParticleSwarm;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
 import org.apache.commons.lang.time.StopWatch;
 import org.slf4j.Logger;
@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.*;
 
 /**
  * @author Michele Ciavotta
@@ -40,32 +39,22 @@ import java.util.*;
  */
 public class OptimizationEngineDPSO extends OptimizationEngine implements PropertyChangeListener {
 
-    private static final int SWARM_SIZE = 100;
-    private static final double COGNITIVE_SCALE = 2.0;
-    private static final double SOCIAL_SCALE = 2.0;
-    private static final double MAX_CONVERGENCE_PERCENTAGE = 0.95;
-    private static final double CR = 0.1;
-    private static final double INITIAL_INERTIA = 0.9;
-    private SolutionMulti initialSolution = null;
-    private SolutionMulti bestSolution = null;
-    private SolutionMulti currentSolution = null;
-    private List<SolutionMulti> bestSolutions = new ArrayList<SolutionMulti>();
+    public static final int SWARM_SIZE = 100;
+    public static final double COGNITIVE_SCALE = 2.0;
+    public static final double SOCIAL_SCALE = 2.0;
+    public static final double MAX_CONVERGENCE_PERCENTAGE = 0.95;
+    public static final double CR = 0.1;
+    public static final double INITIAL_INERTIA = 0.9;
     private int iteration;
     private int MAX_ITERATIONS = 200;
-    private StopWatch timer = new StopWatch();
     private Logger logger = LoggerFactory.getLogger(OptimizationEngineDPSO.class);
-    private boolean batch = false;
-    /**
-     * Indicates if the bestSolution did change or not.
-     */
-    private boolean bestSolutionUpdated = true;
+
     private double inertia;
     private ParticleSwarm swarm;
     private double temp;
 
-
     /**
-     * Instantiates a new opt engine using as timer the provided one. the
+     * Instantiates a new opt engine using as timer the provided one. The
      * provided timer should already be started
      *
      * @param handler : the constraint handler
@@ -77,12 +66,16 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         super(handler, batch, timer);
     }
 
-    public static double getCognitiveScale() {
-        return COGNITIVE_SCALE;
+    public int getIteration() {
+        return iteration;
     }
 
-    public static double getSocialScale() {
-        return SOCIAL_SCALE;
+    public double getInertia() {
+        return inertia;
+    }
+
+    public double getTemp() {
+        return temp;
     }
 
     public StopWatch getTimer() {
@@ -104,9 +97,8 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
      */
     public Integer optimize() throws OptimizationException, ConstraintEvaluationException, IOException {
 
-
         bestSolutionSerieHandler = "Best Solution";
-        localBestSolutionSerieHandler = "Local Best Solution"; // bear in mind that in this setting local and best are the same
+        localBestSolutionSerieHandler = "Local Best Solution";
 
         // 1: check if an initial solution has been set
         if (this.initialSolution == null) return -1;
@@ -118,19 +110,21 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
         try {
             evalServer.EvaluateSolution(initialSolution);
+            bestSolution = initialSolution.clone();
         } catch (EvaluationException e) {
             throw new OptimizationException("", "initialEvaluation", e);
         } // evaluate the current
 
-        swarm = createRandomFeasibleSwarm(); // all the elements of the swarm are evaluated in creation
-        //todo: check if the best has changed
+        swarm = ParticleSwarm.createRandomFeasibleSwarm(this); // all the elements of the swarm are evaluated in creation
+        if (swarm.isBestParticleUpdated())
+            updateBestSolution(swarm.getSwarmBestParticle().getPosition()); //update best solution and charts
+
 
         // temperature, inertia and iteration define the evolution of the swarm
         temp = setInitialTemperature();
         inertia = INITIAL_INERTIA;
         iteration = 1;
 
-        boolean solutionChanged = true;
 
         //if the total number of iteration has not been reached and so teh max coverage percentage
         while (!isMaxNumberOfIterations() && !isMaxConvergencePercentage()) {
@@ -144,12 +138,15 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
             //1. swarm evolution
 
             try {
-                swarm.evolve(inertia, temp, iteration);
+                swarm.evolve(inertia, temp, iteration); // the evolution depends on the temperature, inertia and iteration
+                if (swarm.isBestParticleUpdated())
+                    updateBestSolution(swarm.getSwarmBestParticle().getPosition()); //update best solution and charts
+
             } catch (EvaluationException e) {
                 throw new OptimizationException(e.getMessage());
             }
 
-            currentSolution = swarm.getBestParticle().getPosition();
+            updateLocalBestSolution(swarm.getSwarmBestParticle().getPosition());
 
             if (Configuration.isPaused()) waitForResume();
 
@@ -185,6 +182,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         return -1;
 
     }
+
 
     private void updateIteration() {
         iteration += 1;
@@ -222,103 +220,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     }
 
 
-    /**
-     * Create a quasi-random swarm of feasible solutions
-     *
-     * @return ParticleSwarm
-     * @throws OptimizationException
-     */
-    private ParticleSwarm createRandomFeasibleSwarm() throws OptimizationException {
 
-        Set<Particle> swarm = new HashSet<>(SWARM_SIZE);
-        for (int i = 0; i < SWARM_SIZE; i++) swarm.add(createRandomFeasibleParticle());
-
-        ParticleSwarm particleSwarm = new ParticleSwarm(swarm, this);
-
-        return particleSwarm;
-    }
-
-    /**
-     * This method create a solution for the swarm starting from the initial one and altering the resource type and
-     * randomly preplicating the tiers. At the end the resulting solution is made feasible
-     *
-     * @return Particle
-     * @throws OptimizationException
-     */
-    private Particle createRandomFeasibleParticle() throws OptimizationException {
-
-        //todo: pay attention to the single directory where lqn files are saved
-        SolutionMulti randomSolution = initialSolution.clone();
-        // the new solution has the same providers of the initial one
-
-        //every solution has an application
-        //every application has a set of tiers
-        //every tier is associated with a vmType but the vmtype is the same for each application
-
-        // Step 1 altering the cloud resource type for each tier of each solution
-        Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier = new HashMap();
-        for (Solution sol : randomSolution.getAll()) {
-            MoveTypeVM moveVM = new MoveTypeVM(sol);
-            Instance application = sol.getApplication(0);
-
-            Map<String, List<CloudService>> resListMap = new HashMap<>();
-            for (Tier tier : application.getTiers()) {
-                CloudService originalCloudResource = tier.getCloudService();
-                List<CloudService> resList = dataBaseHandler.getSameService(originalCloudResource, sol.getRegion());
-
-                //just in case
-                if (!resList.contains(originalCloudResource)) resList.add(originalCloudResource);
-
-                // filter resources according to architectural constraints
-                try {
-                    constraintHandler.filterResources(resList, tier);
-                } catch (ConstraintEvaluationException e) {
-                    throw new OptimizationException("Error filtering resources for creating a random solution", e);
-                }
-
-                CloudService randomCloudResource = resList.get(random.nextInt(resList.size()));
-
-                //this should change the type of resource into all instances contained into the solution //todo: check
-                moveVM.changeMachine(tier.getId(), randomCloudResource);
-                resListMap.put(tier.getId(), resList);
-            }
-            resMapPerSolutionPerTier.put(sol.getProvider(), resListMap);
-        }
-
-        // Step 2 altering the number of replicas for each tier and each our
-        //for each provider let's calculate the maximum number of replicas per over all tiers
-
-        int maxReplicas = 0;
-        for (Solution sol : randomSolution.getAll()) {
-            for (int i = 0; i < 24; i++) {
-                for (Tier tier : sol.getApplication(i).getTiers()) {
-                    maxReplicas = Math.max(maxReplicas, tier.getCloudService().getReplicas());
-                }
-            }
-        }
-
-
-        for (Solution sol : randomSolution.getAll()) {
-            for (int i = 0; i < 24; i++) {
-                MoveOnVM moveOnVM = new MoveOnVM(sol, i);
-                for (Tier tier : sol.getApplication(i).getTiers()) {
-                    moveOnVM.scale(tier, random.nextInt(maxReplicas + 1));
-                }
-            }
-        }
-
-        //step 3 the solutions have to be made feasible
-
-        makeFeasible(randomSolution);
-
-        Particle randomFeasibleParticle = new Particle(randomSolution);
-        timer.split();
-        long time = timer.getSplitTime();
-        randomFeasibleParticle.setGenerationTime(time);
-        randomFeasibleParticle.setCloudResourceMap(resMapPerSolutionPerTier);
-        randomFeasibleParticle.randomizeVelocity(random);
-        return randomFeasibleParticle;
-    }
 
 
 }

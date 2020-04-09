@@ -10,26 +10,15 @@ public class ParticleVelocity implements Cloneable {
      * the velocity of a particle is defined a number in R for each provider, tier and hour of the day
      * the number means if the associated element (vm type and replica has to increase or decrease.
      */
-    private Particle particle;
-
-    public ParticleVelocity() {
-    }
-
-    public Particle getParticle() {
-        return particle;
-    }
 
     private Map<String, Map<String, Double>> tierComponent = new HashMap<>();
     private Map<String, Map<String, List<Double>>> hourComponent = new HashMap<>();
 
-    public void setParticle(Particle particle) {
-        this.particle = particle;
+    public ParticleVelocity() {
     }
-
 
     public ParticleVelocity(Particle particle) {
 
-        this.particle = particle;
 
         for (Solution sol : particle.getPosition().getAll()) {
             String provider = sol.getProvider();
@@ -50,6 +39,7 @@ public class ParticleVelocity implements Cloneable {
             hourComponent.put(provider, hourVelocity);
         }
     }
+
 
     public ParticleVelocity clone() {
         ParticleVelocity clonedVelocity = new ParticleVelocity();
