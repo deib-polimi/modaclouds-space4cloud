@@ -34,6 +34,7 @@ import it.polimi.modaclouds.space4cloud.gui.ConfigurationWindow;
 import it.polimi.modaclouds.space4cloud.gui.OptimizationProgressWindow;
 import it.polimi.modaclouds.space4cloud.gui.RobustnessProgressWindow;
 import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
+import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngineDPSO;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandlerFactory;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintLoadingException;
@@ -410,7 +411,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	private void performAssessment() throws AssesmentException {
 
 		try {
-			engine = new OptimizationEngine(constraintHandler, true, duration);
+			engine = new OptimizationEngineDPSO(constraintHandler, true, duration);
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new AssesmentException("", e);
 		}
@@ -525,7 +526,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		logger.info("Loading the optimization engine and perparing the solver");
 
 		try {
-			engine = new OptimizationEngine(constraintHandler, batch,duration);
+			engine = new OptimizationEngineDPSO(constraintHandler, batch, duration);
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new OptimizationException("Optinization error. ", e);
 		}

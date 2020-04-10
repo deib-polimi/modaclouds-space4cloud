@@ -76,6 +76,29 @@ import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import de.uka.ipd.sdq.pcm.allocation.AllocationContext;
+import de.uka.ipd.sdq.pcm.core.entity.Entity;
+import de.uka.ipd.sdq.pcm.repository.BasicComponent;
+import de.uka.ipd.sdq.pcm.repository.OperationSignature;
+import de.uka.ipd.sdq.pcm.repository.RepositoryComponent;
+import de.uka.ipd.sdq.pcm.resourceenvironment.ResourceContainer;
+import de.uka.ipd.sdq.pcm.seff.AbstractAction;
+import de.uka.ipd.sdq.pcm.seff.ExternalCallAction;
+import de.uka.ipd.sdq.pcm.seff.InternalAction;
+import de.uka.ipd.sdq.pcm.seff.ResourceDemandingSEFF;
+import de.uka.ipd.sdq.pcm.seff.ServiceEffectSpecification;
+import de.uka.ipd.sdq.pcm.seff.StartAction;
+import de.uka.ipd.sdq.pcm.usagemodel.AbstractUserAction;
+import de.uka.ipd.sdq.pcm.usagemodel.Branch;
+import de.uka.ipd.sdq.pcm.usagemodel.BranchTransition;
+import de.uka.ipd.sdq.pcm.usagemodel.ClosedWorkload;
+import de.uka.ipd.sdq.pcm.usagemodel.EntryLevelSystemCall;
+import de.uka.ipd.sdq.pcm.usagemodel.Loop;
+import de.uka.ipd.sdq.pcm.usagemodel.ScenarioBehaviour;
+import de.uka.ipd.sdq.pcm.usagemodel.UsageScenario;
+import de.uka.ipd.sdq.pcmsolver.models.PCMInstance;
+
 /**
  * @author Michele Ciavotta Class defining the optimization engine.
  */
