@@ -211,15 +211,23 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      * @return
      */
     private boolean acceptMetropolisGlobal(Particle newParticle) {
-    	
-    	int res = newParticle.compareTo(swarmBestParticle);
-        double delta = newParticle.getFitness() - swarmBestParticle.getFitness();
-        return delta <= 0 || engine.getRandom().nextDouble() <= Math.exp(-delta / this.temp);
+
+        boolean res = newParticle.betterThan(swarmBestParticle);
+        if (res) return true;
+        else {
+            double delta = newParticle.getFitness() - swarmBestParticle.getFitness();
+            return delta <= 0 || engine.getRandom().nextDouble() <= Math.exp(-delta / this.temp);
+        }
     }
 
     private boolean acceptMetropolisLocal(Particle oldParticle, Particle newParticle) {
-        double delta = newParticle.getFitness() - oldParticle.getFitness();
-        return delta <= 0 || engine.getRandom().nextDouble() <= Math.exp(-delta / this.temp);
+
+        boolean res = newParticle.betterThan(oldParticle);
+        if (res) return true;
+        else {
+            double delta = newParticle.getFitness() - oldParticle.getFitness();
+            return delta <= 0 || engine.getRandom().nextDouble() <= Math.exp(-delta / this.temp);
+        }
     }
 
 
