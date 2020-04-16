@@ -567,6 +567,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		} catch (InitializationException e) {
 			throw new OptimizationException("Error in loading the initial solution", e);
 		}
+		
 
 		// // create the progress window
 		// if (!batch) {
