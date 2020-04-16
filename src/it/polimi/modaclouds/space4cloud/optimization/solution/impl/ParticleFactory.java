@@ -127,7 +127,7 @@ public class ParticleFactory {
         //every tier is associated with a vmType but the vmtype is the same for each application
 
         // Step 1 altering the cloud resource type for each tier of each solution
-        Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier = new HashMap();
+        Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier = new HashMap<String, Map<String, List<CloudService>>>();
         for (Solution sol : solution.getAll()) {
             Instance application = sol.getApplication(0);
 

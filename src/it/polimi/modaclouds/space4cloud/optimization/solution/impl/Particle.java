@@ -3,14 +3,22 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.MoveOnVM;
 import it.polimi.modaclouds.space4cloud.optimization.MoveTypeVM;
+import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 public class Particle implements Cloneable, Serializable, Comparable<Particle> {
 
+	
+	protected static Logger logger = LoggerFactory.getLogger(Particle.class);
+	
     private long generationTime = 0;
     private int generationIteration = 0;
     private Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier;
@@ -248,15 +256,42 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 Tier otherTier = otherApplication.getTierById(tier.getId());
                 if (otherTier == null)
                     throw new OptimizationException("Error trying to calculate the velocity between two particles");
-                List<CloudService> resList = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
+                
+                List<CloudService> resList;
+                try{
+                resList = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
+                }
+                catch(Exception e){
+                	logger.debug("error that should not be here 1");
+                	 throw new OptimizationException("Error trying to calculate the velocity between two particles");
+                }
+                
+                if(resList == null){
+                	logger.debug("resList is null");
+                	throw new OptimizationException("reslist is null");
+                }
+                
+                try {
                 int pos1 = resList.indexOf(tier.getCloudService());
                 int pos2 = resList.indexOf(otherTier.getCloudService());
-                if (pos1 == -1 || pos2 == -1)
-                    throw new OptimizationException("Error trying to calculate the distance between two particles: resource not found");
-                particleDiff.updateVelocityTierComponent(sol.getProvider(), tier.getId(), (double) (pos1 - pos2));
+                double delta = 0;
+                if (pos1 == -1 || pos2 == -1){
+                	 if(pos1 == -1 && pos2 ==1 )delta = 0;
+                	 delta = pos1 == -1 ? -pos2: pos1; 
+                }
+                else delta = (pos1 - pos2);
+                	
+                particleDiff.updateVelocityTierComponent(sol.getProvider(), tier.getId(), delta );
+                }
+                catch(Exception e){
+                	logger.debug("error that should not be here 1");
+                	
+                }
             }
 
             for (int i = 0; i < 24; i++) {
+            	
+            	try {
                 Instance appl = sol.getApplication(i);
                 Instance otherAppl = otherParticle.getPosition().get(sol.getProvider()).getApplication(i);
                 for (Tier tier : appl.getTiers()) {
@@ -264,6 +299,11 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                     int r1 = tier.getCloudService().getReplicas();
                     int r2 = otherTier.getCloudService().getReplicas();
                     particleDiff.updateVelocityReplicaComponent(sol.getProvider(), tier.getId(), i, (double) (r1 - r2));
+                }
+                }
+                catch(Exception e){
+                	logger.debug("error that should not be here 2");
+                	
                 }
             }
 
