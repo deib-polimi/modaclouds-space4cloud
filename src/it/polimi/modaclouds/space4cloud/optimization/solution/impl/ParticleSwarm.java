@@ -16,18 +16,18 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
     private final OptimizationEngineDPSO engine;
     private Logger logger = LoggerFactory.getLogger(ParticleSwarm.class);
 
-    private Set<Particle> particleSet;
+    private final Double cognitiveScale;
 
     private Particle swarmBestParticle = null;
 
     private double temp;
     private Double inertia;
     private int iteration;
-    private Double cognitiveScale;
-    private Double socialScale;
+    private final Double socialScale;
+    private List<Particle> particleSet;
     private boolean bestParticleUpdated;
 
-    private ParticleSwarm(Set<Particle> particleSet, OptimizationEngineDPSO engine) {
+    private ParticleSwarm(List<Particle> particleSet, OptimizationEngineDPSO engine) {
         this.particleSet = particleSet;
         this.engine = engine;
         this.cognitiveScale = OptimizationEngineDPSO.COGNITIVE_SCALE;
@@ -48,7 +48,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
 
         ParticleFactory factory = new ParticleFactory(engine); //engine is important because it has the makefeasible method
 
-        Set<Particle> swarm = new HashSet<>(OptimizationEngineDPSO.SWARM_SIZE);
+        ArrayList<Particle> swarm = new ArrayList<>(OptimizationEngineDPSO.SWARM_SIZE);
         for (int i = 0; i < OptimizationEngineDPSO.SWARM_SIZE - 1; i++)
             swarm.add(factory.buildRandomFeasibleParticle());
 
