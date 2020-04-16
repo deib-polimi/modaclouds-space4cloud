@@ -83,6 +83,7 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
         clonedParticle.bestAntecedent = bestAntecedent; // no clone
         clonedParticle.setGenerationIteration(generationIteration);
         clonedParticle.setGenerationTime(generationTime);
+        clonedParticle.setCloudResourceMap(resMapPerSolutionPerTier);
         clonedParticle.velocity = this.velocity.clone();
         return clonedParticle;
     }

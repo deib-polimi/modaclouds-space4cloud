@@ -4,6 +4,7 @@ import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException
 import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngineDPSO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,7 +182,10 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
     }
 
     private void updatePositionEvaluateAccept() throws EvaluationException, OptimizationException {
-        for (Particle oldParticle : particleSet) {
+        
+    	List<Particle> particleToRemove = new ArrayList<>();
+    	List<Particle> particleToAdd = new ArrayList<>();
+    	for (Particle oldParticle : particleSet) {
             Particle newParticle = oldParticle.clone();
             newParticle.updatePosition();
             engine.getEvalServer().EvaluateSolution(newParticle.getPosition());
@@ -189,8 +193,8 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
             if (!newParticle.isFeasible()) engine.makeFeasible(newParticle.getPosition());
 
             if (acceptMetropolisLocal(oldParticle, newParticle)) {
-                particleSet.remove(oldParticle);
-                particleSet.add(newParticle);
+            	particleToRemove.add(oldParticle);
+            	particleToAdd.add(newParticle);
                 newParticle.updateBestAntecedent();
                 engine.getTimer().split();
                 long time = engine.getTimer().getSplitTime();
@@ -198,6 +202,8 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
                 oldParticle.setGenerationIteration(iteration);
             }
         }
+    	particleSet.removeAll(particleToRemove);
+    	particleSet.addAll(particleToAdd);
     }
 
     /**
@@ -205,6 +211,8 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      * @return
      */
     private boolean acceptMetropolisGlobal(Particle newParticle) {
+    	
+    	int res = newParticle.compareTo(swarmBestParticle);
         double delta = newParticle.getFitness() - swarmBestParticle.getFitness();
         return delta <= 0 || engine.getRandom().nextDouble() <= Math.exp(-delta / this.temp);
     }
