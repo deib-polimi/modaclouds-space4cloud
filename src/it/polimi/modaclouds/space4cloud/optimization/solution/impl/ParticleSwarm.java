@@ -148,7 +148,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      */
     private boolean updateBestParticle(Particle particle) {
         boolean res = false;
-        if (particle.greaterThan(swarmBestParticle)) {
+        if (particle.betterThan(swarmBestParticle)) {
             swarmBestParticle = particle.clone();
             res = true;
 //

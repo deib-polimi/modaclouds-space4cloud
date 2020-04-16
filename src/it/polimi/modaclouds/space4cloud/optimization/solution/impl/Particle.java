@@ -3,7 +3,6 @@ package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.MoveOnVM;
 import it.polimi.modaclouds.space4cloud.optimization.MoveTypeVM;
-import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngine;
 
 import java.io.Serializable;
 import java.util.List;
@@ -71,7 +70,7 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
 
 
 
-    public boolean greaterThan(Particle other) {
+    public boolean betterThan(Particle other) {
         if (other == null) return true;
         if (position == null) return false;
         return position.greaterThan(other.getPosition());
@@ -322,10 +321,15 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
 
     @Override
     public int compareTo(Particle o) {
-        if (Math.abs(this.getFitness() - o.getFitness()) < 0.001) return 0;
-        else if (this.getFitness() > o.getFitness()) return 1;
-        else return -1;
+
+        if (!this.isFeasible() && o.isFeasible()) {
+            return -1; //o is better
+        } else if (this.isFeasible() && !o.isFeasible()) {
+            return 1; //this is better
+        } else { //xnor
+            if (Math.abs(this.getFitness() - o.getFitness()) < 0.001) return 0; // equivalent
+            else if (this.getFitness() > o.getFitness()) return 1; // this is greater
+            else return -1; //o  is greater
+        }
     }
-
-
 }
