@@ -168,7 +168,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 
 	protected String bestSolutionSerieHandler;
 
-	private Logger logger = LoggerFactory.getLogger(OptimizationEngine.class);
+	protected Logger logger = LoggerFactory.getLogger(OptimizationEngine.class);
 
 	protected GenericChart<XYSeriesCollection> costLogImage;
 	protected GenericChart<XYSeriesCollection> logVm;

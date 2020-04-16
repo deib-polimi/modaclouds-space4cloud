@@ -65,6 +65,7 @@ import it.polimi.modaclouds.qos_models.schema.SeffType.Percentiles;
 import it.polimi.modaclouds.qos_models.util.XMLHelper;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
+import it.polimi.modaclouds.space4cloud.utils.Configuration.Solver;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -186,12 +187,25 @@ public class Solution implements Cloneable, Serializable {
 			}
 		});
 
-		File[] resultFiles = resultDirPath.listFiles(new FilenameFilter() {
+		File[] resultFiles;
+		
+		if (Configuration.SOLVER == Solver.LINE) {
+		resultFiles= resultDirPath.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.endsWith("_line.xml") || name.endsWith(".lqxo");
+				return name.endsWith("_line.xml");
 			}
 		});
+		}
+		else{
+			resultFiles= resultDirPath.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.endsWith(".lqxo");
+				}
+			});
+			
+		}
 
 		// if the palladio run has not produced a lqn model exit
 		if (modelFiles.length != 1 || resultFiles.length != 1) {

@@ -297,12 +297,25 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 				return name.endsWith(".xml") && !name.contains("_line");
 			}
 		});
-		File[] resultFiles = resultDirPath.listFiles(new FilenameFilter() {
+		File[] resultFiles; 
+		
+		if (Configuration.SOLVER == Solver.LINE) {
+		resultFiles= resultDirPath.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return name.endsWith("_line.xml") || name.endsWith(".lqxo");
+				return name.endsWith("_line.xml");
 			}
 		});
+		}
+		else{
+			resultFiles= resultDirPath.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.endsWith(".lqxo");
+				}
+			});
+			
+		}
 
 		// if the palladio run has not produced a lqn model exit
 

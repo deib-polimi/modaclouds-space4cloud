@@ -42,8 +42,9 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      *
      * @return ParticleSwarm
      * @throws OptimizationException
+     * @throws EvaluationException 
      */
-    public static ParticleSwarm createRandomFeasibleSwarm(OptimizationEngineDPSO engine) throws OptimizationException, ConstraintEvaluationException {
+    public static ParticleSwarm createRandomFeasibleSwarm(OptimizationEngineDPSO engine) throws OptimizationException, ConstraintEvaluationException, EvaluationException {
 
         ParticleFactory factory = new ParticleFactory(engine); //engine is important because it has the makefeasible method
 

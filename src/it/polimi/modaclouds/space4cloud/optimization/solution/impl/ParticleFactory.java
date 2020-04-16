@@ -1,6 +1,7 @@
 package it.polimi.modaclouds.space4cloud.optimization.solution.impl;
 
 import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException;
+import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.MoveOnVM;
 import it.polimi.modaclouds.space4cloud.optimization.MoveTypeVM;
@@ -35,8 +36,9 @@ public class ParticleFactory {
      * @return
      * @throws ConstraintEvaluationException
      * @throws OptimizationException
+     * @throws EvaluationException 
      */
-    public Particle buildRandomFeasibleParticle() throws ConstraintEvaluationException, OptimizationException {
+    public Particle buildRandomFeasibleParticle() throws ConstraintEvaluationException, OptimizationException, EvaluationException {
 
         //todo: pay attention to the single directory where lqn files are saved
         SolutionMulti randomSolution = engine.getInitialSolution().clone();
@@ -94,13 +96,14 @@ public class ParticleFactory {
             for (int i = 0; i < 24; i++) {
                 MoveOnVM moveOnVM = new MoveOnVM(sol, i);
                 for (Tier tier : sol.getApplication(i).getTiers()) {
-                    moveOnVM.scale(tier, engine.getRandom().nextInt(maxReplicas + 1));
+                    moveOnVM.scale(tier, engine.getRandom().nextInt(maxReplicas)+1);
                 }
             }
         }
 
         //step 3 the solutions have to be made feasible
 
+        engine.getEvalServer().EvaluateSolution(randomSolution); 
         engine.makeFeasible(randomSolution);
 
         Particle randomFeasibleParticle = new Particle(randomSolution);

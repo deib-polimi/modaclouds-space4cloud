@@ -39,7 +39,7 @@ import java.io.IOException;
  */
 public class OptimizationEngineDPSO extends OptimizationEngine implements PropertyChangeListener {
 
-    public static final int SWARM_SIZE = 100;
+    public static final int SWARM_SIZE = 5;
     public static final double COGNITIVE_SCALE = 2.0;
     public static final double SOCIAL_SCALE = 2.0;
     public static final double MAX_CONVERGENCE_PERCENTAGE = 0.95;
@@ -47,7 +47,6 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     public static final double INITIAL_INERTIA = 0.9;
     private int iteration;
     private int MAX_ITERATIONS = 200;
-    private Logger logger = LoggerFactory.getLogger(OptimizationEngineDPSO.class);
 
     private double inertia;
     private ParticleSwarm swarm;
@@ -109,13 +108,18 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         if (!providedTimer) timer.start();
 
         try {
-            evalServer.EvaluateSolution(initialSolution);
+            if(!initialSolution.isEvaluated()) evalServer.EvaluateSolution(initialSolution);
+            if(!initialSolution.isFeasible()) makeFeasible(initialSolution);
             bestSolution = initialSolution.clone();
         } catch (EvaluationException e) {
             throw new OptimizationException("", "initialEvaluation", e);
         } // evaluate the current
 
-        swarm = ParticleSwarm.createRandomFeasibleSwarm(this); // all the elements of the swarm are evaluated in creation
+        try {
+			swarm = ParticleSwarm.createRandomFeasibleSwarm(this);
+		} catch (EvaluationException e1) {
+			throw new OptimizationException("", "createRandomFeasibleSwarm", e1);
+		} // all the elements of the swarm are evaluated in creation
         if (swarm.isBestParticleUpdated())
             updateBestSolution(swarm.getSwarmBestParticle().getPosition()); //update best solution and charts
 
