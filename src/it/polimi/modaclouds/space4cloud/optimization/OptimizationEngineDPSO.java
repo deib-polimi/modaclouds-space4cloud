@@ -51,6 +51,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     private double inertia;
     private ParticleSwarm swarm;
     private double temp;
+    private double convergencePercentage;
 
     /**
      * Instantiates a new opt engine using as timer the provided one. The
@@ -134,6 +135,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         while (!isMaxNumberOfIterations() && !isMaxConvergencePercentage()) {
 
             logger.info("PSO Iteration: " + iteration);
+            logger.info("PSO Convergence: " + convergencePercentage);
             // logger.trace( currentSolution.showStatus());
 
 
@@ -209,7 +211,8 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
 
     private boolean isMaxConvergencePercentage() {
-        return swarm.getConvergencePercentage() > MAX_CONVERGENCE_PERCENTAGE;
+        this.convergencePercentage = swarm.getConvergencePercentage();
+        return convergencePercentage > MAX_CONVERGENCE_PERCENTAGE;
 
     }
 
