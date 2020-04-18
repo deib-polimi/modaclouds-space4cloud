@@ -276,8 +276,9 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 int pos2 = resList.indexOf(otherTier.getCloudService());
                 double delta = 0;
                 if (pos1 == -1 || pos2 == -1){
-                	 if(pos1 == -1 && pos2 ==1 )delta = 0;
-                	 delta = pos1 == -1 ? -pos2: pos1; 
+                	 if(pos1 == -1 && pos2 !=-1 )delta = 0;
+                	 if (pos1 != -1 && pos2 == -1 )delta = pos1 == -1 ? -pos2: pos1; 
+                	 else delta = 0;
                 }
                 else delta = (pos1 - pos2);
                 	
