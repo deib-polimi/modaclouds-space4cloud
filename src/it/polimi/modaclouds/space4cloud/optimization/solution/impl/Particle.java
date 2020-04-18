@@ -93,7 +93,7 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
      *
      * @param otherParticle
      */
-    public int distance(Particle otherParticle) throws OptimizationException {
+    public int distance(Particle otherParticle) throws Exception {
 
         int dist = 0;
         for (Solution sol : position.getAll()) {
@@ -104,12 +104,12 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
             for (Tier tier : application.getTiers()) {
                 Tier otherTier = otherApplication.getTierById(tier.getId());
                 if (otherTier == null)
-                    throw new OptimizationException("Error trying to calculate the distance between two particles");
+                    throw new Exception("Error trying to calculate the distance between two particles");
                 List<CloudService> resList = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
                 int pos = resList.indexOf(tier.getCloudService());
                 int otherPos = resList.indexOf(otherTier.getCloudService());
                 if (pos == -1 || otherPos == -1)
-                    throw new OptimizationException("Error trying to calculate the distance between two particles: resource not found");
+                    throw new Exception("Error trying to calculate the distance between two particles: resource not found");
                 dist += Math.abs(pos - otherPos);
             }
 

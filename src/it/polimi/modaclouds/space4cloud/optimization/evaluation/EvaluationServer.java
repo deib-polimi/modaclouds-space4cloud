@@ -343,7 +343,7 @@ public class EvaluationServer implements ActionListener {
 		for (Solution s : sol.getAll())
 			runEvaluation(s);	
 		sol.updateEvaluation();
-		updateLogImage(sol);
+//		updateLogImage(sol);
 	}
 
 	/**

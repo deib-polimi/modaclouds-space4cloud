@@ -137,7 +137,13 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
             logger.info("PSO Iteration: " + iteration);
             logger.info("PSO Convergence: " + convergencePercentage);
             logger.info("PSO temperature: " + temp);
-            logger.info("PSO intertia: " + inertia);
+            logger.info("PSO inertia: " + inertia);
+            try {
+                logger.info("PSO avg distance: " + swarm.getAverageDistance());
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
+            }
             // logger.trace( currentSolution.showStatus());
 
 

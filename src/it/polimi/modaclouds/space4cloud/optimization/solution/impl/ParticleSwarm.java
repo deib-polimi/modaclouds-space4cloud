@@ -4,30 +4,29 @@ import it.polimi.modaclouds.space4cloud.exceptions.ConstraintEvaluationException
 import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngineDPSO;
-
 import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle> {
 
     private final OptimizationEngineDPSO engine;
-    private Logger logger = LoggerFactory.getLogger(ParticleSwarm.class);
-
     private final Double cognitiveScale;
-
+    private final Double socialScale;
+    private final Logger logger = LoggerFactory.getLogger(ParticleSwarm.class);
     private Particle swarmBestParticle = null;
-
     private double temp;
     private Double inertia;
     private int iteration;
-    private final Double socialScale;
-    private List<Particle> particleSet;
+    private final List<Particle> particleSet;
     private boolean bestParticleUpdated;
 
     private ParticleSwarm(List<Particle> particleSet, OptimizationEngineDPSO engine) {
@@ -45,7 +44,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      *
      * @return ParticleSwarm
      * @throws OptimizationException
-     * @throws EvaluationException 
+     * @throws EvaluationException
      */
     public static ParticleSwarm createRandomFeasibleSwarm(OptimizationEngineDPSO engine) throws OptimizationException, ConstraintEvaluationException, EvaluationException {
 
@@ -151,6 +150,22 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
         return (double) maxEquals / particleSet.size();
     }
 
+
+    public double getAverageDistance() throws Exception {
+        int i = 0;
+        int j = 1;
+        int dist = 0;
+        while (i < particleSet.size() - 1) {
+            while (j < particleSet.size()) {
+                dist = dist + particleSet.get(i).distance(particleSet.get(j));
+                i++;
+                j++;
+
+            }
+        }
+        return (double) dist / particleSet.size();
+    }
+
     private void updateBestParticle() {
 
         boolean res = false;
@@ -199,10 +214,10 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
     }
 
     private void updatePositionEvaluateAccept() throws EvaluationException, OptimizationException {
-        
-    	List<Particle> particleToRemove = new ArrayList<>();
-    	List<Particle> particleToAdd = new ArrayList<>();
-    	for (Particle oldParticle : particleSet) {
+
+        List<Particle> particleToRemove = new ArrayList<>();
+        List<Particle> particleToAdd = new ArrayList<>();
+        for (Particle oldParticle : particleSet) {
             Particle newParticle = oldParticle.clone();
             newParticle.updatePosition();
             engine.getEvalServer().EvaluateSolution(newParticle.getPosition());
@@ -210,8 +225,8 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
             if (!newParticle.isFeasible()) engine.makeFeasible(newParticle.getPosition());
 
             if (acceptMetropolisLocal(oldParticle, newParticle)) {
-            	particleToRemove.add(oldParticle);
-            	particleToAdd.add(newParticle);
+                particleToRemove.add(oldParticle);
+                particleToAdd.add(newParticle);
                 newParticle.updateBestAntecedent();
                 engine.getTimer().split();
                 long time = engine.getTimer().getSplitTime();
@@ -219,8 +234,8 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
                 oldParticle.setGenerationIteration(iteration);
             }
         }
-    	particleSet.removeAll(particleToRemove);
-    	particleSet.addAll(particleToAdd);
+        particleSet.removeAll(particleToRemove);
+        particleSet.addAll(particleToAdd);
     }
 
     /**
