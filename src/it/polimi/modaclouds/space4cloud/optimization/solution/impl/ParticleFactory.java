@@ -6,6 +6,8 @@ import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.MoveOnVM;
 import it.polimi.modaclouds.space4cloud.optimization.MoveTypeVM;
 import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngineDPSO;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,18 +15,26 @@ import java.util.Map;
 
 public class ParticleFactory {
     private final OptimizationEngineDPSO engine;
+    private final Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier;
 
-    public ParticleFactory(OptimizationEngineDPSO engine) {
+
+    public ParticleFactory(OptimizationEngineDPSO engine) throws ConstraintEvaluationException {
         this.engine = engine;
+        resMapPerSolutionPerTier = createResMapPerSolutionPerTier();
     }
 
-    public Particle buildParticle(SolutionMulti sol) throws ConstraintEvaluationException {
+    public Particle buildParticle(SolutionMulti sol) throws ConstraintEvaluationException, EvaluationException, OptimizationException {
         Particle particle = new Particle(sol);
+        makeRamConstraintsSatisfied(sol);
+        engine.getEvalServer().EvaluateSolution(sol);
+        engine.makeFeasible(sol);
+
+
         engine.getTimer().split();
         long time = engine.getTimer().getSplitTime();
         particle.setGenerationTime(time);
         particle.setGenerationIteration(engine.getIteration());
-        particle.setCloudResourceMap(createResMapPerSolutionPerTier());
+        particle.setCloudResourceMap(resMapPerSolutionPerTier);
         particle.randomizeVelocity(engine.getRandom());
         return particle;
     }
@@ -36,11 +46,10 @@ public class ParticleFactory {
      * @return
      * @throws ConstraintEvaluationException
      * @throws OptimizationException
-     * @throws EvaluationException 
+     * @throws EvaluationException
      */
     public Particle buildRandomFeasibleParticle() throws ConstraintEvaluationException, OptimizationException, EvaluationException {
 
-        //todo: pay attention to the single directory where lqn files are saved
         SolutionMulti randomSolution = engine.getInitialSolution().clone();
         // the new solution has the same providers of the initial one
 
@@ -49,35 +58,8 @@ public class ParticleFactory {
         //every tier is associated with a vmType but the vmtype is the same for each application
 
         // Step 1 altering the cloud resource type for each tier of each solution
-        Map<String, Map<String, List<CloudService>>> resMapPerSolutionPerTier = new HashMap();
-        for (Solution sol : randomSolution.getAll()) {
-            MoveTypeVM moveVM = new MoveTypeVM(sol);
-            Instance application = sol.getApplication(0);
 
-            Map<String, List<CloudService>> resListMap = new HashMap<>();
-            for (Tier tier : application.getTiers()) {
-                CloudService originalCloudResource = tier.getCloudService();
-
-                List<CloudService> resList = engine.getDataBaseHandler().getSameService(originalCloudResource, sol.getRegion());
-
-                //just in case
-                if (!resList.contains(originalCloudResource)) resList.add(originalCloudResource);
-
-                // filter resources according to architectural constraints
-                try {
-                    engine.getConstraintHandler().filterResources(resList, tier);
-                } catch (ConstraintEvaluationException e) {
-                    throw new ConstraintEvaluationException("Error filtering resources for creating a random solution", e);
-                }
-
-                CloudService randomCloudResource = resList.get(engine.getRandom().nextInt(resList.size()));
-
-                //this should change the type of resource into all instances contained into the solution //todo: check
-                moveVM.changeMachine(tier.getId(), randomCloudResource);
-                resListMap.put(tier.getId(), resList);
-            }
-            resMapPerSolutionPerTier.put(sol.getProvider(), resListMap);
-        }
+        updateWithRandomFeasibleCloudResources(randomSolution);
 
         // Step 2 altering the number of replicas for each tier and each our
         //for each provider let's calculate the maximum number of replicas per over all tiers
@@ -96,14 +78,14 @@ public class ParticleFactory {
             for (int i = 0; i < 24; i++) {
                 MoveOnVM moveOnVM = new MoveOnVM(sol, i);
                 for (Tier tier : sol.getApplication(i).getTiers()) {
-                    moveOnVM.scale(tier, engine.getRandom().nextInt(maxReplicas)+1);
+                    moveOnVM.scale(tier, engine.getRandom().nextInt(maxReplicas) + 1);
                 }
             }
         }
 
         //step 3 the solutions have to be made feasible
 
-        engine.getEvalServer().EvaluateSolution(randomSolution); 
+        engine.getEvalServer().EvaluateSolution(randomSolution);
         engine.makeFeasible(randomSolution);
 
         Particle randomFeasibleParticle = new Particle(randomSolution);
@@ -116,9 +98,41 @@ public class ParticleFactory {
         return randomFeasibleParticle;
     }
 
+    private void makeRamConstraintsSatisfied(SolutionMulti sol) {
+
+        for (Solution s : sol.getAll())
+            if (!areRamConstraintsSatisfied(s))
+                updateWithRandomFeasibleCloudResources(s);
+    }
+
+    private boolean areRamConstraintsSatisfied(Solution s) {
+        for (Constraint constraint : s.getViolatedConstraints()) {
+            return constraint instanceof RamConstraint;
+        }
+        return false;
+    }
+
+    private void updateWithRandomFeasibleCloudResources(Solution sol) {
+        MoveTypeVM moveVM = new MoveTypeVM(sol);
+        Instance application = sol.getApplication(0);
+
+        for (Tier tier : application.getTiers()) {
+
+            List<CloudService> cloudServices = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
+
+            CloudService randomCloudResource = cloudServices.get(engine.getRandom().nextInt(cloudServices.size()));
+
+            //this should change the type of resource into all instances contained into the solution
+            moveVM.changeMachine(tier.getId(), randomCloudResource);
+        }
+    }
+
+    private void updateWithRandomFeasibleCloudResources(SolutionMulti solution) {
+        for (Solution sol : solution.getAll()) updateWithRandomFeasibleCloudResources(sol);
+    }
+
     private Map<String, Map<String, List<CloudService>>> createResMapPerSolutionPerTier() throws ConstraintEvaluationException {
 
-        //todo: pay attention to the single directory where lqn files are saved
         SolutionMulti solution = engine.getInitialSolution();
         // the new solution has the same providers of the initial one
 
