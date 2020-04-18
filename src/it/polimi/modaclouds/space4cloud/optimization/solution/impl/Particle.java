@@ -106,8 +106,8 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 if (otherTier == null)
                     throw new Exception("Error trying to calculate the distance between two particles");
                 List<CloudService> resList = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
-                int pos = resList.indexOf(tier.getCloudService());
-                int otherPos = resList.indexOf(otherTier.getCloudService());
+                int pos = findPosCloudResource(resList, tier.getCloudService().getResourceName());
+                int otherPos = findPosCloudResource(resList, otherTier.getCloudService().getResourceName());
                 if (pos == -1 || otherPos == -1)
                     throw new Exception("Error trying to calculate the distance between two particles: resource not found");
                 dist += Math.abs(pos - otherPos);
@@ -125,6 +125,48 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
 
         }
         return dist;
+    }
+
+    /**
+     * this method updates the particle's position based on its velocity
+     * remember that the velocity has two components. Both are used to update the position
+     */
+    public void updatePosition() {
+
+        for (Solution sol : position.getAll()) {
+            MoveTypeVM moveVM = new MoveTypeVM(sol);
+            Instance application = sol.getApplication(0);
+            String provider = sol.getProvider();
+
+            // component tier's resource
+            for (Tier tier : application.getTiers()) {
+                List<CloudService> resList = resMapPerSolutionPerTier.get(provider).get(tier.getId());
+
+                int initialPos = findPosCloudResource(resList, tier.getCloudService().getResourceName());
+                double delta = velocity.getVelocityTierComponent(provider, tier.getId());
+
+                int finalPos = (int) Math.floor(initialPos + delta);
+
+                if (finalPos < 0) finalPos = 0;
+                if (resList.size() <= finalPos) finalPos = resList.size() - 1;
+                CloudService newCloudService = resList.get(finalPos);
+                //this should change the type of resource into all instances contained into the solution //todo: check
+                moveVM.changeMachine(tier.getId(), newCloudService);
+            }
+
+
+            //component tier's replica
+            for (int i = 0; i < 24; i++) {
+                MoveOnVM moveOnVM = new MoveOnVM(sol, i);
+                for (Tier tier : sol.getApplication(i).getTiers()) {
+                    double deltaReplica = velocity.getVelocityReplicaComponent(provider, tier.getId(), i);
+                    moveOnVM.scaleDelta(tier, (int) Math.floor(deltaReplica));
+                }
+            }
+
+
+        }
+
     }
 
 
@@ -158,47 +200,6 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
 
     }
 
-    /**
-     * this method updates the particle's position based on its velocity
-     * remember that the velocity has two components. Both are used to update the position
-     */
-    public void updatePosition() {
-
-        for (Solution sol : position.getAll()) {
-            MoveTypeVM moveVM = new MoveTypeVM(sol);
-            Instance application = sol.getApplication(0);
-            String provider = sol.getProvider();
-
-            // component tier's resource
-            for (Tier tier : application.getTiers()) {
-                List<CloudService> resList = resMapPerSolutionPerTier.get(provider).get(tier.getId());
-                int initialPos = resList.indexOf(tier.getCloudService());
-                double delta = velocity.getVelocityTierComponent(provider, tier.getId());
-
-                int finalPos = (int) Math.floor(initialPos + delta);
-
-                if (finalPos < 0) finalPos = 0;
-                if (resList.size() <= finalPos) finalPos = resList.size() - 1;
-                CloudService newCloudService = resList.get(finalPos);
-                //this should change the type of resource into all instances contained into the solution //todo: check
-                moveVM.changeMachine(tier.getId(), newCloudService);
-            }
-
-
-            //component tier's replica
-            for (int i = 0; i < 24; i++) {
-                MoveOnVM moveOnVM = new MoveOnVM(sol, i);
-                for (Tier tier : sol.getApplication(i).getTiers()) {
-                    double deltaReplica = velocity.getVelocityReplicaComponent(provider, tier.getId(), i);
-                    moveOnVM.scaleDelta(tier, (int) Math.floor(deltaReplica));
-                }
-            }
-
-
-        }
-
-    }
-
     public ParticleVelocity difference(Particle p1, Particle p2) throws OptimizationException {
         /**
          * difference between p1 and p2 (p1 - p2)
@@ -216,8 +217,8 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 if (otherTier == null)
                     throw new OptimizationException("Error trying to calculate the velocity between two particles");
                 List<CloudService> resList = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
-                int pos1 = resList.indexOf(tier.getCloudService());
-                int pos2 = resList.indexOf(otherTier.getCloudService());
+                int pos1 = findPosCloudResource(resList, tier.getCloudService().getResourceName());
+                int pos2 = findPosCloudResource(resList, otherTier.getCloudService().getResourceName());
                 if (pos1 == -1 || pos2 == -1)
                     throw new OptimizationException("Error trying to calculate the distance between two particles: resource not found");
                 particleDiff.updateVelocityTierComponent(sol.getProvider(), tier.getId(), (double) (pos1 - pos2));
@@ -256,7 +257,7 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 Tier otherTier = otherApplication.getTierById(tier.getId());
                 if (otherTier == null)
                     throw new OptimizationException("Error trying to calculate the velocity between two particles");
-                
+
                 List<CloudService> resList;
                 try{
                 resList = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
@@ -265,33 +266,33 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 	logger.debug("error that should not be here 1");
                 	 throw new OptimizationException("Error trying to calculate the velocity between two particles");
                 }
-                
+
                 if(resList == null){
                 	logger.debug("resList is null");
                 	throw new OptimizationException("reslist is null");
                 }
-                
+
                 try {
-                int pos1 = resList.indexOf(tier.getCloudService());
-                int pos2 = resList.indexOf(otherTier.getCloudService());
+                int pos1 = findPosCloudResource(resList, tier.getCloudService().getResourceName()) ;
+                int pos2 = findPosCloudResource(resList, otherTier.getCloudService().getResourceName());
                 double delta = 0;
                 if (pos1 == -1 || pos2 == -1){
                 	 if(pos1 == -1 && pos2 !=-1 )delta = 0;
-                	 if (pos1 != -1 && pos2 == -1 )delta = pos1 == -1 ? -pos2: pos1; 
+                	 if (pos1 != -1 && pos2 == -1 )delta = pos1 == -1 ? -pos2: pos1;
                 	 else delta = 0;
                 }
                 else delta = (pos1 - pos2);
-                	
+
                 particleDiff.updateVelocityTierComponent(sol.getProvider(), tier.getId(), delta );
                 }
                 catch(Exception e){
                 	logger.debug("error that should not be here 1");
-                	
+
                 }
             }
 
             for (int i = 0; i < 24; i++) {
-            	
+
             	try {
                 Instance appl = sol.getApplication(i);
                 Instance otherAppl = otherParticle.getPosition().get(sol.getProvider()).getApplication(i);
@@ -304,7 +305,7 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 }
                 catch(Exception e){
                 	logger.debug("error that should not be here 2");
-                	
+
                 }
             }
 
@@ -312,6 +313,13 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
         }
         return particleDiff;
 
+    }
+
+    private int findPosCloudResource(List<CloudService> resList, String resourceName) {
+        for (int i = 0; i < resList.size() ; i++) {
+            if(resList.get(i).getResourceName().contentEquals(resourceName)) return i;
+        }
+        return -1;
     }
 
 
