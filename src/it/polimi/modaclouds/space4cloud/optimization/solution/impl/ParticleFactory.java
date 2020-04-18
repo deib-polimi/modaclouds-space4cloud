@@ -23,12 +23,12 @@ public class ParticleFactory {
         resMapPerSolutionPerTier = createResMapPerSolutionPerTier();
     }
 
-    public Particle buildParticle(SolutionMulti sol) throws ConstraintEvaluationException, EvaluationException, OptimizationException {
-        Particle particle = new Particle(sol);
+    public Particle buildParticle(SolutionMulti sol) throws EvaluationException, OptimizationException {
+
         makeRamConstraintsSatisfied(sol);
         engine.getEvalServer().EvaluateSolution(sol);
         engine.makeFeasible(sol);
-
+        Particle particle = new Particle(sol);
 
         engine.getTimer().split();
         long time = engine.getTimer().getSplitTime();
@@ -44,11 +44,10 @@ public class ParticleFactory {
      * randomly preplicating the tiers. At the end the resulting solution is made feasible
      *
      * @return
-     * @throws ConstraintEvaluationException
      * @throws OptimizationException
      * @throws EvaluationException
      */
-    public Particle buildRandomFeasibleParticle() throws ConstraintEvaluationException, OptimizationException, EvaluationException {
+    public Particle buildRandomFeasibleParticle() throws OptimizationException, EvaluationException {
 
         SolutionMulti randomSolution = engine.getInitialSolution().clone();
         // the new solution has the same providers of the initial one

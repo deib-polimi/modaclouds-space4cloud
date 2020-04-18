@@ -5,6 +5,8 @@ import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.OptimizationEngineDPSO;
 
+import it.polimi.modaclouds.space4cloud.optimization.constraints.Constraint;
+import it.polimi.modaclouds.space4cloud.optimization.constraints.RamConstraint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +61,21 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
 
         return particleSwarm;
     }
+
+
+    public boolean checkRamConstraints() {
+        for (Particle p : this.particleSet) {
+            for (Solution s : p.getPosition().getAll()) {
+                for (Constraint constraint : s.getViolatedConstraints()) {
+                    if (constraint instanceof RamConstraint) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
 
     public boolean isBestParticleUpdated() {
         return bestParticleUpdated;

@@ -142,9 +142,15 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
             if (Configuration.isPaused()) waitForResume();
 
             //1. swarm evolution
+            if (!swarm.checkRamConstraints()) {
+                logger.debug("Ram constraints not satisfied");
+            }
 
             try {
                 swarm.evolve(inertia, temp, iteration); // the evolution depends on the temperature, inertia and iteration
+                if (!swarm.checkRamConstraints()) {
+                    logger.debug("Ram constraints not satisfied");
+                }
                 if (swarm.isBestParticleUpdated())
                     updateBestSolution(swarm.getSwarmBestParticle().getPosition()); //update best solution and charts
 
