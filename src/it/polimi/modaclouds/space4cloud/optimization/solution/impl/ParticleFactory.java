@@ -77,7 +77,7 @@ public class ParticleFactory {
             for (int i = 0; i < 24; i++) {
                 MoveOnVM moveOnVM = new MoveOnVM(sol, i);
                 for (Tier tier : sol.getApplication(i).getTiers()) {
-                    moveOnVM.scale(tier, engine.getRandom().nextInt(maxReplicas) + 1);
+                    moveOnVM.scale(tier, engine.getRandom().nextInt(10*maxReplicas) + 1);
                 }
             }
         }

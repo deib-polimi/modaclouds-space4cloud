@@ -150,9 +150,9 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
         Particle pi = bestAntecedent;
         this.velocity = this.velocity
                 .scalarMultiplication(c1)
-                .sum(this.difference(pi)
+                .sum(pi.difference(this)
                         .scalarMultiplication(c2))
-                .sum(this.difference(pg)
+                .sum(pg.difference(this)
                         .scalarMultiplication(c3));
 
 

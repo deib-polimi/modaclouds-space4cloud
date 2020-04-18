@@ -165,6 +165,14 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
         }
         return (double) dist / particleSet.size();
     }
+    
+    public double getAverageFitness(){
+    	double totFitness = 0;
+    	for (Particle p : particleSet) {
+			totFitness = totFitness + p.getFitness();
+		}
+    	return totFitness/ particleSet.size();
+    }
 
     private void updateBestParticle() {
 
@@ -181,6 +189,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
     private boolean updateBestParticle(Particle particle) {
         boolean res = false;
         if (particle.betterThan(swarmBestParticle)) {
+        	logger.info("Best solution discovered");
             swarmBestParticle = particle;
             res = true;
 //

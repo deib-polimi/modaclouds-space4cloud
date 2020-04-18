@@ -118,6 +118,12 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
         try {
 			swarm = ParticleSwarm.createRandomFeasibleSwarm(this);
+			
+            if (!swarm.checkRamConstraints()) {
+                logger.debug("Ram constraints not satisfied");
+            }
+			
+			
 		} catch (EvaluationException e1) {
 			throw new OptimizationException("", "createRandomFeasibleSwarm", e1);
 		} // all the elements of the swarm are evaluated in creation
@@ -138,6 +144,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
             logger.info("PSO Convergence: " + convergencePercentage);
             logger.info("PSO temperature: " + temp);
             logger.info("PSO inertia: " + inertia);
+            logger.info("PSO avg fitness: "+ swarm.getAverageFitness());
             try {
                 logger.info("PSO avg distance: " + swarm.getAverageDistance());
             } catch (Exception e) {
@@ -150,9 +157,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
             if (Configuration.isPaused()) waitForResume();
 
             //1. swarm evolution
-            if (!swarm.checkRamConstraints()) {
-                logger.debug("Ram constraints not satisfied");
-            }
+
 
             try {
                 swarm.evolve(inertia, temp, iteration); // the evolution depends on the temperature, inertia and iteration
