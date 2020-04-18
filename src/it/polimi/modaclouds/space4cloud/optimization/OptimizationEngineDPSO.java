@@ -43,7 +43,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     public static final double COGNITIVE_SCALE = 2.0;
     public static final double SOCIAL_SCALE = 2.0;
     public static final double MAX_CONVERGENCE_PERCENTAGE = 0.95;
-    public static final double CR = 0.1;
+    public static final double CR = 0.9;
     public static final double INITIAL_INERTIA = 0.9;
     private int iteration;
     private int MAX_ITERATIONS = 200;
@@ -136,6 +136,8 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
             logger.info("PSO Iteration: " + iteration);
             logger.info("PSO Convergence: " + convergencePercentage);
+            logger.info("PSO temperature: " + temp);
+            logger.info("PSO intertia: " + inertia);
             // logger.trace( currentSolution.showStatus());
 
 
@@ -229,7 +231,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     private void updateInertiaWeight() {
         double wMax = 0.9;
         double wMin = 0.4;
-        this.inertia = wMax - (wMax - wMin) * (double) (iteration / MAX_ITERATIONS);
+        this.inertia = wMax - (wMax - wMin) * ((double) iteration / MAX_ITERATIONS);
     }
 
 

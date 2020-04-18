@@ -106,7 +106,7 @@ public class ParticleFactory {
 
     private boolean areRamConstraintsSatisfied(Solution s) {
         for (Constraint constraint : s.getViolatedConstraints()) {
-            return constraint instanceof RamConstraint;
+            return !(constraint instanceof RamConstraint);
         }
         return false;
     }
