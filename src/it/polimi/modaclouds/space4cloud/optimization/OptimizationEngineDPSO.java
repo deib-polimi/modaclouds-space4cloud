@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2014 Giovanni Paolo Gibilisco
+ * Copyright 2020 Michele Ciavotta
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ import java.io.IOException;
 public class OptimizationEngineDPSO extends OptimizationEngine implements PropertyChangeListener {
 
     public static final int SWARM_SIZE = 5;
-    public static final double COGNITIVE_SCALE = 2.0;
-    public static final double SOCIAL_SCALE = 2.0;
+    public static final double COGNITIVE_SCALE = 1.0;
+    public static final double SOCIAL_SCALE = 1.0;
     public static final double MAX_CONVERGENCE_PERCENTAGE = 0.95;
-    public static final double CR = 0.9;
+    public static final double CR = 0.8;
     public static final double INITIAL_INERTIA = 0.9;
     private int iteration;
-    private int MAX_ITERATIONS = 200;
+    private int MAX_ITERATIONS = 100;
 
     private double inertia;
     private ParticleSwarm swarm;
@@ -137,21 +137,10 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         iteration = 1;
 
 
-        //if the total number of iteration has not been reached and so teh max coverage percentage
+        //if the total number of iteration has not been reached and so the max coverage percentage
         while (!isMaxNumberOfIterations() && !isMaxConvergencePercentage()) {
 
-            logger.info("PSO Iteration: " + iteration);
-            logger.info("PSO Convergence: " + convergencePercentage);
-            logger.info("PSO temperature: " + temp);
-            logger.info("PSO inertia: " + inertia);
-            logger.info("PSO avg fitness: "+ swarm.getAverageFitness());
-            try {
-                logger.info("PSO avg distance: " + swarm.getAverageDistance());
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
-            }
-            // logger.trace( currentSolution.showStatus());
+            logEvolutionInfo();
 
 
             if (Configuration.isPaused()) waitForResume();
@@ -186,6 +175,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
         }
 
+        logEvolutionInfo();
 
         try {
             costLogImage.save2png();
@@ -207,6 +197,24 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         return -1;
 
     }
+
+	/**
+	 * @throws OptimizationException
+	 */
+	private void logEvolutionInfo() throws OptimizationException {
+		logger.info("PSO Iteration: " + iteration);
+		logger.info("PSO Convergence: " + convergencePercentage);
+		logger.info("PSO temperature: " + temp);
+		logger.info("PSO inertia: " + inertia);
+		logger.info("PSO avg fitness: "+ swarm.getAverageFitness());
+		try {
+		    logger.info("PSO avg distance: " + swarm.getAverageDistance());
+		} catch (Exception e) {
+		    e.printStackTrace();
+		    throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
+		}
+		// logger.trace( currentSolution.showStatus());
+	}
 
 
     private void updateIteration() {
