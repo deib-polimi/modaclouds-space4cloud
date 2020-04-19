@@ -277,9 +277,11 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 int pos2 = findPosCloudResource(resList, otherTier.getCloudService().getResourceName());
                 double delta = 0;
                 if (pos1 == -1 || pos2 == -1){
-                	 if(pos1 == -1 && pos2 !=-1 )delta = 0;
-                	 if (pos1 != -1 && pos2 == -1 )delta = pos1 == -1 ? -pos2: pos1;
-                	 else delta = 0;
+
+//                	 if(pos1 == -1 && pos2 !=-1 )delta = 0;
+//                	 if (pos1 != -1 && pos2 == -1 )delta = pos1 == -1 ? -pos2: pos1;
+//                	 else delta = 0;
+                    throw new OptimizationException("Particle with impossible position!");
                 }
                 else delta = (pos1 - pos2);
 
@@ -340,5 +342,10 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
             else if (this.getFitness() > o.getFitness()) return 1; // this is greater
             else return -1; //o  is greater
         }
+    }
+
+
+    public double getVelocityModule() {
+        return velocity.getModule1();
     }
 }

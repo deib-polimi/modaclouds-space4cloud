@@ -26,11 +26,11 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
     private double temp;
     private Double inertia;
     private int iteration;
-    private final List<Particle> particleSet;
+    private final List<Particle> particleList;
     private boolean bestParticleUpdated;
 
-    private ParticleSwarm(List<Particle> particleSet, OptimizationEngineDPSO engine) {
-        this.particleSet = particleSet;
+    private ParticleSwarm(List<Particle> particleList, OptimizationEngineDPSO engine) {
+        this.particleList = particleList;
         this.engine = engine;
         this.cognitiveScale = OptimizationEngineDPSO.COGNITIVE_SCALE;
         this.socialScale = OptimizationEngineDPSO.SOCIAL_SCALE;
@@ -63,7 +63,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
 
 
     public boolean checkRamConstraints() {
-        for (Particle p : this.particleSet) {
+        for (Particle p : this.particleList) {
             for (Solution s : p.getPosition().getAll()) {
                 for (Constraint constraint : s.getViolatedConstraints()) {
                     if (constraint instanceof RamConstraint) {
@@ -86,11 +86,11 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
 
     @Override
     public Iterator<Particle> iterator() {
-        return particleSet.iterator();
+        return particleList.iterator();
     }
 
     public double getWorstFitness() {
-        return Collections.max(particleSet).getFitness();
+        return Collections.max(particleList).getFitness();
     }
 
     public double getBestFitness() {
@@ -125,8 +125,8 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      * @return
      */
     public double getConvergencePercentage() {
-        List<PairFitness> fitnessList = new ArrayList<>(particleSet.size());
-        for (Particle p : particleSet) fitnessList.add(new PairFitness(1, p.getPosition().getCost()));
+        List<PairFitness> fitnessList = new ArrayList<>(particleList.size());
+        for (Particle p : particleList) fitnessList.add(new PairFitness(1, p.getPosition().getCost()));
 
         Collections.sort(fitnessList);
         int i = 0;
@@ -147,7 +147,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
         int maxEquals = 0;
         for (PairFitness p : fitnessList) if (p.num > maxEquals) maxEquals = p.num;
 
-        return (double) maxEquals / particleSet.size();
+        return (double) maxEquals / particleList.size();
     }
 
 
@@ -155,29 +155,38 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
         int i = 0;
         int j = 1;
         int dist = 0;
-        while (i < particleSet.size() - 1) {
-            while (j < particleSet.size()) {
-                dist = dist + particleSet.get(i).distance(particleSet.get(j));
+        while (i < particleList.size() - 1) {
+            while (j < particleList.size()) {
+                dist = dist + particleList.get(i).distance(particleList.get(j));
                 i++;
                 j++;
 
             }
         }
-        return (double) dist / particleSet.size();
+        return (double) dist / particleList.size();
     }
-    
-    public double getAverageFitness(){
-    	double totFitness = 0;
-    	for (Particle p : particleSet) {
-			totFitness = totFitness + p.getFitness();
-		}
-    	return totFitness/ particleSet.size();
+
+    public double getAverageFitness() {
+        double totFitness = 0;
+        for (Particle p : particleList) {
+            totFitness = totFitness + p.getFitness();
+        }
+        return totFitness / particleList.size();
     }
+
+    public double getAverageVelocityModule() {
+        double totModule = 0;
+        for (Particle p : particleList) {
+            totModule += p.getVelocityModule();
+        }
+        return totModule / particleList.size();
+    }
+
 
     private void updateBestParticle() {
 
         boolean res = false;
-        for (Particle p : particleSet) {
+        for (Particle p : particleList) {
             res = res | updateBestParticle(p);
         }
         this.bestParticleUpdated = res;
@@ -217,7 +226,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
      * @throws OptimizationException
      */
     private void updateVelocity() throws OptimizationException {
-        for (Particle particle : particleSet)
+        for (Particle particle : particleList)
             particle.updateVelocity(swarmBestParticle, inertia, cognitiveScale, socialScale);
 
     }
@@ -226,7 +235,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
 
         List<Particle> particleToRemove = new ArrayList<>();
         List<Particle> particleToAdd = new ArrayList<>();
-        for (Particle oldParticle : particleSet) {
+        for (Particle oldParticle : particleList) {
             Particle newParticle = oldParticle.clone();
             newParticle.updatePosition();
             engine.getEvalServer().EvaluateSolution(newParticle.getPosition());
@@ -243,8 +252,8 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
                 oldParticle.setGenerationIteration(iteration);
             }
         }
-        particleSet.removeAll(particleToRemove);
-        particleSet.addAll(particleToAdd);
+        particleList.removeAll(particleToRemove);
+        particleList.addAll(particleToAdd);
     }
 
     /**
@@ -273,7 +282,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
 
 
     private int getSwarmSize() {
-        return particleSet.size();
+        return particleList.size();
     }
 
 

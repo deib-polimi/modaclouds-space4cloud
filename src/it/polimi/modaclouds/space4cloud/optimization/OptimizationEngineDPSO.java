@@ -39,14 +39,14 @@ import java.io.IOException;
  */
 public class OptimizationEngineDPSO extends OptimizationEngine implements PropertyChangeListener {
 
-    public static final int SWARM_SIZE = 5;
-    public static final double COGNITIVE_SCALE = 1.0;
-    public static final double SOCIAL_SCALE = 1.0;
-    public static final double MAX_CONVERGENCE_PERCENTAGE = 0.95;
-    public static final double CR = 0.8;
-    public static final double INITIAL_INERTIA = 0.9;
+    public static int SWARM_SIZE; //default = 5;
+    public static double COGNITIVE_SCALE; // default = 1.0;
+    public static double SOCIAL_SCALE; // default = 1.0;
+    public static double MAX_CONVERGENCE_PERCENTAGE; // default = 0.95;
+    public static double CR; // default = 0.8;
+    public static double INITIAL_INERTIA; //default = 0.9;
     private int iteration;
-    private int MAX_ITERATIONS = 100;
+    private int MAX_ITERATIONS; //default = 100;
 
     private double inertia;
     private ParticleSwarm swarm;
@@ -85,6 +85,26 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     public int getMaxIterations() {
         return MAX_ITERATIONS;
     }
+
+    /**
+     * @throws OptimizationException
+     */
+    private void logEvolutionInfo() throws OptimizationException {
+        logger.info("PSO Iteration: " + iteration);
+        logger.info("PSO Convergence: " + convergencePercentage);
+        logger.info("PSO temperature: " + temp);
+        logger.info("PSO inertia: " + inertia);
+        logger.info("PSO avg fitness: " + swarm.getAverageFitness());
+        try {
+            logger.info("PSO avg distance: " + swarm.getAverageDistance());
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
+        }
+        logger.info("PSO avg velocity: " + swarm.getAverageVelocityModule());
+        // logger.trace( currentSolution.showStatus());
+    }
+
 
     /**
      * This is the bulk of the optimization process in case of a single provider
@@ -198,23 +218,16 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
     }
 
-	/**
-	 * @throws OptimizationException
-	 */
-	private void logEvolutionInfo() throws OptimizationException {
-		logger.info("PSO Iteration: " + iteration);
-		logger.info("PSO Convergence: " + convergencePercentage);
-		logger.info("PSO temperature: " + temp);
-		logger.info("PSO inertia: " + inertia);
-		logger.info("PSO avg fitness: "+ swarm.getAverageFitness());
-		try {
-		    logger.info("PSO avg distance: " + swarm.getAverageDistance());
-		} catch (Exception e) {
-		    e.printStackTrace();
-		    throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
-		}
-		// logger.trace( currentSolution.showStatus());
-	}
+    protected void loadConfiguration() {
+        super.loadConfiguration();
+        SWARM_SIZE = Configuration.SWARM_SIZE;
+        COGNITIVE_SCALE = Configuration.COGNITIVE_SCALE;
+        SOCIAL_SCALE = Configuration.SOCIAL_SCALE;
+        MAX_CONVERGENCE_PERCENTAGE = Configuration.MAX_CONVERGENCE_PERCENTAGE;
+        CR = Configuration.SA_CR;
+        INITIAL_INERTIA = Configuration.INITIAL_INERTIA;
+        MAX_ITERATIONS = Configuration.MAX_ITERATIONS;
+    }
 
 
     private void updateIteration() {

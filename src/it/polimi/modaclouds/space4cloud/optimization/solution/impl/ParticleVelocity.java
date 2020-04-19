@@ -165,4 +165,27 @@ public class ParticleVelocity implements Cloneable {
     }
 
 
+    /**
+     * It's just the sum of the absolute value of all components
+     *
+     * @return
+     */
+    public double getModule1() {
+        double module = 0;
+        for (String provider : tierComponent.keySet()) {
+            Map<String, Double> mapTiers = tierComponent.get(provider);
+            for (String tierID : mapTiers.keySet()) module += Math.abs(mapTiers.get(tierID));
+
+        }
+
+        for (String provider : hourComponent.keySet()) {
+            Map<String, List<Double>> mapTiers = hourComponent.get(provider);
+            for (String tierID : mapTiers.keySet()) {
+                List<Double> replicaList = mapTiers.get(tierID);
+                for (int i = 0; i < 24; i++)
+                    module += Math.abs(replicaList.get(i));
+            }
+        }
+        return module;
+    }
 }
