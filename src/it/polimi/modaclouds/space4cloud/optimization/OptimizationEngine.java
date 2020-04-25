@@ -176,7 +176,7 @@ public class OptimizationEngine extends SwingWorker<Void, Void> implements Prope
 	protected String localBestSolutionSerieHandler;
 	protected boolean providedTimer = false;
 
-	private boolean batch = false;
+	protected boolean batch = false;
 
 	public Random getRandom() {
 		return random;

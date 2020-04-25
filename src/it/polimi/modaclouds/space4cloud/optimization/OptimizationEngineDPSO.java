@@ -24,10 +24,11 @@ import it.polimi.modaclouds.space4cloud.exceptions.EvaluationException;
 import it.polimi.modaclouds.space4cloud.exceptions.OptimizationException;
 import it.polimi.modaclouds.space4cloud.optimization.constraints.ConstraintHandler;
 import it.polimi.modaclouds.space4cloud.optimization.solution.impl.ParticleSwarm;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.Solution;
+import it.polimi.modaclouds.space4cloud.optimization.solution.impl.SolutionMulti;
 import it.polimi.modaclouds.space4cloud.utils.Configuration;
+
 import org.apache.commons.lang.time.StopWatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -52,6 +53,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     private ParticleSwarm swarm;
     private double temp;
     private double convergencePercentage;
+	private int USE_MAKEFEASIBLE;
 
     /**
      * Instantiates a new opt engine using as timer the provided one. The
@@ -217,6 +219,14 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         return -1;
 
     }
+    
+	public void makeFeasible(SolutionMulti sol) throws OptimizationException {
+		if (USE_MAKEFEASIBLE == 1) {
+			for (Solution s : sol.getAll())
+				makeFeasible(sol, s.getProvider());	
+		}
+
+	}
 
     protected void loadConfiguration() {
         super.loadConfiguration();
@@ -227,6 +237,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         CR = Configuration.SA_CR;
         INITIAL_INERTIA = Configuration.INITIAL_INERTIA;
         MAX_ITERATIONS = Configuration.MAX_ITERATIONS;
+        USE_MAKEFEASIBLE = Configuration.USE_MAKEFEASIBLE;
     }
 
 

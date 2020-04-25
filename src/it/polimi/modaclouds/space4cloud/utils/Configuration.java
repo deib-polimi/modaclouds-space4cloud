@@ -4,6 +4,7 @@ import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
 import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
 import it.polimi.modaclouds.space4cloud.gui.CloudBurstingPanel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,13 +67,15 @@ public class Configuration {
 	public static String RANDOM_ENV_FILE = "";
 
 	// for the DPSO
-	public static int SWARM_SIZE = 5;
-	public static double COGNITIVE_SCALE = 1.0;
-	public static double SOCIAL_SCALE = 1.0;
+	public static int SWARM_SIZE = 10;
+	public static double COGNITIVE_SCALE = 0.5;
+	public static double SOCIAL_SCALE = 0.5;
 	public static double MAX_CONVERGENCE_PERCENTAGE = 0.95;
 	public static double SA_CR = 0.8;
 	public static double INITIAL_INERTIA = 0.9;
 	public static int MAX_ITERATIONS = 100;
+	public static int USE_MAKEFEASIBLE = 0;
+	public static int USE_DPSO=0;
 
 
 	// For the robustness test:
@@ -173,22 +176,7 @@ public class Configuration {
 					.getProperty("RELAXED_INITIAL_SOLUTION"));
 			RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
 
-			// FOR THE DPSO
-			SWARM_SIZE = Integer.parseInt(prop.getProperty("SWARM_SIZE"));
 
-			COGNITIVE_SCALE = Double.parseDouble(prop.getProperty("COGNITIVE_SCALE"));
-
-			SOCIAL_SCALE = Double.parseDouble(prop.getProperty("SOCIAL_SCALE"));
-
-			MAX_CONVERGENCE_PERCENTAGE = Double.parseDouble(prop.getProperty("MAX_CONVERGENCE_PERCENTAGE"));
-
-			SA_CR = Double.parseDouble(prop.getProperty("SA_CR"));
-
-			INITIAL_INERTIA = Double.parseDouble(prop.getProperty("INITIAL_INERTIA"));
-
-			MAX_ITERATIONS = Integer.parseInt(prop.getProperty("MAX_ITERATIONS"));
-
-			//end DPSO section
 
 
 			ROBUSTNESS_PEAK_FROM = Integer.parseInt(prop.getProperty(
@@ -258,7 +246,48 @@ public class Configuration {
                     "Part of the configuration was invalid, reverted the invalid value to the default one.",
                     e);
         }
+		// FOR THE DPSO
+		
+		String read; 
+		read= prop.getProperty("SWARM_SIZE");
+		if(read != null && !read.isEmpty())
+			SWARM_SIZE = Integer.parseInt(prop.getProperty("SWARM_SIZE"));
 
+		read= prop.getProperty("COGNITIVE_SCALE");
+		if(read != null && !read.isEmpty())
+			COGNITIVE_SCALE = Double.parseDouble(prop.getProperty("COGNITIVE_SCALE"));
+
+		read= prop.getProperty("SOCIAL_SCALE");
+		if(read != null && !read.isEmpty())
+			SOCIAL_SCALE = Double.parseDouble(prop.getProperty("SOCIAL_SCALE"));
+		
+		read= prop.getProperty("MAX_CONVERGENCE_PERCENTAGE");
+		if(read != null && !read.isEmpty())
+			MAX_CONVERGENCE_PERCENTAGE = Double.parseDouble(prop.getProperty("MAX_CONVERGENCE_PERCENTAGE"));
+
+		read= prop.getProperty("SA_CR");
+		if(read != null && !read.isEmpty())
+			SA_CR = Double.parseDouble(prop.getProperty("SA_CR"));
+		
+		read= prop.getProperty("INITIAL_INERTIA");
+		if(read != null && !read.isEmpty())
+			INITIAL_INERTIA = Double.parseDouble(prop.getProperty("INITIAL_INERTIA"));
+
+		read= prop.getProperty("MAX_ITERATIONS");
+		if(read != null && !read.isEmpty())
+			MAX_ITERATIONS = Integer.parseInt(prop.getProperty("MAX_ITERATIONS"));
+
+		read= prop.getProperty("USE_MAKEFEASIBLE");
+		if(read != null && !read.isEmpty())
+			USE_MAKEFEASIBLE = Integer.parseInt(prop.getProperty("USE_MAKEFEASIBLE"));
+		read= prop.getProperty("USE_DPSO");
+		if(read != null && !read.isEmpty())
+			USE_DPSO = Integer.parseInt(prop.getProperty("USE_DPSO"));
+
+		//end DPSO section
+		
+		
+		
         it.polimi.modaclouds.space4cloud.milp.Configuration.loadConfiguration(filePath);
 
     }

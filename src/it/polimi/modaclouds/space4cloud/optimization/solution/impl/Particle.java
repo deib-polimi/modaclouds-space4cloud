@@ -145,7 +145,21 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 int initialPos = findPosCloudResource(resList, tier.getCloudService().getResourceName());
                 double delta = velocity.getVelocityTierComponent(provider, tier.getId());
 
-                int finalPos = (int) Math.floor(initialPos + delta);
+                int finalPos = initialPos;
+                if (delta >0) {
+                	if (delta<=1)
+						finalPos = initialPos+1;
+                	else                    
+                		finalPos = (int) Math.ceil(initialPos + delta);					
+				}
+                if (delta <0) {
+                	if (delta>= -1) 
+                		finalPos = initialPos -1;
+                	else
+                		finalPos = (int) Math.floor(initialPos + delta);	
+					
+				}
+
 
                 if (finalPos < 0) finalPos = 0;
                 if (resList.size() <= finalPos) finalPos = resList.size() - 1;
@@ -160,7 +174,20 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
                 MoveOnVM moveOnVM = new MoveOnVM(sol, i);
                 for (Tier tier : sol.getApplication(i).getTiers()) {
                     double deltaReplica = velocity.getVelocityReplicaComponent(provider, tier.getId(), i);
-                    moveOnVM.scaleDelta(tier, (int) Math.floor(deltaReplica));
+                    if (deltaReplica >0 ) {
+                    	if (deltaReplica <= 1) 
+                    		deltaReplica = 1;
+                    	else
+                    		deltaReplica = Math.ceil(deltaReplica);						
+					}
+                    if (deltaReplica <0) {
+						if (deltaReplica >= -1) 
+							deltaReplica = -1;
+						else
+							deltaReplica = Math.floor(deltaReplica);	
+					}
+                    
+                    moveOnVM.scaleDelta(tier, (int) deltaReplica);
                 }
             }
 

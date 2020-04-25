@@ -68,15 +68,15 @@ public class ParticleVelocity implements Cloneable {
     public void randomize(Random random) {
         for (String provider : tierComponent.keySet()) {
             Map<String, Double> mapTiers = tierComponent.get(provider);
-            for (String tierID : mapTiers.keySet()) mapTiers.put(tierID, random.nextDouble() * 2.0 - 1); // around one 
+            for (String tierID : mapTiers.keySet()) 
+            	this.updateVelocityTierComponent(provider, tierID, random.nextDouble() * 2.0 - 1);
         }
 
         for (String provider : hourComponent.keySet()) {
             Map<String, List<Double>> mapTiers = hourComponent.get(provider);
             for (String tierID : mapTiers.keySet()) {
-                List<Double> replicaList = mapTiers.get(tierID);
                 for (int i = 0; i < 24; i++) 
-                	replicaList.add(i, random.nextDouble() * 2.0 - 1); // around one 
+                	this.updateVelocityReplicaComponent(provider, tierID, i, random.nextDouble() * 2.0 - 1);
             }
         }
     }

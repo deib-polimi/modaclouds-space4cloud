@@ -424,7 +424,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	private void performAssessment() throws AssesmentException {
 
 		try {
-			engine = new OptimizationEngineDPSO(constraintHandler, true, duration);
+			if (Configuration.USE_DPSO ==1) 
+				engine = new OptimizationEngineDPSO(constraintHandler, true, duration);				
+			else
+				engine = new OptimizationEngine(constraintHandler, true, duration);
+
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new AssesmentException("", e);
 		}
@@ -539,7 +543,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		logger.info("Loading the optimization engine and perparing the solver");
 
 		try {
-			engine = new OptimizationEngineDPSO(constraintHandler, batch, duration);
+			
+			if (Configuration.USE_DPSO ==1) 
+				engine = new OptimizationEngineDPSO(constraintHandler, batch, duration);				
+			else
+				engine = new OptimizationEngine(constraintHandler, batch, duration);
+			
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new OptimizationException("Optinization error. ", e);
 		}
