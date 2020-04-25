@@ -537,6 +537,12 @@ public class Configuration {
                 Integer.toString(OPTIMIZATION_WINDOW_LENGTH));
 
         prop.put("BENCHMARK", BENCHMARK.toString());
+        
+        prop.put("USE_MAKEFEASIBLE", Integer.toString(USE_MAKEFEASIBLE));
+        prop.put("USE_DPSO", Integer.toString(USE_DPSO));
+        prop.put("SWARM_SIZE", Integer.toString(SWARM_SIZE));
+        prop.put("MAX_ITERATIONS", Integer.toString(MAX_ITERATIONS));
+        
 
         it.polimi.modaclouds.space4cloud.milp.Configuration
                 .addToConfiguration(prop);

@@ -63,7 +63,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -96,8 +95,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	private static AssessmentWindow assesmentWindow;
 	private static RobustnessProgressWindow robustnessWindow;
 	private OptimizationEngine engine = null;
-	private static final Logger logger = LoggerFactory.getLogger(Space4Cloud.class);
-	public static final Logger consoleLogger = LoggerFactory.getLogger("ConsoleLogger");
+	private static final Logger logger = LoggerFactory
+			.getLogger(Space4Cloud.class);
+	public static final Logger consoleLogger = LoggerFactory
+			.getLogger("ConsoleLogger");
 	private boolean batch = false;
 	private ConstraintHandler constraintHandler;
 	private File initialSolution = null, initialMce = null;
@@ -133,7 +134,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	public Space4Cloud(String batchConfFile) {
 		this(batchConfFile, null);
 	}
-	
+
 	/**
 	 * Initialize space4cloud in batch mode in order to run the configuration
 	 * specified in the provided file
@@ -143,7 +144,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	 */
 	public Space4Cloud(String batchConfFile, StopWatch timer) {
 		batchConfigurationFile = batchConfFile;
-		batch = true;		
+		batch = true;
 		duration = timer;
 	}
 
@@ -162,7 +163,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		// load the configuration
 		if (!batch) {
 			if (Configuration.PROJECT_BASE_FOLDER == null)
-				Configuration.PROJECT_BASE_FOLDER = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+				Configuration.PROJECT_BASE_FOLDER = ResourcesPlugin
+						.getWorkspace().getRoot().getLocation().toOSString();
 			ConfigurationWindow configGui = new ConfigurationWindow();
 			configGui.setVisible(true);
 			logger.trace("Witing for GUI disposal");
@@ -172,7 +174,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					logger.error("Error waiting for GUI to be closed", e);
-					signalError("An error occured in the GUI: " + e.getLocalizedMessage());
+					signalError("An error occured in the GUI: "
+							+ e.getLocalizedMessage());
 					return;
 
 				}
@@ -189,8 +192,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			try {
 				Configuration.loadConfiguration(batchConfigurationFile);
 			} catch (IOException e) {
-				logger.error("Could not load the configuration from: " + batchConfigurationFile, e);
-				signalError("Could not load the configuration from: " + batchConfigurationFile);
+				logger.error("Could not load the configuration from: "
+						+ batchConfigurationFile, e);
+				signalError("Could not load the configuration from: "
+						+ batchConfigurationFile);
 				return;
 			}
 		}
@@ -205,8 +210,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		consoleLogger.info("Cleaning the project from previous runs");
 		// clean the folder used for the evaluation/optimization process
 		try {
-			FileUtils.deleteDirectory(
-					Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY).toFile());
+			FileUtils.deleteDirectory(Paths.get(
+					Configuration.PROJECT_BASE_FOLDER,
+					Configuration.WORKING_DIRECTORY).toFile());
 		} catch (NoSuchFileException e) {
 
 			if (e.getMessage().contains("space4cloud"))
@@ -215,8 +221,7 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 				logger.error("Error cleaning directories", e);
 		} catch (IOException e) {
 			if (e.getMessage().contains("cannot access the file")) {
-				logger.error(
-						"An error occurred while accessing a temporary file from a previous run, space4cloud will try to ignore it and proceed");
+				logger.error("An error occurred while accessing a temporary file from a previous run, space4cloud will try to ignore it and proceed");
 			} else {
 				logger.error("Error cleaning directories", e);
 			}
@@ -230,7 +235,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		try {
 			Configuration.initDatabaseConfiguration();
 		} catch (Exception e) {
-			consoleLogger.error("Error while initializing the connection to the database.", e);
+			consoleLogger.error(
+					"Error while initializing the connection to the database.",
+					e);
 			return;
 		}
 
@@ -238,24 +245,31 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		// locally.
 		if (Configuration.SOLVER == Solver.LINE) {
 			consoleLogger.info("Looking for LINE server");
-			LineServerHandler lineHandler = LineServerHandlerFactory.getHandler();
+			LineServerHandler lineHandler = LineServerHandlerFactory
+					.getHandler();
 			lineHandler.connectToLINEServer();
 			lineHandler.closeConnections();
 			consoleLogger.info("Succesfully connected to LINE server");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				logger.error("Error while waiting for LINE first connection, will try to proceed", e);
+				logger.error(
+						"Error while waiting for LINE first connection, will try to proceed",
+						e);
 			} // give time to LINE to close the connection on his side
 		}
 
 		// Build the temporary space4cloud folder
 		try {
 			consoleLogger.info("Creating directories");
-			Files.createDirectories(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY));
+			Files.createDirectories(Paths.get(
+					Configuration.PROJECT_BASE_FOLDER,
+					Configuration.WORKING_DIRECTORY));
 		} catch (IOException e) {
-			logger.error("Error creating the " + Configuration.PERFORMANCE_RESULTS_FOLDER + " folder", e);
-			signalError("An error occurred creating the " + Configuration.PERFORMANCE_RESULTS_FOLDER + " folder. "
+			logger.error("Error creating the "
+					+ Configuration.PERFORMANCE_RESULTS_FOLDER + " folder", e);
+			signalError("An error occurred creating the "
+					+ Configuration.PERFORMANCE_RESULTS_FOLDER + " folder. "
 					+ e.getLocalizedMessage());
 			return;
 		}
@@ -273,22 +287,26 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			runConfigHandler.launch();
 		} catch (PalladioRunException e) {
 			logger.error("Error running Palladio", e);
-			signalError("An error occurred running Palladio" + e.getLocalizedMessage());
+			signalError("An error occurred running Palladio"
+					+ e.getLocalizedMessage());
 			return;
 		}
 
 		// bring up the Space4Cloud console
-		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager()
+				.getConsoles();
 		for (IConsole c : consoles) {
 			if (c.getName().equals(PluginConsoleAppender.CONSOLE_NAME))
-				ConsolePlugin.getDefault().getConsoleManager().showConsoleView(c);
+				ConsolePlugin.getDefault().getConsoleManager()
+						.showConsoleView(c);
 		}
 		consoleLogger.info("Transformation terminated");
 		pcs.firePropertyChange(TRANSFORMATION_COMPLEATED, false, true);
 
 		// Build the folder structure to host results and copy the LQN model in
 		// those folders
-		File resultDirPath = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
+		File resultDirPath = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+				Configuration.WORKING_DIRECTORY,
 				Configuration.PERFORMANCE_RESULTS_FOLDER).toFile();
 		// list files excluding the result file generated by the solver
 		File[] modelFiles = resultDirPath.listFiles(new FilenameFilter() {
@@ -297,24 +315,23 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 				return name.endsWith(".xml") && !name.contains("_line");
 			}
 		});
-		File[] resultFiles; 
-		
+		File[] resultFiles;
+
 		if (Configuration.SOLVER == Solver.LINE) {
-		resultFiles= resultDirPath.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith("_line.xml");
-			}
-		});
-		}
-		else{
-			resultFiles= resultDirPath.listFiles(new FilenameFilter() {
+			resultFiles = resultDirPath.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.endsWith("_line.xml");
+				}
+			});
+		} else {
+			resultFiles = resultDirPath.listFiles(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String name) {
 					return name.endsWith(".lqxo");
 				}
 			});
-			
+
 		}
 
 		// if the palladio run has not produced a lqn model exit
@@ -336,11 +353,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			constraintHandler.loadConstraints();
 		} catch (ConstraintLoadingException e) {
 			logger.error("Error in loading constraints", e);
-			signalError("An error occured loading the constraints.\n" + e.getLocalizedMessage());
+			signalError("An error occured loading the constraints.\n"
+					+ e.getLocalizedMessage());
 			return;
 		}
 
-		if (Configuration.RELAXED_INITIAL_SOLUTION && Configuration.FUNCTIONALITY == Operation.Optimization) {
+		if (Configuration.RELAXED_INITIAL_SOLUTION
+				&& Configuration.FUNCTIONALITY == Operation.Optimization) {
 			performGenerateInitialSolution();
 			pcs.firePropertyChange(RELAXED_SOLUTION_GENERATED, false, true);
 		}
@@ -355,7 +374,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 				// consoleLogger.info("Assesment finished");
 			} catch (AssesmentException e) {
 				logger.error("Error in performing the assesment", e);
-				signalError("An error occured performing the assesment.\n" + e.getLocalizedMessage());
+				signalError("An error occured performing the assesment.\n"
+						+ e.getLocalizedMessage());
 				return;
 			}
 			break;
@@ -368,7 +388,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 				// consoleLogger.info("Optimization finished");
 			} catch (OptimizationException e) {
 				logger.error("Error in the optimization", e);
-				signalError("An error occured performing the optimization.\n" + e.getLocalizedMessage());
+				signalError("An error occured performing the optimization.\n"
+						+ e.getLocalizedMessage());
 				return;
 			}
 			break;
@@ -380,7 +401,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 				// consoleLogger.info("Robustness Analysis finished");
 			} catch (RobustnessException e) {
 				logger.error("Error in the robustness analysis", e);
-				signalError("An error occured performing the robustness analysis.\n" + e.getLocalizedMessage());
+				signalError("An error occured performing the robustness analysis.\n"
+						+ e.getLocalizedMessage());
 				return;
 			}
 			break;
@@ -424,10 +446,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	private void performAssessment() throws AssesmentException {
 
 		try {
-			if (Configuration.USE_DPSO ==1) 
-				engine = new OptimizationEngineDPSO(constraintHandler, true, duration);				
+			if (Configuration.USE_DPSO == 1)
+				engine = new OptimizationEngineDPSO(constraintHandler, true,
+						duration);
 			else
-				engine = new OptimizationEngine(constraintHandler, true, duration);
+				engine = new OptimizationEngine(constraintHandler, true,
+						duration);
 
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new AssesmentException("", e);
@@ -457,7 +481,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		try {
 			assesmentWindow.considerSolution(providedSolution);
 		} catch (NumberFormatException | IOException e) {
-			throw new AssesmentException("Could not load the solution in the assesment window", e);
+			throw new AssesmentException(
+					"Could not load the solution in the assesment window", e);
 		}
 
 	}
@@ -476,14 +501,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			BestSolutionExplorer.show();
 			engine = null;
 			logger.info("Exiting SPACE4Cloud");
-		
+
 			if (Configuration.SOLVER == Solver.LINE) {
 				if (LineServerHandlerFactory.getHandler() != null) {
 					LineServerHandlerFactory.getHandler().closeConnections();
 				}
 			}
 
-			
 			LineServerHandlerFactory.clearHandler();
 			ConstraintHandlerFactory.clearHandler();
 			DataHandlerFactory.resetHandler();
@@ -495,27 +519,34 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	}
 
 	private void performGenerateInitialSolution() {
-		consoleLogger.info("Generating the initial solution with the MILP engine");
+		consoleLogger
+				.info("Generating the initial solution with the MILP engine");
 		MILPEvaluator re = new MILPEvaluator();
 
 		try {
 			re.eval();
 		} catch (Exception e) {
-			logger.error("Error! It's impossible to generate the solution! Are you connected?", e);
+			logger.error(
+					"Error! It's impossible to generate the solution! Are you connected?",
+					e);
 			cleanResources();
 
 			return;
 		}
 
 		// override values provided with those generated by the initial solution
- 		Configuration.RESOURCE_ENVIRONMENT_EXTENSION = re.getResourceEnvExt().getAbsolutePath();
+		Configuration.RESOURCE_ENVIRONMENT_EXTENSION = re.getResourceEnvExt()
+				.getAbsolutePath();
 		initialSolution = re.getSolution();
 		initialMce = re.getMultiCloudExt();
 
-		logger.info("Generated resource model extension: " + Configuration.RESOURCE_ENVIRONMENT_EXTENSION);
+		logger.info("Generated resource model extension: "
+				+ Configuration.RESOURCE_ENVIRONMENT_EXTENSION);
 		logger.info("Generated solution: " + initialSolution.getAbsolutePath());
-		logger.info("Generated multi cloud extension: " + initialMce.getAbsolutePath());
-		logger.info("Cost: " + re.getCost() + ", computed in: " + re.getEvaluationTime() + " ms");
+		logger.info("Generated multi cloud extension: "
+				+ initialMce.getAbsolutePath());
+		logger.info("Cost: " + re.getCost() + ", computed in: "
+				+ re.getEvaluationTime() + " ms");
 
 		if (SolutionMulti.isEmpty(initialSolution)) {
 			Configuration.RESOURCE_ENVIRONMENT_EXTENSION = null;
@@ -544,11 +575,14 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 		try {
 			
-			if (Configuration.USE_DPSO ==1) 
+			if (Configuration.USE_DPSO ==1) {
+				logger.info("Starting optimization with DPSO");
 				engine = new OptimizationEngineDPSO(constraintHandler, batch, duration);				
-			else
+			}
+			else{
+				logger.info("Starting optimization with TS-GRASP");
 				engine = new OptimizationEngine(constraintHandler, batch, duration);
-			
+			}
 		} catch (DatabaseConnectionFailureExteption e) {
 			throw new OptimizationException("Optinization error. ", e);
 		}
@@ -600,7 +634,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 	private void performVariability() throws OptimizationException {
 
-		if (Configuration.ROBUSTNESS_VARIABILITIES.length == 0 || Configuration.ROBUSTNESS_GS.length == 0
+		if (Configuration.ROBUSTNESS_VARIABILITIES.length == 0
+				|| Configuration.ROBUSTNESS_GS.length == 0
 				|| Configuration.USE_PRIVATE_CLOUD)
 			return;
 		for (int variability : Configuration.ROBUSTNESS_VARIABILITIES)
@@ -612,31 +647,36 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		if (executor == null)
 			executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
-		File results = Paths
-				.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, DataExporter.RESULT_CSV)
+		File results = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+				Configuration.WORKING_DIRECTORY, DataExporter.RESULT_CSV)
 				.toFile();
 
 		for (int variability : Configuration.ROBUSTNESS_VARIABILITIES)
-			performVariability(variability, Configuration.ROBUSTNESS_GS, results);
+			performVariability(variability, Configuration.ROBUSTNESS_GS,
+					results);
 
 		try {
-			Files.createFile(Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
-					"variability-ended.xml"));
+			Files.createFile(Paths.get(Configuration.PROJECT_BASE_FOLDER,
+					Configuration.WORKING_DIRECTORY, "variability-ended.xml"));
 		} catch (IOException e) {
-			logger.error("Error while creating the file for ending the variability test.", e);
+			logger.error(
+					"Error while creating the file for ending the variability test.",
+					e);
 		}
 
 	}
 
-	private void performVariability(int consideredVariability, int[] consideredG, File append)
-			throws OptimizationException {
+	private void performVariability(int consideredVariability,
+			int[] consideredG, File append) throws OptimizationException {
 
 		if (consideredVariability <= 0) {
-			logger.warn("The variability of {}% is too low, exiting.", consideredVariability);
+			logger.warn("The variability of {}% is too low, exiting.",
+					consideredVariability);
 			return;
 		}
 		if (consideredVariability >= 100) {
-			logger.warn("It's impossible to consider a variability of {}%. Considering a variability of 99% instead.",
+			logger.warn(
+					"It's impossible to consider a variability of {}%. Considering a variability of 99% instead.",
 					consideredVariability);
 			consideredVariability = 99;
 		}
@@ -649,9 +689,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 		String tmpConf = null;
 		try {
-			tmpConf = Files.createTempFile("space4cloud", ".properties").toString();
+			tmpConf = Files.createTempFile("space4cloud", ".properties")
+					.toString();
 		} catch (IOException e) {
-			throw new OptimizationException("Error creating a temporary file", e);
+			throw new OptimizationException("Error creating a temporary file",
+					e);
 		}
 		try {
 			Configuration.saveConfiguration(tmpConf);
@@ -659,16 +701,21 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			throw new OptimizationException("Error saving the configuration", e);
 		}
 
-		String baseWorkingDirectory = Paths.get(Configuration.WORKING_DIRECTORY).toString();
+		String baseWorkingDirectory = Paths
+				.get(Configuration.WORKING_DIRECTORY).toString();
 
-		Path resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY);
+		Path resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+				Configuration.WORKING_DIRECTORY);
 		if (!resultsFolder.toFile().exists()) {
-			logger.error("The results folder (" + resultsFolder.toString() + ") doesn't exists!");
+			logger.error("The results folder (" + resultsFolder.toString()
+					+ ") doesn't exists!");
 			return;
 		}
 
-		File initialSolution = Paths.get(resultsFolder.toString(),
-				Configuration.SOLUTION_LIGHT_FILE_NAME + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+		File initialSolution = Paths.get(
+				resultsFolder.toString(),
+				Configuration.SOLUTION_LIGHT_FILE_NAME
+						+ Configuration.SOLUTION_FILE_EXTENSION).toFile();
 
 		List<String> providers = SolutionMulti.getAllProviders(initialSolution);
 		if (providers.size() != 1 || !providers.get(0).equals("Amazon")) {
@@ -679,8 +726,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		Configuration.SCRUMBLE_ITERS = 2;
 		Configuration.REDISTRIBUTE_WORKLOAD = false;
 		Configuration.USE_PRIVATE_CLOUD = false;
-		Configuration.RESOURCE_ENVIRONMENT_EXTENSION = Paths.get(resultsFolder.toString(),
-				Configuration.SOLUTION_FILE_NAME + "Total" + Configuration.SOLUTION_FILE_EXTENSION).toString();
+		Configuration.RESOURCE_ENVIRONMENT_EXTENSION = Paths.get(
+				resultsFolder.toString(),
+				Configuration.SOLUTION_FILE_NAME + "Total"
+						+ Configuration.SOLUTION_FILE_EXTENSION).toString();
 		// Configuration.CONTRACTOR_TEST = false;
 		boolean contractorTest = Configuration.CONTRACTOR_TEST;
 
@@ -688,11 +737,13 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		File usageModelExt = new File(Configuration.USAGE_MODEL_EXTENSION);
 		int highestPeak = getMaxPopulation(usageModelExt);
 		try {
-			Files.copy(
-					Paths.get(resultsFolder.toString(),
-							Configuration.SOLUTION_FILE_NAME + "Total" + Configuration.SOLUTION_FILE_EXTENSION),
-					Paths.get(resultsFolder.toString(), Configuration.SOLUTION_FILE_NAME + "-" + highestPeak
-							+ Configuration.SOLUTION_FILE_EXTENSION),
+			Files.copy(Paths.get(resultsFolder.toString(),
+					Configuration.SOLUTION_FILE_NAME + "Total"
+							+ Configuration.SOLUTION_FILE_EXTENSION), Paths
+					.get(resultsFolder.toString(),
+							Configuration.SOLUTION_FILE_NAME + "-"
+									+ highestPeak
+									+ Configuration.SOLUTION_FILE_EXTENSION),
 					StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			logger.error("Error when copying and moving the files", e);
@@ -700,11 +751,14 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 		try {
 			double key = 1.0 - (consideredVariability / 100.0);
-			usageModelExts.put((int) Math.round(key * highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
+			usageModelExts.put((int) Math.round(key * highestPeak),
+					generateModifiedUsageModelExt(usageModelExt, key));
 			key = 1.0 + (consideredVariability / 100.0);
-			usageModelExts.put((int) Math.round(key * highestPeak), generateModifiedUsageModelExt(usageModelExt, key));
+			usageModelExts.put((int) Math.round(key * highestPeak),
+					generateModifiedUsageModelExt(usageModelExt, key));
 		} catch (JAXBException | IOException | SAXException e) {
-			throw new OptimizationException("Error creating a modified usage model extension", e);
+			throw new OptimizationException(
+					"Error creating a modified usage model extension", e);
 		}
 
 		Configuration.ROBUSTNESS_VARIABILITIES = new int[] { 0 };
@@ -712,10 +766,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 		try {
 			Configuration.CONSTRAINTS = ConstraintHandler
-					.generateConstraintsForVariabilityTest(new File(Configuration.CONSTRAINTS), initialSolution)
-					.getAbsolutePath();
+					.generateConstraintsForVariabilityTest(
+							new File(Configuration.CONSTRAINTS),
+							initialSolution).getAbsolutePath();
 		} catch (Exception e) {
-			throw new OptimizationException("Error while getting the modified constraints file.", e);
+			throw new OptimizationException(
+					"Error while getting the modified constraints file.", e);
 		}
 
 		// Build a new Optimization Engine engine and an empty initial
@@ -726,17 +782,21 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			File ume = usageModelExts.get(key);
 			Configuration.USAGE_MODEL_EXTENSION = ume.getAbsolutePath();
 
-			Configuration.WORKING_DIRECTORY = Paths.get(baseWorkingDirectory, "" + key).toString();
+			Configuration.WORKING_DIRECTORY = Paths.get(baseWorkingDirectory,
+					"" + key).toString();
 			String tmpConfRun = null;
 			try {
-				tmpConfRun = Files.createTempFile("space4cloud", ".properties").toString();
+				tmpConfRun = Files.createTempFile("space4cloud", ".properties")
+						.toString();
 			} catch (IOException e) {
-				throw new OptimizationException("Error creating a temporary file", e);
+				throw new OptimizationException(
+						"Error creating a temporary file", e);
 			}
 			try {
 				Configuration.saveConfiguration(tmpConfRun);
 			} catch (IOException e) {
-				throw new OptimizationException("Error saving the configuration", e);
+				throw new OptimizationException(
+						"Error saving the configuration", e);
 			}
 
 			Space4Cloud s4c = new Space4Cloud(tmpConfRun);
@@ -745,59 +805,86 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			try {
 				fut.get();
 			} catch (InterruptedException | ExecutionException e) {
-				throw new OptimizationException("Error getting the result from the Future", e);
+				throw new OptimizationException(
+						"Error getting the result from the Future", e);
 			}
 
-			File solution = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
-					Configuration.SOLUTION_LIGHT_FILE_NAME + Configuration.SOLUTION_FILE_EXTENSION).toFile();
+			File solution = Paths.get(
+					Configuration.PROJECT_BASE_FOLDER,
+					Configuration.WORKING_DIRECTORY,
+					Configuration.SOLUTION_LIGHT_FILE_NAME
+							+ Configuration.SOLUTION_FILE_EXTENSION).toFile();
 
 			boolean found = false;
 			while (!found) {
 				if (solution.exists()) {
 					found = true;
 
-					Path performanceResults = Paths.get(solution.getParent(), Configuration.PERFORMANCE_RESULTS_FOLDER);
+					Path performanceResults = Paths.get(solution.getParent(),
+							Configuration.PERFORMANCE_RESULTS_FOLDER);
 					FileUtils.deleteQuietly(performanceResults.toFile());
 
 					// TODO: here
 
 					try {
-						Files.copy(Paths.get(solution.getAbsolutePath()),
-								Paths.get(resultsFolder.toString(),
-										Configuration.SOLUTION_FILE_NAME + "-" + highestPeak + "-" + key
+						Files.copy(
+								Paths.get(solution.getAbsolutePath()),
+								Paths.get(
+										resultsFolder.toString(),
+										Configuration.SOLUTION_FILE_NAME
+												+ "-"
+												+ highestPeak
+												+ "-"
+												+ key
 												+ Configuration.SOLUTION_FILE_EXTENSION),
 								StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
-						throw new OptimizationException("Error copying: " + solution.getAbsolutePath() + " to: "
-								+ resultsFolder.toString() + Configuration.SOLUTION_FILE_NAME + "-" + highestPeak + "-"
-								+ key + Configuration.SOLUTION_FILE_EXTENSION, e);
+						throw new OptimizationException("Error copying: "
+								+ solution.getAbsolutePath() + " to: "
+								+ resultsFolder.toString()
+								+ Configuration.SOLUTION_FILE_NAME + "-"
+								+ highestPeak + "-" + key
+								+ Configuration.SOLUTION_FILE_EXTENSION, e);
 					}
 
 					try {
-						Files.copy(Paths.get(solution.getParent(), "costs.xml"),
-								Paths.get(resultsFolder.toString(), "costs-" + highestPeak + "-" + key + ".xml"),
+						Files.copy(
+								Paths.get(solution.getParent(), "costs.xml"),
+								Paths.get(resultsFolder.toString(), "costs-"
+										+ highestPeak + "-" + key + ".xml"),
 								StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
-						throw new OptimizationException("Error copying: " + solution.getAbsolutePath() + " to: "
-								+ resultsFolder.toString() + Configuration.SOLUTION_FILE_NAME + "-" + highestPeak + "-"
-								+ key + Configuration.SOLUTION_FILE_EXTENSION, e);
+						throw new OptimizationException("Error copying: "
+								+ solution.getAbsolutePath() + " to: "
+								+ resultsFolder.toString()
+								+ Configuration.SOLUTION_FILE_NAME + "-"
+								+ highestPeak + "-" + key
+								+ Configuration.SOLUTION_FILE_EXTENSION, e);
 					}
 
 					if (contractorTest)
 						try {
 							Files.copy(
-									Paths.get(solution.getParent(),
+									Paths.get(
+											solution.getParent(),
 											it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME
 													+ it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
-									Paths.get(resultsFolder.toString(),
+									Paths.get(
+											resultsFolder.toString(),
 											it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME
-													+ "-" + highestPeak + "-" + key
+													+ "-"
+													+ highestPeak
+													+ "-"
+													+ key
 													+ it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
 									StandardCopyOption.REPLACE_EXISTING);
 						} catch (IOException e) {
-							throw new OptimizationException("Error copying: " + solution.getAbsolutePath() + " to: "
-									+ resultsFolder.toString() + Configuration.SOLUTION_FILE_NAME + "-" + highestPeak
-									+ "-" + key + Configuration.SOLUTION_FILE_EXTENSION, e);
+							throw new OptimizationException("Error copying: "
+									+ solution.getAbsolutePath() + " to: "
+									+ resultsFolder.toString()
+									+ Configuration.SOLUTION_FILE_NAME + "-"
+									+ highestPeak + "-" + key
+									+ Configuration.SOLUTION_FILE_EXTENSION, e);
 						}
 				}
 
@@ -814,7 +901,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		try {
 			Configuration.loadConfiguration(tmpConf);
 		} catch (IOException e) {
-			throw new OptimizationException("Error loading the configuration", e);
+			throw new OptimizationException("Error loading the configuration",
+					e);
 		}
 
 		logger.info("Exporting the data in the simplified output format...");
@@ -822,21 +910,29 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		List<File> generatedFiles = new ArrayList<File>();
 
 		for (int g : consideredG) {
-			logger.info("Evaluating with a variability of {} and a g of {}...", consideredVariability, g);
-			generatedFiles.addAll(DataExporter.evaluate(resultsFolder, highestPeak, consideredVariability, g)); // TODO:
-																												// here
-																												// add
-																												// the
-																												// sigma
-																												// value
+			logger.info("Evaluating with a variability of {} and a g of {}...",
+					consideredVariability, g);
+			generatedFiles.addAll(DataExporter.evaluate(resultsFolder,
+					highestPeak, consideredVariability, g)); // TODO:
+																// here
+																// add
+																// the
+																// sigma
+																// value
 		}
 
 		try {
-			DataExporter.robustnessTest(Paths.get(resultsFolder.toString(),
-					Configuration.SOLUTION_FILE_NAME + "-" + highestPeak + Configuration.SOLUTION_FILE_EXTENSION)
-					.toFile(), generatedFiles, append);
+			DataExporter.robustnessTest(
+					Paths.get(
+							resultsFolder.toString(),
+							Configuration.SOLUTION_FILE_NAME + "-"
+									+ highestPeak
+									+ Configuration.SOLUTION_FILE_EXTENSION)
+							.toFile(), generatedFiles, append);
 		} catch (Exception e) {
-			logger.error("Error while exporting the results of the robustness test.", e);
+			logger.error(
+					"Error while exporting the results of the robustness test.",
+					e);
 		}
 
 	}
@@ -871,22 +967,30 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		double x = testFrom, basex = x;
 
 		try {
-			usageModelExtFile = generateModifiedUsageModelExt(usageModelExtFile, x / highestPeak);
+			usageModelExtFile = generateModifiedUsageModelExt(
+					usageModelExtFile, x / highestPeak);
 		} catch (JAXBException | IOException | SAXException e) {
-			throw new RobustnessException("Error generating the mofigied usage model extension", e);
+			throw new RobustnessException(
+					"Error generating the mofigied usage model extension", e);
 		}
-		Configuration.USAGE_MODEL_EXTENSION = usageModelExtFile.getAbsolutePath();
+		Configuration.USAGE_MODEL_EXTENSION = usageModelExtFile
+				.getAbsolutePath();
 
 		try {
 			for (; x <= testTo; x += stepSize) {
-				usageModelExtFiles.put((int) x, generateModifiedUsageModelExt(usageModelExtFile, x / basex));
+				usageModelExtFiles.put(
+						(int) x,
+						generateModifiedUsageModelExt(usageModelExtFile, x
+								/ basex));
 			}
 		} catch (JAXBException | IOException | SAXException e) {
-			throw new RobustnessException("Error generating the mofigied usage model extension", e);
+			throw new RobustnessException(
+					"Error generating the mofigied usage model extension", e);
 		}
 		executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
-		robustnessWindow = new RobustnessProgressWindow(usageModelExtFiles.size());
+		robustnessWindow = new RobustnessProgressWindow(
+				usageModelExtFiles.size());
 
 		robustnessWindow.addPropertyChangeListener(this);
 
@@ -895,8 +999,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			tests = 1;
 		String duration = durationToString(1000 * (attempts * tests) * 5 * 60);
 
-		logger.info("Starting the robustness test, considering each problem " + attempts
-				+ " times (it could take up to " + duration + ")...");
+		logger.info("Starting the robustness test, considering each problem "
+				+ attempts + " times (it could take up to " + duration + ")...");
 
 		StopWatch timer = new StopWatch();
 		timer.start();
@@ -906,12 +1010,15 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 		int terminated = 0;
 
-		Path resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY, "results");
+		Path resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+				Configuration.WORKING_DIRECTORY, "results");
 		int i = 0;
-		while (Files.exists(resultsFolder) && !Configuration
-				.sameConfiguration(Paths.get(resultsFolder.toString(), "space4cloud-bak.properties").toString())) {
-			resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
-					"results-" + i);
+		while (Files.exists(resultsFolder)
+				&& !Configuration.sameConfiguration(Paths.get(
+						resultsFolder.toString(), "space4cloud-bak.properties")
+						.toString())) {
+			resultsFolder = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+					Configuration.WORKING_DIRECTORY, "results-" + i);
 			++i;
 		}
 		try {
@@ -919,25 +1026,31 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		} catch (IOException e) {
 			throw new RobustnessException("Error creating directories", e);
 		}
-		logger.info("The results will be put in this folder: " + resultsFolder.toString());
+		logger.info("The results will be put in this folder: "
+				+ resultsFolder.toString());
 
 		// int step=0;
 		int el = 0;
 
-		String bakConf = Paths.get(resultsFolder.toString(), "space4cloud-bak.properties").toString(); // Files.createTempFile("space4cloud",
-																										// "-bak.properties").toString();
-		String baseWorkingDirectory = Paths.get(Configuration.WORKING_DIRECTORY).toString();
+		String bakConf = Paths.get(resultsFolder.toString(),
+				"space4cloud-bak.properties").toString(); // Files.createTempFile("space4cloud",
+															// "-bak.properties").toString();
+		String baseWorkingDirectory = Paths
+				.get(Configuration.WORKING_DIRECTORY).toString();
 		try {
 			Configuration.saveConfiguration(bakConf);
 		} catch (IOException e) {
 			throw new RobustnessException("Error saving the configuration", e);
 		}
 		try {
-			FileUtils.deleteDirectory(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory,
+			FileUtils.deleteDirectory(Paths.get(
+					Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory,
 					Configuration.PERFORMANCE_RESULTS_FOLDER).toFile());
 		} catch (IOException e) {
-			throw new RobustnessException("Error cleaning directory: " + Paths.get(Configuration.PROJECT_BASE_FOLDER,
-					baseWorkingDirectory, Configuration.PERFORMANCE_RESULTS_FOLDER), e);
+			throw new RobustnessException("Error cleaning directory: "
+					+ Paths.get(Configuration.PROJECT_BASE_FOLDER,
+							baseWorkingDirectory,
+							Configuration.PERFORMANCE_RESULTS_FOLDER), e);
 		}
 		// try {
 		// cleanFolders(Paths.get(Configuration.PROJECT_BASE_FOLDER,
@@ -955,8 +1068,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			Configuration.FUNCTIONALITY = Operation.Optimization;
 
 			try {
-				Files.copy(Paths.get(f.getAbsolutePath()), Paths.get(resultsFolder.toString(), "ume-" + key + ".xml"),
-						StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(
+						Paths.get(f.getAbsolutePath()),
+						Paths.get(resultsFolder.toString(), "ume-" + key
+								+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) {
 			}
 
@@ -966,18 +1081,24 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 			for (int attempt = 1; attempt <= attempts; ++attempt) {
 
-				Configuration.WORKING_DIRECTORY = Paths.get(baseWorkingDirectory, "" + key, "" + attempt).toString();
+				Configuration.WORKING_DIRECTORY = Paths.get(
+						baseWorkingDirectory, "" + key, "" + attempt)
+						.toString();
 				Configuration.RANDOM_SEED = attempt;
 				String tmpConf = null;
 				try {
-					tmpConf = Files.createTempFile("space4cloud", ".properties").toString();
+					tmpConf = Files
+							.createTempFile("space4cloud", ".properties")
+							.toString();
 				} catch (IOException e) {
-					throw new RobustnessException("Error creating a temporary file", e);
+					throw new RobustnessException(
+							"Error creating a temporary file", e);
 				}
 				try {
 					Configuration.saveConfiguration(tmpConf);
 				} catch (IOException e) {
-					throw new RobustnessException("Error saving the configuration", e);
+					throw new RobustnessException(
+							"Error saving the configuration", e);
 				}
 
 				Space4Cloud s4c = new Space4Cloud(tmpConf);
@@ -989,7 +1110,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 				try {
 					fut.get();
 				} catch (InterruptedException | ExecutionException e) {
-					throw new RobustnessException("Error getting the result from the Future", e);
+					throw new RobustnessException(
+							"Error getting the result from the Future", e);
 				}
 
 				{
@@ -998,9 +1120,11 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 					// "" + testValue + File.separator + attempt,
 					// "solution.xml").toFile();
 
-					File g = Paths
-							.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
-									Configuration.SOLUTION_LIGHT_FILE_NAME + Configuration.SOLUTION_FILE_EXTENSION)
+					File g = Paths.get(
+							Configuration.PROJECT_BASE_FOLDER,
+							Configuration.WORKING_DIRECTORY,
+							Configuration.SOLUTION_LIGHT_FILE_NAME
+									+ Configuration.SOLUTION_FILE_EXTENSION)
 							.toFile();
 
 					boolean found = false;
@@ -1010,9 +1134,9 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 							// save the solution
 
-							/////////
+							// ///////
 							// Or don't, because we only need to save the best
-							///////// one.
+							// /////// one.
 
 							// Files.createDirectories(Paths.get(Configuration.PROJECT_BASE_FOLDER,
 							// baseWorkingDirectory, "attempts", "step"+step));
@@ -1029,10 +1153,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 							// all I need
 
 							{
-								Path performanceResults = Paths.get(g.getParent(),
-										Configuration.PERFORMANCE_RESULTS_FOLDER);
+								Path performanceResults = Paths
+										.get(g.getParent(),
+												Configuration.PERFORMANCE_RESULTS_FOLDER);
 
-								FileUtils.deleteQuietly(performanceResults.toFile());
+								FileUtils.deleteQuietly(performanceResults
+										.toFile());
 
 							}
 
@@ -1045,16 +1171,29 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 								bestSolution = g;
 
 								try {
-									Files.copy(Paths.get(bestSolution.getAbsolutePath()),
-											Paths.get(resultsFolder.toString(),
-													Configuration.SOLUTION_FILE_NAME + "-" + key
+									Files.copy(
+											Paths.get(bestSolution
+													.getAbsolutePath()),
+											Paths.get(
+													resultsFolder.toString(),
+													Configuration.SOLUTION_FILE_NAME
+															+ "-"
+															+ key
 															+ Configuration.SOLUTION_FILE_EXTENSION),
 											StandardCopyOption.REPLACE_EXISTING);
 								} catch (IOException e) {
-									throw new RobustnessException("Error copying: " + bestSolution.getAbsolutePath()
-											+ " to: " + resultsFolder.toString() + File.separator
-											+ Configuration.SOLUTION_FILE_NAME + "-" + key
-											+ Configuration.SOLUTION_FILE_EXTENSION, e);
+									throw new RobustnessException(
+											"Error copying: "
+													+ bestSolution
+															.getAbsolutePath()
+													+ " to: "
+													+ resultsFolder.toString()
+													+ File.separator
+													+ Configuration.SOLUTION_FILE_NAME
+													+ "-"
+													+ key
+													+ Configuration.SOLUTION_FILE_EXTENSION,
+											e);
 								}
 
 							}
@@ -1077,71 +1216,97 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 			if (relaxedInitialSolution)
 				try {
-					Files.copy(Paths.get(bestSolution.getParent(), "generated-solution.xml"),
-							Paths.get(resultsFolder.toString(), "generated-solution-" + key + ".xml"),
+					Files.copy(Paths.get(bestSolution.getParent(),
+							"generated-solution.xml"), Paths.get(
+							resultsFolder.toString(), "generated-solution-"
+									+ key + ".xml"),
 							StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
-					throw new RobustnessException("Error copying generated solution: " + bestSolution.getAbsolutePath()
-							+ " to: " + resultsFolder.toString() + File.separator + Configuration.SOLUTION_FILE_NAME
-							+ "-" + key + Configuration.SOLUTION_FILE_EXTENSION, e);
+					throw new RobustnessException(
+							"Error copying generated solution: "
+									+ bestSolution.getAbsolutePath() + " to: "
+									+ resultsFolder.toString() + File.separator
+									+ Configuration.SOLUTION_FILE_NAME + "-"
+									+ key
+									+ Configuration.SOLUTION_FILE_EXTENSION, e);
 				}
 
 			try {
-				Files.copy(Paths.get(bestSolution.getParent(), "costs.xml"),
-						Paths.get(resultsFolder.toString(), "costs-" + key + ".xml"),
-						StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(bestSolution.getParent(), "costs.xml"),
-						Paths.get(bestSolution.getParent(), "costs-" + key + ".xml"),
-						StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(
+						Paths.get(bestSolution.getParent(), "costs.xml"),
+						Paths.get(resultsFolder.toString(), "costs-" + key
+								+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(
+						Paths.get(bestSolution.getParent(), "costs.xml"),
+						Paths.get(bestSolution.getParent(), "costs-" + key
+								+ ".xml"), StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
-				throw new RobustnessException("Error copying costs: " + bestSolution.getAbsolutePath() + " to: "
-						+ resultsFolder.toString() + File.separator + Configuration.SOLUTION_FILE_NAME + "-" + key
+				throw new RobustnessException("Error copying costs: "
+						+ bestSolution.getAbsolutePath() + " to: "
+						+ resultsFolder.toString() + File.separator
+						+ Configuration.SOLUTION_FILE_NAME + "-" + key
 						+ Configuration.SOLUTION_FILE_EXTENSION, e);
 			}
 
 			if (contractorTest)
 				try {
 					Files.copy(
-							Paths.get(bestSolution.getParent(),
+							Paths.get(
+									bestSolution.getParent(),
 									it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME
 											+ it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
-							Paths.get(resultsFolder.toString(),
+							Paths.get(
+									resultsFolder.toString(),
 									it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME
-											+ "-" + key
+											+ "-"
+											+ key
 											+ it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
 							StandardCopyOption.REPLACE_EXISTING);
 					Files.copy(
-							Paths.get(bestSolution.getParent(),
+							Paths.get(
+									bestSolution.getParent(),
 									it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME
 											+ it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
-							Paths.get(bestSolution.getParent(),
+							Paths.get(
+									bestSolution.getParent(),
 									it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME
-											+ "-" + key
+											+ "-"
+											+ key
 											+ it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_EXTENSION),
 							StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
-					throw new RobustnessException("Error copying generated costs: " + bestSolution.getAbsolutePath()
-							+ " to: " + resultsFolder.toString() + File.separator + Configuration.SOLUTION_FILE_NAME
-							+ "-" + key + Configuration.SOLUTION_FILE_EXTENSION, e);
+					throw new RobustnessException(
+							"Error copying generated costs: "
+									+ bestSolution.getAbsolutePath() + " to: "
+									+ resultsFolder.toString() + File.separator
+									+ Configuration.SOLUTION_FILE_NAME + "-"
+									+ key
+									+ Configuration.SOLUTION_FILE_EXTENSION, e);
 				}
 
 			if (robustnessVariability > 0) {
 				try {
-					Files.copy(Paths.get(resultsFolder.toString(), "ume-" + key + ".xml"),
-							Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
-									"ume-" + key + ".xml"),
+					Files.copy(Paths.get(resultsFolder.toString(), "ume-" + key
+							+ ".xml"), Paths.get(
+							Configuration.PROJECT_BASE_FOLDER,
+							Configuration.WORKING_DIRECTORY, "ume-" + key
+									+ ".xml"),
 							StandardCopyOption.REPLACE_EXISTING);
 				} catch (Exception e) {
-					throw new RobustnessException("Error while copying the usage model extensions.", e);
+					throw new RobustnessException(
+							"Error while copying the usage model extensions.",
+							e);
 				}
 
 				try {
 					performVariability();
 				} catch (OptimizationException e) {
-					throw new RobustnessException("Error while performing the variability test.", e);
+					throw new RobustnessException(
+							"Error while performing the variability test.", e);
 				}
 
-				File useless = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
+				File useless = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+						Configuration.WORKING_DIRECTORY,
 						"variability-ended.xml").toFile();
 
 				while (!useless.exists()) {
@@ -1151,20 +1316,29 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 						logger.error("Error while waiting.", e);
 					}
 
-					useless = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
+					useless = Paths.get(Configuration.PROJECT_BASE_FOLDER,
+							Configuration.WORKING_DIRECTORY,
 							"variability-ended.xml").toFile();
 				}
 
 				logger.info("Saving the data generated with the variability test...");
-				List<File> generatedFiles = DataExporter.getAllGeneratedFiles(Paths.get(bestSolution.getParent()));
+				List<File> generatedFiles = DataExporter
+						.getAllGeneratedFiles(Paths.get(bestSolution
+								.getParent()));
 
 				for (File file : generatedFiles)
 					try {
-						Files.copy(file.toPath(), Paths.get(resultsFolder.toString(), file.getName()),
+						Files.copy(
+								file.toPath(),
+								Paths.get(resultsFolder.toString(),
+										file.getName()),
 								StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
-						throw new RobustnessException("Error copying generated evaluation: " + file.getAbsolutePath()
-								+ " to: " + resultsFolder.toString() + File.separator + file.getName(), e);
+						throw new RobustnessException(
+								"Error copying generated evaluation: "
+										+ file.getAbsolutePath() + " to: "
+										+ resultsFolder.toString()
+										+ File.separator + file.getName(), e);
 					}
 
 				File parent = Paths.get(bestSolution.getParent()).toFile();
@@ -1173,32 +1347,44 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 					@Override
 					public boolean accept(File pathname) {
-						return (pathname.getName().startsWith(Configuration.SOLUTION_FILE_NAME + "-" + keyValue + "-"))
-								|| (pathname.getName().startsWith("costs-" + keyValue + "-"))
-								|| (pathname.getName().startsWith(
-										it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME
+						return (pathname.getName()
+								.startsWith(Configuration.SOLUTION_FILE_NAME
+										+ "-" + keyValue + "-"))
+								|| (pathname.getName().startsWith("costs-"
+										+ keyValue + "-"))
+								|| (pathname.getName()
+										.startsWith(it.polimi.modaclouds.space4cloud.contractor4cloud.Configuration.COSTS_FILE_NAME
 												+ "-" + keyValue + "-"));
 					}
 				});
 
 				for (File file : files)
 					try {
-						Files.copy(file.toPath(), Paths.get(resultsFolder.toString(), file.getName()),
+						Files.copy(
+								file.toPath(),
+								Paths.get(resultsFolder.toString(),
+										file.getName()),
 								StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
-						throw new RobustnessException(
-								"Error copying: " + file.getAbsolutePath() + " to: " + resultsFolder.toString(), e);
+						throw new RobustnessException("Error copying: "
+								+ file.getAbsolutePath() + " to: "
+								+ resultsFolder.toString(), e);
 					}
 
-				File robustnessTest = Paths.get(Configuration.PROJECT_BASE_FOLDER, Configuration.WORKING_DIRECTORY,
+				File robustnessTest = Paths.get(
+						Configuration.PROJECT_BASE_FOLDER,
+						Configuration.WORKING_DIRECTORY,
 						DataExporter.RESULT_CSV).toFile();
 				try {
-					Files.copy(robustnessTest.toPath(), Paths.get(resultsFolder.toString(), robustnessTest.getName()),
+					Files.copy(
+							robustnessTest.toPath(),
+							Paths.get(resultsFolder.toString(),
+									robustnessTest.getName()),
 							StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {
-					throw new RobustnessException(
-							"Error copying: " + robustnessTest.getAbsolutePath() + " to: " + resultsFolder.toString(),
-							e);
+					throw new RobustnessException("Error copying: "
+							+ robustnessTest.getAbsolutePath() + " to: "
+							+ resultsFolder.toString(), e);
 				}
 
 			}
@@ -1206,24 +1392,28 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			try {
 				Configuration.loadConfiguration(bakConf);
 			} catch (IOException e) {
-				throw new RobustnessException("Error loading the configuration", e);
+				throw new RobustnessException(
+						"Error loading the configuration", e);
 			}
 
 			terminated++;
 			solutions.add(bestSolution);
 
 			try {
-				robustnessWindow.add(usageModelExtFiles.get(key), solutions.get(el));
+				robustnessWindow.add(usageModelExtFiles.get(key),
+						solutions.get(el));
 				robustnessWindow.setValue(terminated);
-				robustnessWindow
-						.save2png(Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory).toString());
+				robustnessWindow.save2png(Paths
+						.get(Configuration.PROJECT_BASE_FOLDER,
+								baseWorkingDirectory).toString());
 			} catch (JAXBException | SAXException | IOException e) {
 				logger.error("Error showing the results", e);
 			}
 			el++;
 
-			FileUtils.deleteQuietly(
-					Paths.get(Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory, key + "").toFile());
+			FileUtils.deleteQuietly(Paths.get(
+					Configuration.PROJECT_BASE_FOLDER, baseWorkingDirectory,
+					key + "").toFile());
 
 		}
 
@@ -1234,7 +1424,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 		String actualDuration = durationToString(timer.getTime());
 
-		logger.info("Expected time of execution: " + duration + ", actual time of execution: " + actualDuration);
+		logger.info("Expected time of execution: " + duration
+				+ ", actual time of execution: " + actualDuration);
 
 		robustnessWindow.testEnded();
 
@@ -1262,8 +1453,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 	private void refreshProject() {
 		try {
-			ResourcesPlugin.getWorkspace().getRoot().getProject(Configuration.getProjectName())
-					.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+			ResourcesPlugin
+					.getWorkspace()
+					.getRoot()
+					.getProject(Configuration.getProjectName())
+					.refreshLocal(IResource.DEPTH_INFINITE,
+							new NullProgressMonitor());
 		} catch (CoreException e) {
 			logger.error("Could not refresh the project", e);
 		}
@@ -1272,7 +1467,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 	private static File generateModifiedUsageModelExt(File f, double deltaRatio)
 			throws JAXBException, IOException, SAXException {
-		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(), UsageModelExtensions.class);
+		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
+				UsageModelExtensions.class);
 
 		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
 		if (cw != null)
@@ -1292,19 +1488,22 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		File g;
 
 		g = File.createTempFile("ume" + s + "-", ".xml");
-		XMLHelper.serialize(umes, UsageModelExtensions.class, new FileOutputStream(g));
+		XMLHelper.serialize(umes, UsageModelExtensions.class,
+				new FileOutputStream(g));
 		logger.info(g.getAbsolutePath());
 		return g;
 
 	}
 
 	@SuppressWarnings("unused")
-	private static File generateModifiedUsageModelExtAddingTheAugmentedPeak(File f, double deltaRatio)
-			throws JAXBException, IOException, SAXException {
+	private static File generateModifiedUsageModelExtAddingTheAugmentedPeak(
+			File f, double deltaRatio) throws JAXBException, IOException,
+			SAXException {
 
 		int addendum = (int) (getMaxPopulation(f) * (deltaRatio - 1));
 
-		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(), UsageModelExtensions.class);
+		UsageModelExtensions umes = XMLHelper.deserialize(f.toURI().toURL(),
+				UsageModelExtensions.class);
 
 		ClosedWorkload cw = umes.getUsageModelExtension().getClosedWorkload();
 		if (cw != null)
@@ -1324,7 +1523,8 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 		File g;
 
 		g = File.createTempFile("ume" + s + "-", ".xml");
-		XMLHelper.serialize(umes, UsageModelExtensions.class, new FileOutputStream(g));
+		XMLHelper.serialize(umes, UsageModelExtensions.class,
+				new FileOutputStream(g));
 		logger.info(g.getAbsolutePath());
 		return g;
 
@@ -1333,9 +1533,12 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	public static int getMaxPopulation(File usageModelExtension) {
 		UsageModelExtensions umes = null;
 		try {
-			umes = XMLHelper.deserialize(usageModelExtension.toURI().toURL(), UsageModelExtensions.class);
+			umes = XMLHelper.deserialize(usageModelExtension.toURI().toURL(),
+					UsageModelExtensions.class);
 		} catch (Exception e) {
-			logger.error("Error while opening the file for getting the maximum population.", e);
+			logger.error(
+					"Error while opening the file for getting the maximum population.",
+					e);
 			return -1;
 		}
 
@@ -1368,8 +1571,10 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		// when the worker with the engine has done
-		if (evt.getSource().equals(engine) && ((evt.getPropertyName().equals("state")
-				&& evt.getNewValue() == StateValue.DONE) || evt.getPropertyName().equals("finished")) && !engine.isCancelled()) {
+		if (evt.getSource().equals(engine)
+				&& ((evt.getPropertyName().equals("state") && evt.getNewValue() == StateValue.DONE) || evt
+						.getPropertyName().equals("finished"))
+				&& !engine.isCancelled()) {
 			consoleLogger.info("Optimization ended");
 			processEnded = true;
 			pcs.firePropertyChange(OPTIMIZATION_ENDED, false, true);
@@ -1379,15 +1584,20 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 
 			cleanResources();
 		}
-		if (evt.getSource().equals(engine) && evt.getPropertyName().equals(OptimizationEngine.BEST_SOLUTION_UPDATED)) {
-			pcs.firePropertyChange(Space4Cloud.BEST_SOLUTION_UPDATED, false, true);
+		if (evt.getSource().equals(engine)
+				&& evt.getPropertyName().equals(
+						OptimizationEngine.BEST_SOLUTION_UPDATED)) {
+			pcs.firePropertyChange(Space4Cloud.BEST_SOLUTION_UPDATED, false,
+					true);
 		}
 		// forward progress to window
-		else if (evt.getSource().equals(engine) && evt.getPropertyName().equals("progress")) {
+		else if (evt.getSource().equals(engine)
+				&& evt.getPropertyName().equals("progress")) {
 			consoleLogger.info("Progress: " + (int) evt.getNewValue());
 		}
 		// stop the optimization process if the user closes the window
-		else if (evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("WindowClosed")
+		else if (evt.getSource().equals(progressWindow)
+				&& evt.getPropertyName().equals("WindowClosed")
 				&& !processEnded) {
 			if (engine != null) {
 				engine.exportSolution();
@@ -1396,12 +1606,14 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			consoleLogger.info("Optimization Process cancelled by the user");
 			pcs.firePropertyChange(OPTIMIZATION_ENDED, false, true);
 			cleanResources();
-		} else if (evt.getSource().equals(progressWindow) && evt.getPropertyName().equals("InspectSolution")) {
+		} else if (evt.getSource().equals(progressWindow)
+				&& evt.getPropertyName().equals("InspectSolution")) {
 			if (engine != null)
 				engine.inspect();
 
 			// stop the optimization process if the user closes the window
-		} else if (evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("WindowClosed")
+		} else if (evt.getSource().equals(robustnessWindow)
+				&& evt.getPropertyName().equals("WindowClosed")
 				&& !processEnded) {
 			consoleLogger.info("Robustness Process cancelled by the user");
 			pcs.firePropertyChange(ROBUSTNESS_CLOSED, false, true);
@@ -1410,25 +1622,31 @@ public class Space4Cloud extends Thread implements PropertyChangeListener {
 			} catch (Exception e) {
 			}
 			cleanResources();
-		} else if (evt.getSource().equals(robustnessWindow) && evt.getPropertyName().equals("RobustnessEnded")) {
+		} else if (evt.getSource().equals(robustnessWindow)
+				&& evt.getPropertyName().equals("RobustnessEnded")) {
 			consoleLogger.info("Robustness ended");
 			processEnded = true;
 			pcs.firePropertyChange(ROBUSTNESS_ENDED, false, true);
 			if (!batch)
 				robustnessWindow.signalCompletion();
 			cleanResources();
-		} else if (evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("WindowClosed")
+		} else if (evt.getSource().equals(assesmentWindow)
+				&& evt.getPropertyName().equals("WindowClosed")
 				&& !processEnded) {
 			consoleLogger.info("Assessment window closed");
 			pcs.firePropertyChange(ASSESSMENT_CLOSED, false, true);
 			cleanResources();
-		} else if (evt.getSource().equals(assesmentWindow) && evt.getPropertyName().equals("AssessmentEnded")) {
+		} else if (evt.getSource().equals(assesmentWindow)
+				&& evt.getPropertyName().equals("AssessmentEnded")) {
 			consoleLogger.info("Assessment ended");
 			processEnded = true;
 			pcs.firePropertyChange(ASSESSMENT_ENDED, false, true);
 			cleanResources();
-		} else if (progressWindow != null && (evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_WINDOW_CLOSED)
-				|| evt.getPropertyName().equals(BestSolutionExplorer.PROPERTY_ADDED_VALUE))) {
+		} else if (progressWindow != null
+				&& (evt.getPropertyName().equals(
+						BestSolutionExplorer.PROPERTY_WINDOW_CLOSED) || evt
+						.getPropertyName().equals(
+								BestSolutionExplorer.PROPERTY_ADDED_VALUE))) {
 			progressWindow.propertyChange(evt);
 		}
 

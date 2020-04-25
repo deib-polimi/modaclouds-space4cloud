@@ -87,6 +87,18 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     public int getMaxIterations() {
         return MAX_ITERATIONS;
     }
+    
+    protected void showConfiguration() {
+		logger.info("Running DPSO optimization with parameters:");
+		logger.info("Swarm size: " + SWARM_SIZE);
+		logger.info("Cognitive scale: " + COGNITIVE_SCALE);
+		logger.info("Social scale: " + SOCIAL_SCALE);
+		logger.info("Max convergence percentage: " + MAX_CONVERGENCE_PERCENTAGE);
+		logger.info("CR parameter: " + CR);
+		logger.info("Initial inertia: "+ INITIAL_INERTIA);
+		logger.info("Max number of iterations: "+ MAX_ITERATIONS);
+		logger.info("MakeFeasible routing: "+USE_MAKEFEASIBLE);
+	}
 
     /**
      * @throws OptimizationException
