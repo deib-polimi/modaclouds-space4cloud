@@ -32,6 +32,7 @@ import org.apache.commons.lang.time.StopWatch;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Michele Ciavotta
@@ -40,6 +41,8 @@ import java.io.IOException;
  */
 public class OptimizationEngineDPSO extends OptimizationEngine implements PropertyChangeListener {
 
+    private static double MIN_DISTANCE = 1;
+    private static int MAX_TIME = 120;
     public static int SWARM_SIZE; //default = 5;
     public static double COGNITIVE_SCALE; // default = 1.0;
     public static double SOCIAL_SCALE; // default = 1.0;
@@ -53,7 +56,8 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
     private ParticleSwarm swarm;
     private double temp;
     private double convergencePercentage;
-	private int USE_MAKEFEASIBLE;
+    private int USE_MAKEFEASIBLE;
+    private double averageDistance;
 
     /**
      * Instantiates a new opt engine using as timer the provided one. The
@@ -88,38 +92,6 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         return MAX_ITERATIONS;
     }
     
-    protected void showConfiguration() {
-		logger.info("Running DPSO optimization with parameters:");
-		logger.info("Swarm size: " + SWARM_SIZE);
-		logger.info("Cognitive scale: " + COGNITIVE_SCALE);
-		logger.info("Social scale: " + SOCIAL_SCALE);
-		logger.info("Max convergence percentage: " + MAX_CONVERGENCE_PERCENTAGE);
-		logger.info("CR parameter: " + CR);
-		logger.info("Initial inertia: "+ INITIAL_INERTIA);
-		logger.info("Max number of iterations: "+ MAX_ITERATIONS);
-		logger.info("MakeFeasible routing: "+USE_MAKEFEASIBLE);
-	}
-
-    /**
-     * @throws OptimizationException
-     */
-    private void logEvolutionInfo() throws OptimizationException {
-        logger.info("PSO Iteration: " + iteration);
-        logger.info("PSO Convergence: " + convergencePercentage);
-        logger.info("PSO temperature: " + temp);
-        logger.info("PSO inertia: " + inertia);
-        logger.info("PSO avg fitness: " + swarm.getAverageFitness());
-        try {
-            logger.info("PSO avg distance: " + swarm.getAverageDistance());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
-        }
-        logger.info("PSO avg velocity: " + swarm.getAverageVelocityModule());
-        // logger.trace( currentSolution.showStatus());
-    }
-
-
     /**
      * This is the bulk of the optimization process in case of a single provider
      * problem.
@@ -151,16 +123,16 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         } // evaluate the current
 
         try {
-			swarm = ParticleSwarm.createRandomFeasibleSwarm(this);
-			
+            swarm = ParticleSwarm.createRandomFeasibleSwarm(this);
+
             if (!swarm.checkRamConstraints()) {
                 logger.debug("Ram constraints not satisfied");
             }
-			
-			
-		} catch (EvaluationException e1) {
-			throw new OptimizationException("", "createRandomFeasibleSwarm", e1);
-		} // all the elements of the swarm are evaluated in creation
+
+
+        } catch (EvaluationException e1) {
+            throw new OptimizationException("", "createRandomFeasibleSwarm", e1);
+        } // all the elements of the swarm are evaluated in creation
         if (swarm.isBestParticleUpdated())
             updateBestSolution(swarm.getSwarmBestParticle().getPosition()); //update best solution and charts
 
@@ -172,7 +144,7 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
 
         //if the total number of iteration has not been reached and so the max coverage percentage
-        while (!isMaxNumberOfIterations() && !isMaxConvergencePercentage()) {
+        while (!isMaxNumberOfIterations() && !isMaxConvergencePercentage() && !isMaxTime() && !isMinDistance()) {
 
             logEvolutionInfo();
 
@@ -231,14 +203,60 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         return -1;
 
     }
-    
-	public void makeFeasible(SolutionMulti sol) throws OptimizationException {
-		if (USE_MAKEFEASIBLE == 1) {
-			for (Solution s : sol.getAll())
-				makeFeasible(sol, s.getProvider());	
-		}
 
-	}
+    public boolean isMaxTime() {
+        timer.split();
+        timer.unsplit();
+        long timeNow = timer.getSplitTime();
+        return TimeUnit.MILLISECONDS.toMinutes(timeNow) >= this.MAX_TIME;
+    }
+
+    public void makeFeasible(SolutionMulti sol) throws OptimizationException {
+        if (USE_MAKEFEASIBLE == 1) {
+            for (Solution s : sol.getAll())
+                makeFeasible(sol, s.getProvider());
+        }
+
+    }
+
+    /**
+     * @throws OptimizationException
+     */
+    private void logEvolutionInfo() throws OptimizationException {
+        logger.info("PSO Iteration: " + iteration);
+        logger.info("PSO Convergence: " + convergencePercentage);
+        logger.info("PSO temperature: " + temp);
+        logger.info("PSO inertia: " + inertia);
+        logger.info("PSO avg fitness: " + swarm.getAverageFitness());
+        logger.info("PSO avg distance: " + averageDistance);
+        logger.info("PSO avg velocity: " + swarm.getAverageVelocityModule());
+        // logger.trace( currentSolution.showStatus());
+    }
+
+    private boolean isMinDistance() throws OptimizationException {
+
+        try {
+            this.averageDistance = swarm.getAverageDistance();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
+        }
+        return this.averageDistance < this.MIN_DISTANCE;
+    }
+
+    protected void showConfiguration() {
+        logger.info("Running DPSO optimization with parameters:");
+        logger.info("Swarm size: " + SWARM_SIZE);
+        logger.info("Cognitive scale: " + COGNITIVE_SCALE);
+        logger.info("Social scale: " + SOCIAL_SCALE);
+        logger.info("Max convergence percentage: " + MAX_CONVERGENCE_PERCENTAGE);
+        logger.info("CR parameter: " + CR);
+        logger.info("Initial inertia: " + INITIAL_INERTIA);
+        logger.info("Max number of iterations: " + MAX_ITERATIONS);
+        logger.info("MakeFeasible routing: " + USE_MAKEFEASIBLE);
+        logger.info("Max time allowed: " + MAX_TIME);
+        logger.info("Min distance allowed: " + MIN_DISTANCE);
+    }
 
     protected void loadConfiguration() {
         super.loadConfiguration();
@@ -250,6 +268,9 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
         INITIAL_INERTIA = Configuration.INITIAL_INERTIA;
         MAX_ITERATIONS = Configuration.MAX_ITERATIONS;
         USE_MAKEFEASIBLE = Configuration.USE_MAKEFEASIBLE;
+        MAX_TIME = Configuration.MAX_TIME;
+        MIN_DISTANCE = Configuration.MIN_DISTANCE;
+
     }
 
 

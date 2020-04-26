@@ -75,7 +75,9 @@ public class Configuration {
 	public static double INITIAL_INERTIA = 0.9;
 	public static int MAX_ITERATIONS = 100;
 	public static int USE_MAKEFEASIBLE = 0;
-	public static int USE_DPSO=0;
+	public static int MAX_TIME = 120;
+	public static int MIN_DISTANCE = 1;
+	public static int USE_DPSO = 0;
 
 
 	// For the robustness test:
@@ -273,24 +275,31 @@ public class Configuration {
 		if(read != null && !read.isEmpty())
 			INITIAL_INERTIA = Double.parseDouble(prop.getProperty("INITIAL_INERTIA"));
 
-		read= prop.getProperty("MAX_ITERATIONS");
-		if(read != null && !read.isEmpty())
+		read = prop.getProperty("MAX_ITERATIONS");
+		if (read != null && !read.isEmpty())
 			MAX_ITERATIONS = Integer.parseInt(prop.getProperty("MAX_ITERATIONS"));
 
-		read= prop.getProperty("USE_MAKEFEASIBLE");
-		if(read != null && !read.isEmpty())
+		read = prop.getProperty("USE_MAKEFEASIBLE");
+		if (read != null && !read.isEmpty())
 			USE_MAKEFEASIBLE = Integer.parseInt(prop.getProperty("USE_MAKEFEASIBLE"));
-		read= prop.getProperty("USE_DPSO");
-		if(read != null && !read.isEmpty())
+		read = prop.getProperty("USE_DPSO");
+		if (read != null && !read.isEmpty())
 			USE_DPSO = Integer.parseInt(prop.getProperty("USE_DPSO"));
 
-		//end DPSO section
-		
-		
-		
-        it.polimi.modaclouds.space4cloud.milp.Configuration.loadConfiguration(filePath);
+		read = prop.getProperty("MAX_TIME");
+		if (read != null && !read.isEmpty())
+			MAX_TIME = Integer.parseInt(prop.getProperty("MAX_TIME"));
 
-    }
+		read = prop.getProperty("MIN_DISTANCE");
+		if (read != null && !read.isEmpty())
+			MIN_DISTANCE = Integer.parseInt(prop.getProperty("MIN_DISTANCE"));
+
+		//end DPSO section
+
+
+		it.polimi.modaclouds.space4cloud.milp.Configuration.loadConfiguration(filePath);
+
+	}
 
     /**
      * Checks if the configuration is valid returning a list of errors
@@ -532,24 +541,26 @@ public class Configuration {
         prop.put("GENERATE_DESIGN_TO_RUNTIME_FILES",
                 Boolean.toString(GENERATE_DESIGN_TO_RUNTIME_FILES));
         prop.put("FUNCTIONALITY_TO_TIER_FILE", FUNCTIONALITY_TO_TIER_FILE);
-        prop.put("TIMESTEP_DURATION", Integer.toString(TIMESTEP_DURATION));
-        prop.put("OPTIMIZATION_WINDOW_LENGTH",
-                Integer.toString(OPTIMIZATION_WINDOW_LENGTH));
+		prop.put("TIMESTEP_DURATION", Integer.toString(TIMESTEP_DURATION));
+		prop.put("OPTIMIZATION_WINDOW_LENGTH",
+				Integer.toString(OPTIMIZATION_WINDOW_LENGTH));
 
-        prop.put("BENCHMARK", BENCHMARK.toString());
-        
-        prop.put("USE_MAKEFEASIBLE", Integer.toString(USE_MAKEFEASIBLE));
-        prop.put("USE_DPSO", Integer.toString(USE_DPSO));
-        prop.put("SWARM_SIZE", Integer.toString(SWARM_SIZE));
-        prop.put("MAX_ITERATIONS", Integer.toString(MAX_ITERATIONS));
-        
+		prop.put("BENCHMARK", BENCHMARK.toString());
 
-        it.polimi.modaclouds.space4cloud.milp.Configuration
-                .addToConfiguration(prop);
+		prop.put("USE_MAKEFEASIBLE", Integer.toString(USE_MAKEFEASIBLE));
+		prop.put("USE_DPSO", Integer.toString(USE_DPSO));
+		prop.put("SWARM_SIZE", Integer.toString(SWARM_SIZE));
+		prop.put("MAX_ITERATIONS", Integer.toString(MAX_ITERATIONS));
+		prop.put("MAX_TIME", Integer.toString(MAX_TIME));
+		prop.put("MIN_DISTANCE", Integer.toString(MIN_DISTANCE));
 
-        prop.store(fos, "SPACE4Clouds configuration properties");
-        fos.flush();
-    }
+
+		it.polimi.modaclouds.space4cloud.milp.Configuration
+				.addToConfiguration(prop);
+
+		prop.store(fos, "SPACE4Clouds configuration properties");
+		fos.flush();
+	}
 
     // Solvers
     public enum Solver {

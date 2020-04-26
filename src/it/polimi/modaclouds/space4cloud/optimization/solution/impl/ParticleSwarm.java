@@ -236,6 +236,7 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
         List<Particle> particleToRemove = new ArrayList<>();
         List<Particle> particleToAdd = new ArrayList<>();
         for (Particle oldParticle : particleList) {
+            if (engine.isMaxTime()) break;
             Particle newParticle = oldParticle.clone();
             newParticle.updatePosition();
             engine.getEvalServer().EvaluateSolution(newParticle.getPosition());
@@ -252,8 +253,8 @@ public class ParticleSwarm implements Cloneable, Serializable, Iterable<Particle
                 oldParticle.setGenerationIteration(iteration);
             }
         }
-        particleList.removeAll(particleToRemove);
-        particleList.addAll(particleToAdd);
+        if (particleToRemove.size() > 0) particleList.removeAll(particleToRemove);
+        if (particleToAdd.size() > 0) particleList.addAll(particleToAdd);
     }
 
     /**
