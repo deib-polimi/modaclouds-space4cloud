@@ -104,12 +104,17 @@ public class Particle implements Cloneable, Serializable, Comparable<Particle> {
             for (Tier tier : application.getTiers()) {
                 Tier otherTier = otherApplication.getTierById(tier.getId());
                 if (otherTier == null)
+                {
+                	logger.error("Error tier null");
                     throw new Exception("Error trying to calculate the distance between two particles");
+                }
                 List<CloudService> resList = resMapPerSolutionPerTier.get(sol.getProvider()).get(tier.getId());
                 int pos = findPosCloudResource(resList, tier.getCloudService().getResourceName());
                 int otherPos = findPosCloudResource(resList, otherTier.getCloudService().getResourceName());
-                if (pos == -1 || otherPos == -1)
-                    throw new Exception("Error trying to calculate the distance between two particles: resource not found");
+                if (pos == -1 || otherPos == -1){
+                	logger.error("Error resource not found");
+                	throw new Exception("Error trying to calculate the distance between two particles: resource not found");
+                }
                 dist += Math.abs(pos - otherPos);
             }
 

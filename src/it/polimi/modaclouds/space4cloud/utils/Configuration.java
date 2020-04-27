@@ -75,8 +75,8 @@ public class Configuration {
 	public static double INITIAL_INERTIA = 0.9;
 	public static int MAX_ITERATIONS = 100;
 	public static int USE_MAKEFEASIBLE = 0;
-	public static int MAX_TIME = 120;
-	public static int MIN_DISTANCE = 1;
+	public static int MAX_TIME = 60;
+	public static int MIN_DISTANCE = 10;
 	public static int USE_DPSO = 0;
 
 

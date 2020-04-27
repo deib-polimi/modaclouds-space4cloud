@@ -206,7 +206,6 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
 
     public boolean isMaxTime() {
         timer.split();
-        timer.unsplit();
         long timeNow = timer.getSplitTime();
         return TimeUnit.MILLISECONDS.toMinutes(timeNow) >= this.MAX_TIME;
     }
@@ -239,7 +238,8 @@ public class OptimizationEngineDPSO extends OptimizationEngine implements Proper
             this.averageDistance = swarm.getAverageDistance();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
+            //throw new OptimizationException("Problem with the calculation fo the average distance in the swarm");
+            return false;
         }
         return this.averageDistance < this.MIN_DISTANCE;
     }

@@ -151,7 +151,7 @@ public class ParticleFactory {
                 List<CloudService> resList = engine.getDataBaseHandler().getSameService(originalCloudResource, sol.getRegion());
 
                 //just in case
-                if (!resList.contains(originalCloudResource)) resList.add(originalCloudResource);
+                //if (!resList.contains(originalCloudResource)) resList.add(originalCloudResource);
 
                 // filter resources according to architectural constraints
                 try {
