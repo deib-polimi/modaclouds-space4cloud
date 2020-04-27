@@ -88,7 +88,8 @@ public class Instance implements Cloneable, Serializable {
 
 
 	public boolean changeValues(String tierId,
-			List<String> propertyNames, List<Object> propertyValues) {
+								List<String> propertyNames,
+								List<Object> propertyValues) {
 
 		if (tierId != null) {
 			try {

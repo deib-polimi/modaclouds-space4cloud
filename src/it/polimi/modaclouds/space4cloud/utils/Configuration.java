@@ -1,32 +1,21 @@
 package it.polimi.modaclouds.space4cloud.utils;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
+import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
+import it.polimi.modaclouds.space4cloud.gui.CloudBurstingPanel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Matcher;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import it.polimi.modaclouds.space4cloud.db.DataHandlerFactory;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnectionFailureExteption;
-import it.polimi.modaclouds.space4cloud.db.DatabaseConnector;
-import it.polimi.modaclouds.space4cloud.gui.CloudBurstingPanel;
 
 public class Configuration {
 
@@ -77,6 +66,20 @@ public class Configuration {
 	public static int RANDOM_SEED = 1;
 	public static String RANDOM_ENV_FILE = "";
 
+	// for the DPSO
+	public static int SWARM_SIZE = 10;
+	public static double COGNITIVE_SCALE = 0.5;
+	public static double SOCIAL_SCALE = 0.5;
+	public static double MAX_CONVERGENCE_PERCENTAGE = 0.95;
+	public static double SA_CR = 0.8;
+	public static double INITIAL_INERTIA = 0.9;
+	public static int MAX_ITERATIONS = 100;
+	public static int USE_MAKEFEASIBLE = 0;
+	public static int MAX_TIME = 60;
+	public static int MIN_DISTANCE = 10;
+	public static int USE_DPSO = 0;
+
+
 	// For the robustness test:
 	public static int ROBUSTNESS_PEAK_FROM = 100;
 	public static int ROBUSTNESS_PEAK_TO = 10000;
@@ -108,158 +111,6 @@ public class Configuration {
 	public static int TIMESTEP_DURATION = 5;
 	
 	public static Benchmark BENCHMARK = Benchmark.None;
-
-	// Operations
-	public static enum Operation {
-		Assessment, Optimization, Robustness;
-
-		public static Operation getById(int id) {
-			Operation[] values = Operation.values();
-			if (id < 0)
-				id = 0;
-			else if (id >= values.length)
-				id = values.length - 1;
-			return values[id];
-		}
-
-		public static int size() {
-			return Operation.values().length;
-		}
-
-	}
-
-	// Solvers
-	public static enum Solver {
-		LINE, LQNS;
-
-		public static Solver getById(int id) {
-			Solver[] values = Solver.values();
-			if (id < 0)
-				id = 0;
-			else if (id >= values.length)
-				id = values.length - 1;
-			return values[id];
-		}
-
-		public static int size() {
-			return Solver.values().length;
-		}
-
-	}
-
-	// Selection Policies
-	public static enum Policy {
-		Random, First, Longest, Utilization;
-
-		public static Policy getById(int id) {
-			Policy[] values = Policy.values();
-			if (id < 0)
-				id = 0;
-			else if (id >= values.length)
-				id = values.length - 1;
-			return values[id];
-		}
-
-		public static int size() {
-			return Policy.values().length;
-		}
-
-	}
-
-	// Benchmarks
-	public static enum Benchmark {
-		None, DaCapo, Filebench;
-
-		public static Benchmark getById(int id) {
-			Benchmark[] values = Benchmark.values();
-			if (id < 0)
-				id = 0;
-			else if (id >= values.length)
-				id = values.length - 1;
-			return values[id];
-		}
-
-		public static int size() {
-			return Benchmark.values().length;
-		}
-
-	}
-
-	public static void saveConfiguration(String filePath) throws IOException {
-		FileOutputStream fos = new FileOutputStream(filePath);
-		Properties prop = new Properties();
-		prop.put("PALLADIO_REPOSITORY_MODEL", PALLADIO_REPOSITORY_MODEL);
-		prop.put("PALLADIO_SYSTEM_MODEL", PALLADIO_SYSTEM_MODEL);
-		prop.put("PALLADIO_ALLOCATION_MODEL", PALLADIO_ALLOCATION_MODEL);
-		prop.put("PALLADIO_USAGE_MODEL", PALLADIO_USAGE_MODEL);
-		prop.put("PALLADIO_RESOURCE_MODEL", PALLADIO_RESOURCE_MODEL);
-		prop.put("USAGE_MODEL_EXTENSION", USAGE_MODEL_EXTENSION);
-		prop.put("RESOURCE_ENVIRONMENT_EXTENSION",
-				RESOURCE_ENVIRONMENT_EXTENSION);
-		prop.put("MULTI_CLOUD_EXTENSION", MULTI_CLOUD_EXTENSION);
-		prop.put("CONSTRAINTS", CONSTRAINTS);
-		prop.put("PROJECT_BASE_FOLDER", PROJECT_BASE_FOLDER);
-		prop.put("DB_CONNECTION_FILE", DB_CONNECTION_FILE);
-		prop.put("FUNCTIONALITY", FUNCTIONALITY.toString());
-		prop.put("SOLVER", SOLVER.toString());
-		prop.put("LINE_PROP_FILE", LINE_PROP_FILE);
-		prop.put("RANDOM_ENV_FILE", RANDOM_ENV_FILE);
-		prop.put("WORKING_DIRECTORY", WORKING_DIRECTORY);
-		prop.put("TABU_MEMORY_SIZE", Integer.toString(TABU_MEMORY_SIZE));
-		prop.put("SCRUMBLE_ITERS", Integer.toString(SCRUMBLE_ITERS));
-		prop.put("FEASIBILITY_ITERS", Integer.toString(FEASIBILITY_ITERS));
-		prop.put("SCALE_IN_CONV_ITERS", Integer.toString(SCALE_IN_CONV_ITERS));
-		prop.put("SCALE_IN_FACTOR", Double.toString(SCALE_IN_FACTOR));
-		prop.put("SCALE_IN_ITERS", Integer.toString(SCALE_IN_ITERS));
-		prop.put("SELECTION_POLICY", SELECTION_POLICY.toString());
-		prop.put("RELAXED_INITIAL_SOLUTION",
-				Boolean.toString(RELAXED_INITIAL_SOLUTION));
-		prop.put("SSH_HOST", SSH_HOST);
-		prop.put("SSH_USER_NAME", SSH_USER_NAME);
-		prop.put("SSH_PASSWORD", SSH_PASSWORD);
-		prop.put("RANDOM_SEED", Integer.toString(RANDOM_SEED));
-		prop.put("ROBUSTNESS_PEAK_FROM", Integer.toString(ROBUSTNESS_PEAK_FROM));
-		prop.put("ROBUSTNESS_PEAK_TO", Integer.toString(ROBUSTNESS_PEAK_TO));
-		prop.put("ROBUSTNESS_STEP_SIZE", Integer.toString(ROBUSTNESS_STEP_SIZE));
-		prop.put("ROBUSTNESS_ATTEMPTS", Integer.toString(ROBUSTNESS_ATTEMPTS));
-
-		prop.put("REDISTRIBUTE_WORKLOAD",
-				Boolean.toString(REDISTRIBUTE_WORKLOAD));
-
-		prop.put("USE_PRIVATE_CLOUD", Boolean.toString(USE_PRIVATE_CLOUD));
-		prop.put("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
-		// prop.put("ROBUSTNESS_VARIABILITY",
-		// Integer.toString(ROBUSTNESS_VARIABILITY));
-		String tmp = "";
-		for (int i = 0; i < ROBUSTNESS_VARIABILITIES.length; ++i)
-			tmp += ROBUSTNESS_VARIABILITIES[i] + ";";
-		prop.put("ROBUSTNESS_VARIABILITY", tmp.substring(0, tmp.length() - 1));
-		prop.put("ROBUSTNESS_Q", Double.toString(ROBUSTNESS_Q));
-		// prop.put("ROBUSTNESS_G", Integer.toString(ROBUSTNESS_G));
-		tmp = "";
-		for (int i = 0; i < ROBUSTNESS_GS.length; ++i)
-			tmp += ROBUSTNESS_GS[i] + ";";
-		prop.put("ROBUSTNESS_G", tmp.substring(0, tmp.length() - 1));
-
-		prop.put("ROBUSTNESS_H", Integer.toString(ROBUSTNESS_H));
-
-		prop.put("CONTRACTOR_TEST", Boolean.toString(CONTRACTOR_TEST));
-
-		prop.put("GENERATE_DESIGN_TO_RUNTIME_FILES",
-				Boolean.toString(GENERATE_DESIGN_TO_RUNTIME_FILES));
-		prop.put("FUNCTIONALITY_TO_TIER_FILE", FUNCTIONALITY_TO_TIER_FILE);
-		prop.put("TIMESTEP_DURATION", Integer.toString(TIMESTEP_DURATION));
-		prop.put("OPTIMIZATION_WINDOW_LENGTH",
-				Integer.toString(OPTIMIZATION_WINDOW_LENGTH));
-		
-		prop.put("BENCHMARK", BENCHMARK.toString());
-
-		it.polimi.modaclouds.space4cloud.milp.Configuration
-				.addToConfiguration(prop);
-
-		prop.store(fos, "SPACE4Clouds configuration properties");
-		fos.flush();
-	}
 
 	public static void loadConfiguration(String filePath) throws IOException {
 		Properties prop = new Properties();
@@ -307,7 +158,7 @@ public class Configuration {
 
 		BENCHMARK = Benchmark.valueOf(prop.getProperty("BENCHMARK",
 				BENCHMARK.toString()));
-		
+
 		try {
 			TABU_MEMORY_SIZE = Integer.parseInt(prop
 					.getProperty("TABU_MEMORY_SIZE"));
@@ -326,6 +177,10 @@ public class Configuration {
 			RELAXED_INITIAL_SOLUTION = Boolean.parseBoolean(prop
 					.getProperty("RELAXED_INITIAL_SOLUTION"));
 			RANDOM_SEED = Integer.parseInt(prop.getProperty("RANDOM_SEED"));
+
+
+
+
 			ROBUSTNESS_PEAK_FROM = Integer.parseInt(prop.getProperty(
 					"ROBUSTNESS_PEAK_FROM",
 					String.valueOf(ROBUSTNESS_PEAK_FROM)));
@@ -384,42 +239,73 @@ public class Configuration {
 					.getProperty("GENERATE_DESIGN_TO_RUNTIME_FILES",
 							String.valueOf(GENERATE_DESIGN_TO_RUNTIME_FILES)));
 			TIMESTEP_DURATION = Integer.parseInt(prop.getProperty(
-					"TIMESTEP_DURATION", String.valueOf(TIMESTEP_DURATION)));
-			OPTIMIZATION_WINDOW_LENGTH = Integer.parseInt(prop.getProperty(
-					"OPTIMIZATION_WINDOW_LENGTH",
-					String.valueOf(OPTIMIZATION_WINDOW_LENGTH)));
-		} catch (NumberFormatException e) {
-			logger.warn(
-					"Part of the configuration was invalid, reverted the invalid value to the default one.",
-					e);
-		}
+                    "TIMESTEP_DURATION", String.valueOf(TIMESTEP_DURATION)));
+            OPTIMIZATION_WINDOW_LENGTH = Integer.parseInt(prop.getProperty(
+                    "OPTIMIZATION_WINDOW_LENGTH",
+                    String.valueOf(OPTIMIZATION_WINDOW_LENGTH)));
+        } catch (NumberFormatException e) {
+            logger.warn(
+                    "Part of the configuration was invalid, reverted the invalid value to the default one.",
+                    e);
+        }
+		// FOR THE DPSO
+		
+		String read; 
+		read= prop.getProperty("SWARM_SIZE");
+		if(read != null && !read.isEmpty())
+			SWARM_SIZE = Integer.parseInt(prop.getProperty("SWARM_SIZE"));
 
-		it.polimi.modaclouds.space4cloud.milp.Configuration
-				.loadConfiguration(filePath);
+		read= prop.getProperty("COGNITIVE_SCALE");
+		if(read != null && !read.isEmpty())
+			COGNITIVE_SCALE = Double.parseDouble(prop.getProperty("COGNITIVE_SCALE"));
+
+		read= prop.getProperty("SOCIAL_SCALE");
+		if(read != null && !read.isEmpty())
+			SOCIAL_SCALE = Double.parseDouble(prop.getProperty("SOCIAL_SCALE"));
+		
+		read= prop.getProperty("MAX_CONVERGENCE_PERCENTAGE");
+		if(read != null && !read.isEmpty())
+			MAX_CONVERGENCE_PERCENTAGE = Double.parseDouble(prop.getProperty("MAX_CONVERGENCE_PERCENTAGE"));
+
+		read= prop.getProperty("SA_CR");
+		if(read != null && !read.isEmpty())
+			SA_CR = Double.parseDouble(prop.getProperty("SA_CR"));
+		
+		read= prop.getProperty("INITIAL_INERTIA");
+		if(read != null && !read.isEmpty())
+			INITIAL_INERTIA = Double.parseDouble(prop.getProperty("INITIAL_INERTIA"));
+
+		read = prop.getProperty("MAX_ITERATIONS");
+		if (read != null && !read.isEmpty())
+			MAX_ITERATIONS = Integer.parseInt(prop.getProperty("MAX_ITERATIONS"));
+
+		read = prop.getProperty("USE_MAKEFEASIBLE");
+		if (read != null && !read.isEmpty())
+			USE_MAKEFEASIBLE = Integer.parseInt(prop.getProperty("USE_MAKEFEASIBLE"));
+		read = prop.getProperty("USE_DPSO");
+		if (read != null && !read.isEmpty())
+			USE_DPSO = Integer.parseInt(prop.getProperty("USE_DPSO"));
+
+		read = prop.getProperty("MAX_TIME");
+		if (read != null && !read.isEmpty())
+			MAX_TIME = Integer.parseInt(prop.getProperty("MAX_TIME"));
+
+		read = prop.getProperty("MIN_DISTANCE");
+		if (read != null && !read.isEmpty())
+			MIN_DISTANCE = Integer.parseInt(prop.getProperty("MIN_DISTANCE"));
+
+		//end DPSO section
+
+
+		it.polimi.modaclouds.space4cloud.milp.Configuration.loadConfiguration(filePath);
 
 	}
 
-	/**
-	 * Retrieves the name of the project. This method assumes that the project
-	 * has the same name of the folder in which it is contained.
-	 * 
-	 * @return the name of the eclipse project
-	 */
-	public static String getProjectName() {
-		if (PROJECT_BASE_FOLDER != null)
-			return Paths.get(PROJECT_BASE_FOLDER).getFileName().toString();
-		return null;
-	}
-
-	public static boolean isRunningLocally() {
-		return (SSH_HOST.equals("localhost") || SSH_HOST.equals("127.0.0.1"));
-	}
-
-	/**
-	 * Checks if the configuration is valid returning a list of errors
-	 * 
-	 * @return
-	 */
+    /**
+     * Checks if the configuration is valid returning a list of errors
+     *
+     * @return
+     */
 	public static List<String> checkValidity() {
 		ArrayList<String> errors = new ArrayList<String>();
 
@@ -437,18 +323,17 @@ public class Configuration {
 		// check extensions
 		if (fileNotSpecifiedORNotExist(USAGE_MODEL_EXTENSION))
 			errors.add("The usage model extension has not been specified");
-		if (fileNotSpecifiedORNotExist(RESOURCE_ENVIRONMENT_EXTENSION))
-			errors.add("The resource environment extension has not been specified");
-		if (fileNotSpecifiedORNotExist(CONSTRAINTS))
-			errors.add("The constraint file has not been specified");
-		// check functionality and the solver
-		if (fileNotSpecifiedORNotExist(DB_CONNECTION_FILE))
-			errors.add("The database connection file has not been specified");
-		if (SOLVER == Solver.LINE && fileNotSpecifiedORNotExist(LINE_PROP_FILE))
-			errors.add("The LINE configuration file has not been specified");
-		// check the optimization if it has been selected
-		if (FUNCTIONALITY == Operation.Optimization
-				|| FUNCTIONALITY == Operation.Robustness) {
+        if (fileNotSpecifiedORNotExist(RESOURCE_ENVIRONMENT_EXTENSION))
+            errors.add("The resource environment extension has not been specified");
+        if (fileNotSpecifiedORNotExist(CONSTRAINTS))
+            errors.add("The constraint file has not been specified");
+        // check functionality and the solver
+        if (fileNotSpecifiedORNotExist(DB_CONNECTION_FILE))
+            errors.add("The database connection file has not been specified");
+        if (SOLVER == Solver.LINE && fileNotSpecifiedORNotExist(LINE_PROP_FILE))
+            errors.add("The LINE configuration file has not been specified");
+        // check the optimization if it has been selected
+        if (FUNCTIONALITY == Operation.Optimization || FUNCTIONALITY == Operation.Robustness) {
 
 //			if (TABU_MEMORY_SIZE < 1)
 //				errors.add("The tabu memory size must be a positive number");
@@ -464,15 +349,14 @@ public class Configuration {
 //				errors.add("The number of scale in convergence iterations must be positive");
 
 			// check the initial solution generation
-			if ((RELAXED_INITIAL_SOLUTION || REDISTRIBUTE_WORKLOAD
-					|| USE_PRIVATE_CLOUD || CONTRACTOR_TEST)
-					&& !isRunningLocally()) {
-				if (SSH_USER_NAME == null || SSH_USER_NAME.isEmpty())
-					errors.add("The user name for SSH connection has to be provided to perform the initial solution generation");
-				if (SSH_PASSWORD == null || SSH_PASSWORD.isEmpty())
-					errors.add("The password for SSH connection has to be provided to perform the initial solution generation");
-				if (SSH_HOST == null || SSH_HOST.isEmpty())
-					errors.add("The host for SSH connection has to be provided to perform the initial solution generation");
+            if ((RELAXED_INITIAL_SOLUTION || REDISTRIBUTE_WORKLOAD
+                    || USE_PRIVATE_CLOUD || CONTRACTOR_TEST) && !isRunningLocally()) {
+                if (SSH_USER_NAME == null || SSH_USER_NAME.isEmpty())
+                    errors.add("The user name for SSH connection has to be provided to perform the initial solution generation");
+                if (SSH_PASSWORD == null || SSH_PASSWORD.isEmpty())
+                    errors.add("The password for SSH connection has to be provided to perform the initial solution generation");
+                if (SSH_HOST == null || SSH_HOST.isEmpty())
+                    errors.add("The host for SSH connection has to be provided to perform the initial solution generation");
 			}
 
 		}
@@ -506,89 +390,264 @@ public class Configuration {
 		return errors;
 	}
 
-	private static boolean fileNotSpecifiedORNotExist(String filePath) {
-		return filePath == null || filePath.isEmpty()
-				|| !Paths.get(filePath).toFile().exists();
-	}
+    public static void flushLog() {
+        logger.debug("PALLADIO_REPOSITORY_MODEL: {}", PALLADIO_REPOSITORY_MODEL);
+        logger.debug("PALLADIO_SYSTEM_MODEL: {}", PALLADIO_SYSTEM_MODEL);
+        logger.debug("PALLADIO_ALLOCATION_MODEL: {}", PALLADIO_ALLOCATION_MODEL);
+        logger.debug("PALLADIO_USAGE_MODEL: {}", PALLADIO_USAGE_MODEL);
+        logger.debug("PALLADIO_RESOURCE_MODEL: {}", PALLADIO_RESOURCE_MODEL);
+        logger.debug("USAGE_MODEL_EXTENSION: {}", USAGE_MODEL_EXTENSION);
+        logger.debug("RESOURCE_ENVIRONMENT_EXTENSION: {}",
+                RESOURCE_ENVIRONMENT_EXTENSION);
+        logger.debug("MULTI_CLOUD_EXTENSION: {}", MULTI_CLOUD_EXTENSION);
+        logger.debug("CONSTRAINTS: {}", CONSTRAINTS);
+        logger.debug("PROJECT_BASE_FOLDER: {}", PROJECT_BASE_FOLDER);
 
-	public static void flushLog() {
-		logger.debug("PALLADIO_REPOSITORY_MODEL: {}", PALLADIO_REPOSITORY_MODEL);
-		logger.debug("PALLADIO_SYSTEM_MODEL: {}", PALLADIO_SYSTEM_MODEL);
-		logger.debug("PALLADIO_ALLOCATION_MODEL: {}", PALLADIO_ALLOCATION_MODEL);
-		logger.debug("PALLADIO_USAGE_MODEL: {}", PALLADIO_USAGE_MODEL);
-		logger.debug("PALLADIO_RESOURCE_MODEL: {}", PALLADIO_RESOURCE_MODEL);
-		logger.debug("USAGE_MODEL_EXTENSION: {}", USAGE_MODEL_EXTENSION);
-		logger.debug("RESOURCE_ENVIRONMENT_EXTENSION: {}",
-				RESOURCE_ENVIRONMENT_EXTENSION);
-		logger.debug("MULTI_CLOUD_EXTENSION: {}", MULTI_CLOUD_EXTENSION);
-		logger.debug("CONSTRAINTS: {}", CONSTRAINTS);
-		logger.debug("PROJECT_BASE_FOLDER: {}", PROJECT_BASE_FOLDER);
+        logger.debug("DB_CONNECTION_FILE: {}", DB_CONNECTION_FILE);
+        logger.debug("FUNCTIONALITY: {}", FUNCTIONALITY.toString());
+        logger.debug("SOLVER: {}", SOLVER.toString());
+        logger.debug("LINE_PROP_FILE: {}", LINE_PROP_FILE);
+        logger.debug("RANDOM_ENV_FILE: {}", RANDOM_ENV_FILE);
+        logger.debug("WORKING_DIRECTORY: {}", WORKING_DIRECTORY);
+        logger.debug("TABU_MEMORY_SIZE: {}", TABU_MEMORY_SIZE);
+        logger.debug("SCRUMBLE_ITERS: {}", SCRUMBLE_ITERS);
+        logger.debug("FEASIBILITY_ITERS: {}",
+                FEASIBILITY_ITERS);
+        logger.debug("SCALE_IN_CONV_ITERS: {}",
+                SCALE_IN_CONV_ITERS);
+        logger.debug("SCALE_IN_FACTOR: {}", SCALE_IN_FACTOR);
+        logger.debug("SCALE_IN_ITERS: {}", SCALE_IN_ITERS);
+        logger.debug("SELECTION_POLICY: {}", SELECTION_POLICY.toString());
+        logger.debug("RELAXED_INITIAL_SOLUTION: {}",
+                RELAXED_INITIAL_SOLUTION);
+        logger.debug("SSH_HOST: {}", SSH_HOST);
+        logger.debug("SSH_USER_NAME: {}", SSH_USER_NAME);
+        logger.debug("SSH_PASSWORD: {}", SSH_PASSWORD);
+        logger.debug("RANDOM_SEED: {}", RANDOM_SEED);
+        logger.debug("ROBUSTNESS_PEAK_FROM: {}",
+                ROBUSTNESS_PEAK_FROM);
+        logger.debug("ROBUSTNESS_PEAK_TO: {}",
+                ROBUSTNESS_PEAK_TO);
+        logger.debug("ROBUSTNESS_STEP_SIZE: {}",
+                ROBUSTNESS_STEP_SIZE);
+        logger.debug("ROBUSTNESS_ATTEMPTS: {}",
+                ROBUSTNESS_ATTEMPTS);
+        for (int ROBUSTNESS_VARIABILITY : ROBUSTNESS_VARIABILITIES)
+            logger.debug("ROBUSTNESS_VARIABILITY: {}",
+                    ROBUSTNESS_VARIABILITY);
+        logger.debug("ROBUSTNESS_Q: {}", ROBUSTNESS_Q);
+        for (int ROBUSTNESS_G : ROBUSTNESS_GS)
+            logger.debug("ROBUSTNESS_G: {}", ROBUSTNESS_G);
+        logger.debug("ROBUSTNESS_H: {}", ROBUSTNESS_H);
+        logger.debug("REDISTRIBUTE_WORKLOAD: {}",
+                REDISTRIBUTE_WORKLOAD);
+        logger.debug("USE_PRIVATE_CLOUD: {}",
+                USE_PRIVATE_CLOUD);
+        logger.debug("PRIVATE_CLOUD_HOSTS: {}", PRIVATE_CLOUD_HOSTS);
+        // logger.debug("PRIVATE_CLOUD_HOSTS_TMP: " + PRIVATE_CLOUD_HOSTS_TMP);
 
-		logger.debug("DB_CONNECTION_FILE: {}", DB_CONNECTION_FILE);
-		logger.debug("FUNCTIONALITY: {}", FUNCTIONALITY.toString());
-		logger.debug("SOLVER: {}", SOLVER.toString());
-		logger.debug("LINE_PROP_FILE: {}", LINE_PROP_FILE);
-		logger.debug("RANDOM_ENV_FILE: {}", RANDOM_ENV_FILE);
-		logger.debug("WORKING_DIRECTORY: {}", WORKING_DIRECTORY);
-		logger.debug("TABU_MEMORY_SIZE: {}", Integer.toString(TABU_MEMORY_SIZE));
-		logger.debug("SCRUMBLE_ITERS: {}", Integer.toString(SCRUMBLE_ITERS));
-		logger.debug("FEASIBILITY_ITERS: {}",
-				Integer.toString(FEASIBILITY_ITERS));
-		logger.debug("SCALE_IN_CONV_ITERS: {}",
-				Integer.toString(SCALE_IN_CONV_ITERS));
-		logger.debug("SCALE_IN_FACTOR: {}", Double.toString(SCALE_IN_FACTOR));
-		logger.debug("SCALE_IN_ITERS: {}", Integer.toString(SCALE_IN_ITERS));
-		logger.debug("SELECTION_POLICY: {}", SELECTION_POLICY.toString());
-		logger.debug("RELAXED_INITIAL_SOLUTION: {}",
-				Boolean.toString(RELAXED_INITIAL_SOLUTION));
-		logger.debug("SSH_HOST: {}", SSH_HOST);
-		logger.debug("SSH_USER_NAME: {}", SSH_USER_NAME);
-		logger.debug("SSH_PASSWORD: {}", SSH_PASSWORD);
-		logger.debug("RANDOM_SEED: {}", Integer.toString(RANDOM_SEED));
-		logger.debug("ROBUSTNESS_PEAK_FROM: {}",
-				Integer.toString(ROBUSTNESS_PEAK_FROM));
-		logger.debug("ROBUSTNESS_PEAK_TO: {}",
-				Integer.toString(ROBUSTNESS_PEAK_TO));
-		logger.debug("ROBUSTNESS_STEP_SIZE: {}",
-				Integer.toString(ROBUSTNESS_STEP_SIZE));
-		logger.debug("ROBUSTNESS_ATTEMPTS: {}",
-				Integer.toString(ROBUSTNESS_ATTEMPTS));
-		for (int ROBUSTNESS_VARIABILITY : ROBUSTNESS_VARIABILITIES)
-			logger.debug("ROBUSTNESS_VARIABILITY: {}",
-					Integer.toString(ROBUSTNESS_VARIABILITY));
-		logger.debug("ROBUSTNESS_Q: {}", Double.toString(ROBUSTNESS_Q));
-		for (int ROBUSTNESS_G : ROBUSTNESS_GS)
-			logger.debug("ROBUSTNESS_G: {}", Integer.toString(ROBUSTNESS_G));
-		logger.debug("ROBUSTNESS_H: {}", Integer.toString(ROBUSTNESS_H));
-		logger.debug("REDISTRIBUTE_WORKLOAD: {}",
-				Boolean.toString(REDISTRIBUTE_WORKLOAD));
-		logger.debug("USE_PRIVATE_CLOUD: {}",
-				Boolean.toString(USE_PRIVATE_CLOUD));
-		logger.debug("PRIVATE_CLOUD_HOSTS: {}", PRIVATE_CLOUD_HOSTS);
-		// logger.debug("PRIVATE_CLOUD_HOSTS_TMP: " + PRIVATE_CLOUD_HOSTS_TMP);
+        logger.debug("CONTRACTOR_TEST: {}", CONTRACTOR_TEST);
 
-		logger.debug("CONTRACTOR_TEST: {}", Boolean.toString(CONTRACTOR_TEST));
+        logger.debug("GENERATE_DESIGN_TO_RUNTIME_FILES: {}",
+                GENERATE_DESIGN_TO_RUNTIME_FILES);
+        logger.debug("FUNCTIONALITY_TO_TIER_FILE: {}",
+                FUNCTIONALITY_TO_TIER_FILE);
+        logger.debug("OPTIMIZATION_WINDOW_LENGTH: {}",
+                OPTIMIZATION_WINDOW_LENGTH);
+        logger.debug("TIMESTEP_DURATION: {}",
+                TIMESTEP_DURATION);
+        logger.debug("BENCHMARK: {}", BENCHMARK.toString());
+    }
 
-		logger.debug("GENERATE_DESIGN_TO_RUNTIME_FILES: {}",
-				Boolean.toString(GENERATE_DESIGN_TO_RUNTIME_FILES));
-		logger.debug("FUNCTIONALITY_TO_TIER_FILE: {}",
-				FUNCTIONALITY_TO_TIER_FILE);
-		logger.debug("OPTIMIZATION_WINDOW_LENGTH: {}",
+    // Operations
+    public enum Operation {
+        Assessment, Optimization, Robustness;
+
+        public static Operation getById(int id) {
+            Operation[] values = Operation.values();
+            if (id < 0)
+                id = 0;
+            else if (id >= values.length)
+                id = values.length - 1;
+            return values[id];
+        }
+
+        public static int size() {
+            return Operation.values().length;
+        }
+
+    }
+
+    public static void saveConfiguration(String filePath) throws IOException {
+        FileOutputStream fos = new FileOutputStream(filePath);
+        Properties prop = new Properties();
+        prop.put("PALLADIO_REPOSITORY_MODEL", PALLADIO_REPOSITORY_MODEL);
+        prop.put("PALLADIO_SYSTEM_MODEL", PALLADIO_SYSTEM_MODEL);
+        prop.put("PALLADIO_ALLOCATION_MODEL", PALLADIO_ALLOCATION_MODEL);
+        prop.put("PALLADIO_USAGE_MODEL", PALLADIO_USAGE_MODEL);
+        prop.put("PALLADIO_RESOURCE_MODEL", PALLADIO_RESOURCE_MODEL);
+        prop.put("USAGE_MODEL_EXTENSION", USAGE_MODEL_EXTENSION);
+        prop.put("RESOURCE_ENVIRONMENT_EXTENSION",
+                RESOURCE_ENVIRONMENT_EXTENSION);
+        prop.put("MULTI_CLOUD_EXTENSION", MULTI_CLOUD_EXTENSION);
+        prop.put("CONSTRAINTS", CONSTRAINTS);
+        prop.put("PROJECT_BASE_FOLDER", PROJECT_BASE_FOLDER);
+        prop.put("DB_CONNECTION_FILE", DB_CONNECTION_FILE);
+        prop.put("FUNCTIONALITY", FUNCTIONALITY.toString());
+        prop.put("SOLVER", SOLVER.toString());
+        prop.put("LINE_PROP_FILE", LINE_PROP_FILE);
+        prop.put("RANDOM_ENV_FILE", RANDOM_ENV_FILE);
+        prop.put("WORKING_DIRECTORY", WORKING_DIRECTORY);
+        prop.put("TABU_MEMORY_SIZE", Integer.toString(TABU_MEMORY_SIZE));
+        prop.put("SCRUMBLE_ITERS", Integer.toString(SCRUMBLE_ITERS));
+        prop.put("FEASIBILITY_ITERS", Integer.toString(FEASIBILITY_ITERS));
+        prop.put("SCALE_IN_CONV_ITERS", Integer.toString(SCALE_IN_CONV_ITERS));
+        prop.put("SCALE_IN_FACTOR", Double.toString(SCALE_IN_FACTOR));
+        prop.put("SCALE_IN_ITERS", Integer.toString(SCALE_IN_ITERS));
+        prop.put("SELECTION_POLICY", SELECTION_POLICY.toString());
+        prop.put("RELAXED_INITIAL_SOLUTION",
+                Boolean.toString(RELAXED_INITIAL_SOLUTION));
+        prop.put("SSH_HOST", SSH_HOST);
+        prop.put("SSH_USER_NAME", SSH_USER_NAME);
+        prop.put("SSH_PASSWORD", SSH_PASSWORD);
+        prop.put("RANDOM_SEED", Integer.toString(RANDOM_SEED));
+        prop.put("ROBUSTNESS_PEAK_FROM", Integer.toString(ROBUSTNESS_PEAK_FROM));
+        prop.put("ROBUSTNESS_PEAK_TO", Integer.toString(ROBUSTNESS_PEAK_TO));
+        prop.put("ROBUSTNESS_STEP_SIZE", Integer.toString(ROBUSTNESS_STEP_SIZE));
+        prop.put("ROBUSTNESS_ATTEMPTS", Integer.toString(ROBUSTNESS_ATTEMPTS));
+
+        prop.put("REDISTRIBUTE_WORKLOAD",
+                Boolean.toString(REDISTRIBUTE_WORKLOAD));
+
+        prop.put("USE_PRIVATE_CLOUD", Boolean.toString(USE_PRIVATE_CLOUD));
+        prop.put("PRIVATE_CLOUD_HOSTS", PRIVATE_CLOUD_HOSTS);
+        // prop.put("ROBUSTNESS_VARIABILITY",
+        // Integer.toString(ROBUSTNESS_VARIABILITY));
+        String tmp = "";
+        for (int i = 0; i < ROBUSTNESS_VARIABILITIES.length; ++i)
+            tmp += ROBUSTNESS_VARIABILITIES[i] + ";";
+        prop.put("ROBUSTNESS_VARIABILITY", tmp.substring(0, tmp.length() - 1));
+        prop.put("ROBUSTNESS_Q", Double.toString(ROBUSTNESS_Q));
+        // prop.put("ROBUSTNESS_G", Integer.toString(ROBUSTNESS_G));
+        tmp = "";
+        for (int i = 0; i < ROBUSTNESS_GS.length; ++i)
+            tmp += ROBUSTNESS_GS[i] + ";";
+        prop.put("ROBUSTNESS_G", tmp.substring(0, tmp.length() - 1));
+
+        prop.put("ROBUSTNESS_H", Integer.toString(ROBUSTNESS_H));
+
+        prop.put("CONTRACTOR_TEST", Boolean.toString(CONTRACTOR_TEST));
+
+        prop.put("GENERATE_DESIGN_TO_RUNTIME_FILES",
+                Boolean.toString(GENERATE_DESIGN_TO_RUNTIME_FILES));
+        prop.put("FUNCTIONALITY_TO_TIER_FILE", FUNCTIONALITY_TO_TIER_FILE);
+		prop.put("TIMESTEP_DURATION", Integer.toString(TIMESTEP_DURATION));
+		prop.put("OPTIMIZATION_WINDOW_LENGTH",
 				Integer.toString(OPTIMIZATION_WINDOW_LENGTH));
-		logger.debug("TIMESTEP_DURATION: {}",
-				Integer.toString(TIMESTEP_DURATION));
-		logger.debug("BENCHMARK: {}", BENCHMARK.toString());
+
+		prop.put("BENCHMARK", BENCHMARK.toString());
+
+		prop.put("USE_MAKEFEASIBLE", Integer.toString(USE_MAKEFEASIBLE));
+		prop.put("USE_DPSO", Integer.toString(USE_DPSO));
+		prop.put("SWARM_SIZE", Integer.toString(SWARM_SIZE));
+		prop.put("MAX_ITERATIONS", Integer.toString(MAX_ITERATIONS));
+		prop.put("MAX_TIME", Integer.toString(MAX_TIME));
+		prop.put("MIN_DISTANCE", Integer.toString(MIN_DISTANCE));
+
+
+		it.polimi.modaclouds.space4cloud.milp.Configuration
+				.addToConfiguration(prop);
+
+		prop.store(fos, "SPACE4Clouds configuration properties");
+		fos.flush();
 	}
 
-	/**
-	 * Checks if the configuration in the given properties file is the same as
-	 * the actual configuration.
-	 * 
-	 * @param filePath
-	 *            The path to the properties file
-	 * @return true if the configuration are identical
-	 */
-	public static boolean sameConfiguration(String filePath) {
+    // Solvers
+    public enum Solver {
+        LINE, LQNS;
+
+        public static Solver getById(int id) {
+            Solver[] values = Solver.values();
+            if (id < 0)
+                id = 0;
+            else if (id >= values.length)
+                id = values.length - 1;
+            return values[id];
+        }
+
+        public static int size() {
+            return Solver.values().length;
+        }
+
+    }
+
+    /**
+     * Retrieves the name of the project. This method assumes that the project
+     * has the same name of the folder in which it is contained.
+     *
+     * @return the name of the eclipse project
+     */
+    public static String getProjectName() {
+        if (PROJECT_BASE_FOLDER != null)
+            return Paths.get(PROJECT_BASE_FOLDER).getFileName().toString();
+        return null;
+    }
+
+    public static boolean isRunningLocally() {
+        return (SSH_HOST.equals("localhost") || SSH_HOST.equals("127.0.0.1"));
+    }
+
+    // Selection Policies
+    public enum Policy {
+        Random, First, Longest, Utilization;
+
+        public static Policy getById(int id) {
+            Policy[] values = Policy.values();
+            if (id < 0)
+                id = 0;
+            else if (id >= values.length)
+                id = values.length - 1;
+            return values[id];
+        }
+
+        public static int size() {
+            return Policy.values().length;
+        }
+
+    }
+
+    private static boolean fileNotSpecifiedORNotExist(String filePath) {
+        return filePath == null || filePath.isEmpty()
+                || !Paths.get(filePath).toFile().exists();
+    }
+
+    // Benchmarks
+    public enum Benchmark {
+        None, DaCapo, Filebench;
+
+        public static Benchmark getById(int id) {
+            Benchmark[] values = Benchmark.values();
+            if (id < 0)
+                id = 0;
+            else if (id >= values.length)
+                id = values.length - 1;
+            return values[id];
+        }
+
+        public static int size() {
+            return Benchmark.values().length;
+        }
+
+    }
+
+    /**
+     * Checks if the configuration in the given properties file is the same as
+     * the actual configuration.
+     *
+     * @param filePath The path to the properties file
+     * @return true if the configuration are identical
+     */
+    public static boolean sameConfiguration(String filePath) {
 		// Notice that the method only checks the values in the properties file,
 		// thus if only one property is set
 		// with the same value, the result is true. This is because I suppose

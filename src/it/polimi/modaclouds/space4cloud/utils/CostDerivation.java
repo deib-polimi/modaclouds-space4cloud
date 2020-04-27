@@ -147,8 +147,7 @@ public class CostDerivation {
 	 * @see CostProfile
 	 * @see AllocationProfile
 	 */
-	private double deriveCosts(List<Cost> lc, CostProfile cp, Element costList,
-			AllocationSpecification[] as) {
+	private double deriveCosts(List<Cost> lc, CostProfile cp, Element costList, AllocationSpecification[] as) {
 		Element el;
 		double cost = 0.0, temp;
 
@@ -313,8 +312,7 @@ public class CostDerivation {
 	 * @see ExtendedResourceContainer
 	 * @see CloudPlatform
 	 */
-	private void deriveCostsForCloudPlatform(ExtendedResourceContainer erc,
-			CloudPlatform cp) {
+	private void deriveCostsForCloudPlatform(ExtendedResourceContainer erc, CloudPlatform cp) {
 		List<Cost> lc = cp.getHasCost();
 		CostProfile costp = cp.getHasCostProfile();
 		List<CloudResource> lcr = cp.getRunsOnCloudResource();
