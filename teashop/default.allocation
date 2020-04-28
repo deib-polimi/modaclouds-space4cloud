@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<allocation:Allocation xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:allocation="http://sdq.ipd.uka.de/PalladioComponentModel/Allocation/5.0" id="_JiPBICHdEd6lJo4DCALHMw" entityName="defaultAllocation">
+  <targetResourceEnvironment_Allocation href="My.resourceenvironment#/"/>
+  <system_Allocation href="default.system#_yhDxIMhrEeKON4DtRoKCMw"/>
+  <allocationContexts_Allocation id="_IUSUoHOXEeqM8s1pzBtFzg" entityName="Allocation_webUI &lt;webUi>">
+    <resourceContainer_AllocationContext href="My.resourceenvironment#_-5lnsHOJEeqM8s1pzBtFzg"/>
+    <assemblyContext_AllocationContext href="default.system#_VCgbEHOUEeqM8s1pzBtFzg"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_KBVFQHOXEeqM8s1pzBtFzg" entityName="Allocation_auth &lt;Auth>">
+    <resourceContainer_AllocationContext href="My.resourceenvironment#_B8hNMHOKEeqM8s1pzBtFzg"/>
+    <assemblyContext_AllocationContext href="default.system#_4zBGgHOTEeqM8s1pzBtFzg"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_KyUdUHOXEeqM8s1pzBtFzg" entityName="Allocation_registry &lt;Registry>">
+    <resourceContainer_AllocationContext href="My.resourceenvironment#_GNvKwHOKEeqM8s1pzBtFzg"/>
+    <assemblyContext_AllocationContext href="default.system#_Q3LqIHOUEeqM8s1pzBtFzg"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_Lp17MHOXEeqM8s1pzBtFzg" entityName="Allocation_imageProvider &lt;ImageProvider>">
+    <resourceContainer_AllocationContext href="My.resourceenvironment#_JsH9MHOKEeqM8s1pzBtFzg"/>
+    <assemblyContext_AllocationContext href="default.system#_CRRwsHOUEeqM8s1pzBtFzg"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_MaeG4HOXEeqM8s1pzBtFzg" entityName="Allocation_persistence &lt;Persistence>">
+    <resourceContainer_AllocationContext href="My.resourceenvironment#_PVq_oHOKEeqM8s1pzBtFzg"/>
+    <assemblyContext_AllocationContext href="default.system#_HbJNgHOUEeqM8s1pzBtFzg"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_NMojoHOXEeqM8s1pzBtFzg" entityName="Allocation_recommender &lt;Recommender>">
+    <resourceContainer_AllocationContext href="My.resourceenvironment#_UFb6YHOKEeqM8s1pzBtFzg"/>
+    <assemblyContext_AllocationContext href="default.system#_ObTdkHOUEeqM8s1pzBtFzg"/>
+  </allocationContexts_Allocation>
+</allocation:Allocation>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system:System xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:composition="http://sdq.ipd.uka.de/PalladioComponentModel/Core/Composition/5.0" xmlns:repository="http://sdq.ipd.uka.de/PalladioComponentModel/Repository/5.0" xmlns:system="http://sdq.ipd.uka.de/PalladioComponentModel/System/5.0" id="_yhDxIMhrEeKON4DtRoKCMw" entityName="defaultSystem">
+  <assemblyContexts__ComposedStructure id="_4zBGgHOTEeqM8s1pzBtFzg" entityName="auth">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="default.repository#_XFr8IHOGEeqM8s1pzBtFzg"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="_CRRwsHOUEeqM8s1pzBtFzg" entityName="imageProvider">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="default.repository#_ebUF4HOGEeqM8s1pzBtFzg"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="_HbJNgHOUEeqM8s1pzBtFzg" entityName="persistence">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="default.repository#_cYR3IHOGEeqM8s1pzBtFzg"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="_ObTdkHOUEeqM8s1pzBtFzg" entityName="recommender">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="default.repository#_kJi0AHOGEeqM8s1pzBtFzg"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="_Q3LqIHOUEeqM8s1pzBtFzg" entityName="registry">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="default.repository#_aAcdEHOGEeqM8s1pzBtFzg"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="_VCgbEHOUEeqM8s1pzBtFzg" entityName="webUI">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="default.repository#_Qck6IHOGEeqM8s1pzBtFzg"/>
+  </assemblyContexts__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_jBCyhHOUEeqM8s1pzBtFzg" outerProvidedRole_ProvidedDelegationConnector="_7BUiAMhrEeKON4DtRoKCMw" assemblyContext_ProvidedDelegationConnector="_VCgbEHOUEeqM8s1pzBtFzg">
+    <innerProvidedRole_ProvidedDelegationConnector href="default.repository#_U48XwHOGEeqM8s1pzBtFzg"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:AssemblyConnector" id="_sHQwJnOUEeqM8s1pzBtFzg" entityName="ui-auth" requiringAssemblyContext_AssemblyConnector="_VCgbEHOUEeqM8s1pzBtFzg" providingAssemblyContext_AssemblyConnector="_4zBGgHOTEeqM8s1pzBtFzg">
+    <providedRole_AssemblyConnector href="default.repository#_YvOs0HOGEeqM8s1pzBtFzg"/>
+    <requiredRole_AssemblyConnector href="default.repository#_WZMCgHOGEeqM8s1pzBtFzg"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:AssemblyConnector" id="_WedJxnOWEeqM8s1pzBtFzg" entityName="ui-image" requiringAssemblyContext_AssemblyConnector="_VCgbEHOUEeqM8s1pzBtFzg" providingAssemblyContext_AssemblyConnector="_CRRwsHOUEeqM8s1pzBtFzg">
+    <providedRole_AssemblyConnector href="default.repository#_gbAswHOGEeqM8s1pzBtFzg"/>
+    <requiredRole_AssemblyConnector href="default.repository#_CiqHgHOHEeqM8s1pzBtFzg"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:AssemblyConnector" id="_rNUlhnOWEeqM8s1pzBtFzg" entityName="ui-persistence" requiringAssemblyContext_AssemblyConnector="_VCgbEHOUEeqM8s1pzBtFzg" providingAssemblyContext_AssemblyConnector="_HbJNgHOUEeqM8s1pzBtFzg">
+    <providedRole_AssemblyConnector href="default.repository#_dsvvsHOGEeqM8s1pzBtFzg"/>
+    <requiredRole_AssemblyConnector href="default.repository#_DXVswHOHEeqM8s1pzBtFzg"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:AssemblyConnector" id="_5ywk5nOWEeqM8s1pzBtFzg" entityName="ui-recommender" requiringAssemblyContext_AssemblyConnector="_VCgbEHOUEeqM8s1pzBtFzg" providingAssemblyContext_AssemblyConnector="_ObTdkHOUEeqM8s1pzBtFzg">
+    <providedRole_AssemblyConnector href="default.repository#_nbjXUHOGEeqM8s1pzBtFzg"/>
+    <requiredRole_AssemblyConnector href="default.repository#_AH7xgHOHEeqM8s1pzBtFzg"/>
+  </connectors__ComposedStructure>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_7BUiAMhrEeKON4DtRoKCMw" entityName="webUI">
+    <providedInterface__OperationProvidedRole href="default.repository#_c5OS8HOEEeqM8s1pzBtFzg"/>
+  </providedRoles_InterfaceProvidingEntity>
+</system:System>

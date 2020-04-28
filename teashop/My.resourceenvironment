@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resourceenvironment:ResourceEnvironment xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:resourceenvironment="http://sdq.ipd.uka.de/PalladioComponentModel/ResourceEnvironment/5.0">
+  <linkingResources__ResourceEnvironment id="_v71ZgHOKEeqM8s1pzBtFzg" connectedResourceContainers_LinkingResource="_JsH9MHOKEeqM8s1pzBtFzg _UFb6YHOKEeqM8s1pzBtFzg _PVq_oHOKEeqM8s1pzBtFzg _-5lnsHOJEeqM8s1pzBtFzg _B8hNMHOKEeqM8s1pzBtFzg _GNvKwHOKEeqM8s1pzBtFzg">
+    <communicationLinkResourceSpecifications_LinkingResource id="_v8AYoHOKEeqM8s1pzBtFzg">
+      <communicationLinkResourceType_CommunicationLinkResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_o3sScH2AEdyH8uerKnHYug"/>
+      <latency_CommunicationLinkResourceSpecification specification="0"/>
+      <throughput_CommunicationLinkResourceSpecification specification="1000"/>
+    </communicationLinkResourceSpecifications_LinkingResource>
+  </linkingResources__ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="_-5lnsHOJEeqM8s1pzBtFzg" entityName="FrontEnd">
+    <activeResourceSpecifications_ResourceContainer id="_AClQEHOKEeqM8s1pzBtFzg">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="_B8hNMHOKEeqM8s1pzBtFzg" entityName="AuthServer">
+    <activeResourceSpecifications_ResourceContainer id="_DIAI4HOKEeqM8s1pzBtFzg">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="_GNvKwHOKEeqM8s1pzBtFzg" entityName="RegistryServer">
+    <activeResourceSpecifications_ResourceContainer id="_HIjNMHOKEeqM8s1pzBtFzg">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="_JsH9MHOKEeqM8s1pzBtFzg" entityName="ImageProvider">
+    <activeResourceSpecifications_ResourceContainer id="_Mdht0HOKEeqM8s1pzBtFzg">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="_PVq_oHOKEeqM8s1pzBtFzg" entityName="PersistenceServer">
+    <activeResourceSpecifications_ResourceContainer id="_QXDkIHOKEeqM8s1pzBtFzg">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="_UFb6YHOKEeqM8s1pzBtFzg" entityName="RecommenderServer">
+    <activeResourceSpecifications_ResourceContainer id="_VLqioHOKEeqM8s1pzBtFzg">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+</resourceenvironment:ResourceEnvironment>

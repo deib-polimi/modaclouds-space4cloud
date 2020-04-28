@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repository:Repository xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:repository="http://sdq.ipd.uka.de/PalladioComponentModel/Repository/5.0" xmlns:seff="http://sdq.ipd.uka.de/PalladioComponentModel/SEFF/5.0" id="_dqFLECHbEd6tG9VclJz3cw" entityName="defaultRepository">
+  <components__Repository xsi:type="repository:BasicComponent" id="_Qck6IHOGEeqM8s1pzBtFzg" entityName="webUi">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_U48XwHOGEeqM8s1pzBtFzg" entityName="Provided_Web UI_webUi" providedInterface__OperationProvidedRole="_c5OS8HOEEeqM8s1pzBtFzg"/>
+    <requiredRoles_InterfaceRequiringEntity xsi:type="repository:OperationRequiredRole" id="_WZMCgHOGEeqM8s1pzBtFzg" entityName="Required_Auth_webUi" requiredInterface__OperationRequiredRole="_xUHCwHOEEeqM8s1pzBtFzg"/>
+    <requiredRoles_InterfaceRequiringEntity xsi:type="repository:OperationRequiredRole" id="_AH7xgHOHEeqM8s1pzBtFzg" entityName="Required_Recommender_webUi" requiredInterface__OperationRequiredRole="_7UuzIHOEEeqM8s1pzBtFzg"/>
+    <requiredRoles_InterfaceRequiringEntity xsi:type="repository:OperationRequiredRole" id="_CiqHgHOHEeqM8s1pzBtFzg" entityName="Required_ImageProvider_webUi" requiredInterface__OperationRequiredRole="_p3VIIHOEEeqM8s1pzBtFzg"/>
+    <requiredRoles_InterfaceRequiringEntity xsi:type="repository:OperationRequiredRole" id="_DXVswHOHEeqM8s1pzBtFzg" entityName="Required_Persistence_webUi" requiredInterface__OperationRequiredRole="_0vx4YHOEEeqM8s1pzBtFzg"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_U5DFcHOGEeqM8s1pzBtFzg" describedService__SEFF="_-p5_MHOEEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_U5DsgHOGEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_PSMfwHOIEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_U5ETkHOGEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_ag_6gHOIEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_PSMfwHOIEeqM8s1pzBtFzg" predecessor_AbstractAction="_U5DsgHOGEeqM8s1pzBtFzg" successor_AbstractAction="_Q7xFoHOIEeqM8s1pzBtFzg" calledService_ExternalService="_-uUIoHOFEeqM8s1pzBtFzg" role_ExternalService="_WZMCgHOGEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_Q7xFoHOIEeqM8s1pzBtFzg" predecessor_AbstractAction="_PSMfwHOIEeqM8s1pzBtFzg" successor_AbstractAction="_SxEaYHOIEeqM8s1pzBtFzg" calledService_ExternalService="_A7pi4HOGEeqM8s1pzBtFzg" role_ExternalService="_DXVswHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_SxEaYHOIEeqM8s1pzBtFzg" predecessor_AbstractAction="_Q7xFoHOIEeqM8s1pzBtFzg" successor_AbstractAction="_UqQwoHOIEeqM8s1pzBtFzg" calledService_ExternalService="_C7VisHOGEeqM8s1pzBtFzg" role_ExternalService="_AH7xgHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_UqQwoHOIEeqM8s1pzBtFzg" predecessor_AbstractAction="_SxEaYHOIEeqM8s1pzBtFzg" successor_AbstractAction="_YU3aIHOIEeqM8s1pzBtFzg" calledService_ExternalService="_GantAHOGEeqM8s1pzBtFzg" role_ExternalService="_CiqHgHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_YU3aIHOIEeqM8s1pzBtFzg" predecessor_AbstractAction="_UqQwoHOIEeqM8s1pzBtFzg" successor_AbstractAction="_ag_6gHOIEeqM8s1pzBtFzg" calledService_ExternalService="_Ke9FIHOGEeqM8s1pzBtFzg" role_ExternalService="_CiqHgHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_ag_6gHOIEeqM8s1pzBtFzg" entityName="renderPage" predecessor_AbstractAction="_YU3aIHOIEeqM8s1pzBtFzg" successor_AbstractAction="_U5ETkHOGEeqM8s1pzBtFzg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="200"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_O2xLMHOMEeqM8s1pzBtFzg" describedService__SEFF="_i-iAIHOLEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_P3x8QHOMEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_P3yjUHOMEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_P3yjUHOMEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_P3x8QHOMEeqM8s1pzBtFzg"/>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_Qf7hYHOMEeqM8s1pzBtFzg" describedService__SEFF="_k8eTgHOLEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_Q5lXgHOMEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_Q5lXgXOMEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_Q5lXgXOMEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_Q5lXgHOMEeqM8s1pzBtFzg"/>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_R_P_EHOMEeqM8s1pzBtFzg" describedService__SEFF="_m2UKAHOLEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_SauaIHOMEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_SauaIXOMEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_SauaIXOMEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_SauaIHOMEeqM8s1pzBtFzg"/>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_TlSIwHOMEeqM8s1pzBtFzg" describedService__SEFF="_ojxxYHOLEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_UU618HOMEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_UU618XOMEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_UU618XOMEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_UU618HOMEeqM8s1pzBtFzg"/>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_VA3V8HOMEeqM8s1pzBtFzg" describedService__SEFF="_rL8GcHOLEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_Vjx1wHOMEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_Vjyc0HOMEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_Vjyc0HOMEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_Vjx1wHOMEeqM8s1pzBtFzg"/>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_WBFc0HOMEeqM8s1pzBtFzg" describedService__SEFF="_sxWlEHOLEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_WsApIHOMEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_WsApIXOMEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_WsApIXOMEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_WsApIHOMEeqM8s1pzBtFzg"/>
+    </serviceEffectSpecifications__BasicComponent>
+  </components__Repository>
+  <components__Repository xsi:type="repository:BasicComponent" id="_XFr8IHOGEeqM8s1pzBtFzg" entityName="Auth">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_YvOs0HOGEeqM8s1pzBtFzg" entityName="Provided_Auth_Auth" providedInterface__OperationProvidedRole="_xUHCwHOEEeqM8s1pzBtFzg"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_YvOs0XOGEeqM8s1pzBtFzg" describedService__SEFF="_-uUIoHOFEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_YvPT4HOGEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_G_hUYHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_YvPT4XOGEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_G_hUYHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_G_hUYHOHEeqM8s1pzBtFzg" entityName="checkLoggedIn" predecessor_AbstractAction="_YvPT4HOGEeqM8s1pzBtFzg" successor_AbstractAction="_YvPT4XOGEeqM8s1pzBtFzg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="10"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+  </components__Repository>
+  <components__Repository xsi:type="repository:BasicComponent" id="_aAcdEHOGEeqM8s1pzBtFzg" entityName="Registry">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_bNW8IHOGEeqM8s1pzBtFzg" entityName="Provided_Registry_Registry" providedInterface__OperationProvidedRole="_h1FI8HOEEeqM8s1pzBtFzg"/>
+  </components__Repository>
+  <components__Repository xsi:type="repository:BasicComponent" id="_cYR3IHOGEeqM8s1pzBtFzg" entityName="Persistence">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_dsvvsHOGEeqM8s1pzBtFzg" entityName="Provided_Persistence_Persistence" providedInterface__OperationProvidedRole="_0vx4YHOEEeqM8s1pzBtFzg"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_dsw90HOGEeqM8s1pzBtFzg" describedService__SEFF="_A7pi4HOGEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_dsxk4HOGEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_VHHhMHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_dsxk4XOGEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_VHHhMHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_VHHhMHOHEeqM8s1pzBtFzg" entityName="getProduct" predecessor_AbstractAction="_dsxk4HOGEeqM8s1pzBtFzg" successor_AbstractAction="_dsxk4XOGEeqM8s1pzBtFzg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="6"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+  </components__Repository>
+  <components__Repository xsi:type="repository:BasicComponent" id="_ebUF4HOGEeqM8s1pzBtFzg" entityName="ImageProvider">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_gbAswHOGEeqM8s1pzBtFzg" entityName="Provided_ImageProvider_ImageProvider" providedInterface__OperationProvidedRole="_p3VIIHOEEeqM8s1pzBtFzg"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_gbB64HOGEeqM8s1pzBtFzg" describedService__SEFF="_GantAHOGEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_gbCh8HOGEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_a_oMsHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_gbCh8XOGEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_a_oMsHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_a_oMsHOHEeqM8s1pzBtFzg" entityName="getImageFullSize" predecessor_AbstractAction="_gbCh8HOGEeqM8s1pzBtFzg" successor_AbstractAction="_gbCh8XOGEeqM8s1pzBtFzg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="50"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_gbCh8nOGEeqM8s1pzBtFzg" describedService__SEFF="_Ke9FIHOGEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_gbCh83OGEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_kpdNsHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_gbCh9HOGEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_kpdNsHOHEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_kpdNsHOHEeqM8s1pzBtFzg" entityName="getImagePreview" predecessor_AbstractAction="_gbCh83OGEeqM8s1pzBtFzg" successor_AbstractAction="_gbCh9HOGEeqM8s1pzBtFzg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="50"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+  </components__Repository>
+  <components__Repository xsi:type="repository:BasicComponent" id="_kJi0AHOGEeqM8s1pzBtFzg" entityName="Recommender">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_nbjXUHOGEeqM8s1pzBtFzg" entityName="Provided_Recommender_Recommender" providedInterface__OperationProvidedRole="_7UuzIHOEEeqM8s1pzBtFzg"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_nbj-YHOGEeqM8s1pzBtFzg" describedService__SEFF="_C7VisHOGEeqM8s1pzBtFzg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_nbj-YXOGEeqM8s1pzBtFzg" entityName="start" successor_AbstractAction="_C5LUoHOIEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_nbj-YnOGEeqM8s1pzBtFzg" entityName="stop" predecessor_AbstractAction="_C5LUoHOIEeqM8s1pzBtFzg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_C5LUoHOIEeqM8s1pzBtFzg" entityName="getRecomendationFromProductAndItemCart" predecessor_AbstractAction="_nbj-YXOGEeqM8s1pzBtFzg" successor_AbstractAction="_nbj-YnOGEeqM8s1pzBtFzg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="20"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+  </components__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_c5OS8HOEEeqM8s1pzBtFzg" entityName="Web UI">
+    <signatures__OperationInterface id="_-p5_MHOEEeqM8s1pzBtFzg" entityName="getProductPage"/>
+    <signatures__OperationInterface id="_i-iAIHOLEeqM8s1pzBtFzg" entityName="startPage"/>
+    <signatures__OperationInterface id="_k8eTgHOLEeqM8s1pzBtFzg" entityName="categoryView"/>
+    <signatures__OperationInterface id="_m2UKAHOLEeqM8s1pzBtFzg" entityName="productView"/>
+    <signatures__OperationInterface id="_ojxxYHOLEeqM8s1pzBtFzg" entityName="shoppingCart"/>
+    <signatures__OperationInterface id="_rL8GcHOLEeqM8s1pzBtFzg" entityName="signIn"/>
+    <signatures__OperationInterface id="_sxWlEHOLEeqM8s1pzBtFzg" entityName="profile"/>
+  </interfaces__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_h1FI8HOEEeqM8s1pzBtFzg" entityName="Registry"/>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_p3VIIHOEEeqM8s1pzBtFzg" entityName="ImageProvider">
+    <signatures__OperationInterface id="_GantAHOGEeqM8s1pzBtFzg" entityName="getProductImageFulSize"/>
+    <signatures__OperationInterface id="_Ke9FIHOGEeqM8s1pzBtFzg" entityName="getProductImagePreview"/>
+  </interfaces__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_xUHCwHOEEeqM8s1pzBtFzg" entityName="Auth">
+    <signatures__OperationInterface id="_-uUIoHOFEeqM8s1pzBtFzg" entityName="isLoggedIn"/>
+  </interfaces__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_0vx4YHOEEeqM8s1pzBtFzg" entityName="Persistence">
+    <signatures__OperationInterface id="_A7pi4HOGEeqM8s1pzBtFzg" entityName="getProduct"/>
+  </interfaces__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_7UuzIHOEEeqM8s1pzBtFzg" entityName="Recommender">
+    <signatures__OperationInterface id="_C7VisHOGEeqM8s1pzBtFzg" entityName="getrecomendationFromProductAndItemInCart"/>
+  </interfaces__Repository>
+</repository:Repository>

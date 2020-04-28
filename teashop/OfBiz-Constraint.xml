@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<constraints xmlns="http://www.modaclouds.eu/xsd/1.0/qos_constraints_schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.modaclouds.eu/xsd/1.0/qos_constraints_schema https://raw.githubusercontent.com/deib-polimi/modaclouds-qos-models/master/metamodels/qosconstraints/qos_constraints_schema.xsd">
+	<constraint id="q1" name="productPage">
+		<targetResourceIDRef>_U5DFcHOGEeqM8s1pzBtFzg</targetResourceIDRef>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>300</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint id="q2" name="ImageFullSize">
+		<targetResourceIDRef>_gbB64HOGEeqM8s1pzBtFzg</targetResourceIDRef>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>200</hasMaxValue>
+		</range>
+		<priority>1</priority>
+	</constraint>
+	<constraint id="a1" name="frontendUtilization">
+		<targetResourceIDRef>_-5lnsHOJEeqM8s1pzBtFzg</targetResourceIDRef>
+		<metric>CPUUtilization</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>0.8</hasMaxValue>
+		</range>
+		<priority>1</priority>
+	</constraint>
+	<constraint id="a2" name="frontendMinRam">
+		<targetResourceIDRef>_-5lnsHOJEeqM8s1pzBtFzg</targetResourceIDRef>
+		<metric>RAM</metric>
+		<range>
+			<hasMinValue>4000</hasMinValue>
+		</range>
+		<priority>1</priority>
+	</constraint>
+</constraints>

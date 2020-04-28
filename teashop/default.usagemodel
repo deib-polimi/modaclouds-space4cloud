@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<usagemodel:UsageModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:usagemodel="http://sdq.ipd.uka.de/PalladioComponentModel/UsageModel/5.0">
+  <usageScenario_UsageModel id="_IsTpgHOLEeqM8s1pzBtFzg" entityName="Browse">
+    <scenarioBehaviour_UsageScenario id="_ULQZEHOLEeqM8s1pzBtFzg">
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Start" id="_ULRnMHOLEeqM8s1pzBtFzg" successor="_dlTbMHOXEeqM8s1pzBtFzg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Stop" id="_ULRnMXOLEeqM8s1pzBtFzg" predecessor="_30cBkHOXEeqM8s1pzBtFzg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_dlTbMHOXEeqM8s1pzBtFzg" successor="_jgg1YHOXEeqM8s1pzBtFzg" predecessor="_ULRnMHOLEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_i-iAIHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_jgg1YHOXEeqM8s1pzBtFzg" successor="_nMU_0HOXEeqM8s1pzBtFzg" predecessor="_dlTbMHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_rL8GcHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_nMU_0HOXEeqM8s1pzBtFzg" successor="_oKAwEHOXEeqM8s1pzBtFzg" predecessor="_jgg1YHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_i-iAIHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_oKAwEHOXEeqM8s1pzBtFzg" successor="_s4eqUHOXEeqM8s1pzBtFzg" predecessor="_nMU_0HOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_k8eTgHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_s4eqUHOXEeqM8s1pzBtFzg" successor="_t8-0QHOXEeqM8s1pzBtFzg" predecessor="_oKAwEHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_m2UKAHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_t8-0QHOXEeqM8s1pzBtFzg" successor="_mxS-oIY4EeqeKe4fSKY15w" predecessor="_s4eqUHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_ojxxYHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_xNPrIHOXEeqM8s1pzBtFzg" successor="_yNCUMHOXEeqM8s1pzBtFzg" predecessor="_mxS-oIY4EeqeKe4fSKY15w">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_k8eTgHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_yNCUMHOXEeqM8s1pzBtFzg" successor="_zQ6MAHOXEeqM8s1pzBtFzg" predecessor="_xNPrIHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_k8eTgHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_zQ6MAHOXEeqM8s1pzBtFzg" successor="_12kmsHOXEeqM8s1pzBtFzg" predecessor="_yNCUMHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_ojxxYHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_12kmsHOXEeqM8s1pzBtFzg" successor="_30cBkHOXEeqM8s1pzBtFzg" predecessor="_zQ6MAHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_sxWlEHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_30cBkHOXEeqM8s1pzBtFzg" successor="_ULRnMXOLEeqM8s1pzBtFzg" predecessor="_12kmsHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_i-iAIHOLEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_mxS-oIY4EeqeKe4fSKY15w" successor="_xNPrIHOXEeqM8s1pzBtFzg" predecessor="_t8-0QHOXEeqM8s1pzBtFzg">
+        <providedRole_EntryLevelSystemCall href="default.system#_7BUiAMhrEeKON4DtRoKCMw"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_-p5_MHOEEeqM8s1pzBtFzg"/>
+      </actions_ScenarioBehaviour>
+    </scenarioBehaviour_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="10">
+      <thinkTime_ClosedWorkload specification="10"/>
+    </workload_UsageScenario>
+  </usageScenario_UsageModel>
+</usagemodel:UsageModel>
