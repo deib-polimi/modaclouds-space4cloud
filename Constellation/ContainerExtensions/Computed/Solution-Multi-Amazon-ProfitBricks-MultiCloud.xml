@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<multiCloudExtensions xmlns="http://www.modaclouds.eu/xsd/2013/6/multi-cloud-extension">
+    <multiCloudExtension id="id">
+        <provider name="CloudSigma">
+            <workloadPartition hour="0" value="37"/>
+            <workloadPartition hour="1" value="37"/>
+            <workloadPartition hour="2" value="37"/>
+            <workloadPartition hour="3" value="37"/>
+            <workloadPartition hour="4" value="37"/>
+            <workloadPartition hour="5" value="37"/>
+            <workloadPartition hour="6" value="26"/>
+            <workloadPartition hour="7" value="26"/>
+            <workloadPartition hour="8" value="21"/>
+            <workloadPartition hour="9" value="20"/>
+            <workloadPartition hour="10" value="20"/>
+            <workloadPartition hour="11" value="20"/>
+            <workloadPartition hour="12" value="20"/>
+            <workloadPartition hour="13" value="20"/>
+            <workloadPartition hour="14" value="20"/>
+            <workloadPartition hour="15" value="20"/>
+            <workloadPartition hour="16" value="20"/>
+            <workloadPartition hour="17" value="20"/>
+            <workloadPartition hour="18" value="20"/>
+            <workloadPartition hour="19" value="20"/>
+            <workloadPartition hour="20" value="26"/>
+            <workloadPartition hour="21" value="37"/>
+            <workloadPartition hour="22" value="37"/>
+            <workloadPartition hour="23" value="37"/>
+        </provider>
+        <provider name="Amazon">
+            <workloadPartition hour="0" value="63"/>
+            <workloadPartition hour="1" value="63"/>
+            <workloadPartition hour="2" value="63"/>
+            <workloadPartition hour="3" value="63"/>
+            <workloadPartition hour="4" value="63"/>
+            <workloadPartition hour="5" value="63"/>
+            <workloadPartition hour="6" value="74"/>
+            <workloadPartition hour="7" value="74"/>
+            <workloadPartition hour="8" value="79"/>
+            <workloadPartition hour="9" value="80"/>
+            <workloadPartition hour="10" value="80"/>
+            <workloadPartition hour="11" value="80"/>
+            <workloadPartition hour="12" value="80"/>
+            <workloadPartition hour="13" value="80"/>
+            <workloadPartition hour="14" value="80"/>
+            <workloadPartition hour="15" value="80"/>
+            <workloadPartition hour="16" value="80"/>
+            <workloadPartition hour="17" value="80"/>
+            <workloadPartition hour="18" value="80"/>
+            <workloadPartition hour="19" value="80"/>
+            <workloadPartition hour="20" value="74"/>
+            <workloadPartition hour="21" value="63"/>
+            <workloadPartition hour="22" value="63"/>
+            <workloadPartition hour="23" value="63"/>
+        </provider>
+    </multiCloudExtension>
+</multiCloudExtensions>

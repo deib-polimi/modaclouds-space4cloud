@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="de.uka.ipd.sdq.dsolver_plugin.PCMSolverLaunchConfigurationType">
+<booleanAttribute key="LQNS Stop On Message Loss" value="true"/>
+<booleanAttribute key="LQSIM Stop On Message Loss" value="true"/>
+<stringAttribute key="SREOutputDir" value="D:\eclipse"/>
+<booleanAttribute key="SREUseInputModel" value="false"/>
+<stringAttribute key="accuracyQualityAnnotationFile" value=""/>
+<stringAttribute key="allocationFile" value="C:\Users\GiovanniPaolo\Workspaces\runtime-Space4Cloud\Constellation\test.allocation"/>
+<stringAttribute key="blocks" value=""/>
+<booleanAttribute key="clear" value="true"/>
+<stringAttribute key="convValue" value="0.001"/>
+<intAttribute key="de.uka.ipd.sdq.workflowengine.debuglevel" value="5"/>
+<stringAttribute key="eventMiddlewareRepositoryFile" value="pathmap://PCM_MODELS/default_event_middleware.repository"/>
+<booleanAttribute key="infiniteTaskMultiplicity" value="true"/>
+<stringAttribute key="itLimit" value="50"/>
+<intAttribute key="maxDomain" value="256"/>
+<stringAttribute key="mwRepositoryFile" value="C:\Users\GiovanniPaolo\Workspaces\runtime-Space4Cloud\Constellation\test.repository"/>
+<stringAttribute key="outpath" value="de.uka.ipd.sdq.temporary"/>
+<stringAttribute key="output" value="HTML Output"/>
+<stringAttribute key="printInt" value="10"/>
+<stringAttribute key="psQuantum" value="0.001"/>
+<stringAttribute key="runTime" value=""/>
+<stringAttribute key="samplingDist" value="1.0"/>
+<booleanAttribute key="simulateAccuracy" value="false"/>
+<stringAttribute key="solver" value="LINE"/>
+<booleanAttribute key="PerfEngineDebug" value="false"/>
+<stringAttribute key="perfengOutputDir" value="C:\Users\GiovanniPaolo\Workspaces\runtime-Space4Cloud\Constellation\space4cloud\performance_results"/>
+<stringAttribute key="underCoeff" value="0.5"/>
+<stringAttribute key="usageFile" value="C:\Users\GiovanniPaolo\Workspaces\runtime-Space4Cloud\Constellation\conference.usagemodel"/>
+<stringAttribute key="perfEngPropFile" value="C:\Users\GiovanniPaolo\Workspaces\runtime-Space4Cloud\Constellation\LINE.properties"/>
+<booleanAttribute key="showHtmlResult" value="true"/>
+</launchConfiguration>

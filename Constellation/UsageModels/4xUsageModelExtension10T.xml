@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<usageModelExtensions
+	xmlns="http://www.modaclouds.eu/xsd/2013/6/usage-model-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.modaclouds.eu/xsd/2013/6/usage-model-ext https://raw.githubusercontent.com/deib-polimi/modaclouds-qos-models/master/metamodels/s4cextension/usage_model_extension.xsd">
+	<usageModelExtension scenarioId="b8af92be-a302-48aa-9ad5-728c0b7d39b2">
+		<closedWorkload>
+			<workloadElement hour="0" population="4" thinkTime="10" />
+			<workloadElement hour="1" population="4" thinkTime="10" />
+			<workloadElement hour="2" population="4" thinkTime="10" />
+			<workloadElement hour="3" population="4" thinkTime="10" />
+			<workloadElement hour="4" population="4" thinkTime="10" />
+			<workloadElement hour="5" population="4" thinkTime="10" />
+			<workloadElement hour="6" population="8" thinkTime="10" />
+			<workloadElement hour="7" population="8" thinkTime="10" />
+			<workloadElement hour="8" population="12" thinkTime="10" />
+			<workloadElement hour="9" population="48" thinkTime="10" />
+			<workloadElement hour="10" population="120" thinkTime="10" />
+			<workloadElement hour="11" population="200" thinkTime="10" />
+			<workloadElement hour="12" population="80" thinkTime="10" />
+			<workloadElement hour="13" population="100" thinkTime="10" />
+			<workloadElement hour="14" population="120" thinkTime="10" />
+			<workloadElement hour="15" population="160" thinkTime="10" />
+			<workloadElement hour="16" population="200" thinkTime="10" />
+			<workloadElement hour="17" population="120" thinkTime="10" />
+			<workloadElement hour="18" population="40" thinkTime="10" />
+			<workloadElement hour="19" population="16" thinkTime="10" />
+			<workloadElement hour="20" population="8" thinkTime="10" />
+			<workloadElement hour="21" population="4" thinkTime="10" />
+			<workloadElement hour="22" population="4" thinkTime="10" />
+			<workloadElement hour="23" population="4" thinkTime="10" />
+		</closedWorkload>
+	</usageModelExtension>
+</usageModelExtensions>

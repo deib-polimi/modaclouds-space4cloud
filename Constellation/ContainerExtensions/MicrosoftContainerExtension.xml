@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<resourceModelExtension xmlns="http://www.modaclouds.eu/xsd/2013/6/resource-model-extension">
+    <resourceContainer id="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer" provider="Microsoft">
+        <cloudResource serviceType="Compute" >
+        </cloudResource>
+    </resourceContainer>
+    <resourceContainer id="e626e206-d2fa-426e-a6e2-888ae6bf472d__resourceContainer" provider="Microsoft">
+        <cloudResource serviceType="Compute" >
+        </cloudResource>
+    </resourceContainer>
+    <resourceContainer id="d133dad5-79cb-44f8-9cd2-594a04417030__resourceContainer" provider="Microsoft">
+        <cloudResource serviceType="Compute"> 
+        </cloudResource>
+    </resourceContainer>
+    <resourceContainer id="62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer" provider="Microsoft">
+        <cloudResource serviceType="Compute" >
+        </cloudResource>
+    </resourceContainer>
+    <resourceContainer id="d913ea2c-adf4-4da3-9d6a-3ccc65659114__resourceContainer" provider="Microsoft">
+        <cloudResource serviceType="Compute" >
+        </cloudResource>
+    </resourceContainer>
+</resourceModelExtension>

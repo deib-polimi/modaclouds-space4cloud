@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resourceModelExtension
+	xsi:schemaLocation="http://www.modaclouds.eu/xsd/2013/6/resource-model-extension https://raw.githubusercontent.com/deib-polimi/modaclouds-qos-models/master/metamodels/s4cextension/resource_model_extension.xsd"
+	xmlns="http://www.modaclouds.eu/xsd/2013/6/resource-model-extension"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<resourceContainer id="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer" name="Container1" provider="Amazon">
+		<cloudElement serviceCategory="IaaS" serviceType="Compute" serviceName="Elastic Compute Cloud (EC2)">
+			<resourceSizeID>c3.large</resourceSizeID>
+			<location region="us-west-2"/>
+			<replicas>
+				<replicaElement hour="0" value="1"/>
+				<replicaElement hour="1" value="1"/>
+				<replicaElement hour="2" value="1"/>
+				<replicaElement hour="3" value="1"/>
+				<replicaElement hour="4" value="1"/>
+				<replicaElement hour="5" value="1"/>
+				<replicaElement hour="6" value="1"/>
+				<replicaElement hour="7" value="1"/>
+				<replicaElement hour="8" value="1"/>
+				<replicaElement hour="9" value="1"/>
+				<replicaElement hour="10" value="1"/>
+				<replicaElement hour="11" value="1"/>
+				<replicaElement hour="12" value="1"/>
+				<replicaElement hour="13" value="1"/>
+				<replicaElement hour="14" value="1"/>
+				<replicaElement hour="15" value="1"/>
+				<replicaElement hour="16" value="1"/>
+				<replicaElement hour="17" value="1"/>
+				<replicaElement hour="18" value="1"/>
+				<replicaElement hour="19" value="1"/>
+				<replicaElement hour="20" value="1"/>
+				<replicaElement hour="21" value="1"/>
+				<replicaElement hour="22" value="1"/>
+				<replicaElement hour="23" value="1"/>
+			</replicas>
+		</cloudElement>
+	</resourceContainer>
+	<resourceContainer id="e626e206-d2fa-426e-a6e2-888ae6bf472d__resourceContainer" name="Container2" provider="Amazon">
+		<cloudElement serviceCategory="IaaS" serviceType="Compute" serviceName="Elastic Compute Cloud (EC2)">
+			<resourceSizeID>m2.xlarge</resourceSizeID>
+			<location region="us-west-2"/>
+			<replicas>
+				<replicaElement hour="0" value="1"/>
+				<replicaElement hour="1" value="1"/>
+				<replicaElement hour="2" value="1"/>
+				<replicaElement hour="3" value="1"/>
+				<replicaElement hour="4" value="1"/>
+				<replicaElement hour="5" value="1"/>
+				<replicaElement hour="6" value="1"/>
+				<replicaElement hour="7" value="1"/>
+				<replicaElement hour="8" value="1"/>
+				<replicaElement hour="9" value="1"/>
+				<replicaElement hour="10" value="1"/>
+				<replicaElement hour="11" value="1"/>
+				<replicaElement hour="12" value="1"/>
+				<replicaElement hour="13" value="1"/>
+				<replicaElement hour="14" value="1"/>
+				<replicaElement hour="15" value="1"/>
+				<replicaElement hour="16" value="1"/>
+				<replicaElement hour="17" value="1"/>
+				<replicaElement hour="18" value="1"/>
+				<replicaElement hour="19" value="1"/>
+				<replicaElement hour="20" value="1"/>
+				<replicaElement hour="21" value="1"/>
+				<replicaElement hour="22" value="1"/>
+				<replicaElement hour="23" value="1"/>
+			</replicas>
+		</cloudElement>
+	</resourceContainer>
+	<resourceContainer id="d133dad5-79cb-44f8-9cd2-594a04417030__resourceContainer" name="Container3" provider="Amazon">
+		<cloudElement serviceCategory="IaaS" serviceType="Compute" serviceName="Elastic Compute Cloud (EC2)">
+			<resourceSizeID>c3.large</resourceSizeID>
+			<location region="us-west-2"/>
+			<replicas>
+				<replicaElement hour="0" value="1"/>
+				<replicaElement hour="1" value="1"/>
+				<replicaElement hour="2" value="1"/>
+				<replicaElement hour="3" value="1"/>
+				<replicaElement hour="4" value="1"/>
+				<replicaElement hour="5" value="1"/>
+				<replicaElement hour="6" value="1"/>
+				<replicaElement hour="7" value="1"/>
+				<replicaElement hour="8" value="1"/>
+				<replicaElement hour="9" value="1"/>
+				<replicaElement hour="10" value="1"/>
+				<replicaElement hour="11" value="2"/>
+				<replicaElement hour="12" value="1"/>
+				<replicaElement hour="13" value="1"/>
+				<replicaElement hour="14" value="1"/>
+				<replicaElement hour="15" value="2"/>
+				<replicaElement hour="16" value="2"/>
+				<replicaElement hour="17" value="1"/>
+				<replicaElement hour="18" value="1"/>
+				<replicaElement hour="19" value="1"/>
+				<replicaElement hour="20" value="1"/>
+				<replicaElement hour="21" value="1"/>
+				<replicaElement hour="22" value="1"/>
+				<replicaElement hour="23" value="1"/>
+			</replicas>
+		</cloudElement>
+	</resourceContainer>
+	<resourceContainer id="62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer" name="Container3" provider="Amazon">
+		<cloudElement serviceCategory="IaaS" serviceType="Compute" serviceName="Elastic Compute Cloud (EC2)">
+			<resourceSizeID>c3.xlarge</resourceSizeID>
+			<location region="us-west-2"/>
+			<replicas>
+				<replicaElement hour="0" value="1"/>
+				<replicaElement hour="1" value="1"/>
+				<replicaElement hour="2" value="1"/>
+				<replicaElement hour="3" value="1"/>
+				<replicaElement hour="4" value="1"/>
+				<replicaElement hour="5" value="1"/>
+				<replicaElement hour="6" value="1"/>
+				<replicaElement hour="7" value="1"/>
+				<replicaElement hour="8" value="1"/>
+				<replicaElement hour="9" value="1"/>
+				<replicaElement hour="10" value="2"/>
+				<replicaElement hour="11" value="2"/>
+				<replicaElement hour="12" value="1"/>
+				<replicaElement hour="13" value="1"/>
+				<replicaElement hour="14" value="2"/>
+				<replicaElement hour="15" value="2"/>
+				<replicaElement hour="16" value="2"/>
+				<replicaElement hour="17" value="2"/>
+				<replicaElement hour="18" value="1"/>
+				<replicaElement hour="19" value="1"/>
+				<replicaElement hour="20" value="1"/>
+				<replicaElement hour="21" value="1"/>
+				<replicaElement hour="22" value="1"/>
+				<replicaElement hour="23" value="1"/>
+			</replicas>
+		</cloudElement>
+	</resourceContainer>
+	<resourceContainer id="d913ea2c-adf4-4da3-9d6a-3ccc65659114__resourceContainer" name="Container3" provider="Amazon">
+		<cloudElement serviceCategory="IaaS" serviceType="Compute" serviceName="Elastic Compute Cloud (EC2)">
+			<resourceSizeID>c3.large</resourceSizeID>
+			<location region="us-west-2"/>
+			<replicas>
+				<replicaElement hour="0" value="1"/>
+				<replicaElement hour="1" value="1"/>
+				<replicaElement hour="2" value="1"/>
+				<replicaElement hour="3" value="1"/>
+				<replicaElement hour="4" value="1"/>
+				<replicaElement hour="5" value="1"/>
+				<replicaElement hour="6" value="1"/>
+				<replicaElement hour="7" value="1"/>
+				<replicaElement hour="8" value="1"/>
+				<replicaElement hour="9" value="1"/>
+				<replicaElement hour="10" value="2"/>
+				<replicaElement hour="11" value="4"/>
+				<replicaElement hour="12" value="2"/>
+				<replicaElement hour="13" value="2"/>
+				<replicaElement hour="14" value="2"/>
+				<replicaElement hour="15" value="3"/>
+				<replicaElement hour="16" value="4"/>
+				<replicaElement hour="17" value="2"/>
+				<replicaElement hour="18" value="1"/>
+				<replicaElement hour="19" value="1"/>
+				<replicaElement hour="20" value="1"/>
+				<replicaElement hour="21" value="1"/>
+				<replicaElement hour="22" value="1"/>
+				<replicaElement hour="23" value="1"/>
+			</replicas>
+		</cloudElement>
+	</resourceContainer>
+</resourceModelExtension>

@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<SolutionMultiResult cost="27.24" feasibility="true"
+	generationIteration="1" generationTime="374832">
+	<Solution cost="27.23999999999999" feasibility="true"
+		generationIteration="1" generationTime="257668" provider="Amazon">
+		<Tiers>
+			<Tier id="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer"
+				name="adminServer_CPU_Processor" providerName="Amazon" resourceName="m1.medium"
+				serviceName="Elastic Compute Cloud (EC2)" serviceType="Compute">
+				<HourAllocation allocation="1" hour="0" />
+				<HourAllocation allocation="1" hour="1" />
+				<HourAllocation allocation="1" hour="2" />
+				<HourAllocation allocation="1" hour="3" />
+				<HourAllocation allocation="1" hour="4" />
+				<HourAllocation allocation="1" hour="5" />
+				<HourAllocation allocation="1" hour="6" />
+				<HourAllocation allocation="1" hour="7" />
+				<HourAllocation allocation="1" hour="8" />
+				<HourAllocation allocation="1" hour="9" />
+				<HourAllocation allocation="1" hour="10" />
+				<HourAllocation allocation="1" hour="11" />
+				<HourAllocation allocation="1" hour="12" />
+				<HourAllocation allocation="1" hour="13" />
+				<HourAllocation allocation="1" hour="14" />
+				<HourAllocation allocation="1" hour="15" />
+				<HourAllocation allocation="1" hour="16" />
+				<HourAllocation allocation="1" hour="17" />
+				<HourAllocation allocation="1" hour="18" />
+				<HourAllocation allocation="1" hour="19" />
+				<HourAllocation allocation="1" hour="20" />
+				<HourAllocation allocation="1" hour="21" />
+				<HourAllocation allocation="1" hour="22" />
+				<HourAllocation allocation="1" hour="23" />
+			</Tier>
+			<Tier id="e626e206-d2fa-426e-a6e2-888ae6bf472d__resourceContainer"
+				name="svnAgent_CPU_Processor" providerName="Amazon" resourceName="m2.xlarge"
+				serviceName="Elastic Compute Cloud (EC2)" serviceType="Compute">
+				<HourAllocation allocation="1" hour="0" />
+				<HourAllocation allocation="1" hour="1" />
+				<HourAllocation allocation="1" hour="2" />
+				<HourAllocation allocation="1" hour="3" />
+				<HourAllocation allocation="1" hour="4" />
+				<HourAllocation allocation="1" hour="5" />
+				<HourAllocation allocation="1" hour="6" />
+				<HourAllocation allocation="1" hour="7" />
+				<HourAllocation allocation="1" hour="8" />
+				<HourAllocation allocation="1" hour="9" />
+				<HourAllocation allocation="1" hour="10" />
+				<HourAllocation allocation="1" hour="11" />
+				<HourAllocation allocation="1" hour="12" />
+				<HourAllocation allocation="1" hour="13" />
+				<HourAllocation allocation="1" hour="14" />
+				<HourAllocation allocation="1" hour="15" />
+				<HourAllocation allocation="1" hour="16" />
+				<HourAllocation allocation="1" hour="17" />
+				<HourAllocation allocation="1" hour="18" />
+				<HourAllocation allocation="1" hour="19" />
+				<HourAllocation allocation="1" hour="20" />
+				<HourAllocation allocation="1" hour="21" />
+				<HourAllocation allocation="1" hour="22" />
+				<HourAllocation allocation="1" hour="23" />
+			</Tier>
+			<Tier id="d133dad5-79cb-44f8-9cd2-594a04417030__resourceContainer"
+				name="httpAgent_CPU_Processor" providerName="Amazon" resourceName="m1.medium"
+				serviceName="Elastic Compute Cloud (EC2)" serviceType="Compute">
+				<HourAllocation allocation="1" hour="0" />
+				<HourAllocation allocation="1" hour="1" />
+				<HourAllocation allocation="1" hour="2" />
+				<HourAllocation allocation="1" hour="3" />
+				<HourAllocation allocation="1" hour="4" />
+				<HourAllocation allocation="1" hour="5" />
+				<HourAllocation allocation="1" hour="6" />
+				<HourAllocation allocation="1" hour="7" />
+				<HourAllocation allocation="1" hour="8" />
+				<HourAllocation allocation="1" hour="9" />
+				<HourAllocation allocation="2" hour="10" />
+				<HourAllocation allocation="2" hour="11" />
+				<HourAllocation allocation="1" hour="12" />
+				<HourAllocation allocation="2" hour="13" />
+				<HourAllocation allocation="2" hour="14" />
+				<HourAllocation allocation="2" hour="15" />
+				<HourAllocation allocation="2" hour="16" />
+				<HourAllocation allocation="2" hour="17" />
+				<HourAllocation allocation="1" hour="18" />
+				<HourAllocation allocation="1" hour="19" />
+				<HourAllocation allocation="1" hour="20" />
+				<HourAllocation allocation="1" hour="21" />
+				<HourAllocation allocation="1" hour="22" />
+				<HourAllocation allocation="1" hour="23" />
+			</Tier>
+			<Tier id="62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer"
+				name="conferenceAgent_CPU_Processor" providerName="Amazon"
+				resourceName="c3.large" serviceName="Elastic Compute Cloud (EC2)"
+				serviceType="Compute">
+				<HourAllocation allocation="1" hour="0" />
+				<HourAllocation allocation="1" hour="1" />
+				<HourAllocation allocation="1" hour="2" />
+				<HourAllocation allocation="1" hour="3" />
+				<HourAllocation allocation="1" hour="4" />
+				<HourAllocation allocation="1" hour="5" />
+				<HourAllocation allocation="1" hour="6" />
+				<HourAllocation allocation="1" hour="7" />
+				<HourAllocation allocation="1" hour="8" />
+				<HourAllocation allocation="1" hour="9" />
+				<HourAllocation allocation="1" hour="10" />
+				<HourAllocation allocation="1" hour="11" />
+				<HourAllocation allocation="1" hour="12" />
+				<HourAllocation allocation="1" hour="13" />
+				<HourAllocation allocation="1" hour="14" />
+				<HourAllocation allocation="1" hour="15" />
+				<HourAllocation allocation="1" hour="16" />
+				<HourAllocation allocation="1" hour="17" />
+				<HourAllocation allocation="1" hour="18" />
+				<HourAllocation allocation="1" hour="19" />
+				<HourAllocation allocation="1" hour="20" />
+				<HourAllocation allocation="1" hour="21" />
+				<HourAllocation allocation="1" hour="22" />
+				<HourAllocation allocation="1" hour="23" />
+			</Tier>
+			<Tier id="d913ea2c-adf4-4da3-9d6a-3ccc65659114__resourceContainer"
+				name="conferenceReplica_CPU_Processor" providerName="Amazon"
+				resourceName="m1.medium" serviceName="Elastic Compute Cloud (EC2)"
+				serviceType="Compute">
+				<HourAllocation allocation="1" hour="0" />
+				<HourAllocation allocation="1" hour="1" />
+				<HourAllocation allocation="1" hour="2" />
+				<HourAllocation allocation="1" hour="3" />
+				<HourAllocation allocation="1" hour="4" />
+				<HourAllocation allocation="1" hour="5" />
+				<HourAllocation allocation="1" hour="6" />
+				<HourAllocation allocation="1" hour="7" />
+				<HourAllocation allocation="1" hour="8" />
+				<HourAllocation allocation="2" hour="9" />
+				<HourAllocation allocation="3" hour="10" />
+				<HourAllocation allocation="3" hour="11" />
+				<HourAllocation allocation="2" hour="12" />
+				<HourAllocation allocation="3" hour="13" />
+				<HourAllocation allocation="3" hour="14" />
+				<HourAllocation allocation="3" hour="15" />
+				<HourAllocation allocation="3" hour="16" />
+				<HourAllocation allocation="3" hour="17" />
+				<HourAllocation allocation="1" hour="18" />
+				<HourAllocation allocation="1" hour="19" />
+				<HourAllocation allocation="1" hour="20" />
+				<HourAllocation allocation="1" hour="21" />
+				<HourAllocation allocation="1" hour="22" />
+				<HourAllocation allocation="1" hour="23" />
+			</Tier>
+		</Tiers>
+		<functionalities />
+		<Functionality
+			id="a8ef4028-041a-493a-9533-69128163e372_e4dc19b1-39f0-48f4-8586-f1fe49399887_seff"
+			name="readProjectFirstPageDescription">
+			<HourlyRT hour="0" responseTime="0.62375" />
+			<HourlyRT hour="1" responseTime="0.62375" />
+			<HourlyRT hour="2" responseTime="0.62375" />
+			<HourlyRT hour="3" responseTime="0.62375" />
+			<HourlyRT hour="4" responseTime="0.62375" />
+			<HourlyRT hour="5" responseTime="0.62375" />
+			<HourlyRT hour="6" responseTime="0.62375" />
+			<HourlyRT hour="7" responseTime="0.62375" />
+			<HourlyRT hour="8" responseTime="0.62375" />
+			<HourlyRT hour="9" responseTime="0.62375" />
+			<HourlyRT hour="10" responseTime="0.62375" />
+			<HourlyRT hour="11" responseTime="0.62375" />
+			<HourlyRT hour="12" responseTime="0.62375" />
+			<HourlyRT hour="13" responseTime="0.62375" />
+			<HourlyRT hour="14" responseTime="0.62375" />
+			<HourlyRT hour="15" responseTime="0.62375" />
+			<HourlyRT hour="16" responseTime="0.62375" />
+			<HourlyRT hour="17" responseTime="0.62375" />
+			<HourlyRT hour="18" responseTime="0.62375" />
+			<HourlyRT hour="19" responseTime="0.62375" />
+			<HourlyRT hour="20" responseTime="0.62375" />
+			<HourlyRT hour="21" responseTime="0.62375" />
+			<HourlyRT hour="22" responseTime="0.62375" />
+			<HourlyRT hour="23" responseTime="0.62375" />
+		</Functionality>
+		<Functionality
+			id="47f1f956-10f3-4462-9f03-8a3e351b5a6b_2212f70a-614c-456b-841d-d0bafa70bbe2_seff"
+			name="openProject">
+			<HourlyRT hour="0" responseTime="-1.0" />
+			<HourlyRT hour="1" responseTime="-1.0" />
+			<HourlyRT hour="2" responseTime="-1.0" />
+			<HourlyRT hour="3" responseTime="-1.0" />
+			<HourlyRT hour="4" responseTime="-1.0" />
+			<HourlyRT hour="5" responseTime="-1.0" />
+			<HourlyRT hour="6" responseTime="-1.0" />
+			<HourlyRT hour="7" responseTime="-1.0" />
+			<HourlyRT hour="8" responseTime="-1.0" />
+			<HourlyRT hour="9" responseTime="-1.0" />
+			<HourlyRT hour="10" responseTime="-1.0" />
+			<HourlyRT hour="11" responseTime="-1.0" />
+			<HourlyRT hour="12" responseTime="-1.0" />
+			<HourlyRT hour="13" responseTime="-1.0" />
+			<HourlyRT hour="14" responseTime="-1.0" />
+			<HourlyRT hour="15" responseTime="-1.0" />
+			<HourlyRT hour="16" responseTime="-1.0" />
+			<HourlyRT hour="17" responseTime="-1.0" />
+			<HourlyRT hour="18" responseTime="-1.0" />
+			<HourlyRT hour="19" responseTime="-1.0" />
+			<HourlyRT hour="20" responseTime="-1.0" />
+			<HourlyRT hour="21" responseTime="-1.0" />
+			<HourlyRT hour="22" responseTime="-1.0" />
+			<HourlyRT hour="23" responseTime="-1.0" />
+		</Functionality>
+		<Functionality
+			id="47f1f956-10f3-4462-9f03-8a3e351b5a6b_fc51bf8e-cb4c-4089-a33e-c0a23a7c96a5_seff"
+			name="commit">
+			<HourlyRT hour="0" responseTime="-1.0" />
+			<HourlyRT hour="1" responseTime="-1.0" />
+			<HourlyRT hour="2" responseTime="-1.0" />
+			<HourlyRT hour="3" responseTime="-1.0" />
+			<HourlyRT hour="4" responseTime="-1.0" />
+			<HourlyRT hour="5" responseTime="-1.0" />
+			<HourlyRT hour="6" responseTime="-1.0" />
+			<HourlyRT hour="7" responseTime="-1.0" />
+			<HourlyRT hour="8" responseTime="-1.0" />
+			<HourlyRT hour="9" responseTime="-1.0" />
+			<HourlyRT hour="10" responseTime="-1.0" />
+			<HourlyRT hour="11" responseTime="-1.0" />
+			<HourlyRT hour="12" responseTime="-1.0" />
+			<HourlyRT hour="13" responseTime="-1.0" />
+			<HourlyRT hour="14" responseTime="-1.0" />
+			<HourlyRT hour="15" responseTime="-1.0" />
+			<HourlyRT hour="16" responseTime="-1.0" />
+			<HourlyRT hour="17" responseTime="-1.0" />
+			<HourlyRT hour="18" responseTime="-1.0" />
+			<HourlyRT hour="19" responseTime="-1.0" />
+			<HourlyRT hour="20" responseTime="-1.0" />
+			<HourlyRT hour="21" responseTime="-1.0" />
+			<HourlyRT hour="22" responseTime="-1.0" />
+			<HourlyRT hour="23" responseTime="-1.0" />
+		</Functionality>
+		<Functionality
+			id="d994db74-b92b-49d0-b9ab-07dd1b96d315_86d64d2c-001c-42a0-a637-20671c82b27a_seff"
+			name="openProject">
+			<HourlyRT hour="0" responseTime="3.571428571428571" />
+			<HourlyRT hour="1" responseTime="3.571428571428571" />
+			<HourlyRT hour="2" responseTime="3.571428571428571" />
+			<HourlyRT hour="3" responseTime="3.571428571428571" />
+			<HourlyRT hour="4" responseTime="3.571428571428571" />
+			<HourlyRT hour="5" responseTime="3.571428571428571" />
+			<HourlyRT hour="6" responseTime="3.571428571428571" />
+			<HourlyRT hour="7" responseTime="3.571428571428571" />
+			<HourlyRT hour="8" responseTime="3.571428571428571" />
+			<HourlyRT hour="9" responseTime="3.571428571428571" />
+			<HourlyRT hour="10" responseTime="107.6843891649589" />
+			<HourlyRT hour="11" responseTime="250.4573456963544" />
+			<HourlyRT hour="12" responseTime="3.571428571428571" />
+			<HourlyRT hour="13" responseTime="71.95287411195615" />
+			<HourlyRT hour="14" responseTime="107.6843891649589" />
+			<HourlyRT hour="15" responseTime="179.075175698602" />
+			<HourlyRT hour="16" responseTime="250.4573456963544" />
+			<HourlyRT hour="17" responseTime="107.6843891649589" />
+			<HourlyRT hour="18" responseTime="3.571428571428571" />
+			<HourlyRT hour="19" responseTime="3.571428571428571" />
+			<HourlyRT hour="20" responseTime="3.571428571428571" />
+			<HourlyRT hour="21" responseTime="3.571428571428571" />
+			<HourlyRT hour="22" responseTime="3.571428571428571" />
+			<HourlyRT hour="23" responseTime="3.571428571428571" />
+		</Functionality>
+		<Functionality
+			id="d994db74-b92b-49d0-b9ab-07dd1b96d315_e0674b52-d9d4-4f6c-a02e-2e338c972d49_seff"
+			name="commit">
+			<HourlyRT hour="0" responseTime="1.398809523809524" />
+			<HourlyRT hour="1" responseTime="1.398809523809524" />
+			<HourlyRT hour="2" responseTime="1.398809523809524" />
+			<HourlyRT hour="3" responseTime="1.398809523809524" />
+			<HourlyRT hour="4" responseTime="1.398809523809524" />
+			<HourlyRT hour="5" responseTime="1.398809523809524" />
+			<HourlyRT hour="6" responseTime="1.398809523809524" />
+			<HourlyRT hour="7" responseTime="1.398809523809524" />
+			<HourlyRT hour="8" responseTime="1.398809523809524" />
+			<HourlyRT hour="9" responseTime="2.328480018204233" />
+			<HourlyRT hour="10" responseTime="11.81010558316256" />
+			<HourlyRT hour="11" responseTime="26.08740123630211" />
+			<HourlyRT hour="12" responseTime="18.994693520699" />
+			<HourlyRT hour="13" responseTime="8.236954077862283" />
+			<HourlyRT hour="14" responseTime="11.81010558316256" />
+			<HourlyRT hour="15" responseTime="18.94918423652687" />
+			<HourlyRT hour="16" responseTime="26.08740123630211" />
+			<HourlyRT hour="17" responseTime="11.81010558316256" />
+			<HourlyRT hour="18" responseTime="18.99519059992796" />
+			<HourlyRT hour="19" responseTime="1.398809523809524" />
+			<HourlyRT hour="20" responseTime="1.398809523809524" />
+			<HourlyRT hour="21" responseTime="1.398809523809524" />
+			<HourlyRT hour="22" responseTime="1.398809523809524" />
+			<HourlyRT hour="23" responseTime="1.398809523809524" />
+		</Functionality>
+		<Functionality
+			id="fe3fe33a-96d5-4de8-b548-0bcddff732fe_4eb6addc-1a7a-4feb-a78b-98d3dc548335_seff"
+			name="update">
+			<HourlyRT hour="0" responseTime="0.4166666666666667" />
+			<HourlyRT hour="1" responseTime="0.4166666666666667" />
+			<HourlyRT hour="2" responseTime="0.4166666666666667" />
+			<HourlyRT hour="3" responseTime="0.4166666666666667" />
+			<HourlyRT hour="4" responseTime="0.4166666666666667" />
+			<HourlyRT hour="5" responseTime="0.4166666666666667" />
+			<HourlyRT hour="6" responseTime="0.4166666666666666" />
+			<HourlyRT hour="7" responseTime="0.4166666666666666" />
+			<HourlyRT hour="8" responseTime="0.4166666666666667" />
+			<HourlyRT hour="9" responseTime="0.7885348644245502" />
+			<HourlyRT hour="10" responseTime="0.4166666666666666" />
+			<HourlyRT hour="11" responseTime="0.4166666666666667" />
+			<HourlyRT hour="12" responseTime="7.455020265422457" />
+			<HourlyRT hour="13" responseTime="0.4166666666666667" />
+			<HourlyRT hour="14" responseTime="0.4166666666666666" />
+			<HourlyRT hour="15" responseTime="0.4166666666666667" />
+			<HourlyRT hour="16" responseTime="0.4166666666666667" />
+			<HourlyRT hour="17" responseTime="0.4166666666666666" />
+			<HourlyRT hour="18" responseTime="7.455219097114038" />
+			<HourlyRT hour="19" responseTime="0.4166666666666666" />
+			<HourlyRT hour="20" responseTime="0.4166666666666666" />
+			<HourlyRT hour="21" responseTime="0.4166666666666667" />
+			<HourlyRT hour="22" responseTime="0.4166666666666667" />
+			<HourlyRT hour="23" responseTime="0.4166666666666667" />
+		</Functionality>
+		<Functionality
+			id="fe3fe33a-96d5-4de8-b548-0bcddff732fe_60c8de6b-82d9-4ac8-b3cf-c298140d6f1c_seff"
+			name="commit">
+			<HourlyRT hour="0" responseTime="1.041666666666667" />
+			<HourlyRT hour="1" responseTime="1.041666666666667" />
+			<HourlyRT hour="2" responseTime="1.041666666666667" />
+			<HourlyRT hour="3" responseTime="1.041666666666667" />
+			<HourlyRT hour="4" responseTime="1.041666666666667" />
+			<HourlyRT hour="5" responseTime="1.041666666666667" />
+			<HourlyRT hour="6" responseTime="1.041666666666667" />
+			<HourlyRT hour="7" responseTime="1.041666666666667" />
+			<HourlyRT hour="8" responseTime="1.041666666666667" />
+			<HourlyRT hour="9" responseTime="1.971337161061376" />
+			<HourlyRT hour="10" responseTime="1.041666666666667" />
+			<HourlyRT hour="11" responseTime="1.041666666666667" />
+			<HourlyRT hour="12" responseTime="18.63755066355614" />
+			<HourlyRT hour="13" responseTime="1.041666666666667" />
+			<HourlyRT hour="14" responseTime="1.041666666666667" />
+			<HourlyRT hour="15" responseTime="1.041666666666667" />
+			<HourlyRT hour="16" responseTime="1.041666666666667" />
+			<HourlyRT hour="17" responseTime="1.041666666666667" />
+			<HourlyRT hour="18" responseTime="18.6380477427851" />
+			<HourlyRT hour="19" responseTime="1.041666666666667" />
+			<HourlyRT hour="20" responseTime="1.041666666666667" />
+			<HourlyRT hour="21" responseTime="1.041666666666667" />
+			<HourlyRT hour="22" responseTime="1.041666666666667" />
+			<HourlyRT hour="23" responseTime="1.041666666666667" />
+		</Functionality>
+		<Functionality
+			id="b09a5c5c-0cbe-42a7-9b57-76890d1136cd_87d6a791-0094-4f2f-ac98-85cdf8dc150c_seff"
+			name="databaseAccess">
+			<HourlyRT hour="0" responseTime="0.375" />
+			<HourlyRT hour="1" responseTime="0.375" />
+			<HourlyRT hour="2" responseTime="0.375" />
+			<HourlyRT hour="3" responseTime="0.375" />
+			<HourlyRT hour="4" responseTime="0.375" />
+			<HourlyRT hour="5" responseTime="0.375" />
+			<HourlyRT hour="6" responseTime="0.375" />
+			<HourlyRT hour="7" responseTime="0.375" />
+			<HourlyRT hour="8" responseTime="0.375" />
+			<HourlyRT hour="9" responseTime="0.375" />
+			<HourlyRT hour="10" responseTime="0.375" />
+			<HourlyRT hour="11" responseTime="0.375" />
+			<HourlyRT hour="12" responseTime="0.375" />
+			<HourlyRT hour="13" responseTime="0.375" />
+			<HourlyRT hour="14" responseTime="0.375" />
+			<HourlyRT hour="15" responseTime="0.375" />
+			<HourlyRT hour="16" responseTime="0.375" />
+			<HourlyRT hour="17" responseTime="0.375" />
+			<HourlyRT hour="18" responseTime="0.375" />
+			<HourlyRT hour="19" responseTime="0.375" />
+			<HourlyRT hour="20" responseTime="0.375" />
+			<HourlyRT hour="21" responseTime="0.375" />
+			<HourlyRT hour="22" responseTime="0.375" />
+			<HourlyRT hour="23" responseTime="0.375" />
+		</Functionality>
+		<Functionality
+			id="47f1f956-10f3-4462-9f03-8a3e351b5a6b_60bf91a1-9491-4222-ab0e-7ea1d368b1c2_seff"
+			name="update">
+			<HourlyRT hour="0" responseTime="-1.0" />
+			<HourlyRT hour="1" responseTime="-1.0" />
+			<HourlyRT hour="2" responseTime="-1.0" />
+			<HourlyRT hour="3" responseTime="-1.0" />
+			<HourlyRT hour="4" responseTime="-1.0" />
+			<HourlyRT hour="5" responseTime="-1.0" />
+			<HourlyRT hour="6" responseTime="-1.0" />
+			<HourlyRT hour="7" responseTime="-1.0" />
+			<HourlyRT hour="8" responseTime="-1.0" />
+			<HourlyRT hour="9" responseTime="-1.0" />
+			<HourlyRT hour="10" responseTime="-1.0" />
+			<HourlyRT hour="11" responseTime="-1.0" />
+			<HourlyRT hour="12" responseTime="-1.0" />
+			<HourlyRT hour="13" responseTime="-1.0" />
+			<HourlyRT hour="14" responseTime="-1.0" />
+			<HourlyRT hour="15" responseTime="-1.0" />
+			<HourlyRT hour="16" responseTime="-1.0" />
+			<HourlyRT hour="17" responseTime="-1.0" />
+			<HourlyRT hour="18" responseTime="-1.0" />
+			<HourlyRT hour="19" responseTime="-1.0" />
+			<HourlyRT hour="20" responseTime="-1.0" />
+			<HourlyRT hour="21" responseTime="-1.0" />
+			<HourlyRT hour="22" responseTime="-1.0" />
+			<HourlyRT hour="23" responseTime="-1.0" />
+		</Functionality>
+		<Functionality
+			id="59508e59-ebec-45db-ab21-0593ac6543bf_712d6376-b1c6-4e82-a9f6-9e033c9e1411_seff"
+			name="openProject">
+			<HourlyRT hour="0" responseTime="0.8333333333333334" />
+			<HourlyRT hour="1" responseTime="0.8333333333333334" />
+			<HourlyRT hour="2" responseTime="0.8333333333333334" />
+			<HourlyRT hour="3" responseTime="0.8333333333333334" />
+			<HourlyRT hour="4" responseTime="0.8333333333333334" />
+			<HourlyRT hour="5" responseTime="0.8333333333333334" />
+			<HourlyRT hour="6" responseTime="0.8333333333333334" />
+			<HourlyRT hour="7" responseTime="0.8333333333333334" />
+			<HourlyRT hour="8" responseTime="0.8333333333333333" />
+			<HourlyRT hour="9" responseTime="0.8333333333333334" />
+			<HourlyRT hour="10" responseTime="0.8333333333333334" />
+			<HourlyRT hour="11" responseTime="0.8333333333333334" />
+			<HourlyRT hour="12" responseTime="0.8333333333333334" />
+			<HourlyRT hour="13" responseTime="0.8333333333333334" />
+			<HourlyRT hour="14" responseTime="0.8333333333333334" />
+			<HourlyRT hour="15" responseTime="0.8333333333333334" />
+			<HourlyRT hour="16" responseTime="0.8333333333333334" />
+			<HourlyRT hour="17" responseTime="0.8333333333333334" />
+			<HourlyRT hour="18" responseTime="0.8333333333333334" />
+			<HourlyRT hour="19" responseTime="0.8333333333333334" />
+			<HourlyRT hour="20" responseTime="0.8333333333333334" />
+			<HourlyRT hour="21" responseTime="0.8333333333333334" />
+			<HourlyRT hour="22" responseTime="0.8333333333333334" />
+			<HourlyRT hour="23" responseTime="0.8333333333333334" />
+		</Functionality>
+		<Functionality
+			id="59508e59-ebec-45db-ab21-0593ac6543bf_dd469863-c893-4ec9-8c5a-8f1013eabb37_seff"
+			name="partialRead">
+			<HourlyRT hour="0" responseTime="0.4166666666666667" />
+			<HourlyRT hour="1" responseTime="0.4166666666666667" />
+			<HourlyRT hour="2" responseTime="0.4166666666666667" />
+			<HourlyRT hour="3" responseTime="0.4166666666666667" />
+			<HourlyRT hour="4" responseTime="0.4166666666666667" />
+			<HourlyRT hour="5" responseTime="0.4166666666666667" />
+			<HourlyRT hour="6" responseTime="0.4166666666666667" />
+			<HourlyRT hour="7" responseTime="0.4166666666666667" />
+			<HourlyRT hour="8" responseTime="0.4166666666666667" />
+			<HourlyRT hour="9" responseTime="0.4166666666666667" />
+			<HourlyRT hour="10" responseTime="0.4166666666666667" />
+			<HourlyRT hour="11" responseTime="0.4166666666666667" />
+			<HourlyRT hour="12" responseTime="0.4166666666666667" />
+			<HourlyRT hour="13" responseTime="0.4166666666666667" />
+			<HourlyRT hour="14" responseTime="0.4166666666666667" />
+			<HourlyRT hour="15" responseTime="0.4166666666666667" />
+			<HourlyRT hour="16" responseTime="0.4166666666666667" />
+			<HourlyRT hour="17" responseTime="0.4166666666666667" />
+			<HourlyRT hour="18" responseTime="0.4166666666666667" />
+			<HourlyRT hour="19" responseTime="0.4166666666666667" />
+			<HourlyRT hour="20" responseTime="0.4166666666666667" />
+			<HourlyRT hour="21" responseTime="0.4166666666666667" />
+			<HourlyRT hour="22" responseTime="0.4166666666666667" />
+			<HourlyRT hour="23" responseTime="0.4166666666666667" />
+		</Functionality>
+		<Functionality
+			id="a8ef4028-041a-493a-9533-69128163e372_82547114-2323-4b75-a1cd-5d389585444b_seff"
+			name="readCompleteProjectConfiguration">
+			<HourlyRT hour="0" responseTime="0.67625" />
+			<HourlyRT hour="1" responseTime="0.67625" />
+			<HourlyRT hour="2" responseTime="0.67625" />
+			<HourlyRT hour="3" responseTime="0.67625" />
+			<HourlyRT hour="4" responseTime="0.67625" />
+			<HourlyRT hour="5" responseTime="0.67625" />
+			<HourlyRT hour="6" responseTime="0.67625" />
+			<HourlyRT hour="7" responseTime="0.67625" />
+			<HourlyRT hour="8" responseTime="0.67625" />
+			<HourlyRT hour="9" responseTime="0.67625" />
+			<HourlyRT hour="10" responseTime="0.67625" />
+			<HourlyRT hour="11" responseTime="0.67625" />
+			<HourlyRT hour="12" responseTime="0.67625" />
+			<HourlyRT hour="13" responseTime="0.67625" />
+			<HourlyRT hour="14" responseTime="0.67625" />
+			<HourlyRT hour="15" responseTime="0.67625" />
+			<HourlyRT hour="16" responseTime="0.67625" />
+			<HourlyRT hour="17" responseTime="0.67625" />
+			<HourlyRT hour="18" responseTime="0.67625" />
+			<HourlyRT hour="19" responseTime="0.67625" />
+			<HourlyRT hour="20" responseTime="0.67625" />
+			<HourlyRT hour="21" responseTime="0.67625" />
+			<HourlyRT hour="22" responseTime="0.67625" />
+			<HourlyRT hour="23" responseTime="0.67625" />
+		</Functionality>
+	</Solution>
+</SolutionMultiResult>

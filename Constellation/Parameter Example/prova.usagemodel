@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<usagemodel:UsageModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:stoex="http://sdq.ipd.uka.de/StochasticExpressions/1.0" xmlns:usagemodel="http://sdq.ipd.uka.de/PalladioComponentModel/UsageModel/5.0">
+  <usageScenario_UsageModel id="_7w6ogLtfEeSWB_RN81e7yw" entityName="defaultUsageScenario">
+    <scenarioBehaviour_UsageScenario id="_7w7PkLtfEeSWB_RN81e7yw" entityName="defaultUsageScenarioBehaviour">
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Start" id="_7w8dsLtfEeSWB_RN81e7yw" successor="_G1LnMLtgEeSWB_RN81e7yw"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Stop" id="_7w8dsbtfEeSWB_RN81e7yw" predecessor="_G1LnMLtgEeSWB_RN81e7yw"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_G1LnMLtgEeSWB_RN81e7yw" successor="_7w8dsbtfEeSWB_RN81e7yw" predecessor="_7w8dsLtfEeSWB_RN81e7yw">
+        <providedRole_EntryLevelSystemCall href="prova.system#_DinDMLtgEeSWB_RN81e7yw"/>
+        <operationSignature__EntryLevelSystemCall href="prova.repository#_gUV0ELteEeSWB_RN81e7yw"/>
+        <inputParameterUsages_EntryLevelSystemCall>
+          <variableCharacterisation_VariableUsage type="BYTESIZE">
+            <specification_VariableCharacterisation specification="5000"/>
+          </variableCharacterisation_VariableUsage>
+          <namedReference__VariableUsage xsi:type="stoex:VariableReference" referenceName="parameter0"/>
+        </inputParameterUsages_EntryLevelSystemCall>
+      </actions_ScenarioBehaviour>
+    </scenarioBehaviour_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="100">
+      <thinkTime_ClosedWorkload specification="10"/>
+    </workload_UsageScenario>
+  </usageScenario_UsageModel>
+</usagemodel:UsageModel>

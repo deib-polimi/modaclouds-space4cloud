@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<allocation:Allocation xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:allocation="http://sdq.ipd.uka.de/PalladioComponentModel/Allocation/5.0" id="_nHlZcGxBEeSEjMzKWJVheg" entityName="defaultAllocation">
+  <targetResourceEnvironment_Allocation href="test.resourceenvironment#/"/>
+  <system_Allocation href="test.system#_ihibYGxBEeSEjMzKWJVheg"/>
+  <allocationContexts_Allocation id="_nHlZcmxBEeSEjMzKWJVheg" entityName="AdministrationServer_adminServer">
+    <resourceContainer_AllocationContext href="test.resourceenvironment#0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer"/>
+    <assemblyContext_AllocationContext href="test.system#a8ef4028-041a-493a-9533-69128163e372__assembly"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_nHmAgWxBEeSEjMzKWJVheg" entityName="AdministrationDatabase_adminServer">
+    <resourceContainer_AllocationContext href="test.resourceenvironment#0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer"/>
+    <assemblyContext_AllocationContext href="test.system#b09a5c5c-0cbe-42a7-9b57-76890d1136cd__assembly"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_nHmAh2xBEeSEjMzKWJVheg" entityName="ConstellationSVNAgent_svnAgent">
+    <resourceContainer_AllocationContext href="test.resourceenvironment#e626e206-d2fa-426e-a6e2-888ae6bf472d__resourceContainer"/>
+    <assemblyContext_AllocationContext href="test.system#47f1f956-10f3-4462-9f03-8a3e351b5a6b__assembly"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_nHmAimxBEeSEjMzKWJVheg" entityName="ConstellationHTTPAgent_httpAgent">
+    <resourceContainer_AllocationContext href="test.resourceenvironment#d133dad5-79cb-44f8-9cd2-594a04417030__resourceContainer"/>
+    <assemblyContext_AllocationContext href="test.system#59508e59-ebec-45db-ab21-0593ac6543bf__assembly"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_nHmAjWxBEeSEjMzKWJVheg" entityName="ConferenceAgent_conferenceAgent">
+    <resourceContainer_AllocationContext href="test.resourceenvironment#62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer"/>
+    <assemblyContext_AllocationContext href="test.system#d994db74-b92b-49d0-b9ab-07dd1b96d315__assembly"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_nHmAkGxBEeSEjMzKWJVheg" entityName="ReadOnlyConferenceReplica_conferenceReplica">
+    <resourceContainer_AllocationContext href="test.resourceenvironment#d913ea2c-adf4-4da3-9d6a-3ccc65659114__resourceContainer"/>
+    <assemblyContext_AllocationContext href="test.system#fe3fe33a-96d5-4de8-b548-0bcddff732fe__assembly"/>
+  </allocationContexts_Allocation>
+</allocation:Allocation>

@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<usagemodel:UsageModel xmi:version="2.0" xmlns:usagemodel="http://sdq.ipd.uka.de/PalladioComponentModel/UsageModel/5.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<usageScenario_UsageModel entityName="SVN Agent" id="a6d88926-62c6-4e92-af0b-a5ecd8fe3843">
+		<scenarioBehaviour_UsageScenario>
+			<actions_ScenarioBehaviour id="4a927915-2818-466a-9d15-b45c16443d2b" successor="47b16744-87d3-4954-af7d-427e5d31273b" xsi:type="usagemodel:Start"/>
+			<actions_ScenarioBehaviour id="33fe336d-6ac4-414e-a1e5-8a10b1d00c8a" predecessor="47b16744-87d3-4954-af7d-427e5d31273b" xsi:type="usagemodel:Stop"/>
+			<actions_ScenarioBehaviour id="47b16744-87d3-4954-af7d-427e5d31273b" predecessor="4a927915-2818-466a-9d15-b45c16443d2b" successor="33fe336d-6ac4-414e-a1e5-8a10b1d00c8a" xsi:type="usagemodel:Branch">
+				<branchTransitions_Branch branchProbability="0.05">
+					<branchedBehaviour_BranchTransition>
+						<actions_ScenarioBehaviour id="3bc61104-9d20-453e-85ff-9e7b9de135f4" predecessor="5904dfab-2dbd-4d83-9256-98bdf036a220" successor="2bce4588-eace-4ff0-9e4c-6c0143bb52ea" xsi:type="usagemodel:EntryLevelSystemCall">
+							<providedRole_EntryLevelSystemCall href="test.system#a8ef4028-041a-493a-9533-69128163e372_a07569ab-c71a-4d61-bcb9-bee05a7e2452__providedRole"/>
+							<operationSignature__EntryLevelSystemCall href="test.repository#a8ef4028-041a-493a-9533-69128163e372_e4dc19b1-39f0-48f4-8586-f1fe49399887"/>
+						</actions_ScenarioBehaviour>
+						<actions_ScenarioBehaviour id="2bce4588-eace-4ff0-9e4c-6c0143bb52ea" predecessor="3bc61104-9d20-453e-85ff-9e7b9de135f4" successor="0947ba6f-43b1-4302-83e5-1b0785cad98e" xsi:type="usagemodel:EntryLevelSystemCall">
+							<providedRole_EntryLevelSystemCall href="test.system#a8ef4028-041a-493a-9533-69128163e372_a07569ab-c71a-4d61-bcb9-bee05a7e2452__providedRole"/>
+							<operationSignature__EntryLevelSystemCall href="test.repository#a8ef4028-041a-493a-9533-69128163e372_82547114-2323-4b75-a1cd-5d389585444b"/>
+						</actions_ScenarioBehaviour>
+						<actions_ScenarioBehaviour id="0947ba6f-43b1-4302-83e5-1b0785cad98e" predecessor="2bce4588-eace-4ff0-9e4c-6c0143bb52ea" successor="eb48266f-c9e7-45db-91b4-64a6413640d5" xsi:type="usagemodel:EntryLevelSystemCall">
+							<providedRole_EntryLevelSystemCall href="test.system#47f1f956-10f3-4462-9f03-8a3e351b5a6b_fa589e26-8f7c-460c-95f5-0aef025fc84c__providedRole"/>
+							<operationSignature__EntryLevelSystemCall href="test.repository#47f1f956-10f3-4462-9f03-8a3e351b5a6b_2212f70a-614c-456b-841d-d0bafa70bbe2"/>
+						</actions_ScenarioBehaviour>
+						<actions_ScenarioBehaviour id="4fb75d54-8277-469d-a1e0-dfc374b37867" predecessor="eb48266f-c9e7-45db-91b4-64a6413640d5" successor="1ce47cbd-3adf-412e-be65-91e71a9c56f0" xsi:type="usagemodel:EntryLevelSystemCall">
+							<providedRole_EntryLevelSystemCall href="test.system#47f1f956-10f3-4462-9f03-8a3e351b5a6b_fa589e26-8f7c-460c-95f5-0aef025fc84c__providedRole"/>
+							<operationSignature__EntryLevelSystemCall href="test.repository#47f1f956-10f3-4462-9f03-8a3e351b5a6b_60bf91a1-9491-4222-ab0e-7ea1d368b1c2"/>
+						</actions_ScenarioBehaviour>
+						<actions_ScenarioBehaviour id="5904dfab-2dbd-4d83-9256-98bdf036a220" successor="3bc61104-9d20-453e-85ff-9e7b9de135f4" xsi:type="usagemodel:Start"/>
+						<actions_ScenarioBehaviour id="1ce47cbd-3adf-412e-be65-91e71a9c56f0" predecessor="4fb75d54-8277-469d-a1e0-dfc374b37867" xsi:type="usagemodel:Stop"/>
+						<actions_ScenarioBehaviour id="eb48266f-c9e7-45db-91b4-64a6413640d5" predecessor="0947ba6f-43b1-4302-83e5-1b0785cad98e" successor="4fb75d54-8277-469d-a1e0-dfc374b37867" xsi:type="usagemodel:EntryLevelSystemCall">
+							<providedRole_EntryLevelSystemCall href="test.system#59508e59-ebec-45db-ab21-0593ac6543bf_6731d8cd-0e00-4488-86e0-3b1a92e93114__providedRole"/>
+							<operationSignature__EntryLevelSystemCall href="test.repository#59508e59-ebec-45db-ab21-0593ac6543bf_712d6376-b1c6-4e82-a9f6-9e033c9e1411"/>
+						</actions_ScenarioBehaviour>
+					</branchedBehaviour_BranchTransition>
+				</branchTransitions_Branch>
+				<branchTransitions_Branch branchProbability="0.1">
+					<branchedBehaviour_BranchTransition>
+						<actions_ScenarioBehaviour id="e3d23456-4d0e-4509-8a4e-92544143a8a0" predecessor="352fec90-6574-411c-bf06-39f563da17a5" successor="a9c956d0-8309-4e79-8054-873bc3278e93" xsi:type="usagemodel:EntryLevelSystemCall">
+							<providedRole_EntryLevelSystemCall href="test.system#47f1f956-10f3-4462-9f03-8a3e351b5a6b_fa589e26-8f7c-460c-95f5-0aef025fc84c__providedRole"/>
+							<operationSignature__EntryLevelSystemCall href="test.repository#47f1f956-10f3-4462-9f03-8a3e351b5a6b_60bf91a1-9491-4222-ab0e-7ea1d368b1c2"/>
+						</actions_ScenarioBehaviour>
+						<actions_ScenarioBehaviour id="352fec90-6574-411c-bf06-39f563da17a5" successor="e3d23456-4d0e-4509-8a4e-92544143a8a0" xsi:type="usagemodel:Start"/>
+						<actions_ScenarioBehaviour id="a9c956d0-8309-4e79-8054-873bc3278e93" predecessor="e3d23456-4d0e-4509-8a4e-92544143a8a0" xsi:type="usagemodel:Stop"/>
+					</branchedBehaviour_BranchTransition>
+				</branchTransitions_Branch>
+				<branchTransitions_Branch branchProbability="0.1">
+					<branchedBehaviour_BranchTransition>
+						<actions_ScenarioBehaviour id="91c50a30-64a2-41d4-a1da-c107da4d7414" predecessor="d8e2227e-7bfd-41ee-ba14-10c485f4902a" successor="2bba5dc0-eed9-46cc-ae1c-9f1cb9c65481" xsi:type="usagemodel:EntryLevelSystemCall">
+							<providedRole_EntryLevelSystemCall href="test.system#47f1f956-10f3-4462-9f03-8a3e351b5a6b_fa589e26-8f7c-460c-95f5-0aef025fc84c__providedRole"/>
+							<operationSignature__EntryLevelSystemCall href="test.repository#47f1f956-10f3-4462-9f03-8a3e351b5a6b_fc51bf8e-cb4c-4089-a33e-c0a23a7c96a5"/>
+						</actions_ScenarioBehaviour>
+						<actions_ScenarioBehaviour id="d8e2227e-7bfd-41ee-ba14-10c485f4902a" successor="91c50a30-64a2-41d4-a1da-c107da4d7414" xsi:type="usagemodel:Start"/>
+						<actions_ScenarioBehaviour id="2bba5dc0-eed9-46cc-ae1c-9f1cb9c65481" predecessor="91c50a30-64a2-41d4-a1da-c107da4d7414" xsi:type="usagemodel:Stop"/>
+					</branchedBehaviour_BranchTransition>
+				</branchTransitions_Branch>
+				<branchTransitions_Branch branchProbability="0.75">
+					<branchedBehaviour_BranchTransition>
+						<actions_ScenarioBehaviour id="03b4a34f-0609-4de7-af97-b89e16075afd" successor="32f2d229-8e9f-4f11-86a5-0fbd8c3562a2" xsi:type="usagemodel:Start"/>
+						<actions_ScenarioBehaviour id="11fdf503-6134-45a3-b88d-2a6ade2a676d" predecessor="32f2d229-8e9f-4f11-86a5-0fbd8c3562a2" xsi:type="usagemodel:Stop"/>
+						<actions_ScenarioBehaviour id="32f2d229-8e9f-4f11-86a5-0fbd8c3562a2" predecessor="03b4a34f-0609-4de7-af97-b89e16075afd" successor="11fdf503-6134-45a3-b88d-2a6ade2a676d" xsi:type="usagemodel:EntryLevelSystemCall">
+							<providedRole_EntryLevelSystemCall href="test.system#59508e59-ebec-45db-ab21-0593ac6543bf_6731d8cd-0e00-4488-86e0-3b1a92e93114__providedRole"/>
+							<operationSignature__EntryLevelSystemCall href="test.repository#59508e59-ebec-45db-ab21-0593ac6543bf_dd469863-c893-4ec9-8c5a-8f1013eabb37"/>
+						</actions_ScenarioBehaviour>
+					</branchedBehaviour_BranchTransition>
+				</branchTransitions_Branch>
+			</actions_ScenarioBehaviour>
+		</scenarioBehaviour_UsageScenario>
+		<workload_UsageScenario population="1" xsi:type="usagemodel:ClosedWorkload">
+			<thinkTime_ClosedWorkload specification="1"/>
+		</workload_UsageScenario>
+	</usageScenario_UsageModel>
+</usagemodel:UsageModel>

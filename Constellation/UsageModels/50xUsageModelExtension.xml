@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<usageModelExtensions
+	xmlns="http://www.modaclouds.eu/xsd/2013/6/usage-model-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.modaclouds.eu/xsd/2013/6/usage-model-ext https://raw.githubusercontent.com/deib-polimi/modaclouds-qos-models/master/metamodels/s4cextension/usage_model_extension.xsd">
+	<usageModelExtension scenarioId="b8af92be-a302-48aa-9ad5-728c0b7d39b2">
+		<closedWorkload>
+			<workloadElement hour="0" population="50" thinkTime="96" />
+			<workloadElement hour="1" population="50" thinkTime="96" />
+			<workloadElement hour="2" population="50" thinkTime="96" />
+			<workloadElement hour="3" population="50" thinkTime="96" />
+			<workloadElement hour="4" population="50" thinkTime="96" />
+			<workloadElement hour="5" population="50" thinkTime="96" />
+			<workloadElement hour="6" population="100" thinkTime="96" />
+			<workloadElement hour="7" population="100" thinkTime="96" />
+			<workloadElement hour="8" population="150" thinkTime="96" />
+			<workloadElement hour="9" population="600" thinkTime="96" />
+			<workloadElement hour="10" population="1500" thinkTime="96" />
+			<workloadElement hour="11" population="2500" thinkTime="96" />
+			<workloadElement hour="12" population="1000" thinkTime="96" />
+			<workloadElement hour="13" population="1250" thinkTime="96" />
+			<workloadElement hour="14" population="1500" thinkTime="96" />
+			<workloadElement hour="15" population="2000" thinkTime="96" />
+			<workloadElement hour="16" population="2500" thinkTime="96" />
+			<workloadElement hour="17" population="1500" thinkTime="96" />
+			<workloadElement hour="18" population="500" thinkTime="96" />
+			<workloadElement hour="19" population="200" thinkTime="96" />
+			<workloadElement hour="20" population="100" thinkTime="96" />
+			<workloadElement hour="21" population="50" thinkTime="96" />
+			<workloadElement hour="22" population="50" thinkTime="96" />
+			<workloadElement hour="23" population="50" thinkTime="96" />
+		</closedWorkload>
+	</usageModelExtension>
+</usageModelExtensions>

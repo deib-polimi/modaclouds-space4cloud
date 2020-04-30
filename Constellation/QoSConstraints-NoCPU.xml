@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+<constraints xmlns="http://www.modaclouds.eu/xsd/1.0/qos_constraints_schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.modaclouds.eu/xsd/1.0/qos_constraints_schema https://raw.githubusercontent.com/deib-polimi/modaclouds-qos-models/master/metamodels/qosconstraints/qos_constraints_schema.xsd">
+	<constraint
+		id="b3f8e939-f4e1-420b-9da0-e8c97b12ac50_47f1f956-10f3-4462-9f03-8a3e351b5a6b_fc51bf8e-cb4c-4089-a33e-c0a23a7c96a5_seff"
+		name="SVNAgentWriteModelAverage">
+		<targetResourceIDRef>47f1f956-10f3-4462-9f03-8a3e351b5a6b_fc51bf8e-cb4c-4089-a33e-c0a23a7c96a5_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>60000</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint
+		id="218f22dd-7621-4af0-9ca5-5044f2c2bb48_47f1f956-10f3-4462-9f03-8a3e351b5a6b_fc51bf8e-cb4c-4089-a33e-c0a23a7c96a5_seff"
+		name="SVNAgentWriteModelPercentile">
+		<targetResourceIDRef>47f1f956-10f3-4462-9f03-8a3e351b5a6b_fc51bf8e-cb4c-4089-a33e-c0a23a7c96a5_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Percentile">
+			<parameter name="thPercentile">95</parameter>
+		</metricAggregation>
+		<range>
+			<hasMaxValue>300000</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint
+		id="f6946085-99e4-45a5-8b09-602b2580d680_62c6ba36-8da7-4e0d-9301-a8e09983a140"
+		name="ConferenceAgentNonReplicable">
+		<targetResourceIDRef>62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer
+		</targetResourceIDRef>
+		<targetClass>VM</targetClass>
+		<metric>Replication</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>1</hasMaxValue>
+			<hasMinValue>1</hasMinValue>
+		</range>
+	</constraint>
+	<constraint
+		id="6dd04d79-4d25-4b2b-be25-8c3369b98f95_0a3d2fa4-bfa4-41bf-b435-42a122162a12"
+		name="AdminServerNonReplicable">
+		<targetResourceIDRef>0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer
+		</targetResourceIDRef>
+		<targetClass>VM</targetClass>
+		<metric>Replication</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>1</hasMaxValue>
+			<hasMinValue>1</hasMinValue>
+		</range>
+	</constraint>
+	<constraint
+		id="c023cc9b-64ca-473c-bf75-6be5c36f1711_47f1f956-10f3-4462-9f03-8a3e351b5a6b_60bf91a1-9491-4222-ab0e-7ea1d368b1c2_seff"
+		name="SVNAgentReadModelAverage">
+		<targetResourceIDRef>47f1f956-10f3-4462-9f03-8a3e351b5a6b_60bf91a1-9491-4222-ab0e-7ea1d368b1c2_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>15000</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint
+		id="1ac5bf6e-d247-48ac-8b93-519958f4bb72_47f1f956-10f3-4462-9f03-8a3e351b5a6b_60bf91a1-9491-4222-ab0e-7ea1d368b1c2_seff"
+		name="SVNAgentReadModelPercentile">
+		<targetResourceIDRef>47f1f956-10f3-4462-9f03-8a3e351b5a6b_60bf91a1-9491-4222-ab0e-7ea1d368b1c2_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Percentile">
+			<parameter name="thPercentile">95</parameter>
+		</metricAggregation>
+		<range>
+			<hasMaxValue>30000</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint
+		id="0c5a6744-5acb-4951-98e6-7d1cd1c5d4b4_d994db74-b92b-49d0-b9ab-07dd1b96d315_e0674b52-d9d4-4f6c-a02e-2e338c972d49_seff"
+		name="ConferenceAgentWriteModelAverage">
+		<targetResourceIDRef>d994db74-b92b-49d0-b9ab-07dd1b96d315_e0674b52-d9d4-4f6c-a02e-2e338c972d49_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>30000</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint
+		id="f74d358e-5eee-4f8f-b021-e5f24874491f_d994db74-b92b-49d0-b9ab-07dd1b96d315_e0674b52-d9d4-4f6c-a02e-2e338c972d49_seff"
+		name="ConferenceAgentWriteModelPercentile">
+		<targetResourceIDRef>d994db74-b92b-49d0-b9ab-07dd1b96d315_e0674b52-d9d4-4f6c-a02e-2e338c972d49_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Percentile">
+			<parameter name="thPercentile">95</parameter>
+		</metricAggregation>
+		<range>
+			<hasMaxValue>300000</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint
+		id="cc14b63c-b4f4-4a58-8a01-6d43201402f9_fe3fe33a-96d5-4de8-b548-0bcddff732fe_4eb6addc-1a7a-4feb-a78b-98d3dc548335_seff"
+		name="ConferenceReplicaReadModelAverage">
+		<targetResourceIDRef>fe3fe33a-96d5-4de8-b548-0bcddff732fe_4eb6addc-1a7a-4feb-a78b-98d3dc548335_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Percentile">
+			<parameter name="thPercentile">95</parameter>
+		</metricAggregation>
+		<range>
+			<hasMaxValue>30000</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint
+		id="991a74a2-985e-4ba1-859b-69a822e70a98_fe3fe33a-96d5-4de8-b548-0bcddff732fe_4eb6addc-1a7a-4feb-a78b-98d3dc548335_seff"
+		name="ConferenceReplicaReadModelPercentile">
+		<targetResourceIDRef>fe3fe33a-96d5-4de8-b548-0bcddff732fe_4eb6addc-1a7a-4feb-a78b-98d3dc548335_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>15000</hasMaxValue>
+		</range>
+	</constraint>
+
+	<constraint
+		id="34ce98b3-f78d-4230-92d6-f3b62a7c9e07_e626e206-d2fa-426e-a6e2-888ae6bf472d"
+		name="SVNAgentNonReplicable">
+		<targetResourceIDRef>e626e206-d2fa-426e-a6e2-888ae6bf472d__resourceContainer
+		</targetResourceIDRef>
+		<targetClass>VM</targetClass>
+		<metric>Replication</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>1</hasMaxValue>
+			<hasMinValue>1</hasMinValue>
+		</range>
+	</constraint>
+	<constraint
+		id="e552ffaf-dc79-4dba-8f27-6190e7eb2d4b_59508e59-ebec-45db-ab21-0593ac6543bf_dd469863-c893-4ec9-8c5a-8f1013eabb37_seff"
+		name="HTTPAgentReadModelAverage">
+		<targetResourceIDRef>59508e59-ebec-45db-ab21-0593ac6543bf_dd469863-c893-4ec9-8c5a-8f1013eabb37_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMaxValue>5000</hasMaxValue>
+		</range>
+	</constraint>
+
+	<constraint
+		id="90c87df1-f9f6-49d5-9c25-0f6db9863239_59508e59-ebec-45db-ab21-0593ac6543bf_dd469863-c893-4ec9-8c5a-8f1013eabb37_seff"
+		name="HTTPAgentReadModelPercentile">
+		<targetResourceIDRef>59508e59-ebec-45db-ab21-0593ac6543bf_dd469863-c893-4ec9-8c5a-8f1013eabb37_seff
+		</targetResourceIDRef>
+		<targetClass>Method</targetClass>
+		<metric>ResponseTime</metric>
+		<metricAggregation aggregateFunction="Percentile">
+			<parameter name="thPercentile">95</parameter>
+		</metricAggregation>
+		<range>
+			<hasMaxValue>12000</hasMaxValue>
+		</range>
+	</constraint>
+	<constraint id="a4" name="SVN min ram">
+		<targetResourceIDRef>e626e206-d2fa-426e-a6e2-888ae6bf472d__resourceContainer
+		</targetResourceIDRef>
+		<metric>RAM</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMinValue>8000</hasMinValue>
+		</range>
+	</constraint>
+	<constraint id="a4" name="Admin min ram">
+		<targetResourceIDRef>0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer
+		</targetResourceIDRef>
+		<metric>RAM</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMinValue>2000</hasMinValue>
+		</range>
+	</constraint>
+	<constraint id="a4" name="HTTP min ram">
+		<targetResourceIDRef>d133dad5-79cb-44f8-9cd2-594a04417030__resourceContainer
+		</targetResourceIDRef>
+		<metric>RAM</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMinValue>2000</hasMinValue>
+		</range>
+	</constraint>
+	<constraint id="a4" name="ConferenceAgent min ram">
+		<targetResourceIDRef>62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer
+		</targetResourceIDRef>
+		<metric>RAM</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMinValue>2000</hasMinValue>
+		</range>
+	</constraint>
+	<constraint id="a4" name="ConferenceReplica min ram">
+		<targetResourceIDRef>d913ea2c-adf4-4da3-9d6a-3ccc65659114__resourceContainer
+		</targetResourceIDRef>
+		<metric>RAM</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMinValue>2000</hasMinValue>
+		</range>
+	</constraint>
+	<constraint id="m1" name="Minimum Workload Partition">
+		<targetResourceIDRef>Application</targetResourceIDRef>
+		<metric>WorkloadPercentage</metric>
+		<metricAggregation aggregateFunction="Average" />
+		<range>
+			<hasMinValue>20</hasMinValue>
+		</range>
+	</constraint>
+</constraints>

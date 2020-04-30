@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" type="CompositeModel" name="prova.system_diagram" measurementUnit="Pixel">
+  <children xsi:type="notation:Shape" type="2002" fontName="Segoe UI">
+    <children xsi:type="notation:DecorationNode" type="5012"/>
+    <children xsi:type="notation:DecorationNode" type="7002">
+      <children xsi:type="notation:Shape" type="3006" fontName="Segoe UI">
+        <children xsi:type="notation:DecorationNode" type="5009"/>
+        <children xsi:type="notation:Shape" type="3007" fontName="Segoe UI">
+          <children xsi:type="notation:DecorationNode" type="5007">
+            <layoutConstraint xsi:type="notation:Location" y="5"/>
+          </children>
+          <element href="prova.repository#_5AtnMLteEeSWB_RN81e7yw"/>
+          <layoutConstraint xsi:type="notation:Bounds"/>
+        </children>
+        <children xsi:type="notation:Shape" type="3008" fontName="Segoe UI">
+          <children xsi:type="notation:DecorationNode" type="5008">
+            <layoutConstraint xsi:type="notation:Location" y="5"/>
+          </children>
+          <element href="prova.repository#_hjerQLtfEeSWB_RN81e7yw"/>
+          <layoutConstraint xsi:type="notation:Bounds"/>
+        </children>
+        <element href="prova.system#_AEhywLtgEeSWB_RN81e7yw"/>
+        <layoutConstraint xsi:type="notation:Bounds" x="227" y="42"/>
+      </children>
+      <children xsi:type="notation:Shape" type="3006" fontName="Segoe UI">
+        <children xsi:type="notation:DecorationNode" type="5009"/>
+        <children xsi:type="notation:Shape" type="3007" fontName="Segoe UI">
+          <children xsi:type="notation:DecorationNode" type="5007">
+            <layoutConstraint xsi:type="notation:Location" y="5"/>
+          </children>
+          <element href="prova.repository#_hDjOALtfEeSWB_RN81e7yw"/>
+          <layoutConstraint xsi:type="notation:Bounds"/>
+        </children>
+        <element href="prova.system#_BzkHcLtgEeSWB_RN81e7yw"/>
+        <layoutConstraint xsi:type="notation:Bounds" x="253" y="188"/>
+      </children>
+    </children>
+    <children xsi:type="notation:Shape" type="3011" fontName="Segoe UI">
+      <children xsi:type="notation:DecorationNode" type="5013">
+        <layoutConstraint xsi:type="notation:Location" y="5"/>
+      </children>
+      <element href="prova.system#_DinDMLtgEeSWB_RN81e7yw"/>
+      <layoutConstraint xsi:type="notation:Bounds"/>
+    </children>
+    <element href="prova.system#__OqhwLtfEeSWB_RN81e7yw"/>
+    <layoutConstraint xsi:type="notation:Bounds"/>
+  </children>
+  <styles xsi:type="notation:DiagramStyle"/>
+  <element href="prova.system#__OqhwLtfEeSWB_RN81e7yw"/>
+  <edges xsi:type="notation:Connector" type="4004" source="//@children.0/@children.1/@children.0/@children.2" target="//@children.0/@children.1/@children.1/@children.1">
+    <styles xsi:type="notation:FontStyle" fontName="Segoe UI"/>
+    <element href="prova.system#_E88TMLtgEeSWB_RN81e7yw"/>
+    <bendpoints xsi:type="notation:RelativeBendpoints" points="[7, 0, 149, -146]$[-143, 147, -1, 1]"/>
+    <sourceAnchor xsi:type="notation:IdentityAnchor" id="(0.7666666666666667,0.36666666666666664)"/>
+  </edges>
+  <edges xsi:type="notation:Connector" type="4006" source="//@children.0/@children.2" target="//@children.0/@children.1/@children.0/@children.1">
+    <styles xsi:type="notation:FontStyle" fontName="Segoe UI"/>
+    <element href="prova.system#_F6ReILtgEeSWB_RN81e7yw"/>
+    <bendpoints xsi:type="notation:RelativeBendpoints" points="[30, 0, -209, 136]$[232, -135, -7, 1]"/>
+    <targetAnchor xsi:type="notation:IdentityAnchor" id="(0.23333333333333334,0.5666666666666667)"/>
+  </edges>
+</notation:Diagram>

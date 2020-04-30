@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<multiCloudExtensions xmlns="http://www.modaclouds.eu/xsd/2013/6/multi-cloud-extension">
+    <multiCloudExtension id="1475028963">
+        <provider name="Amazon">
+            <workloadPartition hour="0" value="100"/>
+            <workloadPartition hour="1" value="100"/>
+            <workloadPartition hour="2" value="100"/>
+            <workloadPartition hour="3" value="100"/>
+            <workloadPartition hour="4" value="100"/>
+            <workloadPartition hour="5" value="100"/>
+            <workloadPartition hour="6" value="100"/>
+            <workloadPartition hour="7" value="100"/>
+            <workloadPartition hour="8" value="100"/>
+            <workloadPartition hour="9" value="100"/>
+            <workloadPartition hour="10" value="100"/>
+            <workloadPartition hour="11" value="100"/>
+            <workloadPartition hour="12" value="100"/>
+            <workloadPartition hour="13" value="100"/>
+            <workloadPartition hour="14" value="100"/>
+            <workloadPartition hour="15" value="100"/>
+            <workloadPartition hour="16" value="100"/>
+            <workloadPartition hour="17" value="100"/>
+            <workloadPartition hour="18" value="100"/>
+            <workloadPartition hour="19" value="100"/>
+            <workloadPartition hour="20" value="100"/>
+            <workloadPartition hour="21" value="100"/>
+            <workloadPartition hour="22" value="100"/>
+            <workloadPartition hour="23" value="100"/>
+        </provider>
+    </multiCloudExtension>
+</multiCloudExtensions>

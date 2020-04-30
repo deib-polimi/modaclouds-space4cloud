@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Costs xmlns="http://www.modaclouds.eu/xsd/2014/11/costs" solutionID="993526935">
+    <cost totalCost="27.24">
+        <hourPrice hour="0" cost="1.0199999809265137"/>
+        <hourPrice hour="1" cost="1.0199999809265137"/>
+        <hourPrice hour="2" cost="1.0199999809265137"/>
+        <hourPrice hour="3" cost="1.0199999809265137"/>
+        <hourPrice hour="4" cost="1.0199999809265137"/>
+        <hourPrice hour="5" cost="1.0199999809265137"/>
+        <hourPrice hour="6" cost="1.0199999809265137"/>
+        <hourPrice hour="7" cost="1.0199999809265137"/>
+        <hourPrice hour="8" cost="1.0199999809265137"/>
+        <hourPrice hour="9" cost="1.1399999856948853"/>
+        <hourPrice hour="10" cost="1.3799999952316284"/>
+        <hourPrice hour="11" cost="1.3799999952316284"/>
+        <hourPrice hour="12" cost="1.1399999856948853"/>
+        <hourPrice hour="13" cost="1.3799999952316284"/>
+        <hourPrice hour="14" cost="1.3799999952316284"/>
+        <hourPrice hour="15" cost="1.3799999952316284"/>
+        <hourPrice hour="16" cost="1.3799999952316284"/>
+        <hourPrice hour="17" cost="1.3799999952316284"/>
+        <hourPrice hour="18" cost="1.0199999809265137"/>
+        <hourPrice hour="19" cost="1.0199999809265137"/>
+        <hourPrice hour="20" cost="1.0199999809265137"/>
+        <hourPrice hour="21" cost="1.0199999809265137"/>
+        <hourPrice hour="22" cost="1.0199999809265137"/>
+        <hourPrice hour="23" cost="1.0199999809265137"/>
+    </cost>
+    <Providers name="Amazon" serviceName="Elastic Compute Cloud (EC2)">
+        <cost totalCost="27.24">
+            <hourPrice hour="0" cost="1.0199999809265137"/>
+            <hourPrice hour="1" cost="1.0199999809265137"/>
+            <hourPrice hour="2" cost="1.0199999809265137"/>
+            <hourPrice hour="3" cost="1.0199999809265137"/>
+            <hourPrice hour="4" cost="1.0199999809265137"/>
+            <hourPrice hour="5" cost="1.0199999809265137"/>
+            <hourPrice hour="6" cost="1.0199999809265137"/>
+            <hourPrice hour="7" cost="1.0199999809265137"/>
+            <hourPrice hour="8" cost="1.0199999809265137"/>
+            <hourPrice hour="9" cost="1.1399999856948853"/>
+            <hourPrice hour="10" cost="1.3799999952316284"/>
+            <hourPrice hour="11" cost="1.3799999952316284"/>
+            <hourPrice hour="12" cost="1.1399999856948853"/>
+            <hourPrice hour="13" cost="1.3799999952316284"/>
+            <hourPrice hour="14" cost="1.3799999952316284"/>
+            <hourPrice hour="15" cost="1.3799999952316284"/>
+            <hourPrice hour="16" cost="1.3799999952316284"/>
+            <hourPrice hour="17" cost="1.3799999952316284"/>
+            <hourPrice hour="18" cost="1.0199999809265137"/>
+            <hourPrice hour="19" cost="1.0199999809265137"/>
+            <hourPrice hour="20" cost="1.0199999809265137"/>
+            <hourPrice hour="21" cost="1.0199999809265137"/>
+            <hourPrice hour="22" cost="1.0199999809265137"/>
+            <hourPrice hour="23" cost="1.0199999809265137"/>
+        </cost>
+    </Providers>
+</Costs>

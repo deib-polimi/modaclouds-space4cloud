@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system:System xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:composition="http://sdq.ipd.uka.de/PalladioComponentModel/Core/Composition/5.0" xmlns:repository="http://sdq.ipd.uka.de/PalladioComponentModel/Repository/5.0" xmlns:system="http://sdq.ipd.uka.de/PalladioComponentModel/System/5.0" id="_ihibYGxBEeSEjMzKWJVheg" entityName="defaultSystem">
+  <assemblyContexts__ComposedStructure id="a8ef4028-041a-493a-9533-69128163e372__assembly" entityName="Assembly_AdministrationServer">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="test.repository#a8ef4028-041a-493a-9533-69128163e372"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="b09a5c5c-0cbe-42a7-9b57-76890d1136cd__assembly" entityName="Assembly_AdministrationDatabase">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="test.repository#b09a5c5c-0cbe-42a7-9b57-76890d1136cd"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="59508e59-ebec-45db-ab21-0593ac6543bf__assembly" entityName="Assembly_ConstellationHTTPAgent">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="test.repository#59508e59-ebec-45db-ab21-0593ac6543bf"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="47f1f956-10f3-4462-9f03-8a3e351b5a6b__assembly" entityName="Assembly_ConstellationSVNAgent">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="test.repository#47f1f956-10f3-4462-9f03-8a3e351b5a6b"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="d994db74-b92b-49d0-b9ab-07dd1b96d315__assembly" entityName="Assembly_ConferenceAgent">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="test.repository#d994db74-b92b-49d0-b9ab-07dd1b96d315"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="fe3fe33a-96d5-4de8-b548-0bcddff732fe__assembly" entityName="Assembly_ReadOnlyConferenceReplica">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="test.repository#fe3fe33a-96d5-4de8-b548-0bcddff732fe"/>
+  </assemblyContexts__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:AssemblyConnector" id="_ihjCcGxBEeSEjMzKWJVheg" entityName="Connector__IDatabase__IDatabase" requiringAssemblyContext_AssemblyConnector="a8ef4028-041a-493a-9533-69128163e372__assembly" providingAssemblyContext_AssemblyConnector="b09a5c5c-0cbe-42a7-9b57-76890d1136cd__assembly">
+    <providedRole_AssemblyConnector href="test.repository#b09a5c5c-0cbe-42a7-9b57-76890d1136cd_9c304e7a-8bc6-4fb3-b9a1-6af4f4b48be3__provided"/>
+    <requiredRole_AssemblyConnector href="test.repository#b09a5c5c-0cbe-42a7-9b57-76890d1136cd_9c304e7a-8bc6-4fb3-b9a1-6af4f4b48be3__required"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:AssemblyConnector" id="_ihjCfWxBEeSEjMzKWJVheg" entityName="Connector__IConferenceWriteUpdate__IConferenceWriteUpdate" requiringAssemblyContext_AssemblyConnector="d994db74-b92b-49d0-b9ab-07dd1b96d315__assembly" providingAssemblyContext_AssemblyConnector="fe3fe33a-96d5-4de8-b548-0bcddff732fe__assembly">
+    <providedRole_AssemblyConnector href="test.repository#fe3fe33a-96d5-4de8-b548-0bcddff732fe_54038f6b-b104-4404-90f3-4abb78a30f3c__provided"/>
+    <requiredRole_AssemblyConnector href="test.repository#fe3fe33a-96d5-4de8-b548-0bcddff732fe_54038f6b-b104-4404-90f3-4abb78a30f3c__required"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_ihjphWxBEeSEjMzKWJVheg" entityName="ProvidedDelegation__WebService" outerProvidedRole_ProvidedDelegationConnector="a8ef4028-041a-493a-9533-69128163e372_a07569ab-c71a-4d61-bcb9-bee05a7e2452__providedRole" assemblyContext_ProvidedDelegationConnector="a8ef4028-041a-493a-9533-69128163e372__assembly">
+    <innerProvidedRole_ProvidedDelegationConnector href="test.repository#a8ef4028-041a-493a-9533-69128163e372_a07569ab-c71a-4d61-bcb9-bee05a7e2452__provided"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_ihjpiWxBEeSEjMzKWJVheg" entityName="ProvidedDelegation__IDatabase" outerProvidedRole_ProvidedDelegationConnector="b09a5c5c-0cbe-42a7-9b57-76890d1136cd_9c304e7a-8bc6-4fb3-b9a1-6af4f4b48be3__providedRole" assemblyContext_ProvidedDelegationConnector="b09a5c5c-0cbe-42a7-9b57-76890d1136cd__assembly">
+    <innerProvidedRole_ProvidedDelegationConnector href="test.repository#b09a5c5c-0cbe-42a7-9b57-76890d1136cd_9c304e7a-8bc6-4fb3-b9a1-6af4f4b48be3__provided"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_ihjpjWxBEeSEjMzKWJVheg" entityName="ProvidedDelegation__IReadOnlyModelFragment" outerProvidedRole_ProvidedDelegationConnector="59508e59-ebec-45db-ab21-0593ac6543bf_6731d8cd-0e00-4488-86e0-3b1a92e93114__providedRole" assemblyContext_ProvidedDelegationConnector="59508e59-ebec-45db-ab21-0593ac6543bf__assembly">
+    <innerProvidedRole_ProvidedDelegationConnector href="test.repository#59508e59-ebec-45db-ab21-0593ac6543bf_6731d8cd-0e00-4488-86e0-3b1a92e93114__provided"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_ihjpkWxBEeSEjMzKWJVheg" entityName="ProvidedDelegation__IReadWriteSVNModelFragment" outerProvidedRole_ProvidedDelegationConnector="47f1f956-10f3-4462-9f03-8a3e351b5a6b_fa589e26-8f7c-460c-95f5-0aef025fc84c__providedRole" assemblyContext_ProvidedDelegationConnector="47f1f956-10f3-4462-9f03-8a3e351b5a6b__assembly">
+    <innerProvidedRole_ProvidedDelegationConnector href="test.repository#47f1f956-10f3-4462-9f03-8a3e351b5a6b_fa589e26-8f7c-460c-95f5-0aef025fc84c__provided"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_ihkQk2xBEeSEjMzKWJVheg" entityName="ProvidedDelegation__IConferenceModelFragment" outerProvidedRole_ProvidedDelegationConnector="d994db74-b92b-49d0-b9ab-07dd1b96d315_b9353604-63c3-4fa7-ac2f-e28c745467ac__providedRole" assemblyContext_ProvidedDelegationConnector="d994db74-b92b-49d0-b9ab-07dd1b96d315__assembly">
+    <innerProvidedRole_ProvidedDelegationConnector href="test.repository#d994db74-b92b-49d0-b9ab-07dd1b96d315_b9353604-63c3-4fa7-ac2f-e28c745467ac__provided"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_ihkQl2xBEeSEjMzKWJVheg" entityName="ProvidedDelegation__IConferenceReadOnlyModelFragment" outerProvidedRole_ProvidedDelegationConnector="fe3fe33a-96d5-4de8-b548-0bcddff732fe_67706bf6-f337-4d98-8eaa-f2ffb30a6b69__providedRole" assemblyContext_ProvidedDelegationConnector="fe3fe33a-96d5-4de8-b548-0bcddff732fe__assembly">
+    <innerProvidedRole_ProvidedDelegationConnector href="test.repository#fe3fe33a-96d5-4de8-b548-0bcddff732fe_67706bf6-f337-4d98-8eaa-f2ffb30a6b69__provided"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_ihkQm2xBEeSEjMzKWJVheg" entityName="ProvidedDelegation__IConferenceWriteUpdate" outerProvidedRole_ProvidedDelegationConnector="fe3fe33a-96d5-4de8-b548-0bcddff732fe_54038f6b-b104-4404-90f3-4abb78a30f3c__providedRole" assemblyContext_ProvidedDelegationConnector="fe3fe33a-96d5-4de8-b548-0bcddff732fe__assembly">
+    <innerProvidedRole_ProvidedDelegationConnector href="test.repository#fe3fe33a-96d5-4de8-b548-0bcddff732fe_54038f6b-b104-4404-90f3-4abb78a30f3c__provided"/>
+  </connectors__ComposedStructure>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="a8ef4028-041a-493a-9533-69128163e372_a07569ab-c71a-4d61-bcb9-bee05a7e2452__providedRole" entityName="Provided__WebService">
+    <providedInterface__OperationProvidedRole href="test.repository#a8ef4028-041a-493a-9533-69128163e372_a07569ab-c71a-4d61-bcb9-bee05a7e2452"/>
+  </providedRoles_InterfaceProvidingEntity>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="b09a5c5c-0cbe-42a7-9b57-76890d1136cd_9c304e7a-8bc6-4fb3-b9a1-6af4f4b48be3__providedRole" entityName="Provided__IDatabase">
+    <providedInterface__OperationProvidedRole href="test.repository#b09a5c5c-0cbe-42a7-9b57-76890d1136cd_9c304e7a-8bc6-4fb3-b9a1-6af4f4b48be3"/>
+  </providedRoles_InterfaceProvidingEntity>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="59508e59-ebec-45db-ab21-0593ac6543bf_6731d8cd-0e00-4488-86e0-3b1a92e93114__providedRole" entityName="Provided__IReadOnlyModelFragment">
+    <providedInterface__OperationProvidedRole href="test.repository#59508e59-ebec-45db-ab21-0593ac6543bf_6731d8cd-0e00-4488-86e0-3b1a92e93114"/>
+  </providedRoles_InterfaceProvidingEntity>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="47f1f956-10f3-4462-9f03-8a3e351b5a6b_fa589e26-8f7c-460c-95f5-0aef025fc84c__providedRole" entityName="Provided__IReadWriteSVNModelFragment">
+    <providedInterface__OperationProvidedRole href="test.repository#47f1f956-10f3-4462-9f03-8a3e351b5a6b_fa589e26-8f7c-460c-95f5-0aef025fc84c"/>
+  </providedRoles_InterfaceProvidingEntity>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="d994db74-b92b-49d0-b9ab-07dd1b96d315_b9353604-63c3-4fa7-ac2f-e28c745467ac__providedRole" entityName="Provided__IConferenceModelFragment">
+    <providedInterface__OperationProvidedRole href="test.repository#d994db74-b92b-49d0-b9ab-07dd1b96d315_b9353604-63c3-4fa7-ac2f-e28c745467ac"/>
+  </providedRoles_InterfaceProvidingEntity>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="fe3fe33a-96d5-4de8-b548-0bcddff732fe_67706bf6-f337-4d98-8eaa-f2ffb30a6b69__providedRole" entityName="Provided__IConferenceReadOnlyModelFragment">
+    <providedInterface__OperationProvidedRole href="test.repository#fe3fe33a-96d5-4de8-b548-0bcddff732fe_67706bf6-f337-4d98-8eaa-f2ffb30a6b69"/>
+  </providedRoles_InterfaceProvidingEntity>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="fe3fe33a-96d5-4de8-b548-0bcddff732fe_54038f6b-b104-4404-90f3-4abb78a30f3c__providedRole" entityName="Provided__IConferenceWriteUpdate">
+    <providedInterface__OperationProvidedRole href="test.repository#fe3fe33a-96d5-4de8-b548-0bcddff732fe_54038f6b-b104-4404-90f3-4abb78a30f3c"/>
+  </providedRoles_InterfaceProvidingEntity>
+</system:System>

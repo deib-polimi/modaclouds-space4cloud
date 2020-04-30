@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system:System xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:composition="http://sdq.ipd.uka.de/PalladioComponentModel/Core/Composition/5.0" xmlns:repository="http://sdq.ipd.uka.de/PalladioComponentModel/Repository/5.0" xmlns:system="http://sdq.ipd.uka.de/PalladioComponentModel/System/5.0" id="__OqhwLtfEeSWB_RN81e7yw" entityName="defaultSystem">
+  <assemblyContexts__ComposedStructure id="_AEhywLtgEeSWB_RN81e7yw" entityName="Assembly_comp1 &lt;comp1>">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="prova.repository#_4XvisLteEeSWB_RN81e7yw"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="_BzkHcLtgEeSWB_RN81e7yw" entityName="Assembly_comp2 &lt;comp2>">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="prova.repository#_fOH9cLtfEeSWB_RN81e7yw"/>
+  </assemblyContexts__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:AssemblyConnector" id="_E88TMLtgEeSWB_RN81e7yw" entityName="Connector Assembly_comp1 &lt;comp1> -> Assembly_comp2 &lt;comp2>" requiringAssemblyContext_AssemblyConnector="_AEhywLtgEeSWB_RN81e7yw" providingAssemblyContext_AssemblyConnector="_BzkHcLtgEeSWB_RN81e7yw">
+    <providedRole_AssemblyConnector href="prova.repository#_hDjOALtfEeSWB_RN81e7yw"/>
+    <requiredRole_AssemblyConnector href="prova.repository#_hjerQLtfEeSWB_RN81e7yw"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_F6ReILtgEeSWB_RN81e7yw" entityName="ProvDelegation Provided_if1 -> Provided_aName_aName" outerProvidedRole_ProvidedDelegationConnector="_DinDMLtgEeSWB_RN81e7yw" assemblyContext_ProvidedDelegationConnector="_AEhywLtgEeSWB_RN81e7yw">
+    <innerProvidedRole_ProvidedDelegationConnector href="prova.repository#_5AtnMLteEeSWB_RN81e7yw"/>
+  </connectors__ComposedStructure>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_DinDMLtgEeSWB_RN81e7yw" entityName="Provided_if1">
+    <providedInterface__OperationProvidedRole href="prova.repository#_eahywLteEeSWB_RN81e7yw"/>
+  </providedRoles_InterfaceProvidingEntity>
+</system:System>

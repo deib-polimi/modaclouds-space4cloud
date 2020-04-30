@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resourceenvironment:ResourceEnvironment xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:resourceenvironment="http://sdq.ipd.uka.de/PalladioComponentModel/ResourceEnvironment/5.0" entityName="defaultRepository">
+  <linkingResources__ResourceEnvironment id="c32bc3a1-ff6c-43a2-9d13-73cdbf2d3a08" entityName="adminServer.AdministrationServer_adminServer.AdministrationServer" connectedResourceContainers_LinkingResource="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer 0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer">
+    <communicationLinkResourceSpecifications_LinkingResource id="c32bc3a1-ff6c-43a2-9d13-73cdbf2d3a08_spec">
+      <communicationLinkResourceType_CommunicationLinkResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_o3sScH2AEdyH8uerKnHYug"/>
+      <latency_CommunicationLinkResourceSpecification specification="0"/>
+      <throughput_CommunicationLinkResourceSpecification specification="1000"/>
+    </communicationLinkResourceSpecifications_LinkingResource>
+  </linkingResources__ResourceEnvironment>
+  <linkingResources__ResourceEnvironment id="f105ed2d-56c3-4665-bc1a-4bee6dd3c662" entityName="adminServer.AdministrationServer_adminServer.AdministrationServer" connectedResourceContainers_LinkingResource="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer 0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer">
+    <communicationLinkResourceSpecifications_LinkingResource id="f105ed2d-56c3-4665-bc1a-4bee6dd3c662_spec">
+      <communicationLinkResourceType_CommunicationLinkResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_o3sScH2AEdyH8uerKnHYug"/>
+      <latency_CommunicationLinkResourceSpecification specification="0"/>
+      <throughput_CommunicationLinkResourceSpecification specification="1000"/>
+    </communicationLinkResourceSpecifications_LinkingResource>
+  </linkingResources__ResourceEnvironment>
+  <linkingResources__ResourceEnvironment id="f0a94162-6806-4d95-8711-65241c9fb3d7" entityName="adminServer.AgentManager_svnAgent.AgentManager" connectedResourceContainers_LinkingResource="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer e626e206-d2fa-426e-a6e2-888ae6bf472d__resourceContainer">
+    <communicationLinkResourceSpecifications_LinkingResource id="f0a94162-6806-4d95-8711-65241c9fb3d7_spec">
+      <communicationLinkResourceType_CommunicationLinkResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_o3sScH2AEdyH8uerKnHYug"/>
+      <latency_CommunicationLinkResourceSpecification specification="0"/>
+      <throughput_CommunicationLinkResourceSpecification specification="1000"/>
+    </communicationLinkResourceSpecifications_LinkingResource>
+  </linkingResources__ResourceEnvironment>
+  <linkingResources__ResourceEnvironment id="5c3ada2d-5b43-43c3-9a01-56f91f3917a4" entityName="adminServer.AgentManager_httpAgent.AgentManager" connectedResourceContainers_LinkingResource="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer d133dad5-79cb-44f8-9cd2-594a04417030__resourceContainer">
+    <communicationLinkResourceSpecifications_LinkingResource id="5c3ada2d-5b43-43c3-9a01-56f91f3917a4_spec">
+      <communicationLinkResourceType_CommunicationLinkResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_o3sScH2AEdyH8uerKnHYug"/>
+      <latency_CommunicationLinkResourceSpecification specification="0"/>
+      <throughput_CommunicationLinkResourceSpecification specification="1000"/>
+    </communicationLinkResourceSpecifications_LinkingResource>
+  </linkingResources__ResourceEnvironment>
+  <linkingResources__ResourceEnvironment id="36668fa1-4290-41eb-9a0c-015b0244ad0d" entityName="adminServer.AgentManager_conferenceAgent.AgentManager" connectedResourceContainers_LinkingResource="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer 62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer">
+    <communicationLinkResourceSpecifications_LinkingResource id="36668fa1-4290-41eb-9a0c-015b0244ad0d_spec">
+      <communicationLinkResourceType_CommunicationLinkResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_o3sScH2AEdyH8uerKnHYug"/>
+      <latency_CommunicationLinkResourceSpecification specification="0"/>
+      <throughput_CommunicationLinkResourceSpecification specification="1000"/>
+    </communicationLinkResourceSpecifications_LinkingResource>
+  </linkingResources__ResourceEnvironment>
+  <linkingResources__ResourceEnvironment id="5c35ba2e-7e22-4b81-a32a-c7d7fdeb96e0" entityName="conferenceAgent.ConferenceAgent_conferenceReplica.ConferenceAgent" connectedResourceContainers_LinkingResource="62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer d913ea2c-adf4-4da3-9d6a-3ccc65659114__resourceContainer">
+    <communicationLinkResourceSpecifications_LinkingResource id="5c35ba2e-7e22-4b81-a32a-c7d7fdeb96e0_spec">
+      <communicationLinkResourceType_CommunicationLinkResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_o3sScH2AEdyH8uerKnHYug"/>
+      <latency_CommunicationLinkResourceSpecification specification="0"/>
+      <throughput_CommunicationLinkResourceSpecification specification="1000"/>
+    </communicationLinkResourceSpecifications_LinkingResource>
+  </linkingResources__ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="0a3d2fa4-bfa4-41bf-b435-42a122162a12__resourceContainer" entityName="adminServer">
+    <activeResourceSpecifications_ResourceContainer id="0a3d2fa4-bfa4-41bf-b435-42a122162a12_spec">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="e626e206-d2fa-426e-a6e2-888ae6bf472d__resourceContainer" entityName="svnAgent">
+    <activeResourceSpecifications_ResourceContainer id="e626e206-d2fa-426e-a6e2-888ae6bf472d_spec">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="d133dad5-79cb-44f8-9cd2-594a04417030__resourceContainer" entityName="httpAgent">
+    <activeResourceSpecifications_ResourceContainer id="d133dad5-79cb-44f8-9cd2-594a04417030_spec">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="62c6ba36-8da7-4e0d-9301-a8e09983a140__resourceContainer" entityName="conferenceAgent">
+    <activeResourceSpecifications_ResourceContainer id="62c6ba36-8da7-4e0d-9301-a8e09983a140_spec">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+  <resourceContainer_ResourceEnvironment id="d913ea2c-adf4-4da3-9d6a-3ccc65659114__resourceContainer" entityName="conferenceReplica">
+    <activeResourceSpecifications_ResourceContainer id="d913ea2c-adf4-4da3-9d6a-3ccc65659114_spec">
+      <schedulingPolicy href="pathmap://PCM_MODELS/Palladio.resourcetype#ProcessorSharing"/>
+      <activeResourceType_ActiveResourceSpecification href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+      <processingRate_ProcessingResourceSpecification specification="1000"/>
+    </activeResourceSpecifications_ResourceContainer>
+  </resourceContainer_ResourceEnvironment>
+</resourceenvironment:ResourceEnvironment>
