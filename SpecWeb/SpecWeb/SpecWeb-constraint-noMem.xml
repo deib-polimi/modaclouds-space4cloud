@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+
+<Constraints 
+	xmlns="http://www.modaclouds.eu/xsd/2013/6/constraints"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.modaclouds.eu/xsd/2013/6/constraints http://www.modaclouds.eu/xsd/2013/6/monitoring/constraints.xsd">
+	
+	<Constraint id="q1" name="loginResponseTime">
+		<targetResourceIDRef>_EC550TPYEeKKdNKpWS4YNg</targetResourceIDRef>
+		<metric>ResponseTime</metric>
+		<unit>ms</unit>
+		<range>
+			<hasMaxValue>2000</hasMaxValue>			
+		</range>
+	</Constraint>
+
+
+	<Constraint id="q2" name="frontendAvgResponseTime">
+		<targetResourceIDRef>_CwyxsDPYEeKKdNKpWS4YNg</targetResourceIDRef>
+		<metric>ResponseTime</metric>
+		<unit>ms</unit>
+		<range>
+			<hasMaxValue>10000</hasMaxValue>			
+		</range>		
+		<priority>1</priority>
+	</Constraint>
+	
+	<Constraint id="a1" name="frontendUtilization">
+		<targetResourceIDRef>__AGzgDPFEeK0ObH3QqjCvQ</targetResourceIDRef>
+		<metric>CPUUtilization</metric>
+		<unit>%</unit>
+		<range>
+			<hasMaxValue>80</hasMaxValue>			
+		</range>		
+		<priority>1</priority>
+	</Constraint>
+
+	
+
+</Constraints>

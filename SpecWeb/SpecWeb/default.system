@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system:System xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:composition="http://sdq.ipd.uka.de/PalladioComponentModel/Core/Composition/5.0" xmlns:repository="http://sdq.ipd.uka.de/PalladioComponentModel/Repository/5.0" xmlns:system="http://sdq.ipd.uka.de/PalladioComponentModel/System/5.0" id="_NGdywDPdEeKKdNKpWS4YNg" entityName="defaultSystem">
+  <assemblyContexts__ComposedStructure id="_QBLQYDPdEeKKdNKpWS4YNg" entityName="Assembly_WebServer &lt;WebServer>">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="default.repository#_CwyxsDPYEeKKdNKpWS4YNg"/>
+  </assemblyContexts__ComposedStructure>
+  <assemblyContexts__ComposedStructure id="_RLPPwDPdEeKKdNKpWS4YNg" entityName="Assembly_Database &lt;Database>">
+    <encapsulatedComponent__AssemblyContext xsi:type="repository:BasicComponent" href="default.repository#_TOw6oDPFEeK0ObH3QqjCvQ"/>
+  </assemblyContexts__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:ProvidedDelegationConnector" id="_Q1BvMDPdEeKKdNKpWS4YNg" entityName="ProvDelegation Provided_IWebServer -> Provided_IWebServer_WebServer" outerProvidedRole_ProvidedDelegationConnector="_OG-0kDPdEeKKdNKpWS4YNg" assemblyContext_ProvidedDelegationConnector="_QBLQYDPdEeKKdNKpWS4YNg">
+    <innerProvidedRole_ProvidedDelegationConnector href="default.repository#_EC550DPYEeKKdNKpWS4YNg"/>
+  </connectors__ComposedStructure>
+  <connectors__ComposedStructure xsi:type="composition:AssemblyConnector" id="_SFDMoDPdEeKKdNKpWS4YNg" entityName="Connector Assembly_WebServer &lt;WebServer> -> Assembly_Database &lt;Database>" requiringAssemblyContext_AssemblyConnector="_QBLQYDPdEeKKdNKpWS4YNg" providingAssemblyContext_AssemblyConnector="_RLPPwDPdEeKKdNKpWS4YNg">
+    <providedRole_AssemblyConnector href="default.repository#_W28iQDPFEeK0ObH3QqjCvQ"/>
+    <requiredRole_AssemblyConnector href="default.repository#_Eq1cgDPYEeKKdNKpWS4YNg"/>
+  </connectors__ComposedStructure>
+  <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_OG-0kDPdEeKKdNKpWS4YNg" entityName="Provided_IWebServer">
+    <providedInterface__OperationProvidedRole href="default.repository#_bMC1EDPXEeKKdNKpWS4YNg"/>
+  </providedRoles_InterfaceProvidingEntity>
+</system:System>

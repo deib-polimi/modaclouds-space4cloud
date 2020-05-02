@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:allocation="http://sdq.ipd.uka.de/PalladioComponentModel/Allocation/5.0" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" xmlns:resourceenvironment="http://sdq.ipd.uka.de/PalladioComponentModel/ResourceEnvironment/5.0" xsi:schemaLocation="http://sdq.ipd.uka.de/PalladioComponentModel/Allocation/5.0 http://sdq.ipd.uka.de/PalladioComponentModel/5.0#//allocation http://sdq.ipd.uka.de/PalladioComponentModel/ResourceEnvironment/5.0 http://sdq.ipd.uka.de/PalladioComponentModel/5.0#//resourceenvironment" xmi:id="_XPQnsTPdEeKKdNKpWS4YNg" type="allocation" name="default.allocation_diagram" measurementUnit="Pixel">
+  <children xmi:type="notation:Node" xmi:id="_XQAOkDPdEeKKdNKpWS4YNg" type="2002">
+    <children xmi:type="notation:Node" xmi:id="_XQAOkzPdEeKKdNKpWS4YNg" type="5003"/>
+    <children xmi:type="notation:Node" xmi:id="_XQAOlDPdEeKKdNKpWS4YNg" type="7002">
+      <children xmi:type="notation:Node" xmi:id="_X70LsDPdEeKKdNKpWS4YNg" type="3001">
+        <children xmi:type="notation:Node" xmi:id="_X70LszPdEeKKdNKpWS4YNg" type="5001"/>
+        <children xmi:type="notation:Node" xmi:id="_X70LtDPdEeKKdNKpWS4YNg" type="5005"/>
+        <styles xmi:type="notation:ShapeStyle" xmi:id="_X70LsTPdEeKKdNKpWS4YNg"/>
+        <element xmi:type="allocation:AllocationContext" href="default.allocation#_Xn2G0DPdEeKKdNKpWS4YNg"/>
+        <layoutConstraint xmi:type="notation:Bounds" xmi:id="_X70LsjPdEeKKdNKpWS4YNg" x="31" y="13"/>
+      </children>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_XQAOlTPdEeKKdNKpWS4YNg"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_XQAOljPdEeKKdNKpWS4YNg"/>
+    </children>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="_XQAOkTPdEeKKdNKpWS4YNg"/>
+    <element xmi:type="resourceenvironment:ResourceContainer" href="default.resourceenvironment#__AGzgDPFEeK0ObH3QqjCvQ"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XQAOkjPdEeKKdNKpWS4YNg" x="138" y="156" width="487" height="103"/>
+  </children>
+  <children xmi:type="notation:Node" xmi:id="_XQAOlzPdEeKKdNKpWS4YNg" type="2002">
+    <children xmi:type="notation:Node" xmi:id="_XQAOmjPdEeKKdNKpWS4YNg" type="5003"/>
+    <children xmi:type="notation:Node" xmi:id="_XQAOmzPdEeKKdNKpWS4YNg" type="7002">
+      <children xmi:type="notation:Node" xmi:id="_YxdaQDPdEeKKdNKpWS4YNg" type="3001">
+        <children xmi:type="notation:Node" xmi:id="_YxdaQzPdEeKKdNKpWS4YNg" type="5001"/>
+        <children xmi:type="notation:Node" xmi:id="_YxdaRDPdEeKKdNKpWS4YNg" type="5005"/>
+        <styles xmi:type="notation:ShapeStyle" xmi:id="_YxdaQTPdEeKKdNKpWS4YNg"/>
+        <element xmi:type="allocation:AllocationContext" href="default.allocation#_YfuxEDPdEeKKdNKpWS4YNg"/>
+        <layoutConstraint xmi:type="notation:Bounds" xmi:id="_YxdaQjPdEeKKdNKpWS4YNg" x="37" y="11"/>
+      </children>
+      <styles xmi:type="notation:SortingStyle" xmi:id="_XQAOnDPdEeKKdNKpWS4YNg"/>
+      <styles xmi:type="notation:FilteringStyle" xmi:id="_XQAOnTPdEeKKdNKpWS4YNg"/>
+    </children>
+    <styles xmi:type="notation:ShapeStyle" xmi:id="_XQAOmDPdEeKKdNKpWS4YNg"/>
+    <element xmi:type="resourceenvironment:ResourceContainer" href="default.resourceenvironment#_ADT88DPGEeK0ObH3QqjCvQ"/>
+    <layoutConstraint xmi:type="notation:Bounds" xmi:id="_XQAOmTPdEeKKdNKpWS4YNg" x="144" y="30" width="480" height="103"/>
+  </children>
+  <styles xmi:type="notation:DiagramStyle" xmi:id="_XPQnsjPdEeKKdNKpWS4YNg"/>
+  <element xmi:type="allocation:Allocation" href="default.allocation#_XPQnsDPdEeKKdNKpWS4YNg"/>
+</notation:Diagram>

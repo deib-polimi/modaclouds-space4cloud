@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notation:Diagram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:notation="http://www.eclipse.org/gmf/runtime/1.0.2/notation" type="CompositeModel" name="default.system_diagram" measurementUnit="Pixel">
+  <children xsi:type="notation:Shape" type="2002">
+    <children xsi:type="notation:DecorationNode" type="5012"/>
+    <children xsi:type="notation:DecorationNode" type="7002">
+      <children xsi:type="notation:Shape" type="3006">
+        <children xsi:type="notation:DecorationNode" type="5009"/>
+        <children xsi:type="notation:Shape" type="3007">
+          <children xsi:type="notation:DecorationNode" type="5007">
+            <layoutConstraint xsi:type="notation:Location" x="-20" y="50"/>
+          </children>
+          <element href="default.repository#_EC550DPYEeKKdNKpWS4YNg"/>
+          <layoutConstraint xsi:type="notation:Bounds"/>
+        </children>
+        <children xsi:type="notation:Shape" type="3008">
+          <children xsi:type="notation:DecorationNode" type="5008">
+            <layoutConstraint xsi:type="notation:Location" x="50" y="32"/>
+          </children>
+          <element href="default.repository#_Eq1cgDPYEeKKdNKpWS4YNg"/>
+          <layoutConstraint xsi:type="notation:Bounds"/>
+        </children>
+        <element href="default.system#_QBLQYDPdEeKKdNKpWS4YNg"/>
+        <layoutConstraint xsi:type="notation:Bounds" x="85" y="16" width="259"/>
+      </children>
+      <children xsi:type="notation:Shape" type="3006">
+        <children xsi:type="notation:DecorationNode" type="5009"/>
+        <children xsi:type="notation:Shape" type="3007">
+          <children xsi:type="notation:DecorationNode" type="5007">
+            <layoutConstraint xsi:type="notation:Location" x="-20" y="50"/>
+          </children>
+          <element href="default.repository#_W28iQDPFEeK0ObH3QqjCvQ"/>
+          <layoutConstraint xsi:type="notation:Bounds"/>
+        </children>
+        <element href="default.system#_RLPPwDPdEeKKdNKpWS4YNg"/>
+        <layoutConstraint xsi:type="notation:Bounds" x="391" y="174" width="241"/>
+      </children>
+    </children>
+    <children xsi:type="notation:Shape" type="3011">
+      <children xsi:type="notation:DecorationNode" type="5013">
+        <layoutConstraint xsi:type="notation:Location" y="5"/>
+      </children>
+      <element href="default.system#_OG-0kDPdEeKKdNKpWS4YNg"/>
+      <layoutConstraint xsi:type="notation:Bounds"/>
+    </children>
+    <element href="default.system#_NGdywDPdEeKKdNKpWS4YNg"/>
+    <layoutConstraint xsi:type="notation:Bounds" x="66" width="649" height="331"/>
+  </children>
+  <styles xsi:type="notation:DiagramStyle"/>
+  <element href="default.system#_NGdywDPdEeKKdNKpWS4YNg"/>
+  <edges xsi:type="notation:Connector" type="4006" source="//@children.0/@children.2" target="//@children.0/@children.1/@children.0/@children.1">
+    <styles xsi:type="notation:FontStyle"/>
+    <element href="default.system#_Q1BvMDPdEeKKdNKpWS4YNg"/>
+    <bendpoints xsi:type="notation:RelativeBendpoints" points="[30, 0, -107, 102]$[132, -102, -5, 0]"/>
+    <targetAnchor xsi:type="notation:IdentityAnchor" id="(0.16666666666666666,0.5333333333333333)"/>
+  </edges>
+  <edges xsi:type="notation:Connector" type="4004" source="//@children.0/@children.1/@children.0/@children.2" target="//@children.0/@children.1/@children.1/@children.1">
+    <styles xsi:type="notation:FontStyle"/>
+    <element href="default.system#_SFDMoDPdEeKKdNKpWS4YNg"/>
+    <bendpoints xsi:type="notation:RelativeBendpoints" points="[7, 0, -37, -268]$[37, 271, -7, 3]"/>
+    <targetAnchor xsi:type="notation:IdentityAnchor" id="(0.23333333333333334,0.6333333333333333)"/>
+  </edges>
+</notation:Diagram>

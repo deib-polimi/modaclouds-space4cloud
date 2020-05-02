@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><palladioExtension xmlns="http://www.modaclouds.eu/xsd/2013/6/palladio-extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.modaclouds.eu/xsd/2013/6/palladio-extension http://www.modaclouds.eu/xsd/2013/6/resource-env-extension/PalladioExtension.xsd">
+	
+	<ResourceContainerExtensions>
+		
+		<demand id="_OY1sENpOEeKb8vn8QNz7vg">
+			<basicDistribution factor="0.6" mean="5" name="Exponential" var="0.2"/>
+			<basicDistribution factor="-0.6" mean="2" name="Erlang" var="0.1"/>
+			<basicDistribution factor="1.6" mean="10" name="Gaussian" var="0.1"/>			
+		</demand>
+		
+		<ResourceContainer Provider="Amazon" id="__AGzgDPFEeK0ObH3QqjCvQ">
+			<Infrastructure serviceName="Elastic Compute Cloud (EC2)" serviceType="Compute"/>	
+			<ResourceSizeID>On-Demand Medium Instance</ResourceSizeID>
+						<Replicas>
+			<replica hour="1" value="1"/>
+			<replica hour="2" value="1"/>
+			<replica hour="3" value="1"/>
+			<replica hour="4" value="1"/>
+			<replica hour="5" value="1"/>
+			<replica hour="6" value="1"/>
+			<replica hour="7" value="1"/>
+			<replica hour="8" value="1"/>
+			<replica hour="9" value="1"/>
+			<replica hour="10" value="1"/>
+			<replica hour="11" value="1"/>
+			<replica hour="12" value="1"/>
+			<replica hour="13" value="1"/>
+			<replica hour="14" value="1"/>
+			<replica hour="15" value="1"/>
+			<replica hour="16" value="1"/>
+			<replica hour="17" value="1"/>
+			<replica hour="18" value="1"/>
+			<replica hour="19" value="1"/>
+			<replica hour="20" value="1"/>
+			<replica hour="21" value="1"/>
+			<replica hour="22" value="1"/>
+			<replica hour="23" value="1"/>
+			<replica hour="24" value="1"/>
+			</Replicas>	
+		</ResourceContainer>
+		<ResourceContainer Provider="Amazon" id="_ADT88DPGEeK0ObH3QqjCvQ">
+			<Infrastructure serviceName="Elastic Compute Cloud (EC2)" serviceType="Compute"/>	
+			<ResourceSizeID>On-Demand Micro Instance</ResourceSizeID>
+						<Replicas>
+			<replica hour="1" value="1"/>
+			<replica hour="2" value="1"/>
+			<replica hour="3" value="1"/>
+			<replica hour="4" value="1"/>
+			<replica hour="5" value="1"/>
+			<replica hour="6" value="1"/>
+			<replica hour="7" value="1"/>
+			<replica hour="8" value="1"/>
+			<replica hour="9" value="1"/>
+			<replica hour="10" value="1"/>
+			<replica hour="11" value="1"/>
+			<replica hour="12" value="1"/>
+			<replica hour="13" value="1"/>
+			<replica hour="14" value="1"/>
+			<replica hour="15" value="1"/>
+			<replica hour="16" value="1"/>
+			<replica hour="17" value="1"/>
+			<replica hour="18" value="1"/>
+			<replica hour="19" value="1"/>
+			<replica hour="20" value="1"/>
+			<replica hour="21" value="1"/>
+			<replica hour="22" value="1"/>
+			<replica hour="23" value="1"/>
+			<replica hour="24" value="1"/>
+			</Replicas>	
+		</ResourceContainer>
+</ResourceContainerExtensions>
+	
+	<RepositoryExtensions>
+		<Component id="_-xo0UNm2EeKb8vn8QNz7vg">
+			<Infrastructure>Compute</Infrastructure>		
+		</Component>
+		<Component id="_CTwQMNm3EeKb8vn8QNz7vg">
+			<Infrastructure>Compute</Infrastructure>		
+		</Component>
+		<Component id="_CW2AcNm3EeKb8vn8QNz7vg">
+			<Infrastructure>Compute</Infrastructure>		
+		</Component>	
+		<Component id="_BMfNIN5MEeKwn40nmJMOgg">
+			<Infrastructure>Compute</Infrastructure>		
+		</Component>	
+		<Component id="_BWHqQN5MEeKwn40nmJMOgg">
+			<Platform>Relational</Platform>		
+		</Component>
+		<Component id="_hNHmgNm2EeKb8vn8QNz7vg">
+			<Platform>Relational</Platform>		
+		</Component>
+		<Component id="_Cck1ANm3EeKb8vn8QNz7vg">
+			<Platform>Relational</Platform>		
+		</Component>		
+		<Component id="_Cf6c4Nm3EeKb8vn8QNz7vg">
+			<Platform>Relational</Platform>		
+		</Component>
+	</RepositoryExtensions>
+
+	<usageModelExtensions>
+		<Hour population="300" thinkTime="10"/>
+		<Hour population="450" thinkTime="10"/>
+		<Hour population="600" thinkTime="10"/>
+		<Hour population="750" thinkTime="10"/>
+		<Hour population="900" thinkTime="10"/>
+		<Hour population="1050" thinkTime="10"/>
+		<Hour population="1200" thinkTime="10"/>
+		<Hour population="1350" thinkTime="10"/>
+		<Hour population="1500" thinkTime="10"/>
+		<Hour population="1650" thinkTime="10"/>
+		<Hour population="1800" thinkTime="10"/>
+		<Hour population="1950" thinkTime="10"/>
+		<Hour population="2100" thinkTime="10"/>
+		<Hour population="2250" thinkTime="10"/>
+		<Hour population="2400" thinkTime="10"/>
+		<Hour population="2550" thinkTime="10"/>
+		<Hour population="2700" thinkTime="10"/>
+		<Hour population="2850" thinkTime="10"/>
+		<Hour population="3000" thinkTime="10"/>
+		<Hour population="1500" thinkTime="10"/>
+		<Hour population="1500" thinkTime="10"/>
+		<Hour population="1500" thinkTime="10"/>
+		<Hour population="1500" thinkTime="10"/>
+		<Hour population="1500" thinkTime="10"/>		
+	</usageModelExtensions>
+	
+	
+	<envParameter envID="e1" id="_dJDU4NpKEeKb8vn8QNz7vg" paramName="Rate">
+		<envValue factor="1" stage="LC"/>
+		<envValue factor="0.9" stage="HC"/>
+		<envValue factor="0.05" stage="SU"/>
+	</envParameter>
+	
+	<envInactive id="_fymxENpKEeKb8vn8QNz7vg">
+		<stage>SU</stage>
+	</envInactive>
+	
+</palladioExtension>

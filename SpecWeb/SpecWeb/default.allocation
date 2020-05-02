@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<allocation:Allocation xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:allocation="http://sdq.ipd.uka.de/PalladioComponentModel/Allocation/5.0" id="_XPQnsDPdEeKKdNKpWS4YNg" entityName="defaultAllocation">
+  <targetResourceEnvironment_Allocation href="default.resourceenvironment#/"/>
+  <system_Allocation href="default.system#_NGdywDPdEeKKdNKpWS4YNg"/>
+  <allocationContexts_Allocation id="_Xn2G0DPdEeKKdNKpWS4YNg" entityName="Allocation_Assembly_WebServer &lt;WebServer> &lt;WebServer>">
+    <resourceContainer_AllocationContext href="default.resourceenvironment#__AGzgDPFEeK0ObH3QqjCvQ"/>
+    <assemblyContext_AllocationContext href="default.system#_QBLQYDPdEeKKdNKpWS4YNg"/>
+  </allocationContexts_Allocation>
+  <allocationContexts_Allocation id="_YfuxEDPdEeKKdNKpWS4YNg" entityName="Allocation_Assembly_Database &lt;Database> &lt;Database>">
+    <resourceContainer_AllocationContext href="default.resourceenvironment#_ADT88DPGEeK0ObH3QqjCvQ"/>
+    <assemblyContext_AllocationContext href="default.system#_RLPPwDPdEeKKdNKpWS4YNg"/>
+  </allocationContexts_Allocation>
+</allocation:Allocation>

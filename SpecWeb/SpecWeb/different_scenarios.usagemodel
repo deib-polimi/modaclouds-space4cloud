@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<usagemodel:UsageModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:usagemodel="http://sdq.ipd.uka.de/PalladioComponentModel/UsageModel/5.0">
+  <usageScenario_UsageModel id="_Xvr9sDStEeK9qsP07TPUkg" entityName="LoginScenario">
+    <scenarioBehaviour_UsageScenario id="_Xvr9sTStEeK9qsP07TPUkg" entityName="defaultUsageScenarioBehaviour">
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Start" id="_Xvr9sjStEeK9qsP07TPUkg" successor="_aj_RUDStEeK9qsP07TPUkg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Stop" id="_Xvr9szStEeK9qsP07TPUkg" predecessor="_aj_RUDStEeK9qsP07TPUkg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_aj_RUDStEeK9qsP07TPUkg" successor="_Xvr9szStEeK9qsP07TPUkg" predecessor="_Xvr9sjStEeK9qsP07TPUkg">
+        <providedRole_EntryLevelSystemCall href="default.system#_OG-0kDPdEeKKdNKpWS4YNg"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_mi7NwDPXEeKKdNKpWS4YNg"/>
+      </actions_ScenarioBehaviour>
+    </scenarioBehaviour_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="10">
+      <thinkTime_ClosedWorkload specification="5.0"/>
+    </workload_UsageScenario>
+  </usageScenario_UsageModel>
+  <usageScenario_UsageModel id="_jwcZ0DStEeK9qsP07TPUkg" entityName="AccountSummaryScenario">
+    <scenarioBehaviour_UsageScenario id="_mtO7EDStEeK9qsP07TPUkg">
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Start" id="_mtrnADStEeK9qsP07TPUkg" successor="_n8qioDStEeK9qsP07TPUkg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Stop" id="_mtrnATStEeK9qsP07TPUkg" predecessor="_n8qioDStEeK9qsP07TPUkg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_n8qioDStEeK9qsP07TPUkg" successor="_mtrnATStEeK9qsP07TPUkg" predecessor="_mtrnADStEeK9qsP07TPUkg">
+        <providedRole_EntryLevelSystemCall href="default.system#_OG-0kDPdEeKKdNKpWS4YNg"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_sn19kDPXEeKKdNKpWS4YNg"/>
+      </actions_ScenarioBehaviour>
+    </scenarioBehaviour_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="10">
+      <thinkTime_ClosedWorkload specification="5.0"/>
+    </workload_UsageScenario>
+  </usageScenario_UsageModel>
+  <usageScenario_UsageModel id="_soLPgDStEeK9qsP07TPUkg" entityName="CheckScenario">
+    <scenarioBehaviour_UsageScenario id="_w7jJMDStEeK9qsP07TPUkg">
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Start" id="_w7jJMTStEeK9qsP07TPUkg" successor="_yd5FsDStEeK9qsP07TPUkg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Stop" id="_w7jJMjStEeK9qsP07TPUkg" predecessor="_yd5FsDStEeK9qsP07TPUkg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_yd5FsDStEeK9qsP07TPUkg" successor="_w7jJMjStEeK9qsP07TPUkg" predecessor="_w7jJMTStEeK9qsP07TPUkg">
+        <providedRole_EntryLevelSystemCall href="default.system#_OG-0kDPdEeKKdNKpWS4YNg"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_qykeADPXEeKKdNKpWS4YNg"/>
+      </actions_ScenarioBehaviour>
+    </scenarioBehaviour_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="10">
+      <thinkTime_ClosedWorkload specification="5.0"/>
+    </workload_UsageScenario>
+  </usageScenario_UsageModel>
+  <usageScenario_UsageModel id="_18hIsDStEeK9qsP07TPUkg" entityName="LogoutScenario">
+    <scenarioBehaviour_UsageScenario id="_4RO9UDStEeK9qsP07TPUkg">
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Start" id="_4RO9UTStEeK9qsP07TPUkg" successor="_5qMUUDStEeK9qsP07TPUkg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:Stop" id="_4RO9UjStEeK9qsP07TPUkg" predecessor="_5qMUUDStEeK9qsP07TPUkg"/>
+      <actions_ScenarioBehaviour xsi:type="usagemodel:EntryLevelSystemCall" id="_5qMUUDStEeK9qsP07TPUkg" successor="_4RO9UjStEeK9qsP07TPUkg" predecessor="_4RO9UTStEeK9qsP07TPUkg">
+        <providedRole_EntryLevelSystemCall href="default.system#_OG-0kDPdEeKKdNKpWS4YNg"/>
+        <operationSignature__EntryLevelSystemCall href="default.repository#_vA4RgDPXEeKKdNKpWS4YNg"/>
+      </actions_ScenarioBehaviour>
+    </scenarioBehaviour_UsageScenario>
+    <workload_UsageScenario xsi:type="usagemodel:ClosedWorkload" population="10">
+      <thinkTime_ClosedWorkload specification="5.0"/>
+    </workload_UsageScenario>
+  </usageScenario_UsageModel>
+</usagemodel:UsageModel>

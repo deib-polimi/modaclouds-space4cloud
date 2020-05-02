@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repository:Repository xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:repository="http://sdq.ipd.uka.de/PalladioComponentModel/Repository/5.0" xmlns:seff="http://sdq.ipd.uka.de/PalladioComponentModel/SEFF/5.0" id="_hLnFcDPEEeK0ObH3QqjCvQ" entityName="defaultRepository">
+  <components__Repository xsi:type="repository:BasicComponent" id="_TOw6oDPFEeK0ObH3QqjCvQ" entityName="Database">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_W28iQDPFEeK0ObH3QqjCvQ" entityName="Provided_IDatabase_Database" providedInterface__OperationProvidedRole="_-rPzQDPEEeK0ObH3QqjCvQ"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_W28iQTPFEeK0ObH3QqjCvQ" describedService__SEFF="__mQC8DPEEeK0ObH3QqjCvQ">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_W28iQjPFEeK0ObH3QqjCvQ" successor_AbstractAction="_pJ464DPVEeK0ObH3QqjCvQ"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_W28iQzPFEeK0ObH3QqjCvQ" predecessor_AbstractAction="_pJ464DPVEeK0ObH3QqjCvQ"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_pJ464DPVEeK0ObH3QqjCvQ" entityName="CredentialAction" predecessor_AbstractAction="_W28iQjPFEeK0ObH3QqjCvQ" successor_AbstractAction="_W28iQzPFEeK0ObH3QqjCvQ">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="15"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_W28iRDPFEeK0ObH3QqjCvQ" describedService__SEFF="_FlrOwDPFEeK0ObH3QqjCvQ">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_W28iRTPFEeK0ObH3QqjCvQ" successor_AbstractAction="_vpxvcDPVEeK0ObH3QqjCvQ"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_W28iRjPFEeK0ObH3QqjCvQ" predecessor_AbstractAction="_vpxvcDPVEeK0ObH3QqjCvQ"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_vpxvcDPVEeK0ObH3QqjCvQ" entityName="AccountInformationAction" predecessor_AbstractAction="_W28iRTPFEeK0ObH3QqjCvQ" successor_AbstractAction="_W28iRjPFEeK0ObH3QqjCvQ">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="300"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_W28iRzPFEeK0ObH3QqjCvQ" describedService__SEFF="_HbW-ADPFEeK0ObH3QqjCvQ">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_W28iSDPFEeK0ObH3QqjCvQ" successor_AbstractAction="_0uUnYDPVEeK0ObH3QqjCvQ"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_W28iSTPFEeK0ObH3QqjCvQ" predecessor_AbstractAction="_0uUnYDPVEeK0ObH3QqjCvQ"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_0uUnYDPVEeK0ObH3QqjCvQ" entityName="CheckAction" predecessor_AbstractAction="_W28iSDPFEeK0ObH3QqjCvQ" successor_AbstractAction="_W28iSTPFEeK0ObH3QqjCvQ">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="45"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+  </components__Repository>
+  <components__Repository xsi:type="repository:BasicComponent" id="_CwyxsDPYEeKKdNKpWS4YNg" entityName="WebServer">
+    <providedRoles_InterfaceProvidingEntity xsi:type="repository:OperationProvidedRole" id="_EC550DPYEeKKdNKpWS4YNg" entityName="Provided_IWebServer_WebServer" providedInterface__OperationProvidedRole="_bMC1EDPXEeKKdNKpWS4YNg"/>
+    <requiredRoles_InterfaceRequiringEntity xsi:type="repository:OperationRequiredRole" id="_Eq1cgDPYEeKKdNKpWS4YNg" entityName="Required_IDatabase_WebServer" requiredInterface__OperationRequiredRole="_-rPzQDPEEeK0ObH3QqjCvQ"/>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_EC550TPYEeKKdNKpWS4YNg" describedService__SEFF="_mi7NwDPXEeKKdNKpWS4YNg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_EC550jPYEeKKdNKpWS4YNg" successor_AbstractAction="_bpIkQDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_EC550zPYEeKKdNKpWS4YNg" predecessor_AbstractAction="_ihwo8DPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_ihwo8DPYEeKKdNKpWS4YNg" predecessor_AbstractAction="_bpIkQDPYEeKKdNKpWS4YNg" successor_AbstractAction="_EC550zPYEeKKdNKpWS4YNg" calledService_ExternalService="__mQC8DPEEeK0ObH3QqjCvQ" role_ExternalService="_Eq1cgDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_bpIkQDPYEeKKdNKpWS4YNg" entityName="GetLoginInternalAction" predecessor_AbstractAction="_EC550jPYEeKKdNKpWS4YNg" successor_AbstractAction="_ihwo8DPYEeKKdNKpWS4YNg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="15.6"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_EC551DPYEeKKdNKpWS4YNg" describedService__SEFF="_qykeADPXEeKKdNKpWS4YNg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_EC551TPYEeKKdNKpWS4YNg" successor_AbstractAction="_4nIkoDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_EC551jPYEeKKdNKpWS4YNg" predecessor_AbstractAction="_9SWWkDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_9SWWkDPYEeKKdNKpWS4YNg" predecessor_AbstractAction="_4nIkoDPYEeKKdNKpWS4YNg" successor_AbstractAction="_EC551jPYEeKKdNKpWS4YNg" calledService_ExternalService="_HbW-ADPFEeK0ObH3QqjCvQ" role_ExternalService="_Eq1cgDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_4nIkoDPYEeKKdNKpWS4YNg" entityName="GetCheckInternalAction" predecessor_AbstractAction="_EC551TPYEeKKdNKpWS4YNg" successor_AbstractAction="_9SWWkDPYEeKKdNKpWS4YNg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="259"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_EC551zPYEeKKdNKpWS4YNg" describedService__SEFF="_sn19kDPXEeKKdNKpWS4YNg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_EC552DPYEeKKdNKpWS4YNg" successor_AbstractAction="_xRJ1kDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_EC552TPYEeKKdNKpWS4YNg" predecessor_AbstractAction="_z92sYDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_xRJ1kDPYEeKKdNKpWS4YNg" entityName="GetAccountSummaryInternalAction" predecessor_AbstractAction="_EC552DPYEeKKdNKpWS4YNg" successor_AbstractAction="_z92sYDPYEeKKdNKpWS4YNg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="120"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+      <steps_Behaviour xsi:type="seff:ExternalCallAction" id="_z92sYDPYEeKKdNKpWS4YNg" predecessor_AbstractAction="_xRJ1kDPYEeKKdNKpWS4YNg" successor_AbstractAction="_EC552TPYEeKKdNKpWS4YNg" calledService_ExternalService="_FlrOwDPFEeK0ObH3QqjCvQ" role_ExternalService="_Eq1cgDPYEeKKdNKpWS4YNg"/>
+    </serviceEffectSpecifications__BasicComponent>
+    <serviceEffectSpecifications__BasicComponent xsi:type="seff:ResourceDemandingSEFF" id="_EC552jPYEeKKdNKpWS4YNg" describedService__SEFF="_vA4RgDPXEeKKdNKpWS4YNg">
+      <steps_Behaviour xsi:type="seff:StartAction" id="_EC552zPYEeKKdNKpWS4YNg" successor_AbstractAction="_oJ7LUDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:StopAction" id="_EC553DPYEeKKdNKpWS4YNg" predecessor_AbstractAction="_oJ7LUDPYEeKKdNKpWS4YNg"/>
+      <steps_Behaviour xsi:type="seff:InternalAction" id="_oJ7LUDPYEeKKdNKpWS4YNg" entityName="LogoutInternalAction" predecessor_AbstractAction="_EC552zPYEeKKdNKpWS4YNg" successor_AbstractAction="_EC553DPYEeKKdNKpWS4YNg">
+        <resourceDemand_Action>
+          <specification_ParametericResourceDemand specification="56.4"/>
+          <requiredResource_ParametricResourceDemand href="pathmap://PCM_MODELS/Palladio.resourcetype#_oro4gG3fEdy4YaaT-RYrLQ"/>
+        </resourceDemand_Action>
+      </steps_Behaviour>
+    </serviceEffectSpecifications__BasicComponent>
+  </components__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_-rPzQDPEEeK0ObH3QqjCvQ" entityName="IDatabase">
+    <signatures__OperationInterface id="__mQC8DPEEeK0ObH3QqjCvQ" entityName="getCredentials"/>
+    <signatures__OperationInterface id="_FlrOwDPFEeK0ObH3QqjCvQ" entityName="getAccountInformation"/>
+    <signatures__OperationInterface id="_HbW-ADPFEeK0ObH3QqjCvQ" entityName="getCheckInformation"/>
+  </interfaces__Repository>
+  <interfaces__Repository xsi:type="repository:OperationInterface" id="_bMC1EDPXEeKKdNKpWS4YNg" entityName="IWebServer">
+    <signatures__OperationInterface id="_mi7NwDPXEeKKdNKpWS4YNg" entityName="getLoginPage"/>
+    <signatures__OperationInterface id="_qykeADPXEeKKdNKpWS4YNg" entityName="getCheckPage"/>
+    <signatures__OperationInterface id="_sn19kDPXEeKKdNKpWS4YNg" entityName="getAccountSummaryPage"/>
+    <signatures__OperationInterface id="_vA4RgDPXEeKKdNKpWS4YNg" entityName="getLogoutPage"/>
+  </interfaces__Repository>
+</repository:Repository>
